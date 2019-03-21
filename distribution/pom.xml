@@ -31,7 +31,7 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
-            <id>distro-assembly</id>
+            <id>router</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>
@@ -43,7 +43,25 @@
               <descriptors>
                 <descriptor>src/assembly/router.xml</descriptor>
               </descriptors>
-              <appendAssemblyId>false</appendAssemblyId>
+              <appendAssemblyId>true</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>client</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/assembly/client.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>true</appendAssemblyId>
             </configuration>
           </execution>
         </executions>

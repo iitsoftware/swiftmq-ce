@@ -1,4 +1,4 @@
 export class=$1
 shift
-java -cp .:../jars/swiftmq.jar -Dswiftmq.jsse.anoncipher.enabled=false -Dswiftmq.amqp.frame.debug=false -Dswiftmq.amqp.debug=false $class $@
+java -cp .:../../jars/swiftmq.jar -Dswiftmq.jsse.anoncipher.enabled=false -Dswiftmq.amqp.frame.debug=false -Dswiftmq.amqp.debug=false $class $@
 

@@ -7,35 +7,13 @@ There are 3 subdirectories, each containing scripts to start
 an example. The scripts are named 'starter' resp. 'starter.bat'.
 To start the SimpleQueueSender, for example, the command is
 
-starter SimpleQueueSender testqueue@router1
-
-sun_examples
-------------
-
-Contains JMS examples original from Sun Microsystems. 
-Some programs are a bit modified to ensure, for example,
-that a subscriber thread is in place before a publisher
-thread starts publishing. The file 'SampleUtilities.java'
-is modified regarding the JNDI lookup.
-
-This examples are intended to use with a SINGLE router. To
-use it, start first router1 (scripts/<platform>/smqr1) and
-then the appropriate example(s). Please consult the Readme
-file from Sun which is stored in the directory.
-
-For point-to-point examples use 'testqueue@router1', for 
-publish-subscribe examples use 'testtopic'. Both destinations
-are defined per default on both router1 and router2.
-
-If you like to use a router network, check out the 
-router_network subdirectory.
-
+starter SimpleQueueSender testqueue@router
 
 router_network
 --------------
 
 Contains JMS examples to be executed within a router network.
-First, start both routers (smqr1 and smqr2). Then you can
+First, start 2 routers (named: router1, router2). Then you can
 invoke the examples with the starter script. Defaults are used 
 if you don't specify parameters.
 

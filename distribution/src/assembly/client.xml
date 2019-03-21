@@ -1,0 +1,21 @@
+<assembly>
+  <id>client</id>
+  <formats>
+    <format>tar.gz</format>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <directory>disttemplates/client</directory>
+      <outputDirectory>${project.artifactId}_${project.version}_client</outputDirectory>
+      <fileMode>0755</fileMode>
+    </fileSet>
+  </fileSets>
+  <files>
+    <file>
+      <source>../router/target/swiftmq.jar</source>
+      <outputDirectory>${project.artifactId}_${project.version}_client/jars</outputDirectory>
+    </file>
+  </files>
+</assembly>

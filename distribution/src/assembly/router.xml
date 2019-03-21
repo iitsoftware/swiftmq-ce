@@ -1,5 +1,5 @@
 <assembly>
-  <id>swiftmq_ce_router</id>
+  <id>router</id>
   <formats>
     <format>tar.gz</format>
     <format>zip</format>
@@ -8,7 +8,7 @@
   <fileSets>
     <fileSet>
       <directory>disttemplates/router</directory>
-      <outputDirectory>${project.artifactId}_${project.version}</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router</outputDirectory>
       <excludes>
         <exclude>config/routerconfig.xml</exclude>
       </excludes>
@@ -18,222 +18,222 @@
   <files>
     <file>
       <source>disttemplates/router/config/routerconfig.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/config</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/config</outputDirectory>
       <filtered>true</filtered>
       <fileMode>0755</fileMode>
     </file>
     <file>
       <source>../router/target/swiftmq.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/jars</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/jars</outputDirectory>
     </file>
     <file>
       <source>../swiftlets/sys_accounting/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$accounting</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$accounting</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_accounting/target/sys_accounting-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$accounting</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$accounting</outputDirectory>
       <destName>sys$accounting.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_amqp/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$amqp</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$amqp</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_amqp/target/sys_amqp-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$amqp</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$amqp</outputDirectory>
       <destName>sys$amqp.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_authentication/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$authentication</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$authentication</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_authentication/target/sys_authentication.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$authentication</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$authentication</outputDirectory>
       <destName>sys$authentication.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_deploy/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$deploy</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$deploy</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_deploy/target/sys_deploy-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$deploy</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$deploy</outputDirectory>
       <destName>sys$deploy.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_jms/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$jms</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jms</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_jms/target/sys_jms-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$jms</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jms</outputDirectory>
       <destName>sys$jms.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_jndi/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$jndi</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jndi</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_jndi/target/sys_jndi-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$jndi</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jndi</outputDirectory>
       <destName>sys$jndi.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_log/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$log</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$log</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_log/target/sys_log-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$log</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$log</outputDirectory>
       <destName>sys$log.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_mgmt/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$mgmt</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mgmt</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_mgmt/target/sys_mgmt-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$mgmt</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mgmt</outputDirectory>
       <destName>sys$mgmt.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_monitor/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$monitor</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$monitor</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_monitor/target/sys_monitor.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$monitor</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$monitor</outputDirectory>
       <destName>sys$monitor.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_mqtt/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$mqtt</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mqtt</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_mqtt/target/sys_mqtt-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$mqtt</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mqtt</outputDirectory>
       <destName>sys$mgmt.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_net/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$net</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$net</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_net/target/sys_net-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$net</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$net</outputDirectory>
       <destName>sys$net.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_queuemanager/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$queuemanager</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$queuemanager</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_queuemanager/target/sys_queuemanager-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$queuemanager</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$queuemanager</outputDirectory>
       <destName>sys$queuemanager.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_routing/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$routing</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$routing</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_routing/target/sys_routing-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$routing</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$routing</outputDirectory>
       <destName>sys$routing.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_scheduler/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$scheduler</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$scheduler</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_scheduler/target/sys_scheduler-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$scheduler</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$scheduler</outputDirectory>
       <destName>sys$scheduler.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_store/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$store</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$store</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_store/target/sys_store-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$store</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$store</outputDirectory>
       <destName>sys$store.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_streams/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$streams</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$streams</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_streams/target/sys_streams.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$streams</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$streams</outputDirectory>
       <destName>sys$streams.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_threadpool/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$threadpool</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$threadpool</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_threadpool/target/sys_threadpool-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$threadpool</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$threadpool</outputDirectory>
       <destName>sys$threadpool.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_timer/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$timer</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$timer</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_timer/target/sys_timer-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$timer</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$timer</outputDirectory>
       <destName>sys$timer.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_topicmanager/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$topicmanager</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$topicmanager</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_topicmanager/target/sys_topicmanager-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$topicmanager</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$topicmanager</outputDirectory>
       <destName>sys$topicmanager.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_trace/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$trace</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$trace</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_trace/target/sys_trace-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$trace</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$trace</outputDirectory>
       <destName>sys$trace.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_xa/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$xa</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$xa</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
       <source>../swiftlets/sys_xa/target/sys_xa-${project.version}.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}/kernel/sys$xa</outputDirectory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$xa</outputDirectory>
       <destName>sys$xa.jar</destName>
     </file>
   </files>
