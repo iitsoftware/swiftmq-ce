@@ -1,0 +1,12 @@
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+delete ordercollector
+delete itemstatistics
+delete orderheadproducer
+delete orderposproducer
+cc /sys$queuemanager/queues
+delete stream_ordercollector_memory_orderhead
+delete stream_ordercollector_memory_orderpos
+delete orderscollected
+delete orderhead
+delete orderpos
+save

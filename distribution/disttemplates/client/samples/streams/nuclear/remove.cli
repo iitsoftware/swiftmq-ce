@@ -1,0 +1,6 @@
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+delete tempmonitor
+delete tempproducer
+cc /sys$queuemanager/queues
+delete tempin
+save

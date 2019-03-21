@@ -1,0 +1,187 @@
+<swiftlet name="sys$accounting"
+          displayname="Accounting Swiftlet"
+          class="com.swiftmq.impl.accounting.standard.AccountingSwiftletImpl"
+          icon="com/swiftmq/impl/accounting/standard/images/swiftlet.png"
+          description="Accounting Swiftlet"
+          release="${release}"
+          vendor="IIT Software GmbH">
+	<configuration>
+        <entitylist name="connections"
+                    display="Connections"
+                    description="Connections">
+              <entitytemplate name="connection"
+                              display="Connection"
+                              description="Connection">
+                  <property name="source-factory-group"
+                            type="java.lang.String"
+                            display="Source Factory Group"
+                            description="Group of the Source Factory"
+                            mandatory="true"/>
+                  <property name="source-factory-name"
+                            type="java.lang.String"
+                            display="Source Factory Name"
+                            description="Name of the Source Factory"
+                            mandatory="true"/>
+                  <entitylist name="source-factory-parameters"
+                              display="Source Factory Parameters"
+                              description="Source Factory Parameters">
+                      <entitytemplate name="source-factory-parameter"
+                                      display="Source Factory Parameter"
+                                      description="Source Factory Parameter">
+                        <property name="value"
+                                  type="java.lang.String"
+                                  display="Value"
+                                  description="Value"
+                                  read-only="true"/>
+                       </entitytemplate>
+                  </entitylist>
+                  <property name="sink-factory-group"
+                            type="java.lang.String"
+                            display="Sink Factory Group"
+                            description="Group of the Sink Factory"
+                            mandatory="true"/>
+                  <property name="sink-factory-name"
+                            type="java.lang.String"
+                            display="Sink Factory Name"
+                            description="Name of the Sink Factory"
+                            mandatory="true"/>
+                  <entitylist name="sink-factory-parameters"
+                              display="Sink Factory Parameters"
+                              description="Sink Factory Parameters">
+                      <entitytemplate name="sink-factory-parameter"
+                                      display="Sink Factory Parameter"
+                                      description="Sink Factory Parameter">
+                        <property name="value"
+                                  type="java.lang.String"
+                                  display="Value"
+                                  description="Value"
+                                  read-only="true"/>
+                       </entitytemplate>
+                  </entitylist>
+                  <property name="enabled"
+                            type="java.lang.Boolean"
+                            display="Enabled"
+                            description="Enables/Disables this Connection"
+                            default="false"
+                            read-only="false"/>
+              </entitytemplate>
+        </entitylist>
+      <entity name="usage"
+              display="Usage"
+              description="Usage">
+          <entitylist name="active-connections"
+                      display="Active Connections"
+                      description="Active Connections">
+              <entitytemplate name="active-connection"
+                              display="Active Connection"
+                              description="Active Connection">
+                  <property name="source-factory-group"
+                            type="java.lang.String"
+                            display="Source Factory Group"
+                            description="Group of the Source Factory"
+                            read-only="true"/>
+                  <property name="source-factory-name"
+                            type="java.lang.String"
+                            display="Source Factory Name"
+                            description="Name of the Source Factory"
+                            read-only="true"/>
+                  <property name="sink-factory-group"
+                            type="java.lang.String"
+                            display="Sink Factory Group"
+                            description="Group of the Sink Factory"
+                            read-only="true"/>
+                  <property name="sink-factory-name"
+                            type="java.lang.String"
+                            display="Sink Factory Name"
+                            description="Name of the Sink Factory"
+                            read-only="true"/>
+                <property name="state"
+                          type="java.lang.String"
+                          display="State"
+                          description="State"
+                          read-only="true"/>
+              </entitytemplate>
+          </entitylist>
+          <entitylist name="groups"
+                      display="Groups"
+                      description="Groups">
+              <entitytemplate name="group"
+                              display="Group"
+                              description="Group">
+                  <entitylist name="source-factories"
+                              display="Registered Source Factories"
+                              description="Registered Source Factories">
+                      <entitytemplate name="source-factory"
+                                      display="Registered Source Factory"
+                                      description="Registered Source Factory">
+                          <property name="singleton"
+                                    type="java.lang.Boolean"
+                                    display="Is Singleton"
+                                    description="A singleton can only have 1 active source at a time"
+                                    read-only="true"/>
+                          <entitylist name="parameters"
+                                      display="Parameters"
+                                      description="Parameters">
+                              <entitytemplate name="parameter"
+                                              display="Parameter"
+                                              description="Parameter">
+                                <property name="description"
+                                          type="java.lang.String"
+                                          display="Description"
+                                          description="Description"
+                                          read-only="true"/>
+                                <property name="default"
+                                          type="java.lang.String"
+                                          display="Default Value"
+                                          description="Default Value"
+                                          read-only="true"/>
+                                <property name="mandatory"
+                                          type="java.lang.Boolean"
+                                          display="Mandatory"
+                                          description="Mandatory"
+                                          read-only="true"/>
+                              </entitytemplate>
+                          </entitylist>
+                      </entitytemplate>
+                  </entitylist>
+                  <entitylist name="sink-factories"
+                              display="Registered Sink Factories"
+                              description="Registered Sink Factories">
+                      <entitytemplate name="sink-factory"
+                                      display="Registered Sink Factory"
+                                      description="Registered Sink Factory">
+                          <property name="singleton"
+                                    type="java.lang.Boolean"
+                                    display="Is Singleton"
+                                    description="A singleton can only have 1 active sink at a time"
+                                    read-only="true"/>
+                          <entitylist name="parameters"
+                                      display="Parameters"
+                                      description="Parameters">
+                              <entitytemplate name="parameter"
+                                              display="Parameter"
+                                              description="Parameter">
+                                <property name="description"
+                                          type="java.lang.String"
+                                          display="Description"
+                                          description="Description"
+                                          read-only="true"/>
+                                <property name="default"
+                                          type="java.lang.String"
+                                          display="Default Value"
+                                          description="Default Value"
+                                          read-only="true"/>
+                                <property name="mandatory"
+                                          type="java.lang.Boolean"
+                                          display="Mandatory"
+                                          description="Mandatory"
+                                          read-only="true"/>
+                              </entitytemplate>
+                          </entitylist>
+                      </entitytemplate>
+                  </entitylist>
+              </entitytemplate>
+          </entitylist>
+      </entity>
+	</configuration>
+</swiftlet>

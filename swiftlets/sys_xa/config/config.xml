@@ -1,0 +1,58 @@
+<swiftlet name="sys$xa"
+          displayname="XA Resource Manager Swiftlet"
+          class="com.swiftmq.impl.xa.standard.XAResourceManagerSwiftletImpl"
+          icon="/com/swiftmq/impl/xa/standard/images/swiftlet.png"
+          description="XA Resource Manager Swiftlet"
+          release="${release}"
+          vendor="IIT Software GmbH">
+  <configuration>
+    <property name="scan-interval"
+              type="java.lang.Long"
+              display="Scan Interval (ms)"
+              description="Interval to scan prepared XA transaction to put into the Usage List"
+              min="500"
+              default="120000"/>
+    <property name="default-transaction-timeout"
+              type="java.lang.Long"
+              display="Default Transaction Timeout (ms)"
+              description="Max. time a XA transaction can run, thereafter it will be rolled back"
+              min="0"
+              default="0"/>
+    <entity name="usage"
+            display="Usage"
+            description="Usage">
+      <entitylist name="prepared-tx"
+                  display="Prepared XA Transactions"
+                  description="Prepared XA Transactions">
+        <entitytemplate name="prepared-xa-transaction"
+                        display="Prepared XA Transaction"
+                        description="Prepared XA Transaction">
+          <property name="xid"
+                    type="java.lang.String"
+                    display="Xid"
+                    read-only="true"
+                    description="Xid (Internal Representation)"/>
+        </entitytemplate>
+      </entitylist>
+      <entitylist name="heuristic-tx"
+                  display="Heuristically completed XA Transactions"
+                  description="Heuristically completed XA Transactions">
+        <entitytemplate name="heuristic-xa-transaction"
+                        display="Heuristically completed XA Transaction"
+                        description="Heuristically completed XA Transaction">
+          <property name="xid"
+                    type="java.lang.String"
+                    display="Xid"
+                    read-only="true"
+                    description="Xid (Internal Representation)"/>
+          <property name="operation"
+                    type="java.lang.String"
+                    display="Operation"
+                    read-only="true"
+                    description="Operation"
+                    choice="COMMIT ROLLBACK"/>
+        </entitytemplate>
+      </entitylist>
+    </entity>
+  </configuration>
+</swiftlet>

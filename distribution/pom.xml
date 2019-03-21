@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+  	  <groupId>com.swiftmq</groupId>
+	  <artifactId>swiftmq-ce</artifactId>
+	  <version>12.0.0-SNAPSHOT</version>
+      <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>swiftmq_ce</artifactId>
+
+  <packaging>pom</packaging>
+
+  <name>distribution</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.swiftmq.swiftlets</groupId>
+      <artifactId>sys_xa</artifactId>
+      <version>12.0.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>distro-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <filters>
+                <filter>${project.build.directory}/../src/assembly/filter.properties</filter>
+              </filters>
+              <descriptors>
+                <descriptor>src/assembly/router.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

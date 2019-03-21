@@ -1,0 +1,3 @@
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+delete queuestats
+save

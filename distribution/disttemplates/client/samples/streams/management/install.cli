@@ -1,0 +1,8 @@
+cc /sys$streams/domains
+new swiftmq
+cc /sys$streams/domains/swiftmq/packages
+new samples
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new queuestats script-file ../../samples/streams/management/queuestats.js
+save
+

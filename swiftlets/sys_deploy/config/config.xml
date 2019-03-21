@@ -1,0 +1,46 @@
+<swiftlet name="sys$deploy"
+					displayname="Deploy Swiftlet"
+					class="com.swiftmq.impl.deploy.standard.DeploySwiftletImpl"
+					icon="/com/swiftmq/impl/deploy/standard/images/swiftlet.png"
+					description="Deploy Swiftlet"
+					release="${release}"
+					vendor="IIT Software GmbH" >
+	<configuration>
+        <entitylist name="deploy-spaces"
+                        display="Deploy Spaces"
+                        description="Deploy Spaces" >
+            <entitytemplate name="deploy-space"
+                        display="Deploy Space"
+                        description="Deploy Space" >
+              <property name="path"
+                        type="java.lang.String"
+                        display="Path Name"
+                        description="Path Name"
+                        mandatory="true"
+                        read-only="true"/>
+              <property name="check-interval"
+                        type="java.lang.Long"
+                        display="Check Interval"
+                        description="Check Interval for Deployment Changes"
+                        default="60000"
+                        mandatory="true"/>
+            </entitytemplate>
+        </entitylist>
+		<entitylist name="usage" display="Usage" description="Active Deployments" >
+			<entitytemplate name="deploy-space" display="Deploy Space" description="Deploy Space" >
+              <entitylist name="deployments" display="Deployments" description="Active Deployments" >
+                  <entitytemplate name="deployment" display="Deployment" description="Active Deployments" >
+                    <property name="deploytime"
+                              type="java.lang.String"
+                              display="Deploy Time"
+                              description="Deploy Time"/>
+                    <property name="directory"
+                              type="java.lang.String"
+                              display="Directory"
+                              description="Actual Deployment Directory"/>
+                  </entitytemplate>
+              </entitylist>
+			</entitytemplate>
+		</entitylist>
+	</configuration>
+</swiftlet>

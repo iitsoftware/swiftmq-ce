@@ -1,0 +1,6 @@
+# CLI-Script to shutdown router
+#
+sr router
+halt
+exit
+

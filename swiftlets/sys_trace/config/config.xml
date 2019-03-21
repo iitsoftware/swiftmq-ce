@@ -1,0 +1,48 @@
+<swiftlet name="sys$trace"
+					displayname="Trace Swiftlet"
+					class="com.swiftmq.impl.trace.standard.TraceSwiftletImpl"
+					icon="com/swiftmq/impl/trace/standard/images/swiftlet.png"
+					description="Trace Swiftlet"
+					release="${release}"
+					vendor="IIT Software GmbH" >
+	<configuration>
+		<property name="max-file-size"
+							type="java.lang.Integer"
+							display="Max. Tracefile Size (KB)"
+							description="Max. Tracefile Size (KB)"
+							default="10240" />
+    <property name="number-old-tracefile-generations"
+              type="java.lang.Integer"
+              display="Number old Tracefile Generations"
+              description="Number old Tracefile Generations to keep"
+              default="50"/>
+		<entitylist name="spaces" display="Spaces" description="Trace Space Definitions" >
+			<entitytemplate name="space" display="Space" description="Trace Space Definition" >
+				<property name="enabled"
+									type="java.lang.Boolean"
+									display="Space Enabled"
+									description="Enables/Disables the Space"
+									default="false" />
+				<entitylist name="predicates" display="Predicates" description="Predicate Definitions" >
+					<entitytemplate name="predicate" display="Predicate" description="Predicate Definition" >
+                      <property name="enabled"
+                                          type="java.lang.Boolean"
+                                          display="Enabled"
+                                          description="Enables/Disables this Predicate"
+                                          default="true" />
+                      <property name="filename"
+                                          type="java.lang.String"
+                                          display="Output Filename"
+                                          description="Output Filename"
+                                          mandatory="true" />
+						<property name="value"
+											type="java.lang.String"
+											display="Predicate Value"
+											description="SQL-Like Predicate that selects from the Trace Stream"
+											mandatory="true" />
+					</entitytemplate>
+				</entitylist>
+			</entitytemplate>
+		</entitylist>
+	</configuration>
+</swiftlet>

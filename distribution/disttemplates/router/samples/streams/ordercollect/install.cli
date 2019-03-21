@@ -1,0 +1,31 @@
+cc /sys$queuemanager/queues
+new orderhead
+new orderpos
+new orderscollected
+new stream_ordercollector_memory_orderhead
+new stream_ordercollector_memory_orderpos
+cc /sys$streams/domains
+new swiftmq
+cc /sys$streams/domains/swiftmq/packages
+new samples
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new ordercollector script-file ../../samples/streams/ordercollect/ordercollector.js
+cc /sys$streams/domains/swiftmq/packages/samples/streams/ordercollector/parameters
+new orderhead-queue value orderhead
+new orderpos-queue value orderpos
+new output-queue value orderscollected
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new itemstatistics script-file ../../samples/streams/ordercollect/itemstats.js
+cc /sys$streams/domains/swiftmq/packages/samples/streams/itemstatistics/parameters
+new orderpos-queue value orderpos
+new statistic-interval-sec value 10
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new orderheadproducer script-file ../../samples/streams/ordercollect/orderheadproducer.js
+cc /sys$streams/domains/swiftmq/packages/samples/streams/orderheadproducer/parameters
+new output-queue value orderhead
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new orderposproducer script-file ../../samples/streams/ordercollect/orderposproducer.js
+cc /sys$streams/domains/swiftmq/packages/samples/streams/orderposproducer/parameters
+new output-queue value orderpos
+save
+

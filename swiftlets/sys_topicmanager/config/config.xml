@@ -1,0 +1,176 @@
+<swiftlet name="sys$topicmanager"
+          displayname="Topic Manager Swiftlet"
+          class="com.swiftmq.impl.topic.standard.TopicManagerImpl"
+          icon="/com/swiftmq/impl/topic/standard/images/swiftlet.png"
+          description="Topic Manager"
+          release="${release}"
+          vendor="IIT Software GmbH">
+  <configuration>
+    <property name="flowcontrol-enabled"
+              type="java.lang.Boolean"
+              display="Publish/Subscribe Flow Control"
+              description="Enable/Disable Publish/Subscribe Flow Control"
+              default="true"/>
+    <property name="direct-subscriber-selection"
+              type="java.lang.Boolean"
+              display="Direct Subscriber Selection"
+              description="Select Subscribers directly and do NOT interpret the Publisher's Topicname as SQL-Like Predicate"
+              default="true"/>
+    <entitylist name="topics"
+                display="Topics"
+                description="Topic Definitions">
+      <entitytemplate name="topic"
+                      display="Topic"
+                      description="Topic Definition">
+      </entitytemplate>
+    </entitylist>
+    <entitylist name="slow-subscriber-conditions"
+                display="Slow Subscriber Conditions"
+                description="Slow Subscriber Conditions">
+      <entitytemplate name="topic"
+                      display="Root Topic"
+                      description="Root Topic">
+        <property name="max-messages"
+                  type="java.lang.Long"
+                  display="Maximum Messages"
+                  description="Maximum Messages in Subscriber Queue"
+                  min="1"
+                  default="500"
+                  mandatory="true"/>
+        <property name="persistence-mode"
+                  type="java.lang.String"
+                  display="Persistence Mode"
+                  description="Persistence Mode"
+                  choice="all non_persistent persistent"
+                  default="non_persistent"/>
+        <property name="subscription-type"
+                  type="java.lang.String"
+                  display="Subscription Type"
+                  description="Subscription Type"
+                  choice="all local remote"
+                  default="all"/>
+        <property name="disconnect-non-durable-subscriber"
+                  type="java.lang.Boolean"
+                  display="Disconnect Non-Durable Subscriber"
+                  description="Disconnect Non-Durable Subscriber"
+                  default="false"/>
+        <property name="disconnect-delete-durable-subscriber"
+                  type="java.lang.Boolean"
+                  display="Disconnect and Delete Durable Subscriber"
+                  description="Disconnect and Delete Durable Subscriber"
+                  default="false"/>
+      </entitytemplate>
+    </entitylist>
+    <entitylist name="static-remote-router-subscriptions"
+                display="Static Remote Router Subscriptions"
+                description="Static Remote Router Subscriptions">
+      <entitytemplate name="static-remote-router-subscription"
+                      display="Static Remote Router Subscription"
+                      description="Specify the Router Name here">
+        <entitylist name="static-topic-subscriptions"
+                    display="Static Topic Subscriptions"
+                    description="Static Topic Subscriptions">
+          <entitytemplate name="static-topic-subscription"
+                          display="Static Topic Subscription"
+                          description="Specify the Root Node of the hierarchical Topic Name here">
+            <property name="keep-on-unsubscribe"
+                      type="java.lang.Boolean"
+                      display="Keep on Unsubscribe"
+                      description="Keep this Subscription even when the remote Router unsubscribes it"
+                      read-only="true"
+                      default="false"/>
+          </entitytemplate>
+        </entitylist>
+      </entitytemplate>
+    </entitylist>
+    <entity name="usage"
+            display="Usage"
+            description="Active Topics">
+      <entitylist name="durables"
+                  display="Active Durable Topic Subscriber"
+                  description="Active Durable Topic Subscriber">
+        <entitytemplate name="durables"
+                        display="Active Durable Topic Subscriber"
+                        description="Active Durable Topic Subscriber">
+          <property name="durablename"
+                    type="java.lang.String"
+                    display="Durable Name"
+                    description="Name of the durable Subscriber"
+                    mandatory="true"/>
+          <property name="clientid"
+                    type="java.lang.String"
+                    display="Client Id"
+                    description="Client Id"
+                    mandatory="true"/>
+          <property name="topic"
+                    type="java.lang.String"
+                    display="Topic Name"
+                    description="Topic Name"
+                    mandatory="true"/>
+          <property name="selector"
+                    type="java.lang.String"
+                    display="Message Selector"
+                    description="Message Selector"
+                    mandatory="false"/>
+          <property name="nolocal"
+                    type="java.lang.Boolean"
+                    display="No Local"
+                    description="Receives no local published Messages"
+                    default="false"
+                    mandatory="false"/>
+          <property name="boundto"
+                    type="java.lang.String"
+                    display="Bound To"
+                    description="Is bound to Queue"
+                    mandatory="false"
+                    default="Do not specify - will be set from SwiftMQ!"/>
+        </entitytemplate>
+      </entitylist>
+      <entitylist name="subscriber"
+                  display="Active Topic Subscriber"
+                  description="Active Topic Subscriber">
+        <entitytemplate name="subscriber"
+                        display="An Active Topic Subscriber"
+                        description="An Active Topic Subscriber">
+          <property name="clientid"
+                    type="java.lang.String"
+                    display="Client Id"
+                    description="Client Id"/>
+          <property name="topic"
+                    type="java.lang.String"
+                    display="Topic Name"
+                    description="Topic Name"/>
+          <property name="selector"
+                    type="java.lang.String"
+                    display="Message Selector"
+                    description="Message Selector"/>
+          <property name="nolocal"
+                    type="java.lang.Boolean"
+                    display="No Local"
+                    description="Receives no local published Messages"
+                    default="false"/>
+          <property name="boundto"
+                    type="java.lang.String"
+                    display="Bound To"
+                    description="Is bound to Queue"/>
+        </entitytemplate>
+      </entitylist>
+      <entitylist name="subscriber-remote"
+                  display="Remote Router Subscriptions"
+                  description="Subscriptions from remote Routers">
+        <entitytemplate name="router"
+                        display="Remote Router"
+                        description="Remote Router">
+          <entitylist name="topics"
+                      display="Topic Subscriptions"
+                      description="Subscriptions from this Router">
+            <entitytemplate name="topic"
+                            display="Topic"
+                            description="Topic">
+            </entitytemplate>
+          </entitylist>
+        </entitytemplate>
+      </entitylist>
+    </entity>
+  </configuration>
+</swiftlet>

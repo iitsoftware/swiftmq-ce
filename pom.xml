@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.swiftmq</groupId>
+  <artifactId>swiftmq-ce</artifactId>
+  <packaging>pom</packaging>
+  <version>12.0.0-SNAPSHOT</version>
+
+  <modules>
+    <module>router</module>
+    <module>swiftlets/sys_accounting</module>
+    <module>swiftlets/sys_amqp</module>
+    <module>swiftlets/sys_authentication</module>
+    <module>swiftlets/sys_deploy</module>
+    <module>swiftlets/sys_jms</module>
+    <module>swiftlets/sys_jndi</module>
+    <module>swiftlets/sys_log</module>
+    <module>swiftlets/sys_mgmt</module>
+    <module>swiftlets/sys_monitor</module>
+    <module>swiftlets/sys_mqtt</module>
+    <module>swiftlets/sys_net</module>
+    <module>swiftlets/sys_queuemanager</module>
+    <module>swiftlets/sys_routing</module>
+    <module>swiftlets/sys_scheduler</module>
+    <module>swiftlets/sys_store</module>
+    <module>swiftlets/sys_streams</module>
+    <module>swiftlets/sys_threadpool</module>
+    <module>swiftlets/sys_timer</module>
+    <module>swiftlets/sys_topicmanager</module>
+    <module>swiftlets/sys_trace</module>
+    <module>swiftlets/sys_xa</module>
+    <module>distribution</module>
+  </modules>
+</project>

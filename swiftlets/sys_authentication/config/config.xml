@@ -1,0 +1,118 @@
+<swiftlet name="sys$authentication"
+					displayname="Authentication Swiftlet"
+					class="com.swiftmq.impl.auth.standard.AuthenticationSwiftletImpl"
+					icon="/com/swiftmq/impl/auth/standard/images/swiftlet.png"
+					description="Authentication Swiftlet"
+					release="${release}"
+					vendor="IIT Software GmbH" >
+	<configuration>
+		<property name="authentication-enabled"
+							type="java.lang.Boolean"
+							display="Authentication Enabled"
+							description="Enabes/Disables Authentication"
+							default="false" />
+		<entitylist name="groups" display="Groups" description="Authentication Group Definitions" icon="/com/swiftmq/impl/auth/standard/images/groups.png" >
+			<entitytemplate name="group" display="Group" description="Authentication Group Definition" >
+				<entitylist name="queue-grants" display="Queue Grants" description="Queue Grant Definitions" >
+					<entitytemplate name="queue-grant" display="Queue Grant" description="Queue Grant Definition" >
+						<property name="receive-grant"
+											type="java.lang.Boolean"
+											display="Receive Grant"
+											description="Grant to create a QueueReceiver on this Queue"
+											default="true" />
+						<property name="send-grant"
+											type="java.lang.Boolean"
+											display="Send Grant"
+											description="Grant to create a QueueSender on this Queue"
+											default="true" />
+						<property name="browse-grant"
+											type="java.lang.Boolean"
+											display="Browse Grant"
+											description="Grant to create a QueueBrowser on this Queue"
+											default="true" />
+					</entitytemplate>
+				</entitylist>
+				<entitylist name="topic-grants" display="Topic Grants" description="Topic Grant Definitions" >
+					<entitytemplate name="topic-grant" display="Topic Grant" description="Topic Grant Definition" >
+						<property name="subscribe-grant"
+											type="java.lang.Boolean"
+											display="Subscribe Grant"
+											description="Grant to subscribe for this Topic"
+											default="true" />
+						<property name="publish-grant"
+											type="java.lang.Boolean"
+											display="Publish Grant"
+											description="Grant to publish to this Topic"
+											default="true" />
+						<property name="durable-grant"
+											type="java.lang.Boolean"
+											display="Durable Grant"
+											description="Grant to create a Durable Subscriber on this Topic"
+											default="true" />
+					</entitytemplate>
+				</entitylist>
+			</entitytemplate>
+		</entitylist>
+		<entitylist name="resource-limit-groups" display="Resource Limit Groups" description="Resource Limit Group Definitions" icon="/com/swiftmq/impl/auth/standard/images/rlg.png" >
+			<entitytemplate name="resource-limit-group" display="Resource Limit Group" description="Resource Limit Group Definition" >
+                <property name="max-connections"
+                                    type="java.lang.Integer"
+                                    display="Maximum Connections"
+                                    description="Maximum Connections"
+                                    default="-1"
+                                    mandatory="true" />
+                <property name="max-tempqueues"
+                                    type="java.lang.Integer"
+                                    display="Maximum temp. Queues/Connection"
+                                    description="Maximum temp. Queues/Connection"
+                                    min="1"
+                                    default="50"
+                                    mandatory="true" />
+				<property name="max-sessions"
+									type="java.lang.Integer"
+									display="Maximum Sessions/Connection"
+									description="Maximum Sessions/Connection"
+									min="1"
+									default="50"
+									mandatory="true" />
+				<property name="max-producers"
+									type="java.lang.Integer"
+									display="Maximum Producers/Connection"
+									description="Maximum Producers/Connection"
+									min="1"
+									default="50"
+									mandatory="true" />
+				<property name="max-consumers"
+									type="java.lang.Integer"
+									display="Maximum Consumers/Connection"
+									description="Maximum Consumers/Connection"
+									min="1"
+									default="50"
+									mandatory="true" />
+			</entitytemplate>
+		</entitylist>
+		<entitylist name="users" display="Users" description="User Definitions" icon="/com/swiftmq/impl/auth/standard/images/users.png" >
+			<entitytemplate name="user" display="User" description="User Definition" >
+				<property name="password"
+									type="java.lang.String"
+									display="Password"
+									description="Password" />
+				<property name="group"
+									type="java.lang.String"
+									display="Authentication Group"
+									description="Authentication Group"
+									default="public"
+									mandatory="true" />
+				<property name="resource-limit-group"
+									type="java.lang.String"
+									display="Resource Limit Group"
+									description="Resource Limit Group"
+									default="public"
+									mandatory="true" />
+				<entitylist name="host-access-list" display="Host Access List" description="Host Access List Definitions" >
+					<entitytemplate name="host-access-list" display="Host Access List" description="Host Access List Definition" />
+				</entitylist>
+			</entitytemplate>
+		</entitylist>
+	</configuration>
+</swiftlet>

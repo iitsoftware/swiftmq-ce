@@ -1,0 +1,243 @@
+<swiftlet name="sys$streams"
+          displayname="Streams Swiftlet"
+          class="com.swiftmq.impl.streams.StreamsSwiftlet"
+          icon="/com/swiftmq/impl/streams/images/swiftlet.png"
+          description="Complex Event Stream Swiftlet"
+          release="${release}"
+          vendor="IIT Software GmbH">
+  <configuration>
+    <property name="collect-interval"
+              type="java.lang.Long"
+              display="Collect Interval"
+              description="Interval for collecting Stream usage information"
+              default="1000"/>
+    <property name="stream-grant-predicates"
+              type="java.lang.String"
+              display="Stream Grant Predicates"
+              description="SQL-Like Predicates to grant Stream Topic access"
+              default="stream\_%"/>
+    <entitylist name="domains"
+                display="Domains"
+                description="Stream Domain Names">
+      <entitytemplate name="domain"
+                      display="Domain"
+                      description="Stream Domain Name">
+        <entitylist name="packages"
+                    display="Packages"
+                    description="Stream Packages">
+          <entitytemplate name="package"
+                          display="Package"
+                          description="Stream Package">
+            <entitylist name="streams"
+                        display="Streams"
+                        description="Complex Event Streams">
+              <entitytemplate name="stream"
+                              display="Stream"
+                              description="Stream">
+                <property name="restart-delay"
+                          type="java.lang.Long"
+                          display="Restart Delay (ms)"
+                          description="Delay in ms to restart the Stream on an exception"
+                          default="-1"/>
+                <property name="restart-max"
+                          type="java.lang.Integer"
+                          display="Maximum Restarts"
+                          description="Maximum number of restart attempts"
+                          default="-1"/>
+                <property name="script-language"
+                          type="java.lang.String"
+                          display="Script Language"
+                          description="Name of the Scripting Language"
+                          default="JavaScript"/>
+                <property name="script-file"
+                          type="java.lang.String"
+                          display="Script File"
+                          description="Name of the Script File"
+                          mandatory="true"/>
+                <property name="enabled"
+                          type="java.lang.Boolean"
+                          display="Enabled"
+                          description="Enables/Disables this Stream"
+                          default="false"/>
+                <entitylist name="parameters"
+                            display="Parameters"
+                            description="Parameters">
+                  <entitytemplate name="parameter"
+                                  display="Parameter"
+                                  description="Parameter">
+                    <property name="value"
+                              type="java.lang.String"
+                              display="Value"
+                              description="Value"
+                              mandatory="true"/>
+                  </entitytemplate>
+                </entitylist>
+                <entitylist name="dependencies"
+                            display="Dependencies"
+                            description="Dependencies from other Streams">
+                  <entitytemplate name="dependency"
+                                  display="Dependency"
+                                  description="Stream Dependency">
+                  </entitytemplate>
+                </entitylist>
+              </entitytemplate>
+            </entitylist>
+          </entitytemplate>
+        </entitylist>
+      </entitytemplate>
+    </entitylist>
+    <entitylist name="usage" display="Usage"
+                description="Active Streams"
+                dynamic-properties="stream-last-onmessage-time stream-processing-rate">
+      <entitytemplate name="stream" display="Active Stream"
+                      description="Active Stream">
+        <property name="starttime"
+                  type="java.lang.String"
+                  display="Stream Start Time"
+                  description="Start Time of this Stream"/>
+        <property name="stream-last-onmessage-time"
+                  display="Last onMessage Time (µs)"
+                  description="Last Time in µs it took in onMessage"
+                  type="java.lang.Integer"
+                  default="0"/>
+        <property name="stream-processing-rate"
+                  display="Processing Rate Msgs/s "
+                  description="Messages/Sec processed by this Stream"
+                  type="java.lang.Integer"
+                  default="0"/>
+        <property name="stream-total-processed"
+                  display="Total Processed Msgs"
+                  description="Total Number of Messages processed by this Stream"
+                  type="java.lang.Integer"
+                  default="0"/>
+        <entitylist name="inputs" display="Inputs"
+                    description="Inputs"
+                    dynamic-properties="input-processing-rate">
+          <entitytemplate name="input" display="Input"
+                          description="Input">
+            <property name="01-type"
+                      type="java.lang.String"
+                      display="Input Type"
+                      description="Type of this Input"/>
+            <property name="destinationname"
+                      type="java.lang.String"
+                      display="Destination Name"
+                      description="Destination Name"/>
+            <property name="input-processing-rate"
+                      display="Processing Rate Msgs/s "
+                      description="Messages/Sec processed by this Input"
+                      type="java.lang.Integer"
+                      default="0"/>
+            <property name="input-total-processed"
+                      display="Total Processed Msgs"
+                      description="Total Number of Messages processed by this Input"
+                      type="java.lang.Integer"
+                      default="0"/>
+          </entitytemplate>
+        </entitylist>
+        <entitylist name="timers" display="Timers"
+                    description="Timers"
+                    dynamic-properties="timer-last-ontimer-time">
+          <entitytemplate name="timer" display="Timer"
+                          description="Timer">
+            <property name="timer-last-ontimer-time"
+                      display="Last onTimer Time (µs)"
+                      description="Last Time in µs it took in onTimer"
+                      type="java.lang.Integer"
+                      default="0"/>
+            <property name="timer-type"
+                      display="Timer Type"
+                      description="Type of this Timer"
+                      type="java.lang.String"/>
+            <property name="started"
+                      display="Started"
+                      description="Timer Started?"
+                      type="java.lang.Boolean"
+                      default="false"/>
+          </entitytemplate>
+        </entitylist>
+        <entitylist name="memories" display="Memories"
+                    description="Memories"
+                    dynamic-properties="size">
+          <entitytemplate name="memory" display="Memory"
+                          description="Memory">
+            <property name="memory-type"
+                      display="Memory Type"
+                      description="Type of this Memory"
+                      type="java.lang.String"/>
+            <property name="size"
+                      display="Size (Messages)"
+                      description="Size of this Memory in Messages"
+                      type="java.lang.Integer"
+                      default="0"/>
+          </entitytemplate>
+        </entitylist>
+        <entitylist name="jdbclookups" display="JDBCLookups"
+                    description="JDBCLookups"
+                    dynamic-properties="last-query-time">
+          <entitytemplate name="jdbclookup" display="JDBCLookup"
+                          description="JDBCLookup">
+            <property name="last-query-time"
+                      display="Last Query Time (µs)"
+                      description="Last Time in µs it took in query"
+                      type="java.lang.Integer"
+                      default="0"/>
+          </entitytemplate>
+        </entitylist>
+        <entitylist name="mailservers" display="Mail Servers"
+                    description="Mail Servers"
+                    dynamic-properties="emails-sent">
+          <entitytemplate name="mailserver" display="Mail Server"
+                          description="Mail Server">
+            <property name="emails-sent"
+                      display="eMails sent"
+                      description="Number of eMail sent"
+                      type="java.lang.Integer"
+                      default="0"/>
+          </entitytemplate>
+        </entitylist>
+        <entitylist name="tempqueues" display="Temp Queues"
+                    description="Temp Queues">
+          <entitytemplate name="tempqueue" display="Temp Queue"
+                          description="Temp Queue">
+            <property name="queuename"
+                      display="Queue Name"
+                      description="Name of the temp Queue"
+                      type="java.lang.String"/>
+          </entitytemplate>
+        </entitylist>
+        <entitylist name="outputs" display="Outputs"
+                    description="Outputs"
+                    dynamic-properties="messages-sent">
+          <entitytemplate name="output" display="Output"
+                          description="Output">
+            <property name="01-type"
+                      type="java.lang.String"
+                      display="Output Type"
+                      description="Type of this Output"/>
+            <property name="messages-sent"
+                      display="Messages sent"
+                      description="Number of Messages sent to this Output"
+                      type="java.lang.Integer"
+                      default="0"/>
+          </entitytemplate>
+        </entitylist>
+        <entitylist name="dashboard" display="Dashboard"
+                    description="Dashboard">
+          <entitytemplate name="widget" display="Widget"
+                          description="Dashboard Widget">
+            <property name="description"
+                      type="java.lang.String"
+                      display="Description"
+                      description="Widget Description"/>
+            <property name="type"
+                      display="Type"
+                      description="Widget Type"
+                      choice="statistic monitor"
+                      type="java.lang.String"/>
+          </entitytemplate>
+        </entitylist>
+      </entitytemplate>
+    </entitylist>
+  </configuration>
+</swiftlet>

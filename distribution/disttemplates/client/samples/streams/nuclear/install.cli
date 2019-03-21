@@ -1,0 +1,22 @@
+cc /sys$queuemanager/queues
+new tempin
+cc /sys$streams/domains
+new swiftmq
+cc /sys$streams/domains/swiftmq/packages
+new samples
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new tempmonitor script-file ../../samples/streams/nuclear/tempmonitor.js
+cc /sys$streams/domains/swiftmq/packages/samples/streams/tempmonitor/parameters
+new input-queue value tempin
+new mail-host value localhost
+new mail-user value please@change.me
+new mail-password value secret
+new mail-from value tempmonitor@company.com
+new mail-to value admin@company.com
+new mail-bcc value boss@company.com
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new tempproducer script-file ../../samples/streams/nuclear/tempproducer.js
+cc /sys$streams/domains/swiftmq/packages/samples/streams/tempproducer/parameters
+new output-queue value tempin
+save
+

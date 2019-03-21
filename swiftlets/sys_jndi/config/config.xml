@@ -1,0 +1,96 @@
+<swiftlet name="sys$jndi"
+					displayname="JNDI Swiftlet"
+					class="com.swiftmq.impl.jndi.standard.JNDISwiftletImpl"
+					icon="/com/swiftmq/impl/jndi/standard/images/swiftlet.png"
+					description="JNDI Swiftlet"
+					release="${release}"
+					vendor="IIT Software GmbH" >
+	<configuration>
+		<entitylist name="jndi-replications"
+						display="JNDI Replication"
+						description="JNDI Replication Definitions" >
+			<entitytemplate name="jndi-replication"
+						display="JNDI Replication"
+						description="JNDI Replication Definition" >
+				<property name="enabled"
+									type="java.lang.Boolean"
+									display="Enabled"
+									description="Enabled/Disabled"
+                  default="false"
+                  read-only="false" />
+				<property name="keepalive-interval"
+									type="java.lang.Long"
+									display="Keepalive Interval"
+									description="Keepalive Interval"
+                  default="60000"
+                  mandatory="true"
+                  read-only="false" />
+				<property name="keepalive-lookup-name"
+									type="java.lang.String"
+									display="Keepalive Lookup Name"
+									description="Name to use for Lookup during Keep Alive"
+                  default="test"
+                  mandatory="true"
+                  read-only="false" />
+              <property name="destination-context"
+                                  type="java.lang.String"
+                                  display="Destination Context"
+                                  description="Destination Context"
+                mandatory="false"
+                read-only="false" />
+              <property name="name-prefix"
+                                  type="java.lang.String"
+                                  display="Name Prefix"
+                                  description="For LDAP you specify cn= here"
+                mandatory="false"
+                read-only="false" />
+        <entitylist name="environment-properties"
+                display="Environment Properties"
+                description="Environment Properties" >
+          <entitytemplate name="environment-property"
+                display="Environment Property"
+                description="Environment Property" >
+            <property name="value"
+                      type="java.lang.String"
+                      display="Property Value"
+                      description="Property Value"
+                      mandatory="true"
+                      read-only="true"/>
+          </entitytemplate>
+        </entitylist>
+			</entitytemplate>
+		</entitylist>
+		<entitylist name="aliases"
+						display="Aliases"
+						description="Alias Definitions" >
+			<entitytemplate name="alias"
+						display="Alias"
+						description="Alias Definition" >
+				<property name="map-to"
+									type="java.lang.String"
+									display="Map To"
+									description="Mapping to generic Name" />
+			</entitytemplate>
+		</entitylist>
+		<entitylist name="remote-queues"
+						display="Remote Queues"
+						description="Remote Queue Definitions" >
+			<entitytemplate name="remote-queue"
+						display="Remote Queue"
+						description="Remote Queue Definition" >
+			</entitytemplate>
+		</entitylist>
+		<entitylist name="usage"
+						display="Usage"
+						description="Registered JNDI Objects" >
+			<entitytemplate name="usage"
+						display="Registered JNDI Object"
+						description="Registered JNDI Object" >
+				<property name="classname"
+									type="java.lang.String"
+									display="Class Name"
+									description="Class Name of the registered JNDI Object" />
+			</entitytemplate>
+		</entitylist>
+	</configuration>
+</swiftlet>

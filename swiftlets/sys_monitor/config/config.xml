@@ -1,0 +1,98 @@
+<swiftlet name="sys$monitor"
+          displayname="Monitor Swiftlet"
+          class="com.swiftmq.swiftlet.monitor.MonitorSwiftlet"
+          description="Monitor Swiftlet"
+          icon="/com/swiftmq/swiftlet/monitor/images/swiftlet.png"
+          release="${release}"
+          vendor="IIT Software GmbH">
+	<configuration>
+    <entity name="memory" display="Memory Monitor Settings" description="Memory Monitor Settings">
+      <property name="memory-monitor-interval"
+                type="java.lang.Long"
+                display="Memory Monitor Interval"
+                description="Interval to monitor Memory Usage"
+                default="-1"/>
+      <property name="memory-threshold"
+                type="java.lang.Integer"
+                display="Memory Threshold (MB)"
+                description="An eMail will be sent if the memory usage reaches this size"
+                default="300"/>
+      <property name="gc-interval"
+                type="java.lang.Long"
+                display="GC Interval (ms)"
+                description="Interval in which GC is performed after reaching Memory Threshold"
+                default="-1"/>
+    </entity>
+    <entity name="queue" display="Queue Monitor Settings" description="Queue Monitor Settings">
+      <property name="queue-monitor-interval"
+                type="java.lang.Long"
+                display="Queue Monitor Interval"
+                description="Interval to monitor Queue Usage"
+                default="-1"/>
+      <property name="queue-max-message-threshold"
+                type="java.lang.Integer"
+                display="Queue Max Message Threshold (Messages)"
+                description="An eMail will be sent if any queue reaches this size"
+                default="-1"/>
+    </entity>
+    <entity name="connection" display="Connection Monitor Settings" description="Connection Monitor Settings">
+      <property name="connection-monitor-interval"
+                type="java.lang.Long"
+                display="Connection Monitor Interval"
+                description="Interval to monitor Connection Usage"
+                default="-1"/>
+      <property name="connection-threshold"
+                type="java.lang.Integer"
+                display="Number Connection Threshold"
+                description="An eMail will be sent if the number of connections reaches this limit"
+                default="-1"/>
+    </entity>
+    <entity name="settingsmail" display="Mail Settings" description="Mail Settings"
+            icon="/com/swiftmq/swiftlet/monitor/images/mail.png">
+      <property name="mailserver-host"
+                type="java.lang.String"
+                display="SMTP Mail Server Host"
+                description="SMTP Mail Server Host"
+                mandatory="true"
+                default="please.change.me"/>
+      <property name="mailserver-port"
+                type="java.lang.Integer"
+                display="SMTP Mail Server Port"
+                description="SMTP Mail Server Port"
+                mandatory="true"
+                default="25"/>
+      <property name="mailserver-authentication-enabled"
+                type="java.lang.Boolean"
+                display="SMTP Authentication Enabled"
+                description="SMTP Authentication Enabled"
+                mandatory="false"
+                default="false"/>
+      <property name="mailserver-username"
+                type="java.lang.String"
+                display="SMTP Username"
+                description="SMTP Username"
+                mandatory="false"/>
+      <property name="mailserver-password"
+                type="java.lang.String"
+                display="SMTP Password"
+                description="SMTP Password"
+                mandatory="false"/>
+      <property name="from"
+                type="java.lang.String"
+                display="From"
+                description="From Address"
+                mandatory="true"
+                default="monitor@swiftmq.com"/>
+      <property name="to"
+                type="java.lang.String"
+                display="To"
+                description="To Address"
+                mandatory="true"
+                default="please.change.me"/>
+      <property name="cc"
+                type="java.lang.String"
+                display="CC"
+                description="CC Address"/>
+    </entity>
+	</configuration>
+</swiftlet>

@@ -1,0 +1,8 @@
+cc /sys$streams/domains
+new swiftmq
+cc /sys$streams/domains/swiftmq/packages
+new samples
+cc /sys$streams/domains/swiftmq/packages/samples/streams
+new replier script-file ../../samples/streams/replier/replier.js
+save
+

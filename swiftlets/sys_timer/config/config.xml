@@ -1,0 +1,24 @@
+<swiftlet name="sys$timer" 
+					displayname="Timer Swiftlet"
+					class="com.swiftmq.impl.timer.standard.TimerSwiftletImpl"
+					icon="/com/swiftmq/impl/timer/standard/images/swiftlet.png"
+					description="Timer Swiftlet"
+					release="${release}"
+					vendor="IIT Software GmbH" >
+	<configuration>
+      <property name="min-delay"
+          type="java.lang.Long"
+          display="Minimum Delay"
+          description="Minimum Delay"
+          mandatory="false"
+          min="0"
+          default="100" />
+      <property name="max-delay"
+          type="java.lang.Long"
+          display="Maximum Delay"
+          description="Maximum Delay"
+          mandatory="false"
+          min="1000"
+          default="10000" />
+	</configuration>
+</swiftlet>

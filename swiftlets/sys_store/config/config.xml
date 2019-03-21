@@ -1,0 +1,151 @@
+<swiftlet name="sys$store"
+          displayname="Store Swiftlet"
+          class="com.swiftmq.impl.store.standard.StoreSwiftletImpl"
+          icon="/com/swiftmq/impl/store/standard/images/swiftlet.png"
+          description="Store Swiftlet"
+          release="${release}"
+          vendor="IIT Software GmbH">
+	<configuration>
+      <entity name="backup" display="Backup" description="Backup Settings">
+          <property name="path"
+                    type="java.lang.String"
+                    display="Backup Path"
+                    description="Root Path for Backup Save Sets"
+                    default="./"
+                    reboot-required="false"/>
+          <property name="keep-generations"
+                    type="java.lang.Integer"
+                    display="Keep Generations"
+                    description="Number of Generations to keep"
+                    min="1"
+                    default="3"
+                    reboot-required="false"/>
+      </entity>
+      <entity name="database" display="Database" description="Database Settings">
+          <property name="path"
+                    type="java.lang.String"
+                    display="Path"
+                    description="Path of the Database (page.db)"
+                    default="./"
+                    reboot-required="true"/>
+        <property name="initial-page-size"
+                  type="java.lang.Integer"
+                  display="Initial Page Size"
+                  description="Initial Page Size Database"
+                  min="10"
+                  default="25600"
+                  reboot-required="true"/>
+        <property name="size-collect-interval"
+                  type="java.lang.Long"
+                  display="Size Collect Interval"
+                  description="Interval to collect the Usage"
+                  default="1000"/>
+      </entity>
+		<entity name="cache" display="Cache" description="Cache Settings">
+			<property name="min-size"
+                      type="java.lang.Integer"
+                      display="Min. Size (Pages)"
+                      description="Min. Size (Pages)"
+                      min="512"
+                      default="1024"
+                      reboot-required="true"/>
+			<property name="max-size"
+                      type="java.lang.Integer"
+                      display="Max. Size (Pages)"
+                      description="Max. Size (Pages)"
+                      min="512"
+                      default="2048"
+                      reboot-required="true"/>
+		</entity>
+		<entity name="transaction-log" display="Transaction Log" description="Transaction Log Settings">
+			<property name="path"
+                      type="java.lang.String"
+                      display="Path"
+                      description="Path of the Transaction Log (transaction.log)"
+                      default="./"
+                      reboot-required="true"/>
+			<property name="checkpoint-size"
+                      type="java.lang.Long"
+                      display="Checkpoint Size"
+                      description="Size at which a Checkpoint is performed"
+                      min="1048576"
+                      default="104857600"
+                      reboot-required="true"/>
+            <property name="force-sync"
+                      type="java.lang.Boolean"
+                      display="Force Sync"
+                      description="Force a sync with the disk"
+                      default="false"
+                      reboot-required="true"/>
+		</entity>
+		<entity name="swap" display="Swap" description="Swap Settings">
+			<property name="path"
+                      type="java.lang.String"
+                      display="Path"
+                      description="Path of Swap Files"
+                      default="./"
+                      reboot-required="true"/>
+			<property name="roll-over-size"
+                      type="java.lang.Long"
+                      display="Roll Over Size"
+                      description="Roll Over Size"
+                      min="1048576"
+                      default="10485760"
+                      reboot-required="true"/>
+		</entity>
+		<entity name="durable-subscriber" display="Durable Subscriber" description="Durable Subscriber Settings">
+			<property name="path"
+                      type="java.lang.String"
+                      display="Path"
+                      description="Path of Durable Subscriber Files"
+                      default="./"
+                      reboot-required="true"/>
+		</entity>
+    <entity name="usage" display="Usage" description="Usage">
+      <entitylist name="backup"
+                  display="Generated Backup Save Sets"
+                  description="Generated Backup Save Sets">
+          <entitytemplate name="backup"
+                          display="Generated Backup Save Set"
+                          description="Generated Backup Save Set">
+            <entitylist name="files"
+                        display="Files"
+                        description="Files">
+                <entitytemplate name="file"
+                                display="File"
+                                description="File">
+                  <property name="filesize"
+                            type="java.lang.Long"
+                            display="Size (Bytes)"
+                            description="File Size"/>
+                </entitytemplate>
+            </entitylist>
+          </entitytemplate>
+      </entitylist>
+      <entitylist name="files"
+                  display="Files"
+                  description="Files"
+                  dynamic-properties="used-pages free-pages">
+          <entitytemplate name="file"
+                          display="File"
+                          description="Filet">
+            <property name="free-pages"
+                      type="java.lang.Integer"
+                      display="Free Pages"
+                      default="0"
+                      description="Number of Free Pages"/>
+            <property name="used-pages"
+                      type="java.lang.Integer"
+                      display="Used Pages"
+                      default="0"
+                      description="Number of Used Pages"/>
+            <property name="file-size"
+                      type="java.lang.Integer"
+                      display="File Size (KB)"
+                      default="0"
+                      description="Size of this File in KB"/>
+                </entitytemplate>
+       </entitylist>
+    </entity>
+	</configuration>
+</swiftlet>
