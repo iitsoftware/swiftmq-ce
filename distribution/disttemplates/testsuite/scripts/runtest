@@ -1,0 +1,9 @@
+export ROUTER=$1
+export TESTSUITE=`pwd`
+cd $ROUTER/scripts
+./clis admin secret $TESTSUITE/createqueues.cli
+cd $TESTSUITE
+java -Xmx1024M -cp $TESTSUITE/../jars/swiftmq-testsuite.jar -Dswiftmq.reconnect.debug=false -Dswiftmq.client.debugtofile.enabled=true -Djndi.class=com.swiftmq.jndi.InitialContextFactoryImpl -Djndi.url="smqp://localhost:4001/timeout=10000;type=com.swiftmq.net.PlainSocketFactory;debug=true" -Djndi.qcf=plainsocket@router -Djndi.queue=testqueue@router -Djndi.composite.queue=compqueue -Dha.composite.nmsgs=20000 -Djndi.cluster.queue=cqueue -Djndi.cluster.cc.queue=c1 -Djndi.tcf=plainsocket@router -Djndi.topic=testtopic -Dha.cluster.nmsgs=20000 -Dload.requestreply.requestors=10 -Dload.requestreply.msgs=10000 -Dfunc.selector.load.nmsgs=25000 -Dswiftmq.request.timeout=600000 -Dswiftmq.message.tracking.enabled=false -Dswiftmq.message.tracking.filename=track_ps.out -Dswiftmq.smqp.handler.debug=false -Dusesasl=true -Danonlogin=true -Dnmsgs=1000 -Dpersistent=true -Dnpairs=10 org.junit.runner.JUnitCore $2
+cd $ROUTER/scripts
+./clis admin secret $TESTSUITE/deletequeues.cli
+cd $TESTSUITE

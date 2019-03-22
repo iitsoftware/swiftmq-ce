@@ -1,0 +1,61 @@
+wr router
+sr router
+cc /sys$queuemanager/queues
+new amqp_testqueue1
+new amqp_testqueue2
+new amqp_testqueue3
+new amqp_testqueue4
+new amqp_testqueue5
+new amqp_testqueue6
+new amqp_testqueue7
+new amqp_testqueue8
+new amqp_testqueue9
+new amqp_testqueue10
+new testqueue1
+new testqueue2
+new testqueue3
+new testqueue4
+new testqueue5
+new complink1
+new complink2
+new complink3
+new c1
+new c2
+new c3
+new c4
+new c5
+new c6
+cc /sys$queuemanager/clustered-queues
+new cqueue
+cc cqueue/queue-bindings
+new c1
+new c2
+new c3
+new c4
+new c5
+new c6
+cc /sys$queuemanager/composite-queues
+new compqueue
+cc compqueue/queue-bindings
+new complink1 generate-new-message-id false change-destination true
+new complink2 generate-new-message-id false change-destination false
+new complink3 generate-new-message-id false change-destination false message-selector "Prop = 'X'"
+cc /sys$topicmanager/topics
+new amqp_testtopic1
+new amqp_testtopic2
+new amqp_testtopic3
+new amqp_testtopic4
+new amqp_testtopic5
+new amqp_testtopic6
+new amqp_testtopic7
+new amqp_testtopic8
+new amqp_testtopic9
+new amqp_testtopic10
+new testtopic1
+new testtopic2
+new testtopic3
+new testtopic4
+new testtopic5
+save
+exit
+

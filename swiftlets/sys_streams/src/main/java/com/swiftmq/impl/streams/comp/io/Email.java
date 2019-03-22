@@ -66,7 +66,7 @@ public class Email {
     }
 
     /**
-     * Sets the cc address
+     * Sets the jms.cc address
      *
      * @param cc address
      * @return Email
@@ -110,7 +110,7 @@ public class Email {
     }
 
     /**
-     * Sets fields according to its name: from, to, cc, bcc, subject, body
+     * Sets fields according to its name: from, to, jms.cc, bcc, subject, body
      *
      * @param field field name
      * @param value field value

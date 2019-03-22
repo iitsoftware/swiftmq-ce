@@ -128,7 +128,7 @@ public class UpgradeUtilities {
 
     // start order
     Attribute startOrder = root.attribute("startorder");
-    startOrder.setValue("sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$deploy sys$jac");
+    startOrder.setValue("sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$mgmt sys$jms.xa sys$routing sys$jndi sys$jms sys$deploy sys$jac");
 
     // Deploy
     Element deploy = UpgradeUtilities.getElement(root, "sys$deploy");
@@ -340,7 +340,7 @@ public class UpgradeUtilities {
 
     // start order
     Attribute startOrder = root.attribute("startorder");
-    startOrder.setValue("sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$deploy sys$jac sys$scheduler");
+    startOrder.setValue("sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$mgmt sys$jms.xa sys$routing sys$jndi sys$jms sys$deploy sys$jac sys$scheduler");
 
     // Queue Manager
     Element queueMgr = UpgradeUtilities.getElement(root, "sys$queuemanager");
@@ -580,7 +580,7 @@ public class UpgradeUtilities {
 
       // HA Monitor
       Element hamon = UpgradeUtilities.getElement(root, "sys$monitor");
-      Element hastatealerts = DocumentHelper.createElement("ha-state-alerts");
+      Element hastatealerts = DocumentHelper.createElement("jms.ha-state-alerts");
       hastatealerts.addAttribute(UPGRADE_ATTRIBUTE, "true");
       hastatealerts.addAttribute("alert-active-transition", "false");
       hastatealerts.addAttribute("alert-standalone-transition", "false");
@@ -797,7 +797,7 @@ public class UpgradeUtilities {
       Element harouterEle = null;
       for (Iterator iter = root.elementIterator(); iter.hasNext(); ) {
         Element e = (Element) iter.next();
-        if (e.getName().equals("ha-router")) {
+        if (e.getName().equals("jms.ha-router")) {
           harouterEle = e;
           break;
         }
@@ -811,7 +811,7 @@ public class UpgradeUtilities {
             order.setText(SwiftUtilities.replace(s, "sys$topicmanager", "sys$topicmanager sys$accounting"));
         }
       } else
-        System.err.println("Unable to locate element 'ha-router' in routerconfig.xml!");
+        System.err.println("Unable to locate element 'jms.ha-router' in routerconfig.xml!");
 
       // Accounting Swiftlet
       Element accounting = UpgradeUtilities.getElement(root, "sys$accounting");
@@ -966,7 +966,7 @@ public class UpgradeUtilities {
       Element harouterEle = null;
       for (Iterator iter = root.elementIterator(); iter.hasNext(); ) {
         Element e = (Element) iter.next();
-        if (e.getName().equals("ha-router")) {
+        if (e.getName().equals("jms.ha-router")) {
           harouterEle = e;
           break;
         }
@@ -980,7 +980,7 @@ public class UpgradeUtilities {
             order.setText(SwiftUtilities.replace(s, "sys$jms", "sys$jms sys$amqp"));
         }
       } else
-        System.err.println("Unable to locate element 'ha-router' in routerconfig.xml!");
+        System.err.println("Unable to locate element 'jms.ha-router' in routerconfig.xml!");
     }
 
     // AMQP Swiftlet
@@ -1128,7 +1128,7 @@ public class UpgradeUtilities {
       Element harouterEle = null;
       for (Iterator iter = root.elementIterator(); iter.hasNext(); ) {
         Element e = (Element) iter.next();
-        if (e.getName().equals("ha-router")) {
+        if (e.getName().equals("jms.ha-router")) {
           harouterEle = e;
           break;
         }
@@ -1142,7 +1142,7 @@ public class UpgradeUtilities {
             order.setText(SwiftUtilities.replace(s, "sys$monitor", "sys$monitor sys$filecache"));
         }
       } else
-        System.err.println("Unable to locate element 'ha-router' in routerconfig.xml!");
+        System.err.println("Unable to locate element 'jms.ha-router' in routerconfig.xml!");
 
       Element confController = hactl.element("configuration-controller");
       Element propSubs = confController.element("property-substitutions");
@@ -1232,17 +1232,17 @@ public class UpgradeUtilities {
       Element listeners = routingSwiftlet.element("listeners");
       for (Iterator iter = listeners.elementIterator(); iter.hasNext(); ) {
         Element element = (Element) iter.next();
-        if (element.attribute("use-xa") == null) {
+        if (element.attribute("use-jms.xa") == null) {
           element.addAttribute(UPGRADE_ATTRIBUTE, "true");
-          element.addAttribute("use-xa", "true");
+          element.addAttribute("use-jms.xa", "true");
         }
       }
       Element connectors = routingSwiftlet.element("connectors");
       for (Iterator iter = connectors.elementIterator(); iter.hasNext(); ) {
         Element element = (Element) iter.next();
-        if (element.attribute("use-xa") == null) {
+        if (element.attribute("use-jms.xa") == null) {
           element.addAttribute(UPGRADE_ATTRIBUTE, "true");
-          element.addAttribute("use-xa", "true");
+          element.addAttribute("use-jms.xa", "true");
         }
       }
     }
@@ -1364,7 +1364,7 @@ public class UpgradeUtilities {
       Element harouterEle = null;
       for (Iterator iter = root.elementIterator(); iter.hasNext(); ) {
         Element e = (Element) iter.next();
-        if (e.getName().equals("ha-router")) {
+        if (e.getName().equals("jms.ha-router")) {
           harouterEle = e;
           break;
         }
@@ -1378,7 +1378,7 @@ public class UpgradeUtilities {
             order.setText(SwiftUtilities.replace(s, "sys$filecache", "sys$filecache sys$streams"));
         }
       } else
-        System.err.println("Unable to locate element 'ha-router' in routerconfig.xml!");
+        System.err.println("Unable to locate element 'jms.ha-router' in routerconfig.xml!");
 
       Element freezes = hactl.element("threadpool-freezes");
       Element freeze = DocumentHelper.createElement("threadpool-freeze");
