@@ -26,60 +26,49 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ConnectRequest extends Request
-{
-  String routerName = null;
+public class ConnectRequest extends Request {
+    String routerName = null;
 
-  ConnectRequest()
-  {
-    this(null);
-  }
+    ConnectRequest() {
+        this(null);
+    }
 
-  public ConnectRequest(String routerName)
-  {
-    super(0, false);
-    this.routerName = routerName;
-  }
+    public ConnectRequest(String routerName) {
+        super(0, false);
+        this.routerName = routerName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.CONNECT_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.CONNECT_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeUTF(routerName);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeUTF(routerName);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    routerName = input.readUTF();
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        routerName = input.readUTF();
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public void setRouterName(String routerName)
-  {
-    this.routerName = routerName;
-  }
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[ConnectRequest " + super.toString() + ", routerName=" + routerName + "]";
-  }
+    public String toString() {
+        return "[ConnectRequest " + super.toString() + ", routerName=" + routerName + "]";
+    }
 }

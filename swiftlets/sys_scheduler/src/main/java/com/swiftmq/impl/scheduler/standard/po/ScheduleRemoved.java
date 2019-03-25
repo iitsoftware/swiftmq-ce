@@ -17,50 +17,43 @@
 
 package com.swiftmq.impl.scheduler.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ScheduleRemoved extends POObject
-{
-  String name = null;
-  boolean messageSchedule = false;
+public class ScheduleRemoved extends POObject {
+    String name = null;
+    boolean messageSchedule = false;
 
-  public ScheduleRemoved(String name, boolean messageSchedule)
-  {
-    super(null, null);
-    this.name = name;
-    this.messageSchedule = messageSchedule;
-  }
+    public ScheduleRemoved(String name, boolean messageSchedule) {
+        super(null, null);
+        this.name = name;
+        this.messageSchedule = messageSchedule;
+    }
 
-  public ScheduleRemoved(String name)
-  {
-    this(name,false);
-  }
+    public ScheduleRemoved(String name) {
+        this(name, false);
+    }
 
-  public ScheduleRemoved(String name, Semaphore sem)
-  {
-    super(null,sem);
-    this.name = name;
-    this.messageSchedule = false;
-  }
+    public ScheduleRemoved(String name, Semaphore sem) {
+        super(null, sem);
+        this.name = name;
+        this.messageSchedule = false;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public boolean isMessageSchedule()
-  {
-    return messageSchedule;
-  }
+    public boolean isMessageSchedule() {
+        return messageSchedule;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ScheduleRemoved, name="+name+"]";
-  }
+    public String toString() {
+        return "[ScheduleRemoved, name=" + name + "]";
+    }
 }

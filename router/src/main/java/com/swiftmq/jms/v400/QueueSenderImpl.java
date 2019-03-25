@@ -19,40 +19,38 @@ package com.swiftmq.jms.v400;
 
 import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.QueueSender;
 
 public class QueueSenderImpl extends MessageProducerImpl
-  implements QueueSender
-{
-  Queue queue = null;
+        implements QueueSender {
+    Queue queue = null;
 
-  public QueueSenderImpl(SessionImpl mySession, Queue queue,
-                         int dispatchId, int producerId, RequestRegistry requestRegistry,
-                         String myHostname)
-  {
-    super(mySession, dispatchId, producerId, requestRegistry, myHostname, null);
+    public QueueSenderImpl(SessionImpl mySession, Queue queue,
+                           int dispatchId, int producerId, RequestRegistry requestRegistry,
+                           String myHostname) {
+        super(mySession, dispatchId, producerId, requestRegistry, myHostname, null);
 
-    this.queue = queue;
-  }
+        this.queue = queue;
+    }
 
-  public Queue getQueue() throws JMSException
-  {
-    verifyState();
+    public Queue getQueue() throws JMSException {
+        verifyState();
 
-    return (queue);
-  }
+        return (queue);
+    }
 
 
-  public void send(Queue queue, Message message) throws JMSException
-  {
-    super.send(queue, message);
-  }
+    public void send(Queue queue, Message message) throws JMSException {
+        super.send(queue, message);
+    }
 
-  public void send(Queue queue, Message message, int deliveryMode,
-                   int priority, long timeToLive) throws JMSException
-  {
-    super.send(queue, message, deliveryMode, priority, timeToLive);
-  }
+    public void send(Queue queue, Message message, int deliveryMode,
+                     int priority, long timeToLive) throws JMSException {
+        super.send(queue, message, deliveryMode, priority, timeToLive);
+    }
 
 }
 

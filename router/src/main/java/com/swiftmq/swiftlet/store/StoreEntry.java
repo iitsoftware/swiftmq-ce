@@ -24,17 +24,15 @@ import com.swiftmq.jms.MessageImpl;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class StoreEntry
-{
-  public Object key = null;
-  public int priority = 0;
-  public int deliveryCount = 0;
-  public long expirationTime = 0;
-  public MessageImpl message = null;
+public class StoreEntry {
+    public Object key = null;
+    public int priority = 0;
+    public int deliveryCount = 0;
+    public long expirationTime = 0;
+    public MessageImpl message = null;
 
-  public String toString()
-  {
-    return "[StoreEntry, key=" + key + ", priority=" + priority + ", deliveryCount=" + deliveryCount + ", expirationTime=" + expirationTime + ", message=" + message + "]";
-  }
+    public String toString() {
+        return "[StoreEntry, key=" + key + ", priority=" + priority + ", deliveryCount=" + deliveryCount + ", expirationTime=" + expirationTime + ", message=" + message + "]";
+    }
 }
 

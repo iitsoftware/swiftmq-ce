@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: RecoverSessionReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: RecoverSessionReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,54 +30,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class RecoverSessionReply extends ReplyNE
-{
-  private int recoveryEpoche;
+public class RecoverSessionReply extends ReplyNE {
+    private int recoveryEpoche;
 
-  public RecoverSessionReply(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public RecoverSessionReply(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  protected RecoverSessionReply()
-  {
-  }
+    protected RecoverSessionReply() {
+    }
 
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_RECOVERSESSION_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_RECOVERSESSION_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(recoveryEpoche, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(recoveryEpoche, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/RecoverSessionReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("recoveryEpoche=");
-    _b.append(recoveryEpoche);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/RecoverSessionReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("recoveryEpoche=");
+        _b.append(recoveryEpoche);
+        _b.append("]");
+        return _b.toString();
+    }
 }

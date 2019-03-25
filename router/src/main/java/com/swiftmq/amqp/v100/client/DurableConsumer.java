@@ -32,35 +32,34 @@ import com.swiftmq.tools.concurrent.Semaphore;
  * </p>
  * <p>
  * To detach from a durable link call "detach(true)".
- *  </p>
- *  <p>
+ * </p>
+ * <p>
  * A durable link is identified by a container id (specified at connection level) and a link name (specified when creating the
  * durable consumer).
- *  </p>
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * </p>
+ *
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class DurableConsumer extends Consumer
-{
-  protected DurableConsumer(Session mySession, String source, String name, int linkCredit, int qoS, DeliveryMemory deliveryMemory)
-  {
-    super(mySession, source, name, linkCredit, qoS, deliveryMemory);
-  }
+public class DurableConsumer extends Consumer {
+    protected DurableConsumer(Session mySession, String source, String name, int linkCredit, int qoS, DeliveryMemory deliveryMemory) {
+        super(mySession, source, name, linkCredit, qoS, deliveryMemory);
+    }
 
-  /**
-   * Unsubscribes the durable consumer and destroys the durable link.
-   * @throws AMQPException
-   */
-  public void unsubscribe() throws AMQPException
-  {
-    if (!closed)
-      close();
-    Semaphore sem = new Semaphore();
-    POAttachDurableConsumer po = new POAttachDurableConsumer(sem, name, source, linkCredit, qoS, false, null, TerminusExpiryPolicy.LINK_DETACH, deliveryMemory);
-    mySession.getSessionDispatcher().dispatch(po);
-    sem.waitHere();
-    if (!po.isSuccess())
-      throw new AMQPException(po.getException());
-    DurableConsumer c = (DurableConsumer) po.getLink();
-    c.close();
-  }
+    /**
+     * Unsubscribes the durable consumer and destroys the durable link.
+     *
+     * @throws AMQPException
+     */
+    public void unsubscribe() throws AMQPException {
+        if (!closed)
+            close();
+        Semaphore sem = new Semaphore();
+        POAttachDurableConsumer po = new POAttachDurableConsumer(sem, name, source, linkCredit, qoS, false, null, TerminusExpiryPolicy.LINK_DETACH, deliveryMemory);
+        mySession.getSessionDispatcher().dispatch(po);
+        sem.waitHere();
+        if (!po.isSuccess())
+            throw new AMQPException(po.getException());
+        DurableConsumer c = (DurableConsumer) po.getLink();
+        c.close();
+    }
 }

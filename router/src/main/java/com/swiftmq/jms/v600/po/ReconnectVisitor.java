@@ -19,31 +19,30 @@ package com.swiftmq.jms.v600.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface ReconnectVisitor extends POVisitor
-{
-  public void visit(POReconnect po);
+public interface ReconnectVisitor extends POVisitor {
+    public void visit(POReconnect po);
 
-  public void visit(PODataAvailable po);
+    public void visit(PODataAvailable po);
 
-  public void visit(POException po);
+    public void visit(POException po);
 
-  public void visit(POTimeoutCheck po);
+    public void visit(POTimeoutCheck po);
 
-  public void visit(POVersionRequest po);
+    public void visit(POVersionRequest po);
 
-  public void visit(POAuthenticateRequest po);
+    public void visit(POAuthenticateRequest po);
 
-  public void visit(POAuthenticateResponse po);
+    public void visit(POAuthenticateResponse po);
 
-  public void visit(POMetaDataRequest po);
+    public void visit(POMetaDataRequest po);
 
-  public void visit(POGetClientIdRequest po);
+    public void visit(POGetClientIdRequest po);
 
-  public void visit(POSetClientIdRequest po);
+    public void visit(POSetClientIdRequest po);
 
-  public void visit(PORecreate po);
+    public void visit(PORecreate po);
 
-  public void visit(POHandover po);
+    public void visit(POHandover po);
 
-  public void visit(POClose po);
+    public void visit(POClose po);
 }

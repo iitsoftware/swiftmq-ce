@@ -17,203 +17,182 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Consume extends BasicMethod
-{
-  int reserved1;
-  String queue;
-  String consumerTag;
-  boolean noLocal;
-  boolean noAck;
-  boolean exclusive;
-  boolean noWait;
-  Map<String, Object> arguments;
+import java.io.IOException;
+import java.util.Map;
 
-  public Consume()
-  {
-    _classId = 60;
-    _methodId = 20;
-  }
+public class Consume extends BasicMethod {
+    int reserved1;
+    String queue;
+    String consumerTag;
+    boolean noLocal;
+    boolean noAck;
+    boolean exclusive;
+    boolean noWait;
+    Map<String, Object> arguments;
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Consume() {
+        _classId = 60;
+        _methodId = 20;
+    }
 
-  public int getReserved1()
-  {
-    return reserved1;
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReserved1(int reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public int getReserved1() {
+        return reserved1;
+    }
 
-  public String getQueue()
-  {
-    return queue;
-  }
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  public void setQueue(String queue)
-  {
-    this.queue = queue;
-  }
+    public String getQueue() {
+        return queue;
+    }
 
-  public String getConsumerTag()
-  {
-    return consumerTag;
-  }
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-  public void setConsumerTag(String consumerTag)
-  {
-    this.consumerTag = consumerTag;
-  }
+    public String getConsumerTag() {
+        return consumerTag;
+    }
 
-  public boolean getNoLocal()
-  {
-    return noLocal;
-  }
+    public void setConsumerTag(String consumerTag) {
+        this.consumerTag = consumerTag;
+    }
 
-  public void setNoLocal(boolean noLocal)
-  {
-    this.noLocal = noLocal;
-  }
+    public boolean getNoLocal() {
+        return noLocal;
+    }
 
-  public boolean getNoAck()
-  {
-    return noAck;
-  }
+    public void setNoLocal(boolean noLocal) {
+        this.noLocal = noLocal;
+    }
 
-  public void setNoAck(boolean noAck)
-  {
-    this.noAck = noAck;
-  }
+    public boolean getNoAck() {
+        return noAck;
+    }
 
-  public boolean getExclusive()
-  {
-    return exclusive;
-  }
+    public void setNoAck(boolean noAck) {
+        this.noAck = noAck;
+    }
 
-  public void setExclusive(boolean exclusive)
-  {
-    this.exclusive = exclusive;
-  }
+    public boolean getExclusive() {
+        return exclusive;
+    }
 
-  public boolean getNoWait()
-  {
-    return noWait;
-  }
+    public void setExclusive(boolean exclusive) {
+        this.exclusive = exclusive;
+    }
 
-  public void setNoWait(boolean noWait)
-  {
-    this.noWait = noWait;
-  }
+    public boolean getNoWait() {
+        return noWait;
+    }
 
-  public Map<String, Object> getArguments()
-  {
-    return arguments;
-  }
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
 
-  public void setArguments(Map<String, Object> arguments)
-  {
-    this.arguments = arguments;
-  }
+    public Map<String, Object> getArguments() {
+        return arguments;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    reserved1 = Coder.readShort(in);
-    queue = Coder.readShortString(in);
-    consumerTag = Coder.readShortString(in);
-    noLocal = Coder.readBit(in);
-    noAck = Coder.readBit(in);
-    exclusive = Coder.readBit(in);
-    noWait = Coder.readBit(in);
-    arguments = Coder.readTable(in);
-  }
+    public void setArguments(Map<String, Object> arguments) {
+        this.arguments = arguments;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShort(reserved1, out);
-    Coder.writeShortString(queue, out);
-    Coder.writeShortString(consumerTag, out);
-    Coder.writeBit(noLocal, out);
-    Coder.writeBit(noAck, out);
-    Coder.writeBit(exclusive, out);
-    Coder.writeBit(noWait, out);
-    Coder.writeTable(arguments, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        reserved1 = Coder.readShort(in);
+        queue = Coder.readShortString(in);
+        consumerTag = Coder.readShortString(in);
+        noLocal = Coder.readBit(in);
+        noAck = Coder.readBit(in);
+        exclusive = Coder.readBit(in);
+        noWait = Coder.readBit(in);
+        arguments = Coder.readTable(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("queue=");
-    b.append(queue);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("consumerTag=");
-    b.append(consumerTag);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noLocal=");
-    b.append(noLocal);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noAck=");
-    b.append(noAck);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("exclusive=");
-    b.append(exclusive);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noWait=");
-    b.append(noWait);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("arguments=");
-    b.append(arguments);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShort(reserved1, out);
+        Coder.writeShortString(queue, out);
+        Coder.writeShortString(consumerTag, out);
+        Coder.writeBit(noLocal, out);
+        Coder.writeBit(noAck, out);
+        Coder.writeBit(exclusive, out);
+        Coder.writeBit(noWait, out);
+        Coder.writeTable(arguments, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Consume " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("queue=");
+        b.append(queue);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("consumerTag=");
+        b.append(consumerTag);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noLocal=");
+        b.append(noLocal);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noAck=");
+        b.append(noAck);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("exclusive=");
+        b.append(exclusive);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noWait=");
+        b.append(noWait);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("arguments=");
+        b.append(arguments);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Consume " + super.toString() + getDisplayString() + "]";
+    }
 }

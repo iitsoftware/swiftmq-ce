@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: GetAuthChallengeReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: GetAuthChallengeReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,85 +30,72 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class GetAuthChallengeReply extends ReplyNE
-{
-  private byte[] challenge;
-  private String factoryClass;
+public class GetAuthChallengeReply extends ReplyNE {
+    private byte[] challenge;
+    private String factoryClass;
 
-  public GetAuthChallengeReply(byte[] challenge, String factoryClass)
-  {
-    this.challenge = challenge;
-    this.factoryClass = factoryClass;
-  }
+    public GetAuthChallengeReply(byte[] challenge, String factoryClass) {
+        this.challenge = challenge;
+        this.factoryClass = factoryClass;
+    }
 
-  protected GetAuthChallengeReply()
-  {
-  }
+    protected GetAuthChallengeReply() {
+    }
 
-  public void setChallenge(byte[] challenge)
-  {
-    this.challenge = challenge;
-  }
+    public void setChallenge(byte[] challenge) {
+        this.challenge = challenge;
+    }
 
-  public byte[] getChallenge()
-  {
-    return challenge;
-  }
+    public byte[] getChallenge() {
+        return challenge;
+    }
 
-  public void setFactoryClass(String factoryClass)
-  {
-    this.factoryClass = factoryClass;
-  }
+    public void setFactoryClass(String factoryClass) {
+        this.factoryClass = factoryClass;
+    }
 
-  public String getFactoryClass()
-  {
-    return factoryClass;
-  }
+    public String getFactoryClass() {
+        return factoryClass;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GETAUTHCHALLENGE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_GETAUTHCHALLENGE_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (challenge != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(challenge, out);
-    } else
-      out.writeBoolean(false);
-    if (factoryClass != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(factoryClass, out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (challenge != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(challenge, out);
+        } else
+            out.writeBoolean(false);
+        if (factoryClass != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(factoryClass, out);
+        } else
+            out.writeBoolean(false);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean challenge_set = in.readBoolean();
-    if (challenge_set)
-      challenge = SMQPUtil.read(challenge, in);
-    boolean factoryClass_set = in.readBoolean();
-    if (factoryClass_set)
-      factoryClass = SMQPUtil.read(factoryClass, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean challenge_set = in.readBoolean();
+        if (challenge_set)
+            challenge = SMQPUtil.read(challenge, in);
+        boolean factoryClass_set = in.readBoolean();
+        if (factoryClass_set)
+            factoryClass = SMQPUtil.read(factoryClass, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/GetAuthChallengeReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("challenge=");
-    _b.append(challenge);
-    _b.append(", ");
-    _b.append("factoryClass=");
-    _b.append(factoryClass);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/GetAuthChallengeReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("challenge=");
+        _b.append(challenge);
+        _b.append(", ");
+        _b.append("factoryClass=");
+        _b.append(factoryClass);
+        _b.append("]");
+        return _b.toString();
+    }
 }

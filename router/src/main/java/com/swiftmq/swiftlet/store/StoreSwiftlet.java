@@ -27,62 +27,61 @@ import java.util.List;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public abstract class StoreSwiftlet extends Swiftlet
-{
+public abstract class StoreSwiftlet extends Swiftlet {
 
-  /**
-   * Returns the persistent store for a queue.
-   *
-   * @param queueName queue name.
-   * @return persistent store.
-   * @throws StoreException on error.
-   */
-  public abstract PersistentStore getPersistentStore(String queueName)
-      throws StoreException;
+    /**
+     * Returns the persistent store for a queue.
+     *
+     * @param queueName queue name.
+     * @return persistent store.
+     * @throws StoreException on error.
+     */
+    public abstract PersistentStore getPersistentStore(String queueName)
+            throws StoreException;
 
-  /**
-   * Returns the non-persistent store for a queue.
-   *
-   * @param queueName queue name.
-   * @return persistent store.
-   * @throws StoreException on error.
-   */
-  public abstract NonPersistentStore getNonPersistentStore(String queueName)
-      throws StoreException;
+    /**
+     * Returns the non-persistent store for a queue.
+     *
+     * @param queueName queue name.
+     * @return persistent store.
+     * @throws StoreException on error.
+     */
+    public abstract NonPersistentStore getNonPersistentStore(String queueName)
+            throws StoreException;
 
-  /**
-   * Returns the durable subscriber store.
-   *
-   * @return durable subscriber store.
-   * @throws StoreException on error.
-   */
-  public abstract DurableSubscriberStore getDurableSubscriberStore()
-      throws StoreException;
+    /**
+     * Returns the durable subscriber store.
+     *
+     * @return durable subscriber store.
+     * @throws StoreException on error.
+     */
+    public abstract DurableSubscriberStore getDurableSubscriberStore()
+            throws StoreException;
 
-  /**
-   * Returns a list of all prepared log records.
-   *
-   * @return list of log records or null.
-   * @throws StoreException on error.
-   */
-  public abstract List getPrepareLogRecords()
-      throws StoreException;
+    /**
+     * Returns a list of all prepared log records.
+     *
+     * @return list of log records or null.
+     * @throws StoreException on error.
+     */
+    public abstract List getPrepareLogRecords()
+            throws StoreException;
 
-  /**
-   * Removes a prepared log record.
-   *
-   * @param record prepared log record.
-   * @throws StoreException on error.
-   */
-  public abstract void removePrepareLogRecord(PrepareLogRecord record)
-      throws StoreException;
+    /**
+     * Removes a prepared log record.
+     *
+     * @param record prepared log record.
+     * @throws StoreException on error.
+     */
+    public abstract void removePrepareLogRecord(PrepareLogRecord record)
+            throws StoreException;
 
-  /**
-   * Creates a new composite store transaction
-   *
-   * @return new composite store transaction
-   * @throws StoreException on error.
-   */
-  public abstract CompositeStoreTransaction createCompositeStoreTransaction();
+    /**
+     * Creates a new composite store transaction
+     *
+     * @return new composite store transaction
+     * @throws StoreException on error.
+     */
+    public abstract CompositeStoreTransaction createCompositeStoreTransaction();
 }
 

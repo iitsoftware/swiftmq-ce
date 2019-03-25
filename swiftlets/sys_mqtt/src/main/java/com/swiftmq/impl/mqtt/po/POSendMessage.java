@@ -19,55 +19,52 @@ package com.swiftmq.impl.mqtt.po;
 
 import com.swiftmq.impl.mqtt.pubsub.Subscription;
 import com.swiftmq.jms.MessageImpl;
+import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttQoS;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttQoS;
 
-public class POSendMessage extends POObject
-{
-  String topicName;
-  MessageImpl jmsMessage;
-  MqttQoS qos;
-  QueueTransaction transaction;
-  Subscription subscription;
+public class POSendMessage extends POObject {
+    String topicName;
+    MessageImpl jmsMessage;
+    MqttQoS qos;
+    QueueTransaction transaction;
+    Subscription subscription;
 
-  public POSendMessage(String topicName, MessageImpl jmsMessage, MqttQoS qos, QueueTransaction transaction, Subscription subscription) {
-    super(null, null);
-    this.topicName = topicName;
-    this.jmsMessage = jmsMessage;
-    this.qos = qos;
-    this.transaction = transaction;
-    this.subscription = subscription;
-  }
+    public POSendMessage(String topicName, MessageImpl jmsMessage, MqttQoS qos, QueueTransaction transaction, Subscription subscription) {
+        super(null, null);
+        this.topicName = topicName;
+        this.jmsMessage = jmsMessage;
+        this.qos = qos;
+        this.transaction = transaction;
+        this.subscription = subscription;
+    }
 
-  public String getTopicName() {
-    return topicName;
-  }
+    public String getTopicName() {
+        return topicName;
+    }
 
-  public MessageImpl getJmsMessage() {
-    return jmsMessage;
-  }
+    public MessageImpl getJmsMessage() {
+        return jmsMessage;
+    }
 
-  public MqttQoS getQos() {
-    return qos;
-  }
+    public MqttQoS getQos() {
+        return qos;
+    }
 
-  public QueueTransaction getTransaction() {
-    return transaction;
-  }
+    public QueueTransaction getTransaction() {
+        return transaction;
+    }
 
-  public Subscription getSubscription() {
-    return subscription;
-  }
+    public Subscription getSubscription() {
+        return subscription;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((MQTTVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((MQTTVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendMessage, topicName="+topicName+", qos="+qos.toString()+"]";
-  }
+    public String toString() {
+        return "[POSendMessage, topicName=" + topicName + ", qos=" + qos.toString() + "]";
+    }
 }

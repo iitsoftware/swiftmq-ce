@@ -20,11 +20,11 @@ package com.swiftmq.tools.requestreply;
 /**
  * The RequestHandler is the that object which is responseable of servicing a request
  * of a RequestServiceRegistry.
+ *
  * @Author Andreas Mueller, IIT GmbH
  * @Version 1.0
  */
-public interface RequestService
-{
-  public void serviceRequest(Request request);
+public interface RequestService {
+    public void serviceRequest(Request request);
 }
 

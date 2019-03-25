@@ -18,8 +18,8 @@
 package com.swiftmq.tools.requestreply;
 
 import com.swiftmq.tools.dump.Dumpable;
-import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
+import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import java.io.*;
 
@@ -27,166 +27,151 @@ import java.io.*;
  * A Reply is a wrapper class for data (the Result) sending back from a communication point
  * to a Request, identified by a RequestNumber. The Reply could also be an exception. In that
  * case the ok-flag is not set and the exception contains the exception.
+ *
  * @Author Andreas Mueller, IIT GmbH
  * @Version 1.0
  */
-public class Reply implements Dumpable, Serializable
-{
-  boolean ok = false;
-  Exception exception = null;
-  boolean timeout = false;
-  int requestNumber = 0;
-  transient ReplyHandler replyHandler = null;
+public class Reply implements Dumpable, Serializable {
+    boolean ok = false;
+    Exception exception = null;
+    boolean timeout = false;
+    int requestNumber = 0;
+    transient ReplyHandler replyHandler = null;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return (0); // NYI
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeBoolean(ok);
-    if (exception == null)
-      out.writeByte(0);
-    else
-    {
-      out.writeByte(1);
-      DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
-      (new ObjectOutputStream(dos)).writeObject(exception);
-      out.writeInt(dos.getCount());
-      out.write(dos.getBuffer(),0,dos.getCount());
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return (0); // NYI
     }
-    out.writeBoolean(timeout);
-    out.writeInt(requestNumber);
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    ok = in.readBoolean();
-    byte set = in.readByte();
-    if (set == 0)
-      exception = null;
-    else
-    {
-      try
-      {
-        byte[] b = new byte[in.readInt()];
-        in.readFully(b);
-        exception = (Exception) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
-      } catch (ClassNotFoundException ignored)
-      {
-      }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeBoolean(ok);
+        if (exception == null)
+            out.writeByte(0);
+        else {
+            out.writeByte(1);
+            DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
+            (new ObjectOutputStream(dos)).writeObject(exception);
+            out.writeInt(dos.getCount());
+            out.write(dos.getBuffer(), 0, dos.getCount());
+        }
+        out.writeBoolean(timeout);
+        out.writeInt(requestNumber);
     }
-    timeout = in.readBoolean();
-    requestNumber = in.readInt();
-  }
 
-  /**
-   * @SBGen Method set requestNumber
-   */
-  void setRequestNumber(int requestNumber)
-  {
-    // SBgen: Assign variable
-    this.requestNumber = requestNumber;
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in)
+            throws IOException {
+        ok = in.readBoolean();
+        byte set = in.readByte();
+        if (set == 0)
+            exception = null;
+        else {
+            try {
+                byte[] b = new byte[in.readInt()];
+                in.readFully(b);
+                exception = (Exception) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+        timeout = in.readBoolean();
+        requestNumber = in.readInt();
+    }
 
-  /**
-   * @SBGen Method get requestNumber
-   */
-  int getRequestNumber()
-  {
-    // SBgen: Get variable
-    return (requestNumber);
-  }
+    /**
+     * @SBGen Method set requestNumber
+     */
+    void setRequestNumber(int requestNumber) {
+        // SBgen: Assign variable
+        this.requestNumber = requestNumber;
+    }
 
-  /**
-   * @param replyHandler
-   * @SBGen Method set replyHandler
-   */
-  void setReplyHandler(ReplyHandler replyHandler)
-  {
-    // SBgen: Assign variable
-    this.replyHandler = replyHandler;
-  }
+    /**
+     * @SBGen Method get requestNumber
+     */
+    int getRequestNumber() {
+        // SBgen: Get variable
+        return (requestNumber);
+    }
 
-  /**
-   * @SBGen Method set ok
-   */
-  public void setOk(boolean ok)
-  {
-    // SBgen: Assign variable
-    this.ok = ok;
-  }
+    /**
+     * @param replyHandler
+     * @SBGen Method set replyHandler
+     */
+    void setReplyHandler(ReplyHandler replyHandler) {
+        // SBgen: Assign variable
+        this.replyHandler = replyHandler;
+    }
 
-  /**
-   * @SBGen Method get ok
-   */
-  public boolean isOk()
-  {
-    // SBgen: Get variable
-    return (ok);
-  }
+    /**
+     * @SBGen Method set ok
+     */
+    public void setOk(boolean ok) {
+        // SBgen: Assign variable
+        this.ok = ok;
+    }
 
-  /**
-   * @SBGen Method set timeout
-   */
-  public void setTimeout(boolean timeout)
-  {
-    // SBgen: Assign variable
-    this.timeout = timeout;
-  }
+    /**
+     * @SBGen Method get ok
+     */
+    public boolean isOk() {
+        // SBgen: Get variable
+        return (ok);
+    }
 
-  /**
-   * @SBGen Method get timeout
-   */
-  public boolean isTimeout()
-  {
-    // SBgen: Get variable
-    return (timeout);
-  }
+    /**
+     * @SBGen Method set timeout
+     */
+    public void setTimeout(boolean timeout) {
+        // SBgen: Assign variable
+        this.timeout = timeout;
+    }
 
-  /**
-   * @SBGen Method set exception
-   */
-  public void setException(Exception exception)
-  {
-    // SBgen: Assign variable
-    this.exception = exception;
-  }
+    /**
+     * @SBGen Method get timeout
+     */
+    public boolean isTimeout() {
+        // SBgen: Get variable
+        return (timeout);
+    }
 
-  /**
-   * @SBGen Method get exception
-   */
-  public Exception getException()
-  {
-    // SBgen: Get variable
-    return (exception);
-  }
+    /**
+     * @SBGen Method set exception
+     */
+    public void setException(Exception exception) {
+        // SBgen: Assign variable
+        this.exception = exception;
+    }
 
-  public void send()
-  {
-    replyHandler.performReply(this);
-  }
+    /**
+     * @SBGen Method get exception
+     */
+    public Exception getException() {
+        // SBgen: Get variable
+        return (exception);
+    }
 
-  public String toString()
-  {
-    return "[Reply, ok=" + ok + " exception=" + exception + " requestNumber=" + requestNumber + " timeout=" + timeout + " ]";
-  }
+    public void send() {
+        replyHandler.performReply(this);
+    }
+
+    public String toString() {
+        return "[Reply, ok=" + ok + " exception=" + exception + " requestNumber=" + requestNumber + " timeout=" + timeout + " ]";
+    }
 }
 

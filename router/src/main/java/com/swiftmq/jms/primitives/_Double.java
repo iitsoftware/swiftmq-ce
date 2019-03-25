@@ -23,53 +23,43 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Double implements Dumpable, Primitive
-{
-  Double value = null;
+public class _Double implements Dumpable, Primitive {
+    Double value = null;
 
-  public _Double()
-  {
-  }
+    public _Double() {
+    }
 
-  public _Double(double value)
-  {
-    this.value = new Double(value);
-  }
+    public _Double(double value) {
+        this.value = new Double(value);
+    }
 
-  public _Double(String s)
-  {
-    this.value = Double.valueOf(s);
-  }
+    public _Double(String s) {
+        this.value = Double.valueOf(s);
+    }
 
-  public double doubleValue()
-  {
-    return value.doubleValue();
-  }
+    public double doubleValue() {
+        return value.doubleValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return DOUBLE;
-  }
+    public int getDumpId() {
+        return DOUBLE;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeDouble(value.doubleValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeDouble(value.doubleValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Double(in.readDouble());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Double(in.readDouble());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

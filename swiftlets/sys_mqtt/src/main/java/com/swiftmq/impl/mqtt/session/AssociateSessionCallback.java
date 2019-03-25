@@ -21,5 +21,6 @@ import com.swiftmq.impl.mqtt.connection.MQTTConnection;
 
 public interface AssociateSessionCallback {
     MQTTConnection getMqttConnection();
+
     void associated(MQTTSession session);
 }

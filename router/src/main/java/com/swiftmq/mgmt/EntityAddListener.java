@@ -22,26 +22,26 @@ package com.swiftmq.mgmt;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface EntityAddListener
-{
+public interface EntityAddListener {
 
-  /**
-   * Called before the Entity is added.
-   * The listener should do the appropriate work and should throw an EntityAddException
-   * if there is any reason that prevents the addition. If no exception is thrown, the
-   * entity will be added to the parent.
-   * @param parent the parent.
-   * @param newEntity the new entity to be added.
-   * @exception EntityAddException if there is any reason that prevents the addition.
-   */
-  public void onEntityAdd(Entity parent, Entity newEntity)
-    throws EntityAddException;
+    /**
+     * Called before the Entity is added.
+     * The listener should do the appropriate work and should throw an EntityAddException
+     * if there is any reason that prevents the addition. If no exception is thrown, the
+     * entity will be added to the parent.
+     *
+     * @param parent    the parent.
+     * @param newEntity the new entity to be added.
+     * @throws EntityAddException if there is any reason that prevents the addition.
+     */
+    public void onEntityAdd(Entity parent, Entity newEntity)
+            throws EntityAddException;
 
 
-  /**
-   * Internal use only.
-   */
-  public Configuration onConfigurationAdd(Entity parent, Entity newEntity)
-    throws EntityAddException;
+    /**
+     * Internal use only.
+     */
+    public Configuration onConfigurationAdd(Entity parent, Entity newEntity)
+            throws EntityAddException;
 }
 

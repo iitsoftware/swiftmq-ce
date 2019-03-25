@@ -17,54 +17,50 @@
 
 package com.swiftmq.admin.mgmt;
 
-import com.swiftmq.auth.ChallengeResponseFactory;
 import com.swiftmq.mgmt.CommandExecutor;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import java.io.Serializable;
+public interface Endpoint extends CommandExecutor {
+    void connect(int connectId, String hostname, String toolName, boolean subscribeRouteInfos, boolean subscribeRouterConfig, boolean subscribeChangeEvents) throws Exception;
 
-public interface Endpoint extends CommandExecutor
-{
-  void connect(int connectId, String hostname, String toolName, boolean subscribeRouteInfos, boolean subscribeRouterConfig, boolean subscribeChangeEvents) throws Exception;
-  
-  boolean isAuthenticationRequired();
+    boolean isAuthenticationRequired();
 
-  void authenticate(String password) throws Exception;
+    void authenticate(String password) throws Exception;
 
-  boolean isStarted();
+    boolean isStarted();
 
-  void setStarted(boolean started);
+    void setStarted(boolean started);
 
-  boolean isRouteInfos();
+    boolean isRouteInfos();
 
-  void setRouteInfos(boolean routeInfos);
+    void setRouteInfos(boolean routeInfos);
 
-  RequestRegistry getRequestRegistry();
+    RequestRegistry getRequestRegistry();
 
-  void setRouterName(String routerName);
+    void setRouterName(String routerName);
 
-  String getRouterName();
+    String getRouterName();
 
-  String[] getActContext();
+    String[] getActContext();
 
-  void setActContext(String[] actContext);
+    void setActContext(String[] actContext);
 
-  boolean isSubscriptionFilterEnabled();
+    boolean isSubscriptionFilterEnabled();
 
-  void setSubscriptionFilterEnabled(boolean subscriptionFilterEnabled);
+    void setSubscriptionFilterEnabled(boolean subscriptionFilterEnabled);
 
-  void contextShown(String[] context, boolean includeNextLevel);
+    void contextShown(String[] context, boolean includeNextLevel);
 
-  void contextHidden(String[] context, boolean includeNextLevel);
+    void contextHidden(String[] context, boolean includeNextLevel);
 
-  void startLease(long interval);
+    void startLease(long interval);
 
-  Reply request(Request request) throws Exception;
+    Reply request(Request request) throws Exception;
 
-  String[] execute(String[] context, Entity entity, String[] command);
+    String[] execute(String[] context, Entity entity, String[] command);
 
-  void close();
+    void close();
 }

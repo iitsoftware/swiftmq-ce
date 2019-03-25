@@ -32,297 +32,250 @@ import com.swiftmq.tools.requestreply.GenericRequest;
 
 import java.util.*;
 
-public class NontransactedSession extends Session
-{
-  protected List deliveredList = null;
+public class NontransactedSession extends Session {
+    protected List deliveredList = null;
 
-  public NontransactedSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode)
-  {
-    super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin, ackMode);
-    ctx.transacted = false;
-    deliveredList = new ArrayList();
-  }
-
-  public void visit(MessageDeliveredRequest req)
-  {
-    if (closed || recoveryInProgress)
-      return;
-    if (!req.isDuplicate())
-      deliveredList.add(req);
-    super.visit(req);
-  }
-
-  public void visit(AcknowledgeMessageRequest req)
-  {
-    if (closed)
-      return;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitAcknowledgeMessageRequest");
-    AcknowledgeMessageReply reply = null;
-    if (req.isReplyRequired())
-    {
-      reply = (AcknowledgeMessageReply) req.createReply();
-      reply.setOk(true);
+    public NontransactedSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin, ackMode);
+        ctx.transacted = false;
+        deliveredList = new ArrayList();
     }
 
-    if (ctx.ackMode == javax.jms.Session.CLIENT_ACKNOWLEDGE)
-    {
-      Map ackConsumers = new HashMap();
-      for (Iterator iter = deliveredList.iterator(); iter.hasNext(); )
-      {
-        MessageDeliveredRequest request = (MessageDeliveredRequest) iter.next();
-        Consumer consumer = (Consumer) consumerList.get(request.getQueueConsumerId());
-        MessageIndex actIndex = request.getMessageIndex();
-        QueuePullTransaction t = consumer.getTransaction();
-        ConsumerAckEntry ackEntry = (ConsumerAckEntry) ackConsumers.get(consumer);
-        if (ackEntry == null)
-        {
-          ackEntry = new ConsumerAckEntry(t);
-          ackConsumers.put(consumer, ackEntry);
-        }
-        ackEntry.ackList.add(actIndex);
-      }
-      deliveredList.clear();
-      boolean callbackRegistered = false;
-      MultiAckJoin join = new MultiAckJoin(reply);
-      for (Iterator iter = ackConsumers.entrySet().iterator(); iter.hasNext(); )
-      {
-        Map.Entry entry = (Map.Entry) iter.next();
-        Consumer consumer = (Consumer) entry.getKey();
-        ConsumerAckEntry ackEntry = (ConsumerAckEntry) entry.getValue();
-        try
-        {
-          join.incNumberCallbacks();
-          ackEntry.transaction.acknowledgeMessages(ackEntry.ackList, new MultiAckCallback(join, consumer, ackEntry.ackList.size()));
-          callbackRegistered = true;
-        } catch (QueueTransactionClosedException e)
-        {
-        }
-      }
-      join.setBlocked(false);
-      if (!callbackRegistered && reply != null)
-        reply.send();
-    } else
-    {
-      MessageIndex ackIndex = req.getMessageIndex();
-      Consumer consumer = (Consumer) consumerList.get(req.getQueueConsumerId());
-      ackSingleMessage(reply, ackIndex, consumer);
-    }
-  }
-
-  private class ConsumerAckEntry
-  {
-    QueuePullTransaction transaction = null;
-    List ackList = new ArrayList();
-
-    private ConsumerAckEntry(QueuePullTransaction transaction)
-    {
-      this.transaction = transaction;
-    }
-  }
-
-  private void ackSingleMessage(AcknowledgeMessageReply reply, MessageIndex ackIndex, Consumer consumer)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/ackSingleMessage");
-    QueuePullTransaction t = consumer.getReadTransaction();
-    try
-    {
-      if (!t.isClosed())
-        t.acknowledgeMessage(ackIndex, new SingleAckCallback(reply, consumer));
-      else
-      {
-        // Always send a reply, otherwise ConnectionConsumers will be blocked.
-        if (reply != null)
-          reply.send();
-      }
-    } catch (Exception e)
-    {
-      // temp queue might be deleted in the mean time
-      if (reply != null)
-        reply.send();
-    }
-  }
-
-  private class SingleAckCallback extends AsyncCompletionCallback
-  {
-    AcknowledgeMessageReply reply = null;
-    Consumer consumer = null;
-
-    private SingleAckCallback(AcknowledgeMessageReply reply, Consumer consumer)
-    {
-      this.reply = reply;
-      this.consumer = consumer;
+    public void visit(MessageDeliveredRequest req) {
+        if (closed || recoveryInProgress)
+            return;
+        if (!req.isDuplicate())
+            deliveredList.add(req);
+        super.visit(req);
     }
 
-    public void done(boolean success)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success);
-      if (success)
-      {
-        Long size = (Long) getResult();
+    public void visit(AcknowledgeMessageRequest req) {
+        if (closed)
+            return;
         if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success + ", size=" + size);
-        if (size != null)
-        {
-          DestinationCollector collector = consumer.getCollector();
-          if (collector != null)
-            collector.incTotal(1, size.longValue());
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitAcknowledgeMessageRequest");
+        AcknowledgeMessageReply reply = null;
+        if (req.isReplyRequired()) {
+            reply = (AcknowledgeMessageReply) req.createReply();
+            reply.setOk(true);
         }
-      } else
-      {
+
+        if (ctx.ackMode == javax.jms.Session.CLIENT_ACKNOWLEDGE) {
+            Map ackConsumers = new HashMap();
+            for (Iterator iter = deliveredList.iterator(); iter.hasNext(); ) {
+                MessageDeliveredRequest request = (MessageDeliveredRequest) iter.next();
+                Consumer consumer = (Consumer) consumerList.get(request.getQueueConsumerId());
+                MessageIndex actIndex = request.getMessageIndex();
+                QueuePullTransaction t = consumer.getTransaction();
+                ConsumerAckEntry ackEntry = (ConsumerAckEntry) ackConsumers.get(consumer);
+                if (ackEntry == null) {
+                    ackEntry = new ConsumerAckEntry(t);
+                    ackConsumers.put(consumer, ackEntry);
+                }
+                ackEntry.ackList.add(actIndex);
+            }
+            deliveredList.clear();
+            boolean callbackRegistered = false;
+            MultiAckJoin join = new MultiAckJoin(reply);
+            for (Iterator iter = ackConsumers.entrySet().iterator(); iter.hasNext(); ) {
+                Map.Entry entry = (Map.Entry) iter.next();
+                Consumer consumer = (Consumer) entry.getKey();
+                ConsumerAckEntry ackEntry = (ConsumerAckEntry) entry.getValue();
+                try {
+                    join.incNumberCallbacks();
+                    ackEntry.transaction.acknowledgeMessages(ackEntry.ackList, new MultiAckCallback(join, consumer, ackEntry.ackList.size()));
+                    callbackRegistered = true;
+                } catch (QueueTransactionClosedException e) {
+                }
+            }
+            join.setBlocked(false);
+            if (!callbackRegistered && reply != null)
+                reply.send();
+        } else {
+            MessageIndex ackIndex = req.getMessageIndex();
+            Consumer consumer = (Consumer) consumerList.get(req.getQueueConsumerId());
+            ackSingleMessage(reply, ackIndex, consumer);
+        }
+    }
+
+    private class ConsumerAckEntry {
+        QueuePullTransaction transaction = null;
+        List ackList = new ArrayList();
+
+        private ConsumerAckEntry(QueuePullTransaction transaction) {
+            this.transaction = transaction;
+        }
+    }
+
+    private void ackSingleMessage(AcknowledgeMessageReply reply, MessageIndex ackIndex, Consumer consumer) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/ackSingleMessage");
+        QueuePullTransaction t = consumer.getReadTransaction();
+        try {
+            if (!t.isClosed())
+                t.acknowledgeMessage(ackIndex, new SingleAckCallback(reply, consumer));
+            else {
+                // Always send a reply, otherwise ConnectionConsumers will be blocked.
+                if (reply != null)
+                    reply.send();
+            }
+        } catch (Exception e) {
+            // temp queue might be deleted in the mean time
+            if (reply != null)
+                reply.send();
+        }
+    }
+
+    private class SingleAckCallback extends AsyncCompletionCallback {
+        AcknowledgeMessageReply reply = null;
+        Consumer consumer = null;
+
+        private SingleAckCallback(AcknowledgeMessageReply reply, Consumer consumer) {
+            this.reply = reply;
+            this.consumer = consumer;
+        }
+
+        public void done(boolean success) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success);
+            if (success) {
+                Long size = (Long) getResult();
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success + ", size=" + size);
+                if (size != null) {
+                    DestinationCollector collector = consumer.getCollector();
+                    if (collector != null)
+                        collector.incTotal(1, size.longValue());
+                }
+            } else {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success + ", exception=" + getException());
+                if (reply != null) {
+                    reply.setOk(false);
+                    reply.setException(getException());
+                }
+            }
+            if (reply != null)
+                reply.send();
+        }
+    }
+
+    private class MultiAckJoin extends CallbackJoin {
+        AcknowledgeMessageReply reply = null;
+
+        private MultiAckJoin(AcknowledgeMessageReply reply) {
+            this.reply = reply;
+        }
+
+        protected void callbackDone(AsyncCompletionCallback callback, boolean success, boolean last) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/MultiAckJoin, callback=" + callback + ", success=" + success + ", last=" + last);
+            if (last && reply != null) {
+                reply.setOk(true);
+                reply.send();
+            }
+        }
+    }
+
+    private class MultiAckCallback extends AsyncCompletionCallback {
+        MultiAckJoin join = null;
+        Consumer consumer = null;
+        int nMsgs = 0;
+
+        private MultiAckCallback(MultiAckJoin join, Consumer consumer, int nMsgs) {
+            this.join = join;
+            this.consumer = consumer;
+            this.nMsgs = nMsgs;
+        }
+
+        public void done(boolean success) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/MultiAckCallback, success=" + success);
+            if (success) {
+                Long size = (Long) getResult();
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/MultiAckCallback, success=" + success + ", nMsgs=" + nMsgs + ", size=" + size);
+                if (size != null) {
+                    DestinationCollector collector = consumer.getCollector();
+                    if (collector != null)
+                        collector.incTotal(nMsgs, size.longValue());
+                }
+            }
+            join.done(this, success);
+        }
+    }
+
+    public void visitGenericRequest(GenericRequest request) {
         if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success + ", exception=" + getException());
-        if (reply != null)
-        {
-          reply.setOk(false);
-          reply.setException(getException());
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply");
+        RecoverSessionReply reply = (RecoverSessionReply) request.getPayload();
+        recoveryEpoche = reply.getRecoveryEpoche();
+        try {
+            for (int i = 0; i < consumerList.size(); i++) {
+                Consumer consumer = (Consumer) consumerList.get(i);
+                if (consumer != null) {
+                    consumer.createReadTransaction();
+                    consumer.createTransaction();
+                    AsyncMessageProcessor mp = (AsyncMessageProcessor) consumer.getMessageProcessor();
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply, get message processor: " + mp);
+                    if (mp != null) {
+                        int maxBulkSize = (int) (mp.getMaxBulkSize() / 1024);
+                        mp = new AsyncMessageProcessor(this, ctx, consumer, mp.getConsumerCacheSize(), recoveryEpoche);
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply, new message processor: " + mp);
+                        mp.setMaxBulkSize(maxBulkSize);
+                        consumer.setMessageListener(consumer.getClientDispatchId(), consumer.getClientListenerId(), mp);
+                        //           consumer.getReadTransaction().registerMessageProcessor(mp);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            reply.setOk(false);
+            reply.setException(e);
         }
-      }
-      if (reply != null)
+        recoveryInProgress = false;
         reply.send();
     }
-  }
 
-  private class MultiAckJoin extends CallbackJoin
-  {
-    AcknowledgeMessageReply reply = null;
-
-    private MultiAckJoin(AcknowledgeMessageReply reply)
-    {
-      this.reply = reply;
-    }
-
-    protected void callbackDone(AsyncCompletionCallback callback, boolean success, boolean last)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/MultiAckJoin, callback=" + callback + ", success=" + success + ", last=" + last);
-      if (last && reply != null)
-      {
+    public void visit(RecoverSessionRequest req) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRecoverSessionRequest");
+        recoveryInProgress = true;
+        RecoverSessionReply reply = (RecoverSessionReply) req.createReply();
+        reply.setRecoveryEpoche(req.getRecoveryEpoche());
         reply.setOk(true);
-        reply.send();
-      }
-    }
-  }
-
-  private class MultiAckCallback extends AsyncCompletionCallback
-  {
-    MultiAckJoin join = null;
-    Consumer consumer = null;
-    int nMsgs = 0;
-
-    private MultiAckCallback(MultiAckJoin join, Consumer consumer, int nMsgs)
-    {
-      this.join = join;
-      this.consumer = consumer;
-      this.nMsgs = nMsgs;
-    }
-
-    public void done(boolean success)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/MultiAckCallback, success=" + success);
-      if (success)
-      {
-        Long size = (Long) getResult();
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/MultiAckCallback, success=" + success + ", nMsgs=" + nMsgs + ", size=" + size);
-        if (size != null)
-        {
-          DestinationCollector collector = consumer.getCollector();
-          if (collector != null)
-            collector.incTotal(nMsgs, size.longValue());
+        for (int i = 0; i < consumerList.size(); i++) {
+            Consumer consumer = (Consumer) consumerList.get(i);
+            if (consumer != null) {
+                try {
+                    MessageProcessor mp = consumer.getMessageProcessor();
+                    if (mp != null) {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRecoverSessionRequest, stopping message processor: " + mp);
+                        mp.stop();
+                        consumer.getReadTransaction().unregisterMessageProcessor(mp);
+                    }
+                    consumer.getReadTransaction().rollback();
+                    consumer.getTransaction().rollback();
+                } catch (Exception e) {
+                    reply.setOk(false);
+                    reply.setException(e);
+                    break;
+                }
+            }
         }
-      }
-      join.done(this, success);
+        deliveredList.clear();
+        GenericRequest gr = new GenericRequest(-1, false, reply);
+        ctx.sessionQueue.enqueue(gr);
     }
-  }
 
-  public void visitGenericRequest(GenericRequest request)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply");
-    RecoverSessionReply reply = (RecoverSessionReply) request.getPayload();
-    recoveryEpoche = reply.getRecoveryEpoche();
-    try
-    {
-      for (int i = 0; i < consumerList.size(); i++)
-      {
-        Consumer consumer = (Consumer) consumerList.get(i);
-        if (consumer != null)
-        {
-          consumer.createReadTransaction();
-          consumer.createTransaction();
-          AsyncMessageProcessor mp = (AsyncMessageProcessor) consumer.getMessageProcessor();
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply, get message processor: " + mp);
-          if (mp != null)
-          {
-            int maxBulkSize = (int) (mp.getMaxBulkSize() / 1024);
-            mp = new AsyncMessageProcessor(this, ctx, consumer, mp.getConsumerCacheSize(), recoveryEpoche);
-            if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply, new message processor: " + mp);
-            mp.setMaxBulkSize(maxBulkSize);
-            consumer.setMessageListener(consumer.getClientDispatchId(), consumer.getClientListenerId(), mp);
-            //           consumer.getReadTransaction().registerMessageProcessor(mp);
-          }
-        }
-      }
-    } catch (Exception e)
-    {
-      reply.setOk(false);
-      reply.setException(e);
+    protected void close() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/close");
+        super.close();
+        deliveredList.clear();
     }
-    recoveryInProgress = false;
-    reply.send();
-  }
 
-  public void visit(RecoverSessionRequest req)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRecoverSessionRequest");
-    recoveryInProgress = true;
-    RecoverSessionReply reply = (RecoverSessionReply) req.createReply();
-    reply.setRecoveryEpoche(req.getRecoveryEpoche());
-    reply.setOk(true);
-    for (int i = 0; i < consumerList.size(); i++)
-    {
-      Consumer consumer = (Consumer) consumerList.get(i);
-      if (consumer != null)
-      {
-        try
-        {
-          MessageProcessor mp = consumer.getMessageProcessor();
-          if (mp != null)
-          {
-            if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRecoverSessionRequest, stopping message processor: " + mp);
-            mp.stop();
-            consumer.getReadTransaction().unregisterMessageProcessor(mp);
-          }
-          consumer.getReadTransaction().rollback();
-          consumer.getTransaction().rollback();
-        } catch (Exception e)
-        {
-          reply.setOk(false);
-          reply.setException(e);
-          break;
-        }
-      }
+    public String toString() {
+        return "NontransactedSession, dispatchId=" + dispatchId;
     }
-    deliveredList.clear();
-    GenericRequest gr = new GenericRequest(-1, false, reply);
-    ctx.sessionQueue.enqueue(gr);
-  }
-
-  protected void close()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/close");
-    super.close();
-    deliveredList.clear();
-  }
-
-  public String toString()
-  {
-    return "NontransactedSession, dispatchId=" + dispatchId;
-  }
 }
 

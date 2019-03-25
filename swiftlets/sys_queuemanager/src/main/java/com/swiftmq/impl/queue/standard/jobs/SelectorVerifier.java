@@ -18,24 +18,21 @@
 package com.swiftmq.impl.queue.standard.jobs;
 
 import com.swiftmq.ms.MessageSelector;
-import com.swiftmq.swiftlet.scheduler.*;
+import com.swiftmq.swiftlet.scheduler.InvalidValueException;
+import com.swiftmq.swiftlet.scheduler.JobParameter;
+import com.swiftmq.swiftlet.scheduler.JobParameterVerifier;
 
 import javax.jms.InvalidSelectorException;
 
-public class SelectorVerifier implements JobParameterVerifier
-{
-  public void verify(JobParameter jobParameter, String value) throws InvalidValueException
-  {
-    if (value != null)
-    {
-      MessageSelector sel = new MessageSelector(value);
-      try
-      {
-        sel.compile();
-      } catch (InvalidSelectorException e)
-      {
-        throw new InvalidValueException(jobParameter.getName()+": "+e.getMessage());
-      }
+public class SelectorVerifier implements JobParameterVerifier {
+    public void verify(JobParameter jobParameter, String value) throws InvalidValueException {
+        if (value != null) {
+            MessageSelector sel = new MessageSelector(value);
+            try {
+                sel.compile();
+            } catch (InvalidSelectorException e) {
+                throw new InvalidValueException(jobParameter.getName() + ": " + e.getMessage());
+            }
+        }
     }
-  }
 }

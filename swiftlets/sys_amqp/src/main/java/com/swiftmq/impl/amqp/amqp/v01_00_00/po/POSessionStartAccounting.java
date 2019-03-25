@@ -18,33 +18,27 @@
 package com.swiftmq.impl.amqp.amqp.v01_00_00.po;
 
 import com.swiftmq.impl.amqp.accounting.AccountingProfile;
-import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPConnectionVisitor;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPSessionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSessionStartAccounting extends POObject
-{
-  AccountingProfile accountingProfile = null;
+public class POSessionStartAccounting extends POObject {
+    AccountingProfile accountingProfile = null;
 
-  public POSessionStartAccounting(AccountingProfile accountingProfile)
-  {
-    super(null, null);
-    this.accountingProfile = accountingProfile;
-  }
+    public POSessionStartAccounting(AccountingProfile accountingProfile) {
+        super(null, null);
+        this.accountingProfile = accountingProfile;
+    }
 
-  public AccountingProfile getAccountingProfile()
-  {
-    return accountingProfile;
-  }
+    public AccountingProfile getAccountingProfile() {
+        return accountingProfile;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPSessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPSessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSessionStartAccounting, accountingProfile="+accountingProfile+"]";
-  }
+    public String toString() {
+        return "[POSessionStartAccounting, accountingProfile=" + accountingProfile + "]";
+    }
 }

@@ -22,16 +22,15 @@ package com.swiftmq.swiftlet.store;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class StoreException extends Exception
-{
+public class StoreException extends Exception {
 
-  /**
-   * Creates a new StoreException.
-   * @param message the message.
-   */
-  public StoreException(String message)
-  {
-    super(message);
-  }
+    /**
+     * Creates a new StoreException.
+     *
+     * @param message the message.
+     */
+    public StoreException(String message) {
+        super(message);
+    }
 }
 

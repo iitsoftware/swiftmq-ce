@@ -17,64 +17,60 @@
 
 package com.swiftmq.impl.topic.standard.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
-import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.impl.topic.standard.TopicManagerImpl;
 import com.swiftmq.mgmt.EntityList;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobFactory;
+import com.swiftmq.swiftlet.scheduler.JobParameter;
+import com.swiftmq.swiftlet.trace.TraceSpace;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class DeleteDurableJobFactory implements JobFactory
-{
-  TopicManagerImpl topicManager = null;
-  TraceSpace traceSpace = null;
-  EntityList activeDurableList = null;
-  Map parameters = new HashMap();
+public class DeleteDurableJobFactory implements JobFactory {
+    TopicManagerImpl topicManager = null;
+    TraceSpace traceSpace = null;
+    EntityList activeDurableList = null;
+    Map parameters = new HashMap();
 
-  public DeleteDurableJobFactory(TopicManagerImpl topicManager, TraceSpace traceSpace, EntityList activeDurableList)
-  {
-    this.topicManager = topicManager;
-    this.traceSpace = traceSpace;
-    this.activeDurableList = activeDurableList;
-    JobParameter p = new JobParameter("Client Id Predicate","SQL Like Predicate to match for Client Ids",null,true,null);
-    parameters.put(p.getName(),p);
-    p = new JobParameter("Durable Name Predicate","SQL Like Predicate to match for Durable Names",null,true,null);
-    parameters.put(p.getName(),p);
-  }
+    public DeleteDurableJobFactory(TopicManagerImpl topicManager, TraceSpace traceSpace, EntityList activeDurableList) {
+        this.topicManager = topicManager;
+        this.traceSpace = traceSpace;
+        this.activeDurableList = activeDurableList;
+        JobParameter p = new JobParameter("Client Id Predicate", "SQL Like Predicate to match for Client Ids", null, true, null);
+        parameters.put(p.getName(), p);
+        p = new JobParameter("Durable Name Predicate", "SQL Like Predicate to match for Durable Names", null, true, null);
+        parameters.put(p.getName(), p);
+    }
 
-  public String getName()
-  {
-    return "Delete Durable";
-  }
+    public String getName() {
+        return "Delete Durable";
+    }
 
-  public String getDescription()
-  {
-    return "Delete durable Subscribers";
-  }
+    public String getDescription() {
+        return "Delete durable Subscribers";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (traceSpace.enabled) traceSpace.trace(topicManager.getName(),toString()+"/getJobInstance");
-    return new DeleteDurableJob(topicManager,traceSpace,activeDurableList);
-  }
+    public Job getJobInstance() {
+        if (traceSpace.enabled) traceSpace.trace(topicManager.getName(), toString() + "/getJobInstance");
+        return new DeleteDurableJob(topicManager, traceSpace, activeDurableList);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (traceSpace.enabled) traceSpace.trace(topicManager.getName(),toString()+"/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (traceSpace.enabled)
+            traceSpace.trace(topicManager.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[DeleteDurableJobFactory]";
-  }
+    public String toString() {
+        return "[DeleteDurableJobFactory]";
+    }
 }

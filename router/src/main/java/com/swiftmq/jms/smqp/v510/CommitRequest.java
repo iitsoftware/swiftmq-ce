@@ -17,92 +17,81 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CommitRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CommitRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CommitRequest extends Request
-{
-  private List messages;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
-  public CommitRequest()
-  {
-    super(0,true);
-  }
+public class CommitRequest extends Request {
+    private List messages;
 
-  public CommitRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public CommitRequest() {
+        super(0, true);
+    }
 
-  public CommitRequest(int dispatchId, List messages)
-  {
-    super(dispatchId,true);
-    this.messages = messages;
-  }
-  
-  public void setMessages(List messages)
-  {
-    this.messages = messages;
-  }
+    public CommitRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public List getMessages()
-  {
-    return messages;
-  }
+    public CommitRequest(int dispatchId, List messages) {
+        super(dispatchId, true);
+        this.messages = messages;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_COMMIT_REQ;
-  }
+    public void setMessages(List messages) {
+        this.messages = messages;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (messages != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writebytearray(messages,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public List getMessages() {
+        return messages;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean messages_set = in.readBoolean();
-    if (messages_set)
-      messages = SMQPUtil.readbytearray(messages,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_COMMIT_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CommitReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (messages != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writebytearray(messages, out);
+        } else
+            out.writeBoolean(false);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean messages_set = in.readBoolean();
+        if (messages_set)
+            messages = SMQPUtil.readbytearray(messages, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CommitRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("messages=");
-    _b.append(messages);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new CommitReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CommitRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("messages=");
+        _b.append(messages);
+        _b.append("]");
+        return _b.toString();
+    }
 }

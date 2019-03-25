@@ -19,8 +19,8 @@ package com.swiftmq.impl.store.standard.cache.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface EventVisitor extends POVisitor
-{
-  public void visit(StartShrink po);
-  public void visit(Close po);
+public interface EventVisitor extends POVisitor {
+    public void visit(StartShrink po);
+
+    public void visit(Close po);
 }

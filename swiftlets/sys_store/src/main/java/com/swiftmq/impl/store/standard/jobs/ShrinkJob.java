@@ -17,50 +17,49 @@
 
 package com.swiftmq.impl.store.standard.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.po.StartShrink;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.Properties;
 
-public class ShrinkJob implements Job
-{
-  StoreContext ctx = null;
-  boolean stopCalled = false;
-  Properties properties = null;
-  JobTerminationListener jobTerminationListener = null;
+public class ShrinkJob implements Job {
+    StoreContext ctx = null;
+    boolean stopCalled = false;
+    Properties properties = null;
+    JobTerminationListener jobTerminationListener = null;
 
-  public ShrinkJob(StoreContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public ShrinkJob(StoreContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public synchronized void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
-    this.jobTerminationListener = jobTerminationListener;
-    this.properties = properties;
-    Semaphore sem = new Semaphore();
-    StartShrink po = new StartShrink(sem);
-    ctx.shrinkProcessor.enqueue(po);
-    sem.waitHere();
-    if (po.isSuccess())
-      jobTerminationListener.jobTerminated();
-    else
-      jobTerminationListener.jobTerminated(new JobException(po.getException(),new Exception(po.getException()),false));
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
-  }
+    public synchronized void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
+        this.jobTerminationListener = jobTerminationListener;
+        this.properties = properties;
+        Semaphore sem = new Semaphore();
+        StartShrink po = new StartShrink(sem);
+        ctx.shrinkProcessor.enqueue(po);
+        sem.waitHere();
+        if (po.isSuccess())
+            jobTerminationListener.jobTerminated();
+        else
+            jobTerminationListener.jobTerminated(new JobException(po.getException(), new Exception(po.getException()), false));
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
+    }
 
-  public synchronized void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop ...");
-    stopCalled = true;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop done");
-  }
+    public synchronized void stop() throws JobException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop ...");
+        stopCalled = true;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop done");
+    }
 
-  public String toString()
-  {
-    return "[ShrinkJob, properties=" + properties + "]";
-  }
+    public String toString() {
+        return "[ShrinkJob, properties=" + properties + "]";
+    }
 }

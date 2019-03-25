@@ -17,77 +17,64 @@
 
 package com.swiftmq.amqp.v100.generated.messaging.delivery_state;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.generated.transactions.coordination.Declared;
+import com.swiftmq.amqp.v100.generated.transactions.coordination.TransactionalState;
 
 /**
- *  The DeliveryState visitor.
+ * The DeliveryState visitor.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface DeliveryStateVisitor
-{
+public interface DeliveryStateVisitor {
 
-  /**
-   * Visitor method for a Received type object.
-   *
-   * @param impl a Received type object
-   */
-  public void visit(Received impl);
+    /**
+     * Visitor method for a Received type object.
+     *
+     * @param impl a Received type object
+     */
+    public void visit(Received impl);
 
-  /**
-   * Visitor method for a Accepted type object.
-   *
-   * @param impl a Accepted type object
-   */
-  public void visit(Accepted impl);
+    /**
+     * Visitor method for a Accepted type object.
+     *
+     * @param impl a Accepted type object
+     */
+    public void visit(Accepted impl);
 
-  /**
-   * Visitor method for a Rejected type object.
-   *
-   * @param impl a Rejected type object
-   */
-  public void visit(Rejected impl);
+    /**
+     * Visitor method for a Rejected type object.
+     *
+     * @param impl a Rejected type object
+     */
+    public void visit(Rejected impl);
 
-  /**
-   * Visitor method for a Released type object.
-   *
-   * @param impl a Released type object
-   */
-  public void visit(Released impl);
+    /**
+     * Visitor method for a Released type object.
+     *
+     * @param impl a Released type object
+     */
+    public void visit(Released impl);
 
-  /**
-   * Visitor method for a Modified type object.
-   *
-   * @param impl a Modified type object
-   */
-  public void visit(Modified impl);
+    /**
+     * Visitor method for a Modified type object.
+     *
+     * @param impl a Modified type object
+     */
+    public void visit(Modified impl);
 
-  /**
-   * Visitor method for a Declared type object.
-   *
-   * @param impl a Declared type object
-   */
-  public void visit(Declared impl);
+    /**
+     * Visitor method for a Declared type object.
+     *
+     * @param impl a Declared type object
+     */
+    public void visit(Declared impl);
 
-  /**
-   * Visitor method for a TransactionalState type object.
-   *
-   * @param impl a TransactionalState type object
-   */
-  public void visit(TransactionalState impl);
+    /**
+     * Visitor method for a TransactionalState type object.
+     *
+     * @param impl a TransactionalState type object
+     */
+    public void visit(TransactionalState impl);
 }

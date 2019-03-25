@@ -57,115 +57,99 @@ import com.swiftmq.swiftlet.SwiftletException;
  * @author IIT GmbH, Bremen/Germany
  */
 
-public class MonitorSwiftlet extends Swiftlet implements PropertyChangeListener
-{
-  protected SwiftletContext ctx = null;
-  Property memoryMonitorIntervalProp = null;
-  long memoryMonitorInterval = -1;
-  MemoryMonitor memoryMonitor = null;
-  Property queueMonitorIntervalProp = null;
-  long queueMonitorInterval = -1;
-  QueueMonitor queueMonitor = null;
-  Property connectionMonitorIntervalProp = null;
-  long connectionMonitorInterval = -1;
-  ConnectionMonitor connectionMonitor = null;
+public class MonitorSwiftlet extends Swiftlet implements PropertyChangeListener {
+    protected SwiftletContext ctx = null;
+    Property memoryMonitorIntervalProp = null;
+    long memoryMonitorInterval = -1;
+    MemoryMonitor memoryMonitor = null;
+    Property queueMonitorIntervalProp = null;
+    long queueMonitorInterval = -1;
+    QueueMonitor queueMonitor = null;
+    Property connectionMonitorIntervalProp = null;
+    long connectionMonitorInterval = -1;
+    ConnectionMonitor connectionMonitor = null;
 
-  public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException
-  {
-    long newInterval = ((Long) newValue).longValue();
-    if (property.getName().equals("memory-monitor-interval"))
-    {
-      memoryMonitorIntervalChange(memoryMonitorInterval, newInterval);
-      memoryMonitorInterval = newInterval;
-    } else if (property.getName().equals("queue-monitor-interval"))
-    {
-      queueMonitorIntervalChange(queueMonitorInterval, newInterval);
-      queueMonitorInterval = newInterval;
-    } else if (property.getName().equals("connection-monitor-interval"))
-    {
-      connectionMonitorIntervalChange(connectionMonitorInterval, newInterval);
-      connectionMonitorInterval = newInterval;
+    public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
+        long newInterval = ((Long) newValue).longValue();
+        if (property.getName().equals("memory-monitor-interval")) {
+            memoryMonitorIntervalChange(memoryMonitorInterval, newInterval);
+            memoryMonitorInterval = newInterval;
+        } else if (property.getName().equals("queue-monitor-interval")) {
+            queueMonitorIntervalChange(queueMonitorInterval, newInterval);
+            queueMonitorInterval = newInterval;
+        } else if (property.getName().equals("connection-monitor-interval")) {
+            connectionMonitorIntervalChange(connectionMonitorInterval, newInterval);
+            connectionMonitorInterval = newInterval;
+        }
     }
-  }
 
-  private void memoryMonitorIntervalChange(long oldInterval, long newInterval)
-  {
-    if (oldInterval > 0)
-    {
-      ctx.timerSwiftlet.removeTimerListener(memoryMonitor);
-      memoryMonitor.close();
-      memoryMonitor = null;
+    private void memoryMonitorIntervalChange(long oldInterval, long newInterval) {
+        if (oldInterval > 0) {
+            ctx.timerSwiftlet.removeTimerListener(memoryMonitor);
+            memoryMonitor.close();
+            memoryMonitor = null;
+        }
+        if (newInterval > 0) {
+            memoryMonitor = new MemoryMonitor(ctx);
+            ctx.timerSwiftlet.addTimerListener(newInterval, memoryMonitor);
+        }
     }
-    if (newInterval > 0)
-    {
-      memoryMonitor = new MemoryMonitor(ctx);
-      ctx.timerSwiftlet.addTimerListener(newInterval, memoryMonitor);
+
+    private void queueMonitorIntervalChange(long oldInterval, long newInterval) {
+        if (oldInterval > 0) {
+            ctx.timerSwiftlet.removeTimerListener(queueMonitor);
+            queueMonitor.close();
+            queueMonitor = null;
+        }
+        if (newInterval > 0) {
+            queueMonitor = new QueueMonitor(ctx);
+            ctx.timerSwiftlet.addTimerListener(newInterval, queueMonitor);
+        }
     }
-  }
 
-  private void queueMonitorIntervalChange(long oldInterval, long newInterval)
-  {
-    if (oldInterval > 0)
-    {
-      ctx.timerSwiftlet.removeTimerListener(queueMonitor);
-      queueMonitor.close();
-      queueMonitor = null;
+    private void connectionMonitorIntervalChange(long oldInterval, long newInterval) {
+        if (oldInterval > 0) {
+            ctx.timerSwiftlet.removeTimerListener(connectionMonitor);
+            connectionMonitor.close();
+            connectionMonitor = null;
+        }
+        if (newInterval > 0) {
+            connectionMonitor = new ConnectionMonitor(ctx);
+            ctx.timerSwiftlet.addTimerListener(newInterval, connectionMonitor);
+        }
     }
-    if (newInterval > 0)
-    {
-      queueMonitor = new QueueMonitor(ctx);
-      ctx.timerSwiftlet.addTimerListener(newInterval, queueMonitor);
+
+    protected void startup(Configuration configuration) throws SwiftletException {
+        ctx = new SwiftletContext(this, configuration);
+
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
+        memoryMonitorIntervalProp = ctx.root.getEntity("memory").getProperty("memory-monitor-interval");
+        memoryMonitorInterval = ((Long) memoryMonitorIntervalProp.getValue()).longValue();
+        memoryMonitorIntervalProp.setPropertyChangeListener(this);
+        memoryMonitorIntervalChange(-1, memoryMonitorInterval);
+        queueMonitorIntervalProp = ctx.root.getEntity("queue").getProperty("queue-monitor-interval");
+        queueMonitorInterval = ((Long) queueMonitorIntervalProp.getValue()).longValue();
+        queueMonitorIntervalProp.setPropertyChangeListener(this);
+        queueMonitorIntervalChange(-1, queueMonitorInterval);
+        connectionMonitorIntervalProp = ctx.root.getEntity("connection").getProperty("connection-monitor-interval");
+        connectionMonitorInterval = ((Long) connectionMonitorIntervalProp.getValue()).longValue();
+        connectionMonitorIntervalProp.setPropertyChangeListener(this);
+        connectionMonitorIntervalChange(-1, connectionMonitorInterval);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done.");
+
     }
-  }
 
-  private void connectionMonitorIntervalChange(long oldInterval, long newInterval)
-  {
-    if (oldInterval > 0)
-    {
-      ctx.timerSwiftlet.removeTimerListener(connectionMonitor);
-      connectionMonitor.close();
-      connectionMonitor = null;
+    protected void shutdown() throws SwiftletException {
+        if (ctx == null)
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
+        connectionMonitorIntervalChange(connectionMonitorInterval, -1);
+        connectionMonitorIntervalProp.setPropertyChangeListener(null);
+        memoryMonitorIntervalChange(memoryMonitorInterval, -1);
+        memoryMonitorIntervalProp.setPropertyChangeListener(null);
+        queueMonitorIntervalChange(queueMonitorInterval, -1);
+        queueMonitorIntervalProp.setPropertyChangeListener(null);
+        ctx.close();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done.");
     }
-    if (newInterval > 0)
-    {
-      connectionMonitor = new ConnectionMonitor(ctx);
-      ctx.timerSwiftlet.addTimerListener(newInterval, connectionMonitor);
-    }
-  }
-
-  protected void startup(Configuration configuration) throws SwiftletException
-  {
-    ctx = new SwiftletContext(this, configuration);
-
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
-    memoryMonitorIntervalProp = ctx.root.getEntity("memory").getProperty("memory-monitor-interval");
-    memoryMonitorInterval = ((Long) memoryMonitorIntervalProp.getValue()).longValue();
-    memoryMonitorIntervalProp.setPropertyChangeListener(this);
-    memoryMonitorIntervalChange(-1, memoryMonitorInterval);
-    queueMonitorIntervalProp = ctx.root.getEntity("queue").getProperty("queue-monitor-interval");
-    queueMonitorInterval = ((Long) queueMonitorIntervalProp.getValue()).longValue();
-    queueMonitorIntervalProp.setPropertyChangeListener(this);
-    queueMonitorIntervalChange(-1, queueMonitorInterval);
-    connectionMonitorIntervalProp = ctx.root.getEntity("connection").getProperty("connection-monitor-interval");
-    connectionMonitorInterval = ((Long) connectionMonitorIntervalProp.getValue()).longValue();
-    connectionMonitorIntervalProp.setPropertyChangeListener(this);
-    connectionMonitorIntervalChange(-1, connectionMonitorInterval);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done.");
-
-  }
-
-  protected void shutdown() throws SwiftletException
-  {
-    if (ctx == null)
-      return;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
-    connectionMonitorIntervalChange(connectionMonitorInterval, -1);
-    connectionMonitorIntervalProp.setPropertyChangeListener(null);
-    memoryMonitorIntervalChange(memoryMonitorInterval, -1);
-    memoryMonitorIntervalProp.setPropertyChangeListener(null);
-    queueMonitorIntervalChange(queueMonitorInterval, -1);
-    queueMonitorIntervalProp.setPropertyChangeListener(null);
-    ctx.close();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done.");
-  }
 }

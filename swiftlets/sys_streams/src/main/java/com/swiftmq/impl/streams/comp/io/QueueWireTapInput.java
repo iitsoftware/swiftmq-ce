@@ -42,13 +42,13 @@ import java.util.concurrent.TimeUnit;
  * round-robin fashion.
  * </p>
  * <p>
- *     Per default, a deep copy of a Message is performed before it is transferred to
+ * Per default, a deep copy of a Message is performed before it is transferred to
  * a subscriber. So it is save to change it. If the Message will not be changed
  * by a subscriber, the deep copy can be disabled. But be careful! All changes
  * of a Message will have side effects.
- *  </p>
+ * </p>
  * <p>
- *     Message transfer to a WireTap subscriber is done outside of a transaction. The
+ * Message transfer to a WireTap subscriber is done outside of a transaction. The
  * Subscriber uses a BlockingQueue to receive the Messages. The BlockingQueue has
  * a bufferSize which is 10 Messages per default. If the size is reached, the
  * Queue waits until there is free space. The time to wait is specified in
@@ -56,7 +56,8 @@ import java.util.concurrent.TimeUnit;
  * will not be inserted, so a WireTap subscriber may not receive all Messages
  * transferred through the Queue. For that reason, a WireTap is a good solution
  * if Message lost can be tolerated, e.g. in statistic scenarios.
- *  </p>
+ * </p>
+ *
  * @author IIT Software GmbH, Muenster/Germany, (c) 2017, All Rights Reserved
  */
 public class QueueWireTapInput implements DestinationInput, WireTapSubscriber {

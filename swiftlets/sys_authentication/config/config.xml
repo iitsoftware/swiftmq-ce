@@ -1,7 +1,7 @@
 <swiftlet name="sys$authentication"
 					displayname="Authentication Swiftlet"
 					class="com.swiftmq.impl.auth.standard.AuthenticationSwiftletImpl"
-					icon="/com/swiftmq/impl/auth/standard/images/swiftlet.png"
+					icon="/sys_authentication/images/swiftlet.png"
 					description="Authentication Swiftlet"
 					release="${release}"
 					vendor="IIT Software GmbH" >

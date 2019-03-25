@@ -17,46 +17,43 @@
 
 package com.swiftmq.jms.primitives;
 
-public class PrimitiveFactory
-{
-  public static Primitive createInstance(int id)
-  {
-    Primitive d = null;
-    switch (id)
-    {
-      case Primitive.INT:
-        d = new _Int();
-        break;
-      case Primitive.LONG:
-        d = new _Long();
-        break;
-      case Primitive.DOUBLE:
-        d = new _Double();
-        break;
-      case Primitive.FLOAT:
-        d = new _Float();
-        break;
-      case Primitive.BOOLEAN:
-        d = new _Boolean();
-        break;
-      case Primitive.CHAR:
-        d = new _Char();
-        break;
-      case Primitive.SHORT:
-        d = new _Short();
-        break;
-      case Primitive.BYTE:
-        d = new _Byte();
-        break;
-      case Primitive.BYTES:
-        d = new _Bytes();
-        break;
-      case Primitive.STRING:
-        d = new _String();
-        break;
-      default:
-        throw new RuntimeException("PrimitiveFactory, can't create dumpable from dumpId: " + id);
+public class PrimitiveFactory {
+    public static Primitive createInstance(int id) {
+        Primitive d = null;
+        switch (id) {
+            case Primitive.INT:
+                d = new _Int();
+                break;
+            case Primitive.LONG:
+                d = new _Long();
+                break;
+            case Primitive.DOUBLE:
+                d = new _Double();
+                break;
+            case Primitive.FLOAT:
+                d = new _Float();
+                break;
+            case Primitive.BOOLEAN:
+                d = new _Boolean();
+                break;
+            case Primitive.CHAR:
+                d = new _Char();
+                break;
+            case Primitive.SHORT:
+                d = new _Short();
+                break;
+            case Primitive.BYTE:
+                d = new _Byte();
+                break;
+            case Primitive.BYTES:
+                d = new _Bytes();
+                break;
+            case Primitive.STRING:
+                d = new _String();
+                break;
+            default:
+                throw new RuntimeException("PrimitiveFactory, can't create dumpable from dumpId: " + id);
+        }
+        return d;
     }
-    return d;
-  }
 }

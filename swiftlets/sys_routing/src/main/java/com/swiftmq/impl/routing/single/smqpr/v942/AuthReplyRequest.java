@@ -22,30 +22,24 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.ReplyRequest;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class AuthReplyRequest extends ReplyRequest
-{
-  public AuthReplyRequest()
-  {
-    super(0, false);
-  }
+public class AuthReplyRequest extends ReplyRequest {
+    public AuthReplyRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.AUTH_REPREQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.AUTH_REPREQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[AuthReplyRequest " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AuthReplyRequest " + super.toString() + "]";
+    }
 }

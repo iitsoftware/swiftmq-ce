@@ -18,8 +18,6 @@
 package com.swiftmq.impl.store.standard.swap;
 
 
-
-public interface SwapFileFactory
-{
-  public SwapFile createSwapFile(String path, String filename, long maxLength) throws Exception;
+public interface SwapFileFactory {
+    public SwapFile createSwapFile(String path, String filename, long maxLength) throws Exception;
 }

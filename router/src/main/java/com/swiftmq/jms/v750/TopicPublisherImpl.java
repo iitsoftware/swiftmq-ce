@@ -31,71 +31,59 @@ import javax.jms.TopicPublisher;
 import java.util.List;
 
 public class TopicPublisherImpl extends MessageProducerImpl
-  implements TopicPublisher, Recreatable
-{
-  Topic topic = null;
+        implements TopicPublisher, Recreatable {
+    Topic topic = null;
 
-  public TopicPublisherImpl(SessionImpl mySession, Topic topic,
-                            int producerId, RequestRegistry requestRegistry,
-                            String myHostname, String clientId)
-  {
-    super(mySession, producerId, requestRegistry, myHostname, clientId);
-    this.topic = topic;
-  }
-
-  public Request getRecreateRequest()
-  {
-    return new CreatePublisherRequest(mySession, mySession.dispatchId, (TopicImpl) topic);
-  }
-
-  public void setRecreateReply(Reply reply)
-  {
-    producerId = ((CreatePublisherReply)reply).getTopicPublisherId();
-    try
-    {
-      clientId = mySession.myConnection.getClientID();
-    } catch (JMSException e)
-    {
+    public TopicPublisherImpl(SessionImpl mySession, Topic topic,
+                              int producerId, RequestRegistry requestRegistry,
+                              String myHostname, String clientId) {
+        super(mySession, producerId, requestRegistry, myHostname, clientId);
+        this.topic = topic;
     }
-    if (clientId == null)
-      clientId = mySession.myConnection.getInternalCID();
-  }
 
-  public List getRecreatables()
-  {
-    return null;
-  }
+    public Request getRecreateRequest() {
+        return new CreatePublisherRequest(mySession, mySession.dispatchId, (TopicImpl) topic);
+    }
 
-  public Topic getTopic()
-    throws JMSException
-  {
-    verifyState();
+    public void setRecreateReply(Reply reply) {
+        producerId = ((CreatePublisherReply) reply).getTopicPublisherId();
+        try {
+            clientId = mySession.myConnection.getClientID();
+        } catch (JMSException e) {
+        }
+        if (clientId == null)
+            clientId = mySession.myConnection.getInternalCID();
+    }
 
-    return (topic);
-  }
+    public List getRecreatables() {
+        return null;
+    }
 
-  public void publish(Message message)
-    throws JMSException
-  {
-    send(message);
-  }
+    public Topic getTopic()
+            throws JMSException {
+        verifyState();
 
-  public void publish(Message message, int deliveryMode, int priority, long timeToLive)
-    throws JMSException
-  {
-    send(message, deliveryMode, priority, timeToLive);
-  }
+        return (topic);
+    }
 
-  public void publish(Topic topic, Message message)
-    throws JMSException
-  {
-    send(topic, message);
-  }
+    public void publish(Message message)
+            throws JMSException {
+        send(message);
+    }
 
-  public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive)
-    throws JMSException
-  {
-    send(topic, message, deliveryMode, priority, timeToLive);
-  }
+    public void publish(Message message, int deliveryMode, int priority, long timeToLive)
+            throws JMSException {
+        send(message, deliveryMode, priority, timeToLive);
+    }
+
+    public void publish(Topic topic, Message message)
+            throws JMSException {
+        send(topic, message);
+    }
+
+    public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive)
+            throws JMSException {
+        send(topic, message, deliveryMode, priority, timeToLive);
+    }
 }
 

@@ -24,75 +24,65 @@ import java.io.IOException;
 /**
  * Integer in the range 0 to 2^8-1 inclusive
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPUnsignedByte extends AMQPType
-{
-  int value;
+public class AMQPUnsignedByte extends AMQPType {
+    int value;
 
-  /**
-   * Constructs an AMQPUnsignedByte with an undefined value
-   *
-   */
-  public AMQPUnsignedByte()
-  {
-    super("ubyte", AMQPTypeDecoder.UBYTE);
-  }
+    /**
+     * Constructs an AMQPUnsignedByte with an undefined value
+     */
+    public AMQPUnsignedByte() {
+        super("ubyte", AMQPTypeDecoder.UBYTE);
+    }
 
-  /**
-   * Constructs an AMQPUnsignedByte with a value
-   *
-   * @param value value
-   */
-  public AMQPUnsignedByte(int value)
-  {
-    super("ubyte", AMQPTypeDecoder.UBYTE);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPUnsignedByte with a value
+     *
+     * @param value value
+     */
+    public AMQPUnsignedByte(int value) {
+        super("ubyte", AMQPTypeDecoder.UBYTE);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(int value)
-  {
-    this.value = value;
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(int value) {
+        this.value = value;
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public int getValue()
-  {
-    return value;
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public int getValue() {
+        return value;
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+1;
-    return n;
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + 1;
+        return n;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    value = in.readUnsignedByte();
-  }
+    public void readContent(DataInput in) throws IOException {
+        value = in.readUnsignedByte();
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeByte(value);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeByte(value);
+    }
 
-  public String getValueString()
-  {
-    return Integer.toString(value);
-  }
+    public String getValueString() {
+        return Integer.toString(value);
+    }
 
-  public String toString()
-  {
-    return "[AMQPUnsignedByte, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AMQPUnsignedByte, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

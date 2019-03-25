@@ -17,56 +17,40 @@
 
 package com.swiftmq.amqp.v100.generated.messaging.addressing;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
-
 /**
- *  The LifetimePolicy visitor.
+ * The LifetimePolicy visitor.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface LifetimePolicyVisitor
-{
+public interface LifetimePolicyVisitor {
 
-  /**
-   * Visitor method for a DeleteOnClose type object.
-   *
-   * @param impl a DeleteOnClose type object
-   */
-  public void visit(DeleteOnClose impl);
+    /**
+     * Visitor method for a DeleteOnClose type object.
+     *
+     * @param impl a DeleteOnClose type object
+     */
+    public void visit(DeleteOnClose impl);
 
-  /**
-   * Visitor method for a DeleteOnNoLinks type object.
-   *
-   * @param impl a DeleteOnNoLinks type object
-   */
-  public void visit(DeleteOnNoLinks impl);
+    /**
+     * Visitor method for a DeleteOnNoLinks type object.
+     *
+     * @param impl a DeleteOnNoLinks type object
+     */
+    public void visit(DeleteOnNoLinks impl);
 
-  /**
-   * Visitor method for a DeleteOnNoMessages type object.
-   *
-   * @param impl a DeleteOnNoMessages type object
-   */
-  public void visit(DeleteOnNoMessages impl);
+    /**
+     * Visitor method for a DeleteOnNoMessages type object.
+     *
+     * @param impl a DeleteOnNoMessages type object
+     */
+    public void visit(DeleteOnNoMessages impl);
 
-  /**
-   * Visitor method for a DeleteOnNoLinksOrMessages type object.
-   *
-   * @param impl a DeleteOnNoLinksOrMessages type object
-   */
-  public void visit(DeleteOnNoLinksOrMessages impl);
+    /**
+     * Visitor method for a DeleteOnNoLinksOrMessages type object.
+     *
+     * @param impl a DeleteOnNoLinksOrMessages type object
+     */
+    public void visit(DeleteOnNoLinksOrMessages impl);
 }

@@ -17,20 +17,10 @@
 
 package com.swiftmq.amqp.v100.generated.messaging.addressing;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPSymbol;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <p>
@@ -43,39 +33,37 @@ import java.util.*;
  * </p><p>
  * </p>
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class TerminusExpiryPolicy extends AMQPSymbol
-{
+public class TerminusExpiryPolicy extends AMQPSymbol {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add("link-detach");
-    POSSIBLE_VALUES.add("session-end");
-    POSSIBLE_VALUES.add("connection-close");
-    POSSIBLE_VALUES.add("never");
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final TerminusExpiryPolicy LINK_DETACH = new TerminusExpiryPolicy("link-detach");
-  public static final TerminusExpiryPolicy SESSION_END = new TerminusExpiryPolicy("session-end");
-  public static final TerminusExpiryPolicy CONNECTION_CLOSE = new TerminusExpiryPolicy("connection-close");
-  public static final TerminusExpiryPolicy NEVER = new TerminusExpiryPolicy("never");
+    static {
+        POSSIBLE_VALUES.add("link-detach");
+        POSSIBLE_VALUES.add("session-end");
+        POSSIBLE_VALUES.add("connection-close");
+        POSSIBLE_VALUES.add("never");
+    }
 
-  /**
-   * Constructs a TerminusExpiryPolicy.
-   *
-   * @param initValue initial value
-   */
-  public TerminusExpiryPolicy(String initValue) 
-  {
-    super(initValue);
-  }
+    public static final TerminusExpiryPolicy LINK_DETACH = new TerminusExpiryPolicy("link-detach");
+    public static final TerminusExpiryPolicy SESSION_END = new TerminusExpiryPolicy("session-end");
+    public static final TerminusExpiryPolicy CONNECTION_CLOSE = new TerminusExpiryPolicy("connection-close");
+    public static final TerminusExpiryPolicy NEVER = new TerminusExpiryPolicy("never");
+
+    /**
+     * Constructs a TerminusExpiryPolicy.
+     *
+     * @param initValue initial value
+     */
+    public TerminusExpiryPolicy(String initValue) {
+        super(initValue);
+    }
 
 
-  public String toString()
-  {
-    return "[TerminusExpiryPolicy " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[TerminusExpiryPolicy " + super.toString() + "]";
+    }
 }

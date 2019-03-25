@@ -30,7 +30,7 @@ import java.util.Vector;
  * <u>Example:</u><BR><BR>
  * <code>ima.comm.partner.names=partner1,partner2,partner3</code><BR>
  * (Section prefix in this case is "<code>ima.comm.partner</code>") <BR><BR>
- *
+ * <p>
  * As value of the sectipn property a list of section elements could defined.
  * The values are separated by comma.
  * <BR><BR>
@@ -41,99 +41,97 @@ import java.util.Vector;
  * <u>Example:</u><BR><BR>
  * <code>ima.comm.partner.partner1.host=www.iit.de</code><BR>
  * <code>ima.comm.partner.partner1.port=5000</code>.
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class StructuredProperties
-{
-  public static final String SECTION_QUALIFIER = ".names";
-  Properties baseProperties = null;
+public class StructuredProperties {
+    public static final String SECTION_QUALIFIER = ".names";
+    Properties baseProperties = null;
 
-  /**
-   * Wraps StructuredProperties around Properties.
-   * @param baseProperties Basis-Properties
-   * @SBGen Constructor assigns baseProperties
-   */
-  public StructuredProperties(Properties baseProperties)
-  {
-    // SBgen: Assign variable
-    this.baseProperties = baseProperties;
-  }
-
-  /**
-   * Returns the base properties
-   * @return base properties
-   * @SBGen Method get baseProperties
-   */
-  public Properties getBaseProperties()
-  {
-    // SBgen: Get variable
-    return (baseProperties);
-  }
-
-  /**
-   * Returns an array with all defined sections
-   * @return defined sections
-   */
-  public String[] getSections()
-  {
-    Vector vec = new Vector();
-    Enumeration e = baseProperties.propertyNames();
-    while (e.hasMoreElements())
-    {
-      String propName = (String) e.nextElement();
-      if (propName.endsWith(SECTION_QUALIFIER))
-      {
-        vec.addElement(propName.substring(0, propName.indexOf(SECTION_QUALIFIER)));
-      }
+    /**
+     * Wraps StructuredProperties around Properties.
+     *
+     * @param baseProperties Basis-Properties
+     * @SBGen Constructor assigns baseProperties
+     */
+    public StructuredProperties(Properties baseProperties) {
+        // SBgen: Assign variable
+        this.baseProperties = baseProperties;
     }
-    String[] rArray = new String[vec.size()];
-    for (int i = 0; i < vec.size(); i++)
-      rArray[i] = (String) vec.elementAt(i);
 
-    return rArray;
-  }
+    /**
+     * Returns the base properties
+     *
+     * @return base properties
+     * @SBGen Method get baseProperties
+     */
+    public Properties getBaseProperties() {
+        // SBgen: Get variable
+        return (baseProperties);
+    }
 
-  /**
-   * Checks if a section with that prefix is defined
-   * @param sectionPrefix SectionPrefix
-   */
-  public boolean hasSection(String sectionPrefix)
-  {
-    return baseProperties.get(sectionPrefix + SECTION_QUALIFIER) != null;
-  }
+    /**
+     * Returns an array with all defined sections
+     *
+     * @return defined sections
+     */
+    public String[] getSections() {
+        Vector vec = new Vector();
+        Enumeration e = baseProperties.propertyNames();
+        while (e.hasMoreElements()) {
+            String propName = (String) e.nextElement();
+            if (propName.endsWith(SECTION_QUALIFIER)) {
+                vec.addElement(propName.substring(0, propName.indexOf(SECTION_QUALIFIER)));
+            }
+        }
+        String[] rArray = new String[vec.size()];
+        for (int i = 0; i < vec.size(); i++)
+            rArray[i] = (String) vec.elementAt(i);
 
-  /**
-   * Returns all section elements for the given section
-   * @param sectionPrefix SectionPrefix
-   * @return section elements
-   */
-  public String[] getSectionElements(String sectionPrefix)
-  {
-    String propValue = (String) baseProperties.get(sectionPrefix + SECTION_QUALIFIER);
-    if (propValue == null)
-      return null;
-    StringTokenizer t = new StringTokenizer(propValue, ",");
-    String[] rArray = new String[t.countTokens()];
-    int i = 0;
-    while (t.hasMoreTokens())
-      rArray[i++] = t.nextToken();
-    return rArray;
-  }
+        return rArray;
+    }
 
-  /**
-   * Returns a property value<BR><BR>
-   * <u>Example:</u><BR>
-   * Is the property name <code>ima.telegram.fiapas.content</code>, we get the
-   * value with<BR>
-   * <code>getValue("ima.telegram","fiapas","content");</code>
-   * @param sectionPrefix SectionPrefix
-   * @param sectionElement Name of the SectionElement
-   * @param propertyName Name of the Property
-   */
-  public String getValue(String sectionPrefix, String sectionElement, String propertyName)
-  {
-    return (String) baseProperties.get(sectionPrefix + "." + sectionElement + "." + propertyName);
-  }
+    /**
+     * Checks if a section with that prefix is defined
+     *
+     * @param sectionPrefix SectionPrefix
+     */
+    public boolean hasSection(String sectionPrefix) {
+        return baseProperties.get(sectionPrefix + SECTION_QUALIFIER) != null;
+    }
+
+    /**
+     * Returns all section elements for the given section
+     *
+     * @param sectionPrefix SectionPrefix
+     * @return section elements
+     */
+    public String[] getSectionElements(String sectionPrefix) {
+        String propValue = (String) baseProperties.get(sectionPrefix + SECTION_QUALIFIER);
+        if (propValue == null)
+            return null;
+        StringTokenizer t = new StringTokenizer(propValue, ",");
+        String[] rArray = new String[t.countTokens()];
+        int i = 0;
+        while (t.hasMoreTokens())
+            rArray[i++] = t.nextToken();
+        return rArray;
+    }
+
+    /**
+     * Returns a property value<BR><BR>
+     * <u>Example:</u><BR>
+     * Is the property name <code>ima.telegram.fiapas.content</code>, we get the
+     * value with<BR>
+     * <code>getValue("ima.telegram","fiapas","content");</code>
+     *
+     * @param sectionPrefix  SectionPrefix
+     * @param sectionElement Name of the SectionElement
+     * @param propertyName   Name of the Property
+     */
+    public String getValue(String sectionPrefix, String sectionElement, String propertyName) {
+        return (String) baseProperties.get(sectionPrefix + "." + sectionElement + "." + propertyName);
+    }
 }
 

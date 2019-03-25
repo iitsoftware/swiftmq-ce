@@ -30,64 +30,63 @@ import java.nio.ByteBuffer;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface ProtocolInputHandler
-{
+public interface ProtocolInputHandler {
 
-  /**
-   * Factory method to create a new ProtocolInputHandler.
-   * For example, a RawInputHandler returns a RawInputHandler here.
-   *
-   * @return new protocol input handler.
-   */
-  public ProtocolInputHandler create();
+    /**
+     * Factory method to create a new ProtocolInputHandler.
+     * For example, a RawInputHandler returns a RawInputHandler here.
+     *
+     * @return new protocol input handler.
+     */
+    public ProtocolInputHandler create();
 
-  /**
-   * Create the input buffer of the protocol handler.
-   * The buffer must be created with the <code>initialSize</code>. Each time
-   * <code>getBuffer()</code> is called, the buffer must have a remaining size
-   * of <code>ensureSize</code>.
-   *
-   * @param initialSize initial size
-   * @param ensureSize  ensured size on each getBuffer call
-   */
-  public void createInputBuffer(int initialSize, int ensureSize);
+    /**
+     * Create the input buffer of the protocol handler.
+     * The buffer must be created with the <code>initialSize</code>. Each time
+     * <code>getBuffer()</code> is called, the buffer must have a remaining size
+     * of <code>ensureSize</code>.
+     *
+     * @param initialSize initial size
+     * @param ensureSize  ensured size on each getBuffer call
+     */
+    public void createInputBuffer(int initialSize, int ensureSize);
 
-  /**
-   * Returns the protocol handler input buffer.
-   *
-   * @return buffer.
-   */
-  public ByteBuffer getByteBuffer();
+    /**
+     * Returns the protocol handler input buffer.
+     *
+     * @return buffer.
+     */
+    public ByteBuffer getByteBuffer();
 
-  /**
-   * Returns the protocol handler input buffer.
-   *
-   * @return buffer.
-   */
-  public byte[] getBuffer();
+    /**
+     * Returns the protocol handler input buffer.
+     *
+     * @return buffer.
+     */
+    public byte[] getBuffer();
 
-  /**
-   * Returns the current offset of the input buffer.
-   *
-   * @return offset.
-   */
-  public int getOffset();
+    /**
+     * Returns the current offset of the input buffer.
+     *
+     * @return offset.
+     */
+    public int getOffset();
 
-  /**
-   * Set the number of bytes written into the buffer.
-   * Called from the Network Swiftlet after it has read bytes from sockets directly into the buffer+offset.
-   *
-   * @param written number of bytes written
-   */
-  public void setBytesWritten(int written);
+    /**
+     * Set the number of bytes written into the buffer.
+     * Called from the Network Swiftlet after it has read bytes from sockets directly into the buffer+offset.
+     *
+     * @param written number of bytes written
+     */
+    public void setBytesWritten(int written);
 
-  /**
-   * Set the ChunkListener.
-   * The ChunkListener is implemented by the Network Swiftlet and will be set from it.
-   *
-   * @param listener listener.
-   */
-  public void setChunkListener(ChunkListener listener);
+    /**
+     * Set the ChunkListener.
+     * The ChunkListener is implemented by the Network Swiftlet and will be set from it.
+     *
+     * @param listener listener.
+     */
+    public void setChunkListener(ChunkListener listener);
 
 }
 

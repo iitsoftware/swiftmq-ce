@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: CreateShadowConsumerRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: CreateShadowConsumerRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,82 +33,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreateShadowConsumerRequest extends Request
-{
-  private String queueName;
+public class CreateShadowConsumerRequest extends Request {
+    private String queueName;
 
-  public CreateShadowConsumerRequest()
-  {
-    super(0, true);
-  }
+    public CreateShadowConsumerRequest() {
+        super(0, true);
+    }
 
-  public CreateShadowConsumerRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public CreateShadowConsumerRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CreateShadowConsumerRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public CreateShadowConsumerRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public CreateShadowConsumerRequest(int dispatchId, String queueName)
-  {
-    super(dispatchId, true);
-    this.queueName = queueName;
-  }
+    public CreateShadowConsumerRequest(int dispatchId, String queueName) {
+        super(dispatchId, true);
+        this.queueName = queueName;
+    }
 
-  public CreateShadowConsumerRequest(RequestRetryValidator validator, int dispatchId, String queueName)
-  {
-    super(dispatchId, true, validator);
-    this.queueName = queueName;
-  }
+    public CreateShadowConsumerRequest(RequestRetryValidator validator, int dispatchId, String queueName) {
+        super(dispatchId, true, validator);
+        this.queueName = queueName;
+    }
 
-  public void setQueueName(String queueName)
-  {
-    this.queueName = queueName;
-  }
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATESHADOWCONSUMER_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATESHADOWCONSUMER_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueName, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueName, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueName = SMQPUtil.read(queueName, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueName = SMQPUtil.read(queueName, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreateShadowConsumerReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CreateShadowConsumerReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/CreateShadowConsumerRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueName=");
-    _b.append(queueName);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/CreateShadowConsumerRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueName=");
+        _b.append(queueName);
+        _b.append("]");
+        return _b.toString();
+    }
 }

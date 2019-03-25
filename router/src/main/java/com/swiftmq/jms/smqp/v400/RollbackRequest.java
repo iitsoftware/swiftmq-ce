@@ -27,52 +27,45 @@ import com.swiftmq.tools.requestreply.RequestVisitor;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class RollbackRequest extends Request
-{
+public class RollbackRequest extends Request {
 
-  /**
-   * @param dispatchId
-   * @SBGen Constructor
-   */
-  public RollbackRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    /**
+     * @param dispatchId
+     * @SBGen Constructor
+     */
+    public RollbackRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROLLBACK_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_ROLLBACK_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new RollbackReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new RollbackReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitRollbackRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitRollbackRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[RollbackRequest " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[RollbackRequest " + super.toString() + "]";
+    }
 
 }
 

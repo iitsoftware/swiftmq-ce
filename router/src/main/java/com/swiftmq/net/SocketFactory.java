@@ -28,83 +28,89 @@ import java.net.UnknownHostException;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2004, All Rights Reserved
  */
-public interface SocketFactory
-{
+public interface SocketFactory {
 
-  /**
-   * Create a socket.
-   * @param host host.
-   * @param port port.
-   * @return new socket.
-   * @exception UnknownHostException if the host is unknown.
-   * @exception IOException on error.
-   */
-  public Socket createSocket(String host, int port)
-      throws UnknownHostException, IOException;
+    /**
+     * Create a socket.
+     *
+     * @param host host.
+     * @param port port.
+     * @return new socket.
+     * @throws UnknownHostException if the host is unknown.
+     * @throws IOException          on error.
+     */
+    public Socket createSocket(String host, int port)
+            throws UnknownHostException, IOException;
 
-  /**
-   * Create a socket.
-   * @param host host.
-   * @param port port.
-   * @param useTcpNoDelay use TCP No Delay.
-   * @return new socket.
-   * @exception UnknownHostException if the host is unknown.
-   * @exception IOException on error.
-   */
-  public Socket createSocket(String host, int port, boolean useTcpNoDelay)
-      throws UnknownHostException, IOException;
+    /**
+     * Create a socket.
+     *
+     * @param host          host.
+     * @param port          port.
+     * @param useTcpNoDelay use TCP No Delay.
+     * @return new socket.
+     * @throws UnknownHostException if the host is unknown.
+     * @throws IOException          on error.
+     */
+    public Socket createSocket(String host, int port, boolean useTcpNoDelay)
+            throws UnknownHostException, IOException;
 
-  /**
-   * Create a socket.
-   * @param addr address.
-   * @param port port.
-   * @return new socket.
-   * @exception UnknownHostException if the host is unknown.
-   * @exception IOException on error.
-   */
-  public Socket createSocket(InetAddress addr, int port)
-      throws UnknownHostException, IOException;
+    /**
+     * Create a socket.
+     *
+     * @param addr address.
+     * @param port port.
+     * @return new socket.
+     * @throws UnknownHostException if the host is unknown.
+     * @throws IOException          on error.
+     */
+    public Socket createSocket(InetAddress addr, int port)
+            throws UnknownHostException, IOException;
 
-  /**
-   * Create a socket.
-   * @param addr address.
-   * @param port port.
-   * @param useTcpNoDelay use TCP No Delay.
-   * @return new socket.
-   * @exception UnknownHostException if the host is unknown.
-   * @exception IOException on error.
-   */
-  public Socket createSocket(InetAddress addr, int port, boolean useTcpNoDelay)
-      throws UnknownHostException, IOException;
+    /**
+     * Create a socket.
+     *
+     * @param addr          address.
+     * @param port          port.
+     * @param useTcpNoDelay use TCP No Delay.
+     * @return new socket.
+     * @throws UnknownHostException if the host is unknown.
+     * @throws IOException          on error.
+     */
+    public Socket createSocket(InetAddress addr, int port, boolean useTcpNoDelay)
+            throws UnknownHostException, IOException;
 
-  /**
-   * Create a server socket.
-   * @param port port.
-   * @return new server socket.
-   * @exception IOException on error.
-   */
-  public ServerSocket createServerSocket(int port) throws IOException;
+    /**
+     * Create a server socket.
+     *
+     * @param port port.
+     * @return new server socket.
+     * @throws IOException on error.
+     */
+    public ServerSocket createServerSocket(int port) throws IOException;
 
-  /**
-   * Create a server socket.
-   * @param port port.
-   * @param backlog the backlog (max. pending requests).
-   * @return new server socket.
-   * @exception IOException on error.
-   */
-  public ServerSocket createServerSocket(int port,
-                                         int backlog) throws IOException;
+    /**
+     * Create a server socket.
+     *
+     * @param port    port.
+     * @param backlog the backlog (max. pending requests).
+     * @return new server socket.
+     * @throws IOException on error.
+     */
+    public ServerSocket createServerSocket(int port,
+                                           int backlog) throws IOException;
 
-  /**
-   * Create a server socket.
-   * @param port port.
-   * @param backlog the backlog (max. pending requests).
-   * @param bindAddr address to bind the server socket to (for multiple network cards).
-   * @return new server socket.
-   * @exception IOException on error.
-   */
-  public ServerSocket createServerSocket(int port, int backlog,
-                                         InetAddress bindAddr) throws IOException;
+    /**
+     * Create a server socket.
+     *
+     * @param port     port.
+     * @param backlog  the backlog (max. pending requests).
+     * @param bindAddr address to bind the server socket to (for multiple network cards).
+     * @return new server socket.
+     * @throws IOException on error.
+     */
+    public ServerSocket createServerSocket(int port, int backlog,
+                                           InetAddress bindAddr) throws IOException;
 }
 
 

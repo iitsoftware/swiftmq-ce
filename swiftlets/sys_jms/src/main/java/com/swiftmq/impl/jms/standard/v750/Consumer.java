@@ -22,171 +22,145 @@ import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.swiftlet.queue.*;
 
-public class Consumer implements TransactionFactory
-{
-  protected SessionContext ctx = null;
-  protected QueueReceiver receiver = null;
-  protected Selector selector = null;
-  protected QueuePullTransaction readTransaction = null;
-  protected QueuePullTransaction transaction = null;
-  protected int clientDispatchId = -1;
-  protected int clientListenerId = -1;
-  protected MessageProcessor messageProcessor = null;
-  protected boolean hasListener = false;
-  protected boolean markedForClose = false;
-  protected DestinationCollector collector = null;
+public class Consumer implements TransactionFactory {
+    protected SessionContext ctx = null;
+    protected QueueReceiver receiver = null;
+    protected Selector selector = null;
+    protected QueuePullTransaction readTransaction = null;
+    protected QueuePullTransaction transaction = null;
+    protected int clientDispatchId = -1;
+    protected int clientListenerId = -1;
+    protected MessageProcessor messageProcessor = null;
+    protected boolean hasListener = false;
+    protected boolean markedForClose = false;
+    protected DestinationCollector collector = null;
 
-  protected Consumer(SessionContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  protected boolean isAutoCommit()
-  {
-    return false;
-  }
-
-  protected void setQueueReceiver(QueueReceiver receiver)
-  {
-    this.receiver = receiver;
-  }
-
-  protected void setSelector(Selector selector)
-  {
-    this.selector = selector;
-  }
-
-  public void createCollector(AccountingProfile accoutingProfile, DestinationCollectorCache cache)
-  {
-    // Needs to be overwritten
-  }
-
-  protected void removeCollector()
-  {
-    collector = null;
-  }
-
-  public DestinationCollector getCollector()
-  {
-    return collector;
-  }
-
-  public Selector getSelector()
-  {
-    return selector;
-  }
-
-  public QueueTransaction createTransaction() throws Exception
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
-    transaction = receiver.createTransaction(true);
-    return transaction;
-  }
-
-  public QueueTransaction createReadTransaction() throws Exception
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createReadTransaction");
-    readTransaction = receiver.createTransaction(false);
-    return readTransaction;
-  }
-
-  public QueuePullTransaction getTransaction()
-  {
-    return transaction;
-  }
-
-  public QueuePullTransaction getReadTransaction()
-  {
-    return readTransaction;
-  }
-
-  public QueueTransaction createDuplicateTransaction() throws Exception
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createDuplicateTransaction");
-    return receiver.createTransaction(false);
-  }
-
-  public void setMessageListener(int clientDispatchId, int clientListenerId, MessageProcessor messageProcessor)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/setMessageListener, clientDispatchId=" + clientDispatchId + ", clientListenerId=" + clientListenerId);
-    this.clientDispatchId = clientDispatchId;
-    this.clientListenerId = clientListenerId;
-    this.messageProcessor = messageProcessor;
-    hasListener = true;
-  }
-
-  public int getClientDispatchId()
-  {
-    return clientDispatchId;
-  }
-
-  public int getClientListenerId()
-  {
-    return clientListenerId;
-  }
-
-  public MessageProcessor getMessageProcessor()
-  {
-    return messageProcessor;
-  }
-
-  public void removeMessageListener()
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/removeMessageListener");
-    this.clientDispatchId = -1;
-    this.clientListenerId = -1;
-    this.messageProcessor = null;
-    hasListener = false;
-  }
-
-  public boolean hasListener()
-  {
-    return hasListener;
-  }
-
-  public void markForClose()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
-    try
-    {
-      if (readTransaction != null && !readTransaction.isClosed())
-      {
-        if (messageProcessor != null)
-          readTransaction.unregisterMessageProcessor(messageProcessor);
-      }
-    } catch (Exception ignored)
-    {
+    protected Consumer(SessionContext ctx) {
+        this.ctx = ctx;
     }
-    messageProcessor = null;
-    markedForClose = true;
-    collector = null;
-  }
 
-  public boolean isMarkedForClose()
-  {
-    return markedForClose;
-  }
-
-  protected void close() throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
-    if (readTransaction != null && !readTransaction.isClosed())
-    {
-      if (messageProcessor != null)
-        readTransaction.unregisterMessageProcessor(messageProcessor);
-      readTransaction.rollback();
-      readTransaction = null;
+    protected boolean isAutoCommit() {
+        return false;
     }
-    messageProcessor = null;
-    transaction = null;
-    readTransaction = null;
-    receiver.close();
-    collector = null;
-  }
+
+    protected void setQueueReceiver(QueueReceiver receiver) {
+        this.receiver = receiver;
+    }
+
+    protected void setSelector(Selector selector) {
+        this.selector = selector;
+    }
+
+    public void createCollector(AccountingProfile accoutingProfile, DestinationCollectorCache cache) {
+        // Needs to be overwritten
+    }
+
+    protected void removeCollector() {
+        collector = null;
+    }
+
+    public DestinationCollector getCollector() {
+        return collector;
+    }
+
+    public Selector getSelector() {
+        return selector;
+    }
+
+    public QueueTransaction createTransaction() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
+        transaction = receiver.createTransaction(true);
+        return transaction;
+    }
+
+    public QueueTransaction createReadTransaction() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createReadTransaction");
+        readTransaction = receiver.createTransaction(false);
+        return readTransaction;
+    }
+
+    public QueuePullTransaction getTransaction() {
+        return transaction;
+    }
+
+    public QueuePullTransaction getReadTransaction() {
+        return readTransaction;
+    }
+
+    public QueueTransaction createDuplicateTransaction() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createDuplicateTransaction");
+        return receiver.createTransaction(false);
+    }
+
+    public void setMessageListener(int clientDispatchId, int clientListenerId, MessageProcessor messageProcessor) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/setMessageListener, clientDispatchId=" + clientDispatchId + ", clientListenerId=" + clientListenerId);
+        this.clientDispatchId = clientDispatchId;
+        this.clientListenerId = clientListenerId;
+        this.messageProcessor = messageProcessor;
+        hasListener = true;
+    }
+
+    public int getClientDispatchId() {
+        return clientDispatchId;
+    }
+
+    public int getClientListenerId() {
+        return clientListenerId;
+    }
+
+    public MessageProcessor getMessageProcessor() {
+        return messageProcessor;
+    }
+
+    public void removeMessageListener() {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/removeMessageListener");
+        this.clientDispatchId = -1;
+        this.clientListenerId = -1;
+        this.messageProcessor = null;
+        hasListener = false;
+    }
+
+    public boolean hasListener() {
+        return hasListener;
+    }
+
+    public void markForClose() {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
+        try {
+            if (readTransaction != null && !readTransaction.isClosed()) {
+                if (messageProcessor != null)
+                    readTransaction.unregisterMessageProcessor(messageProcessor);
+            }
+        } catch (Exception ignored) {
+        }
+        messageProcessor = null;
+        markedForClose = true;
+        collector = null;
+    }
+
+    public boolean isMarkedForClose() {
+        return markedForClose;
+    }
+
+    protected void close() throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
+        if (readTransaction != null && !readTransaction.isClosed()) {
+            if (messageProcessor != null)
+                readTransaction.unregisterMessageProcessor(messageProcessor);
+            readTransaction.rollback();
+            readTransaction = null;
+        }
+        messageProcessor = null;
+        transaction = null;
+        readTransaction = null;
+        receiver.close();
+        collector = null;
+    }
 }
 

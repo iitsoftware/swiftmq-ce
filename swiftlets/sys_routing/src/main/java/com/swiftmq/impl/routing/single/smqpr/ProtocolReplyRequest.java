@@ -25,61 +25,50 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ProtocolReplyRequest extends ReplyRequest
-{
-  String protocolVersionSelected = null;
+public class ProtocolReplyRequest extends ReplyRequest {
+    String protocolVersionSelected = null;
 
-  public ProtocolReplyRequest()
-  {
-    super(0, false);
-  }
+    public ProtocolReplyRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.PROTOCOL_REPREQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.PROTOCOL_REPREQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (protocolVersionSelected != null)
-    {
-      out.writeByte(1);
-      out.writeUTF(protocolVersionSelected);
-    } else
-      out.writeByte(0);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (protocolVersionSelected != null) {
+            out.writeByte(1);
+            out.writeUTF(protocolVersionSelected);
+        } else
+            out.writeByte(0);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    byte b = in.readByte();
-    if (b == 1)
-      protocolVersionSelected = in.readUTF();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        byte b = in.readByte();
+        if (b == 1)
+            protocolVersionSelected = in.readUTF();
+    }
 
-  public String getProtocolVersionSelected()
-  {
-    return protocolVersionSelected;
-  }
+    public String getProtocolVersionSelected() {
+        return protocolVersionSelected;
+    }
 
-  public void setProtocolVersionSelected(String protocolVersionSelected)
-  {
-    this.protocolVersionSelected = protocolVersionSelected;
-  }
+    public void setProtocolVersionSelected(String protocolVersionSelected) {
+        this.protocolVersionSelected = protocolVersionSelected;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[ProtocolReplyRequest " + super.toString() + ", protocolVersionSelected=" + protocolVersionSelected + "]";
-  }
+    public String toString() {
+        return "[ProtocolReplyRequest " + super.toString() + ", protocolVersionSelected=" + protocolVersionSelected + "]";
+    }
 }

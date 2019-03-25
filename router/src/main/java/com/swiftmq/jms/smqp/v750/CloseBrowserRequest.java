@@ -17,97 +17,85 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: CloseBrowserRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: CloseBrowserRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CloseBrowserRequest extends Request 
-{
-  private int queueBrowserId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CloseBrowserRequest()
-  {
-    super(0,true);
-  }
+public class CloseBrowserRequest extends Request {
+    private int queueBrowserId;
 
-  public CloseBrowserRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public CloseBrowserRequest() {
+        super(0, true);
+    }
 
-  public CloseBrowserRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public CloseBrowserRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CloseBrowserRequest(int dispatchId, int queueBrowserId)
-  {
-    super(dispatchId,true);
-    this.queueBrowserId = queueBrowserId;
-  }
+    public CloseBrowserRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public CloseBrowserRequest(RequestRetryValidator validator, int dispatchId, int queueBrowserId)
-  {
-    super(dispatchId,true,validator);
-    this.queueBrowserId = queueBrowserId;
-  }
-  
-  public void setQueueBrowserId(int queueBrowserId)
-  {
-    this.queueBrowserId = queueBrowserId;
-  }
+    public CloseBrowserRequest(int dispatchId, int queueBrowserId) {
+        super(dispatchId, true);
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  public int getQueueBrowserId()
-  {
-    return queueBrowserId;
-  }
+    public CloseBrowserRequest(RequestRetryValidator validator, int dispatchId, int queueBrowserId) {
+        super(dispatchId, true, validator);
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSEBROWSER_REQ;
-  }
+    public void setQueueBrowserId(int queueBrowserId) {
+        this.queueBrowserId = queueBrowserId;
+    }
+
+    public int getQueueBrowserId() {
+        return queueBrowserId;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSEBROWSER_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueBrowserId,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueBrowserId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueBrowserId = SMQPUtil.read(queueBrowserId,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueBrowserId = SMQPUtil.read(queueBrowserId, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CloseBrowserReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CloseBrowserReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/CloseBrowserRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueBrowserId=");
-    _b.append(queueBrowserId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/CloseBrowserRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueBrowserId=");
+        _b.append(queueBrowserId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -21,14 +21,12 @@ package com.swiftmq.tools.requestreply;
  * @Author Andreas Mueller, IIT GmbH
  * @Version 1.0
  */
-public class TransportException extends Exception
-{
-  /**
-   * @SBGen Constructor
-   */
-  public TransportException(String message)
-  {
-    super(message);
-  }
+public class TransportException extends Exception {
+    /**
+     * @SBGen Constructor
+     */
+    public TransportException(String message) {
+        super(message);
+    }
 }
 

@@ -35,14 +35,14 @@ public class MapMessage extends Message {
         super(ctx, _impl);
     }
 
-  /**
-   * return the type of this Message
-   *
-   * @return "map"
-   */
-  public String type() {
-    return "map";
-  }
+    /**
+     * return the type of this Message
+     *
+     * @return "map"
+     */
+    public String type() {
+        return "map";
+    }
 
     /**
      * Returns the body.

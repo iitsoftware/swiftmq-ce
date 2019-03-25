@@ -2,7 +2,7 @@
           displayname="Monitor Swiftlet"
           class="com.swiftmq.swiftlet.monitor.MonitorSwiftlet"
           description="Monitor Swiftlet"
-          icon="/com/swiftmq/swiftlet/monitor/images/swiftlet.png"
+          icon="/sys_monitor/images/swiftlet.png"
           release="${release}"
           vendor="IIT Software GmbH">
 	<configuration>

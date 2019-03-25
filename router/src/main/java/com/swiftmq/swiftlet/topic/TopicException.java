@@ -24,15 +24,14 @@ import javax.jms.JMSException;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class TopicException extends JMSException
-{
-  /**
-   * Creates a new TopicException.
-   * @param msg the message.
-   */
-  public TopicException(String msg)
-  {
-    super(msg);
-  }
+public class TopicException extends JMSException {
+    /**
+     * Creates a new TopicException.
+     *
+     * @param msg the message.
+     */
+    public TopicException(String msg) {
+        super(msg);
+    }
 }
 

@@ -17,31 +17,30 @@
 
 package com.swiftmq.impl.store.standard.log;
 
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.DataOutput;
 
-public interface LogFile
-{
-  public void init(long maxSize);
+public interface LogFile {
+    public void init(long maxSize);
 
-  public void setInMemoryMode(boolean b);
+    public void setInMemoryMode(boolean b);
 
-  public boolean isInMemoryMode();
+    public boolean isInMemoryMode();
 
-  public RandomAccessFile getFile();
+    public RandomAccessFile getFile();
 
-  public void write(LogRecord logRecord) throws IOException;
+    public void write(LogRecord logRecord) throws IOException;
 
-  public void write(LogRecord logRecord, DataOutput copyHere) throws IOException;
+    public void write(LogRecord logRecord, DataOutput copyHere) throws IOException;
 
-  public int getFlushSize();
+    public int getFlushSize();
 
-  public long getPosition();
+    public long getPosition();
 
-  public void flush(boolean sync) throws IOException;
+    public void flush(boolean sync) throws IOException;
 
-  public void reset(boolean sync) throws IOException;
+    public void reset(boolean sync) throws IOException;
 
-  public void reset(boolean sync, DataOutput copyHere) throws IOException;
+    public void reset(boolean sync, DataOutput copyHere) throws IOException;
 }

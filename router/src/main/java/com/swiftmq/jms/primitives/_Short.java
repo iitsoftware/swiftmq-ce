@@ -23,53 +23,43 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Short implements Dumpable, Primitive
-{
-  Short value = null;
+public class _Short implements Dumpable, Primitive {
+    Short value = null;
 
-  public _Short()
-  {
-  }
+    public _Short() {
+    }
 
-  public _Short(short value)
-  {
-    this.value = new Short(value);
-  }
+    public _Short(short value) {
+        this.value = new Short(value);
+    }
 
-  public _Short(String s)
-  {
-    this.value = Short.valueOf(s);
-  }
+    public _Short(String s) {
+        this.value = Short.valueOf(s);
+    }
 
-  public short shortValue()
-  {
-    return value.shortValue();
-  }
+    public short shortValue() {
+        return value.shortValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return SHORT;
-  }
+    public int getDumpId() {
+        return SHORT;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeShort(value.shortValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeShort(value.shortValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Short(in.readShort());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Short(in.readShort());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

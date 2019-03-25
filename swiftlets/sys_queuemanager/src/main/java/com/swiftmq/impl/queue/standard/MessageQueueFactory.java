@@ -17,11 +17,10 @@
 
 package com.swiftmq.impl.queue.standard;
 
-import com.swiftmq.swiftlet.store.PersistentStore;
 import com.swiftmq.swiftlet.store.NonPersistentStore;
+import com.swiftmq.swiftlet.store.PersistentStore;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
-public interface MessageQueueFactory
-{
-  public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP);
+public interface MessageQueueFactory {
+    public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP);
 }

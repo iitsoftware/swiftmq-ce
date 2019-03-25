@@ -23,32 +23,35 @@ import java.io.IOException;
 
 /**
  * Interface for objects which should be dumpable via the Dumpalizer.
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  * @see Dumpalizer
  */
-public interface Dumpable
-{
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId();
+public interface Dumpable {
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId();
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out)
-      throws IOException;
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out)
+            throws IOException;
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in)
-      throws IOException;
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in)
+            throws IOException;
 }
 

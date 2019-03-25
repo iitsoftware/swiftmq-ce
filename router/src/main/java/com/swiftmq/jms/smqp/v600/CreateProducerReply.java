@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CreateProducerReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CreateProducerReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,54 +30,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreateProducerReply extends ReplyNE
-{
-  private int queueProducerId;
+public class CreateProducerReply extends ReplyNE {
+    private int queueProducerId;
 
-  public CreateProducerReply(int queueProducerId)
-  {
-    this.queueProducerId = queueProducerId;
-  }
+    public CreateProducerReply(int queueProducerId) {
+        this.queueProducerId = queueProducerId;
+    }
 
-  protected CreateProducerReply()
-  {
-  }
+    protected CreateProducerReply() {
+    }
 
-  public void setQueueProducerId(int queueProducerId)
-  {
-    this.queueProducerId = queueProducerId;
-  }
+    public void setQueueProducerId(int queueProducerId) {
+        this.queueProducerId = queueProducerId;
+    }
 
-  public int getQueueProducerId()
-  {
-    return queueProducerId;
-  }
+    public int getQueueProducerId() {
+        return queueProducerId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEPRODUCER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEPRODUCER_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueProducerId, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueProducerId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueProducerId = SMQPUtil.read(queueProducerId, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueProducerId = SMQPUtil.read(queueProducerId, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CreateProducerReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueProducerId=");
-    _b.append(queueProducerId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CreateProducerReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueProducerId=");
+        _b.append(queueProducerId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

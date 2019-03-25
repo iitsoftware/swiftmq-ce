@@ -18,19 +18,12 @@
 package com.swiftmq.amqp.v100.generated.messaging.delivery_state;
 
 import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * <p>
@@ -48,274 +41,246 @@ import java.util.*;
  * </p><p>
  * </p>
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
 public class Received extends AMQPList
-       implements DeliveryStateIF
-{
-  public static String DESCRIPTOR_NAME = "amqp:received:list";
-  public static long DESCRIPTOR_CODE = 0x00000000L<<32 | 0x00000023L;
+        implements DeliveryStateIF {
+    public static String DESCRIPTOR_NAME = "amqp:received:list";
+    public static long DESCRIPTOR_CODE = 0x00000000L << 32 | 0x00000023L;
 
-  public AMQPDescribedConstructor codeConstructor = new AMQPDescribedConstructor(new AMQPUnsignedLong(DESCRIPTOR_CODE), AMQPTypeDecoder.UNKNOWN);
-  public AMQPDescribedConstructor nameConstructor = new AMQPDescribedConstructor(new AMQPSymbol(DESCRIPTOR_NAME), AMQPTypeDecoder.UNKNOWN);
+    public AMQPDescribedConstructor codeConstructor = new AMQPDescribedConstructor(new AMQPUnsignedLong(DESCRIPTOR_CODE), AMQPTypeDecoder.UNKNOWN);
+    public AMQPDescribedConstructor nameConstructor = new AMQPDescribedConstructor(new AMQPSymbol(DESCRIPTOR_NAME), AMQPTypeDecoder.UNKNOWN);
 
-  boolean dirty = false;
+    boolean dirty = false;
 
-  AMQPUnsignedInt sectionNumber =  null;
-  AMQPUnsignedLong sectionOffset =  null;
+    AMQPUnsignedInt sectionNumber = null;
+    AMQPUnsignedLong sectionOffset = null;
 
-  /**
-   * Constructs a Received.
-   *
-   * @param initValue initial value
-   * @exception error during initialization
-   */
-  public Received(List initValue) throws Exception
-  {
-    super(initValue);
-    if (initValue != null)
-      decode();
-  }
-
-  /**
-   * Constructs a Received.
-   *
-   */
-  public Received()
-  {
-    dirty = true;
-  }
-
-  /**
-   * Return whether this Received has a descriptor
-   *
-   * @return true/false
-   */
-  public boolean hasDescriptor()
-  {
-    return true;
-  }
-
-  /**
-   * Accept method for a DeliveryState visitor.
-   *
-   * @param visitor DeliveryState visitor
-   */
-  public void accept(DeliveryStateVisitor visitor)
-  {
-    visitor.visit(this);
-  }
-
-  /**
-   * Returns the mandatory SectionNumber field.
-   *
-   * @return SectionNumber
-   */
-  public AMQPUnsignedInt getSectionNumber()
-  {
-    return sectionNumber;
-  }
-
-  /**
-   * Sets the mandatory SectionNumber field.
-   *
-   * @param sectionNumber SectionNumber
-   */
-  public void setSectionNumber(AMQPUnsignedInt sectionNumber)
-  {
-    dirty = true;
-    this.sectionNumber = sectionNumber;
-  }
-  /**
-   * Returns the mandatory SectionOffset field.
-   *
-   * @return SectionOffset
-   */
-  public AMQPUnsignedLong getSectionOffset()
-  {
-    return sectionOffset;
-  }
-
-  /**
-   * Sets the mandatory SectionOffset field.
-   *
-   * @param sectionOffset SectionOffset
-   */
-  public void setSectionOffset(AMQPUnsignedLong sectionOffset)
-  {
-    dirty = true;
-    this.sectionOffset = sectionOffset;
-  }
-
-  /**
-   * Returns the predicted size of this Received. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize()
-  {
-    int n;
-    if (dirty)
-    {
-      AMQPDescribedConstructor _c = getConstructor();
-      setConstructor(null);
-      n = super.getPredictedSize();
-      n += codeConstructor.getPredictedSize();
-      n += (sectionNumber != null?sectionNumber.getPredictedSize():1);
-      n += (sectionOffset != null?sectionOffset.getPredictedSize():1);
-    setConstructor(_c);
-    } else
-      n = super.getPredictedSize();
-    return n;
-  }
-
-  private AMQPArray singleToArray(AMQPType t) throws IOException
-  {
-    return new AMQPArray(t.getCode(), new AMQPType[]{t});
-  }
-
-  private void decode() throws Exception
-  {
-    List l = getValue();
-
-    AMQPType t = null;
-    int idx = 0;
-
-    // Field: sectionNumber
-    // Type     : uint, converted: AMQPUnsignedInt
-    // Basetype : uint
-    // Default  : null
-    // Mandatory: true
-    // Multiple : false
-    // Factory  : ./.
-    if (idx >= l.size())
-      return;
-    t = (AMQPType) l.get(idx++);
-    if (t.getCode() == AMQPTypeDecoder.NULL)
-      throw new Exception("Mandatory field 'sectionNumber' in 'Received' type is NULL");
-    try {
-      sectionNumber = (AMQPUnsignedInt)t;
-    } catch (ClassCastException e)
-    {
-      throw new Exception("Invalid type of field 'sectionNumber' in 'Received' type: "+e);
+    /**
+     * Constructs a Received.
+     *
+     * @param initValue initial value
+     * @throws error during initialization
+     */
+    public Received(List initValue) throws Exception {
+        super(initValue);
+        if (initValue != null)
+            decode();
     }
 
-    // Field: sectionOffset
-    // Type     : ulong, converted: AMQPUnsignedLong
-    // Basetype : ulong
-    // Default  : null
-    // Mandatory: true
-    // Multiple : false
-    // Factory  : ./.
-    if (idx >= l.size())
-      return;
-    t = (AMQPType) l.get(idx++);
-    if (t.getCode() == AMQPTypeDecoder.NULL)
-      throw new Exception("Mandatory field 'sectionOffset' in 'Received' type is NULL");
-    try {
-      sectionOffset = (AMQPUnsignedLong)t;
-    } catch (ClassCastException e)
-    {
-      throw new Exception("Invalid type of field 'sectionOffset' in 'Received' type: "+e);
+    /**
+     * Constructs a Received.
+     */
+    public Received() {
+        dirty = true;
     }
-  }
 
-  private void addToList(List list, Object value)
-  {
-    if (value != null)
-      list.add(value);
-    else
-      list.add(AMQPNull.NULL);
-  }
+    /**
+     * Return whether this Received has a descriptor
+     *
+     * @return true/false
+     */
+    public boolean hasDescriptor() {
+        return true;
+    }
 
-  private void encode() throws IOException
-  {
-    List l = new ArrayList();
-    addToList(l, sectionNumber);
-    addToList(l, sectionOffset);
-    for (ListIterator iter=l.listIterator(l.size());iter.hasPrevious();)
-    {
-        AMQPType t = (AMQPType)iter.previous();
+    /**
+     * Accept method for a DeliveryState visitor.
+     *
+     * @param visitor DeliveryState visitor
+     */
+    public void accept(DeliveryStateVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    /**
+     * Returns the mandatory SectionNumber field.
+     *
+     * @return SectionNumber
+     */
+    public AMQPUnsignedInt getSectionNumber() {
+        return sectionNumber;
+    }
+
+    /**
+     * Sets the mandatory SectionNumber field.
+     *
+     * @param sectionNumber SectionNumber
+     */
+    public void setSectionNumber(AMQPUnsignedInt sectionNumber) {
+        dirty = true;
+        this.sectionNumber = sectionNumber;
+    }
+
+    /**
+     * Returns the mandatory SectionOffset field.
+     *
+     * @return SectionOffset
+     */
+    public AMQPUnsignedLong getSectionOffset() {
+        return sectionOffset;
+    }
+
+    /**
+     * Sets the mandatory SectionOffset field.
+     *
+     * @param sectionOffset SectionOffset
+     */
+    public void setSectionOffset(AMQPUnsignedLong sectionOffset) {
+        dirty = true;
+        this.sectionOffset = sectionOffset;
+    }
+
+    /**
+     * Returns the predicted size of this Received. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize() {
+        int n;
+        if (dirty) {
+            AMQPDescribedConstructor _c = getConstructor();
+            setConstructor(null);
+            n = super.getPredictedSize();
+            n += codeConstructor.getPredictedSize();
+            n += (sectionNumber != null ? sectionNumber.getPredictedSize() : 1);
+            n += (sectionOffset != null ? sectionOffset.getPredictedSize() : 1);
+            setConstructor(_c);
+        } else
+            n = super.getPredictedSize();
+        return n;
+    }
+
+    private AMQPArray singleToArray(AMQPType t) throws IOException {
+        return new AMQPArray(t.getCode(), new AMQPType[]{t});
+    }
+
+    private void decode() throws Exception {
+        List l = getValue();
+
+        AMQPType t = null;
+        int idx = 0;
+
+        // Field: sectionNumber
+        // Type     : uint, converted: AMQPUnsignedInt
+        // Basetype : uint
+        // Default  : null
+        // Mandatory: true
+        // Multiple : false
+        // Factory  : ./.
+        if (idx >= l.size())
+            return;
+        t = (AMQPType) l.get(idx++);
         if (t.getCode() == AMQPTypeDecoder.NULL)
-          iter.remove();
+            throw new Exception("Mandatory field 'sectionNumber' in 'Received' type is NULL");
+        try {
+            sectionNumber = (AMQPUnsignedInt) t;
+        } catch (ClassCastException e) {
+            throw new Exception("Invalid type of field 'sectionNumber' in 'Received' type: " + e);
+        }
+
+        // Field: sectionOffset
+        // Type     : ulong, converted: AMQPUnsignedLong
+        // Basetype : ulong
+        // Default  : null
+        // Mandatory: true
+        // Multiple : false
+        // Factory  : ./.
+        if (idx >= l.size())
+            return;
+        t = (AMQPType) l.get(idx++);
+        if (t.getCode() == AMQPTypeDecoder.NULL)
+            throw new Exception("Mandatory field 'sectionOffset' in 'Received' type is NULL");
+        try {
+            sectionOffset = (AMQPUnsignedLong) t;
+        } catch (ClassCastException e) {
+            throw new Exception("Invalid type of field 'sectionOffset' in 'Received' type: " + e);
+        }
+    }
+
+    private void addToList(List list, Object value) {
+        if (value != null)
+            list.add(value);
         else
-          break;
+            list.add(AMQPNull.NULL);
     }
-    setValue(l);
-    dirty = false;
-  }
 
-  /**
-   * Returns an array constructor (internal use)
-   *
-   * @return array constructor
-   */
-  public AMQPDescribedConstructor getArrayConstructor() throws IOException
-  {
-    if (dirty)
-      encode();
-    codeConstructor.setFormatCode(getCode());
-    return codeConstructor;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    if (dirty)
-      encode();
-    if (getConstructor() != codeConstructor)
-    {
-      codeConstructor.setFormatCode(getCode());
-      setConstructor(codeConstructor);
+    private void encode() throws IOException {
+        List l = new ArrayList();
+        addToList(l, sectionNumber);
+        addToList(l, sectionOffset);
+        for (ListIterator iter = l.listIterator(l.size()); iter.hasPrevious(); ) {
+            AMQPType t = (AMQPType) iter.previous();
+            if (t.getCode() == AMQPTypeDecoder.NULL)
+                iter.remove();
+            else
+                break;
+        }
+        setValue(l);
+        dirty = false;
     }
-    super.writeContent(out);
-  }
 
-  public String getValueString()
-  {
-    try
-    {
-      if (dirty)
-        encode();
-    } catch (IOException e)
-    {
-      e.printStackTrace();
+    /**
+     * Returns an array constructor (internal use)
+     *
+     * @return array constructor
+     */
+    public AMQPDescribedConstructor getArrayConstructor() throws IOException {
+        if (dirty)
+            encode();
+        codeConstructor.setFormatCode(getCode());
+        return codeConstructor;
     }
-    StringBuffer b = new StringBuffer("[Received ");
-    b.append(getDisplayString());
-    b.append("]");
-    return b.toString();
-  }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer();
-    if (sectionNumber != null)
-    {
-      if (!_first)
-        b.append(", ");
-      else
-        _first = false;
-      b.append("sectionNumber=");
-      b.append(sectionNumber.getValueString());
+    public void writeContent(DataOutput out) throws IOException {
+        if (dirty)
+            encode();
+        if (getConstructor() != codeConstructor) {
+            codeConstructor.setFormatCode(getCode());
+            setConstructor(codeConstructor);
+        }
+        super.writeContent(out);
     }
-    if (sectionOffset != null)
-    {
-      if (!_first)
-        b.append(", ");
-      else
-        _first = false;
-      b.append("sectionOffset=");
-      b.append(sectionOffset.getValueString());
-    }
-    return b.toString();
-  }
 
-  public String toString()
-  {
-    return "[Received " + getDisplayString() + "]";
-  }
+    public String getValueString() {
+        try {
+            if (dirty)
+                encode();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        StringBuffer b = new StringBuffer("[Received ");
+        b.append(getDisplayString());
+        b.append("]");
+        return b.toString();
+    }
+
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer();
+        if (sectionNumber != null) {
+            if (!_first)
+                b.append(", ");
+            else
+                _first = false;
+            b.append("sectionNumber=");
+            b.append(sectionNumber.getValueString());
+        }
+        if (sectionOffset != null) {
+            if (!_first)
+                b.append(", ");
+            else
+                _first = false;
+            b.append("sectionOffset=");
+            b.append(sectionOffset.getValueString());
+        }
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Received " + getDisplayString() + "]";
+    }
 }

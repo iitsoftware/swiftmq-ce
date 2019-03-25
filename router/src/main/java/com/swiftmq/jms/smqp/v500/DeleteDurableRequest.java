@@ -21,127 +21,114 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class DeleteDurableRequest extends Request
-{
-  String durableName;
+public class DeleteDurableRequest extends Request {
+    String durableName;
 
-  /**
-   * @param dispatchId
-   * @param durableName
-   * @SBGen Constructor assigns dispatchId, durableName
-   */
-  public DeleteDurableRequest(int dispatchId, String durableName)
-  {
-    super(dispatchId, true);
+    /**
+     * @param dispatchId
+     * @param durableName
+     * @SBGen Constructor assigns dispatchId, durableName
+     */
+    public DeleteDurableRequest(int dispatchId, String durableName) {
+        super(dispatchId, true);
 
-    // SBgen: Assign variable
-    this.durableName = durableName;
-  }
-
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DELETE_DURABLE_REQ;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (durableName == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(durableName);
+        // SBgen: Assign variable
+        this.durableName = durableName;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      durableName = null;
-    } else
-    {
-      durableName = in.readUTF();
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_DELETE_DURABLE_REQ;
     }
-  }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new DeleteDurableReply();
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * @param durableName
-   * @SBGen Method set durableName
-   */
-  public void setDurableName(String durableName)
-  {
+        if (durableName == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(durableName);
+        }
+    }
 
-    // SBgen: Assign variable
-    this.durableName = durableName;
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  /**
-   * @return
-   * @SBGen Method get durableName
-   */
-  public String getDurableName()
-  {
+        byte set = in.readByte();
 
-    // SBgen: Get variable
-    return (durableName);
-  }
+        if (set == 0) {
+            durableName = null;
+        } else {
+            durableName = in.readUTF();
+        }
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitDeleteDurableRequest(this);
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new DeleteDurableReply();
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[DeleteDurableRequest " + super.toString() + " durableName="
-        + durableName + "]";
-  }
+    /**
+     * @param durableName
+     * @SBGen Method set durableName
+     */
+    public void setDurableName(String durableName) {
+
+        // SBgen: Assign variable
+        this.durableName = durableName;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get durableName
+     */
+    public String getDurableName() {
+
+        // SBgen: Get variable
+        return (durableName);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitDeleteDurableRequest(this);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[DeleteDurableRequest " + super.toString() + " durableName="
+                + durableName + "]";
+    }
 
 }
 

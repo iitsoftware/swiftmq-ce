@@ -17,33 +17,27 @@
 
 package com.swiftmq.impl.topic.standard.announce.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 import com.swiftmq.tools.versioning.VersionNotification;
-import com.swiftmq.swiftlet.routing.Route;
 
-public class POVersionNoteReceived extends POObject
-{
-  VersionNotification versionNotification = null;
+public class POVersionNoteReceived extends POObject {
+    VersionNotification versionNotification = null;
 
-  public POVersionNoteReceived(VersionNotification versionNotification)
-  {
-    super(null, null);
-    this.versionNotification = versionNotification;
-  }
+    public POVersionNoteReceived(VersionNotification versionNotification) {
+        super(null, null);
+        this.versionNotification = versionNotification;
+    }
 
-  public VersionNotification getVersionNotification()
-  {
-    return versionNotification;
-  }
+    public VersionNotification getVersionNotification() {
+        return versionNotification;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POAnnounceSenderVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POAnnounceSenderVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POVersionNoteReceived, versionNotification="+versionNotification+"]";
-  }
+    public String toString() {
+        return "[POVersionNoteReceived, versionNotification=" + versionNotification + "]";
+    }
 }

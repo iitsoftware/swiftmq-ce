@@ -19,7 +19,6 @@ package com.swiftmq.net.client;
 
 import java.io.IOException;
 
-public interface ExceptionHandler
-{
-  public void onException(IOException exception);
+public interface ExceptionHandler {
+    public void onException(IOException exception);
 }

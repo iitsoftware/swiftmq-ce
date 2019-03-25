@@ -24,65 +24,61 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class ActiveQueue implements TimerListener
-{
-  transient AbstractQueue abstractQueue;
-  long startupTime = -1;
+public class ActiveQueue implements TimerListener {
+    transient AbstractQueue abstractQueue;
+    long startupTime = -1;
 
 
-  /**
-   * Constructs an ActiveQueue.
-   * @param abstractQueue queue.
-   */
-  public ActiveQueue(AbstractQueue abstractQueue)
-  {
-    // SBgen: Assign variable
-    this.abstractQueue = abstractQueue;
-  }
-
-  /**
-   * Returns the queue.
-   * @return queue.
-   */
-  public AbstractQueue getAbstractQueue()
-  {
-    // SBgen: Get variable
-    return (abstractQueue);
-  }
-
-  /**
-   * Returns the startup time.
-   * @return startup time.
-   */
-  public long getStartupTime()
-  {
-    // SBgen: Get variable
-    return (startupTime);
-  }
-
-  /**
-   * Sets the startup time.
-   * @param startupTime startup time.
-   */
-  public void setStartupTime(long startupTime)
-  {
-    // SBgen: Assign variable
-    this.startupTime = startupTime;
-  }
-
-  /**
-   * Cleanup expired messages.
-   * Implemenation of TimerListener
-   */
-  public void performTimeAction()
-  {
-    try
-    {
-      abstractQueue.cleanUpExpiredMessages();
-    } catch (QueueException e)
-    {
-      // Log to error log
+    /**
+     * Constructs an ActiveQueue.
+     *
+     * @param abstractQueue queue.
+     */
+    public ActiveQueue(AbstractQueue abstractQueue) {
+        // SBgen: Assign variable
+        this.abstractQueue = abstractQueue;
     }
-  }
+
+    /**
+     * Returns the queue.
+     *
+     * @return queue.
+     */
+    public AbstractQueue getAbstractQueue() {
+        // SBgen: Get variable
+        return (abstractQueue);
+    }
+
+    /**
+     * Returns the startup time.
+     *
+     * @return startup time.
+     */
+    public long getStartupTime() {
+        // SBgen: Get variable
+        return (startupTime);
+    }
+
+    /**
+     * Sets the startup time.
+     *
+     * @param startupTime startup time.
+     */
+    public void setStartupTime(long startupTime) {
+        // SBgen: Assign variable
+        this.startupTime = startupTime;
+    }
+
+    /**
+     * Cleanup expired messages.
+     * Implemenation of TimerListener
+     */
+    public void performTimeAction() {
+        try {
+            abstractQueue.cleanUpExpiredMessages();
+        } catch (QueueException e) {
+            // Log to error log
+        }
+    }
 }
 

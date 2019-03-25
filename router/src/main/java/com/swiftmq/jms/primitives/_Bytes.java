@@ -23,57 +23,47 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Bytes implements Dumpable, Primitive
-{
-  byte[] value = null;
+public class _Bytes implements Dumpable, Primitive {
+    byte[] value = null;
 
-  public _Bytes()
-  {
-  }
+    public _Bytes() {
+    }
 
-  public _Bytes(byte[] value)
-  {
-    this.value = new byte[value.length];
-    System.arraycopy(value, 0, this.value, 0, value.length);
-  }
+    public _Bytes(byte[] value) {
+        this.value = new byte[value.length];
+        System.arraycopy(value, 0, this.value, 0, value.length);
+    }
 
-  public _Bytes(byte[] value, int offset, int length)
-  {
-    this.value = new byte[length];
-    System.arraycopy(value, offset, this.value, 0, length);
-  }
+    public _Bytes(byte[] value, int offset, int length) {
+        this.value = new byte[length];
+        System.arraycopy(value, offset, this.value, 0, length);
+    }
 
-  public byte[] bytesValue()
-  {
-    return value;
-  }
+    public byte[] bytesValue() {
+        return value;
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return BYTES;
-  }
+    public int getDumpId() {
+        return BYTES;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeInt(value.length);
-    out.write(value);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeInt(value.length);
+        out.write(value);
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new byte[in.readInt()];
-    in.readFully(value);
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new byte[in.readInt()];
+        in.readFully(value);
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

@@ -19,21 +19,17 @@ package com.swiftmq.impl.store.standard.index;
 
 import com.swiftmq.impl.store.standard.StoreContext;
 
-public class QueueIndexPage extends IndexPage
-{
-  protected QueueIndexPage(StoreContext ctx, int pageNo)
-  {
-    super(ctx, pageNo);
-  }
+public class QueueIndexPage extends IndexPage {
+    protected QueueIndexPage(StoreContext ctx, int pageNo) {
+        super(ctx, pageNo);
+    }
 
-  protected IndexEntry createIndexEntry()
-  {
-    return new QueueIndexEntry();
-  }
+    protected IndexEntry createIndexEntry() {
+        return new QueueIndexEntry();
+    }
 
-  public String toString()
-  {
-    return "[QueueIndexPage" + super.toString() + "]";
-  }
+    public String toString() {
+        return "[QueueIndexPage" + super.toString() + "]";
+    }
 }
 

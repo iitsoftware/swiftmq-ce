@@ -19,21 +19,16 @@ package com.swiftmq.impl.jms.standard.v750;
 
 import com.swiftmq.jms.smqp.v750.SMQPVisitorAdapter;
 
-public class ConnectionVisitorAdapter extends SMQPVisitorAdapter
-{
-  public void visit(CollectRequest collectRequest)
-  {
-  }
+public class ConnectionVisitorAdapter extends SMQPVisitorAdapter {
+    public void visit(CollectRequest collectRequest) {
+    }
 
-  public void visit(StartAccounting startAccounting)
-  {
-  }
+    public void visit(StartAccounting startAccounting) {
+    }
 
-  public void visit(FlushAccounting flushAccounting)
-  {
-  }
+    public void visit(FlushAccounting flushAccounting) {
+    }
 
-  public void visit(StopAccounting stopAccounting)
-  {
-  }
+    public void visit(StopAccounting stopAccounting) {
+    }
 }

@@ -31,119 +31,100 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class StoreWriteTransactionImpl extends StoreTransactionImpl
-    implements StoreWriteTransaction
-{
+        implements StoreWriteTransaction {
 
-  StoreWriteTransactionImpl(StoreContext ctx, String queueName, QueueIndex queueIndex)
-  {
-    super(ctx, queueName, queueIndex);
-    txId = ctx.transactionManager.createTxId();
-    journal = new ArrayList();
-    queueIndex.setJournal(journal);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/create...");
-  }
-
-  /**
-   * @param storeEntry
-   * @throws com.swiftmq.swiftlet.store.StoreException
-   *
-   */
-  public void insert(StoreEntry storeEntry)
-      throws StoreException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/insert, storeEntry=" + storeEntry);
-    if (closed)
-      throw new StoreException("Transaction is closed");
-    try
-    {
-      keys.add(queueIndex.add(storeEntry));
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      throw new StoreException(e.getMessage());
+    StoreWriteTransactionImpl(StoreContext ctx, String queueName, QueueIndex queueIndex) {
+        super(ctx, queueName, queueIndex);
+        txId = ctx.transactionManager.createTxId();
+        journal = new ArrayList();
+        queueIndex.setJournal(journal);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/create...");
     }
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$store", toString() + "/insert done, storeEntry=" + storeEntry);
-  }
 
-  public void prepare(XidImpl globalTxId) throws StoreException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/prepare, globalTxId=" + globalTxId);
-    try
-    {
-      prepareLogRecord = new PrepareLogRecordImpl(PrepareLogRecordImpl.WRITE_TRANSACTION, queueName, globalTxId, keys);
-      ctx.preparedLog.add(prepareLogRecord);
-      ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, null));
-      sem.waitHere();
-      ctx.transactionManager.removeTxId(txId);
-    } catch (Exception e)
-    {
-      throw new StoreException(e.getMessage());
+    /**
+     * @param storeEntry
+     * @throws com.swiftmq.swiftlet.store.StoreException
+     */
+    public void insert(StoreEntry storeEntry)
+            throws StoreException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/insert, storeEntry=" + storeEntry);
+        if (closed)
+            throw new StoreException("Transaction is closed");
+        try {
+            keys.add(queueIndex.add(storeEntry));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new StoreException(e.getMessage());
+        }
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/insert done, storeEntry=" + storeEntry);
     }
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$store", toString() + "/prepare, globalTxId=" + globalTxId + ", done");
-  }
 
-  public void commit(XidImpl globalTxId) throws StoreException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/commit, globalTxId: " + globalTxId);
-    try
-    {
-      ctx.preparedLog.remove(prepareLogRecord);
-    } catch (IOException e)
-    {
-      throw new StoreException(e.toString());
+    public void prepare(XidImpl globalTxId) throws StoreException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/prepare, globalTxId=" + globalTxId);
+        try {
+            prepareLogRecord = new PrepareLogRecordImpl(PrepareLogRecordImpl.WRITE_TRANSACTION, queueName, globalTxId, keys);
+            ctx.preparedLog.add(prepareLogRecord);
+            ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, null));
+            sem.waitHere();
+            ctx.transactionManager.removeTxId(txId);
+        } catch (Exception e) {
+            throw new StoreException(e.getMessage());
+        }
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/prepare, globalTxId=" + globalTxId + ", done");
     }
-    prepareLogRecord = null;
-    close();
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$store", toString() + "/commit, globalTxId: " + globalTxId + ", done");
-  }
 
-  public void abort(XidImpl globalTxId) throws StoreException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abort, globalTxId: " + globalTxId);
-    txId = ctx.transactionManager.createTxId();
-    sem = new Semaphore();
-    journal = new ArrayList();
-    queueIndex.setJournal(journal);
-    try
-    {
-      for (int i = 0; i < keys.size(); i++)
-      {
-        addMessagePageReference(queueIndex.remove((QueueIndexEntry) keys.get(i)));
-      }
-      ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, messagePageRefs));
-      sem.waitHere();
-      ctx.transactionManager.removeTxId(txId);
-    } catch (Exception e)
-    {
-      throw new StoreException(e.toString());
+    public void commit(XidImpl globalTxId) throws StoreException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/commit, globalTxId: " + globalTxId);
+        try {
+            ctx.preparedLog.remove(prepareLogRecord);
+        } catch (IOException e) {
+            throw new StoreException(e.toString());
+        }
+        prepareLogRecord = null;
+        close();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/commit, globalTxId: " + globalTxId + ", done");
     }
-    if (prepareLogRecord != null)
-    {
-      try
-      {
-        ctx.preparedLog.remove(prepareLogRecord);
-      } catch (IOException e)
-      {
-        throw new StoreException(e.toString());
-      }
-      prepareLogRecord = null;
+
+    public void abort(XidImpl globalTxId) throws StoreException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abort, globalTxId: " + globalTxId);
+        txId = ctx.transactionManager.createTxId();
+        sem = new Semaphore();
+        journal = new ArrayList();
+        queueIndex.setJournal(journal);
+        try {
+            for (int i = 0; i < keys.size(); i++) {
+                addMessagePageReference(queueIndex.remove((QueueIndexEntry) keys.get(i)));
+            }
+            ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, messagePageRefs));
+            sem.waitHere();
+            ctx.transactionManager.removeTxId(txId);
+        } catch (Exception e) {
+            throw new StoreException(e.toString());
+        }
+        if (prepareLogRecord != null) {
+            try {
+                ctx.preparedLog.remove(prepareLogRecord);
+            } catch (IOException e) {
+                throw new StoreException(e.toString());
+            }
+            prepareLogRecord = null;
+        }
+        close();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/abort, globalTxId: " + globalTxId + ", done");
     }
-    close();
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$store", toString() + "/abort, globalTxId: " + globalTxId + ", done");
-  }
 
-  protected void close()
-  {
-    super.close();
-  }
+    protected void close() {
+        super.close();
+    }
 
-  public String toString()
-  {
-    return "[StoreWriteTransactionImpl, " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[StoreWriteTransactionImpl, " + super.toString() + "]";
+    }
 }
 

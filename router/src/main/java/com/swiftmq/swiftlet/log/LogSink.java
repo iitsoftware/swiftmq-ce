@@ -23,19 +23,18 @@ package com.swiftmq.swiftlet.log;
  * @author IIT Software GmbH, Bremen/Germany, Copyright (c) 2000-2012, All Rights Reserved
  */
 
-public abstract class LogSink
-{
-  public boolean enabled = true;
+public abstract class LogSink {
+    public boolean enabled = true;
 
-  /**
-   * Send a message to the log sink.
-   *
-   * @param message Message
-   */
-  public abstract void log(String message);
+    /**
+     * Send a message to the log sink.
+     *
+     * @param message Message
+     */
+    public abstract void log(String message);
 
-  /**
-   * Closes the log sink.
-   */
-  public abstract void close();
+    /**
+     * Closes the log sink.
+     */
+    public abstract void close();
 }

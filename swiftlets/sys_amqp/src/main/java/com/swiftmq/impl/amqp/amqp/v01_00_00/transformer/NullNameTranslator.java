@@ -17,10 +17,8 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00.transformer;
 
-public class NullNameTranslator implements NameTranslator
-{
-  public String translate(String source)
-  {
-    return source;
-  }
+public class NullNameTranslator implements NameTranslator {
+    public String translate(String source) {
+        return source;
+    }
 }

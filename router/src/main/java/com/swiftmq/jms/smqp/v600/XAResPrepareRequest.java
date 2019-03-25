@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: XAResPrepareRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: XAResPrepareRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.jms.XidImpl;
@@ -34,125 +35,106 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-public class XAResPrepareRequest extends Request
-{
-  private XidImpl xid;
-  private boolean retry;
-  private List recoverRequestList;
+public class XAResPrepareRequest extends Request {
+    private XidImpl xid;
+    private boolean retry;
+    private List recoverRequestList;
 
-  public XAResPrepareRequest()
-  {
-    super(0, true);
-  }
+    public XAResPrepareRequest() {
+        super(0, true);
+    }
 
-  public XAResPrepareRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public XAResPrepareRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XAResPrepareRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public XAResPrepareRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public XAResPrepareRequest(int dispatchId, XidImpl xid, boolean retry, List recoverRequestList)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-    this.retry = retry;
-    this.recoverRequestList = recoverRequestList;
-  }
+    public XAResPrepareRequest(int dispatchId, XidImpl xid, boolean retry, List recoverRequestList) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.retry = retry;
+        this.recoverRequestList = recoverRequestList;
+    }
 
-  public XAResPrepareRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, boolean retry, List recoverRequestList)
-  {
-    super(dispatchId, true, validator);
-    this.xid = xid;
-    this.retry = retry;
-    this.recoverRequestList = recoverRequestList;
-  }
+    public XAResPrepareRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, boolean retry, List recoverRequestList) {
+        super(dispatchId, true, validator);
+        this.xid = xid;
+        this.retry = retry;
+        this.recoverRequestList = recoverRequestList;
+    }
 
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public void setRetry(boolean retry)
-  {
-    this.retry = retry;
-  }
+    public void setRetry(boolean retry) {
+        this.retry = retry;
+    }
 
-  public boolean isRetry()
-  {
-    return retry;
-  }
+    public boolean isRetry() {
+        return retry;
+    }
 
-  public void setRecoverRequestList(List recoverRequestList)
-  {
-    this.recoverRequestList = recoverRequestList;
-  }
+    public void setRecoverRequestList(List recoverRequestList) {
+        this.recoverRequestList = recoverRequestList;
+    }
 
-  public List getRecoverRequestList()
-  {
-    return recoverRequestList;
-  }
+    public List getRecoverRequestList() {
+        return recoverRequestList;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESPREPARE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESPREPARE_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(xid, out);
-    SMQPUtil.write(retry, out);
-    if (recoverRequestList != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writeRequest(recoverRequestList, out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(xid, out);
+        SMQPUtil.write(retry, out);
+        if (recoverRequestList != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writeRequest(recoverRequestList, out);
+        } else
+            out.writeBoolean(false);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = SMQPUtil.read(xid, in);
-    retry = SMQPUtil.read(retry, in);
-    boolean recoverRequestList_set = in.readBoolean();
-    if (recoverRequestList_set)
-      recoverRequestList = SMQPUtil.readRequest(recoverRequestList, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = SMQPUtil.read(xid, in);
+        retry = SMQPUtil.read(retry, in);
+        boolean recoverRequestList_set = in.readBoolean();
+        if (recoverRequestList_set)
+            recoverRequestList = SMQPUtil.readRequest(recoverRequestList, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResPrepareReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResPrepareReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/XAResPrepareRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("xid=");
-    _b.append(xid);
-    _b.append(", ");
-    _b.append("retry=");
-    _b.append(retry);
-    _b.append(", ");
-    _b.append("recoverRequestList=");
-    _b.append(recoverRequestList);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/XAResPrepareRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("xid=");
+        _b.append(xid);
+        _b.append(", ");
+        _b.append("retry=");
+        _b.append(retry);
+        _b.append(", ");
+        _b.append("recoverRequestList=");
+        _b.append(recoverRequestList);
+        _b.append("]");
+        return _b.toString();
+    }
 }

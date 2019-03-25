@@ -17,133 +17,118 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: MessageDeliveredRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: MessageDeliveredRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.swiftlet.queue.MessageIndex;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class MessageDeliveredRequest extends Request 
-{
-  private int queueConsumerId;
-  private MessageIndex messageIndex;
-  private boolean duplicate;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public MessageDeliveredRequest()
-  {
-    super(0,false);
-  }
+public class MessageDeliveredRequest extends Request {
+    private int queueConsumerId;
+    private MessageIndex messageIndex;
+    private boolean duplicate;
 
-  public MessageDeliveredRequest(int dispatchId)
-  {
-    super(dispatchId,false);
-  }
+    public MessageDeliveredRequest() {
+        super(0, false);
+    }
 
-  public MessageDeliveredRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,false,validator);
-  }
+    public MessageDeliveredRequest(int dispatchId) {
+        super(dispatchId, false);
+    }
 
-  public MessageDeliveredRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex, boolean duplicate)
-  {
-    super(dispatchId,false);
-    this.queueConsumerId = queueConsumerId;
-    this.messageIndex = messageIndex;
-    this.duplicate = duplicate;
-  }
+    public MessageDeliveredRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, false, validator);
+    }
 
-  public MessageDeliveredRequest(RequestRetryValidator validator, int dispatchId, int queueConsumerId, MessageIndex messageIndex, boolean duplicate)
-  {
-    super(dispatchId,false,validator);
-    this.queueConsumerId = queueConsumerId;
-    this.messageIndex = messageIndex;
-    this.duplicate = duplicate;
-  }
-  
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public MessageDeliveredRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex, boolean duplicate) {
+        super(dispatchId, false);
+        this.queueConsumerId = queueConsumerId;
+        this.messageIndex = messageIndex;
+        this.duplicate = duplicate;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return queueConsumerId;
-  }
-  
-  public void setMessageIndex(MessageIndex messageIndex)
-  {
-    this.messageIndex = messageIndex;
-  }
+    public MessageDeliveredRequest(RequestRetryValidator validator, int dispatchId, int queueConsumerId, MessageIndex messageIndex, boolean duplicate) {
+        super(dispatchId, false, validator);
+        this.queueConsumerId = queueConsumerId;
+        this.messageIndex = messageIndex;
+        this.duplicate = duplicate;
+    }
 
-  public MessageIndex getMessageIndex()
-  {
-    return messageIndex;
-  }
-  
-  public void setDuplicate(boolean duplicate)
-  {
-    this.duplicate = duplicate;
-  }
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
 
-  public boolean isDuplicate()
-  {
-    return duplicate;
-  }
+    public int getQueueConsumerId() {
+        return queueConsumerId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_MESSAGEDELIVERED_REQ;
-  }
+    public void setMessageIndex(MessageIndex messageIndex) {
+        this.messageIndex = messageIndex;
+    }
+
+    public MessageIndex getMessageIndex() {
+        return messageIndex;
+    }
+
+    public void setDuplicate(boolean duplicate) {
+        this.duplicate = duplicate;
+    }
+
+    public boolean isDuplicate() {
+        return duplicate;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_MESSAGEDELIVERED_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueConsumerId,out);
-    SMQPUtil.write(messageIndex,out);
-    SMQPUtil.write(duplicate,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueConsumerId, out);
+        SMQPUtil.write(messageIndex, out);
+        SMQPUtil.write(duplicate, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueConsumerId = SMQPUtil.read(queueConsumerId,in);
-    messageIndex = SMQPUtil.read(messageIndex,in);
-    duplicate = SMQPUtil.read(duplicate,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueConsumerId = SMQPUtil.read(queueConsumerId, in);
+        messageIndex = SMQPUtil.read(messageIndex, in);
+        duplicate = SMQPUtil.read(duplicate, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/MessageDeliveredRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueConsumerId=");
-    _b.append(queueConsumerId);
-    _b.append(", ");
-    _b.append("messageIndex=");
-    _b.append(messageIndex);
-    _b.append(", ");
-    _b.append("duplicate=");
-    _b.append(duplicate);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/MessageDeliveredRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueConsumerId=");
+        _b.append(queueConsumerId);
+        _b.append(", ");
+        _b.append("messageIndex=");
+        _b.append(messageIndex);
+        _b.append(", ");
+        _b.append("duplicate=");
+        _b.append(duplicate);
+        _b.append("]");
+        return _b.toString();
+    }
 }

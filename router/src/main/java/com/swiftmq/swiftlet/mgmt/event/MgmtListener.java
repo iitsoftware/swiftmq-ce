@@ -22,19 +22,19 @@ import java.util.EventListener;
 /**
  * A MgmtListener is activated if an admin tool (SwiftMQ Explorer/CLI) is activated
  * or deactivated to inform other Swiftlet to, e.g., start resp. stop collectors.
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface MgmtListener extends EventListener
-{
+public interface MgmtListener extends EventListener {
 
-  /**
-   * Will be called from the Mgmt Swiftlet when an admin tool is activated.
-   */
-  public void adminToolActivated();
+    /**
+     * Will be called from the Mgmt Swiftlet when an admin tool is activated.
+     */
+    public void adminToolActivated();
 
-  /**
-   * Will be called from the Mgmt Swiftlet when an admin tool is deactivated.
-   */
-  public void adminToolDeactivated();
+    /**
+     * Will be called from the Mgmt Swiftlet when an admin tool is deactivated.
+     */
+    public void adminToolDeactivated();
 }
 

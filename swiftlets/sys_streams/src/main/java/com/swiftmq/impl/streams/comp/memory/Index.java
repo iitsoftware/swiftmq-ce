@@ -41,9 +41,9 @@ public class Index {
 
     private Object normalizeValue(Object value) {
         if (value instanceof Double)
-            value = ((Double)value).longValue();
+            value = ((Double) value).longValue();
         else if (value instanceof Integer)
-            value = ((Integer)value).longValue();
+            value = ((Integer) value).longValue();
         return value;
     }
 

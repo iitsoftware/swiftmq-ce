@@ -17,38 +17,29 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: DeleteTmpQueueReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: DeleteTmpQueueReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class DeleteTmpQueueReply extends ReplyNE
-{
+public class DeleteTmpQueueReply extends ReplyNE {
 
-  protected DeleteTmpQueueReply()
-  {
-  }
+    protected DeleteTmpQueueReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DELETETMPQUEUE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_DELETETMPQUEUE_REP;
+    }
 
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[DeleteTmpQueueReply, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[DeleteTmpQueueReply, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -17,22 +17,18 @@
 
 package com.swiftmq.amqp.integration;
 
-public class ClientTracer extends Tracer
-{
-  private boolean enabled = false;
+public class ClientTracer extends Tracer {
+    private boolean enabled = false;
 
-  public ClientTracer(String propName)
-  {
-    enabled = Boolean.valueOf(System.getProperty(propName, "false"));
-  }
+    public ClientTracer(String propName) {
+        enabled = Boolean.valueOf(System.getProperty(propName, "false"));
+    }
 
-  public boolean isEnabled()
-  {
-    return enabled;
-  }
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-  public void trace(String traceKey, String msg)
-  {
-    System.out.println(traceKey + ", " + msg);
-  }
+    public void trace(String traceKey, String msg) {
+        System.out.println(traceKey + ", " + msg);
+    }
 }

@@ -24,74 +24,59 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class QueueManagerSourceFactory implements AccountingSourceFactory
-{
-  SwiftletContext ctx = null;
-  Map parms = null;
+public class QueueManagerSourceFactory implements AccountingSourceFactory {
+    SwiftletContext ctx = null;
+    Map parms = null;
 
-  public QueueManagerSourceFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    parms = new HashMap();
-    Parameter p = new Parameter("Flush Interval", "Flush Interval of Accounting Data in milliseconds", "60000", false, new ParameterVerifier()
-    {
-      public void verify(Parameter parameter, String value) throws InvalidValueException
-      {
-        try
-        {
-          long ms = Long.parseLong(value);
-        } catch (NumberFormatException e)
-        {
-          throw new InvalidValueException(e.toString());
-        }
-      }
-    });
-    parms.put(p.getName(), p);
-    p = new Parameter("Queue Name Filter", "Regular Expression to filter Queue Names", null, false, new ParameterVerifier()
-    {
-      public void verify(Parameter parameter, String value) throws InvalidValueException
-      {
-        try
-        {
-          Pattern.compile(value);
-        } catch (Exception e)
-        {
-          throw new InvalidValueException(e.toString());
-        }
-      }
-    });
-    parms.put(p.getName(), p);
-  }
+    public QueueManagerSourceFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        parms = new HashMap();
+        Parameter p = new Parameter("Flush Interval", "Flush Interval of Accounting Data in milliseconds", "60000", false, new ParameterVerifier() {
+            public void verify(Parameter parameter, String value) throws InvalidValueException {
+                try {
+                    long ms = Long.parseLong(value);
+                } catch (NumberFormatException e) {
+                    throw new InvalidValueException(e.toString());
+                }
+            }
+        });
+        parms.put(p.getName(), p);
+        p = new Parameter("Queue Name Filter", "Regular Expression to filter Queue Names", null, false, new ParameterVerifier() {
+            public void verify(Parameter parameter, String value) throws InvalidValueException {
+                try {
+                    Pattern.compile(value);
+                } catch (Exception e) {
+                    throw new InvalidValueException(e.toString());
+                }
+            }
+        });
+        parms.put(p.getName(), p);
+    }
 
-  public boolean isSingleton()
-  {
-    return true;
-  }
+    public boolean isSingleton() {
+        return true;
+    }
 
-  public String getGroup()
-  {
-    return "Queue Manager";
-  }
+    public String getGroup() {
+        return "Queue Manager";
+    }
 
-  public String getName()
-  {
-    return "QueueManagerSourceFactory";
-  }
+    public String getName() {
+        return "QueueManagerSourceFactory";
+    }
 
-  public Map getParameters()
-  {
-    return parms;
-  }
+    public Map getParameters() {
+        return parms;
+    }
 
-  public AccountingSource create(Map map) throws Exception
-  {
-    long flushInterval = Long.parseLong((String) map.get("Flush Interval"));
-    String queueNameFilter = (String) map.get("Queue Name Filter");
-    boolean queueNameFilterNegate = queueNameFilter != null && queueNameFilter.startsWith("!");
-    if (queueNameFilterNegate)
-      queueNameFilter = queueNameFilter.substring(1);
-    return new QueueManagerSource(ctx, flushInterval,
-        new AccountingProfile(ctx, queueNameFilter == null ? null : Pattern.compile(queueNameFilter), queueNameFilterNegate));
+    public AccountingSource create(Map map) throws Exception {
+        long flushInterval = Long.parseLong((String) map.get("Flush Interval"));
+        String queueNameFilter = (String) map.get("Queue Name Filter");
+        boolean queueNameFilterNegate = queueNameFilter != null && queueNameFilter.startsWith("!");
+        if (queueNameFilterNegate)
+            queueNameFilter = queueNameFilter.substring(1);
+        return new QueueManagerSource(ctx, flushInterval,
+                new AccountingProfile(ctx, queueNameFilter == null ? null : Pattern.compile(queueNameFilter), queueNameFilterNegate));
 
-  }
+    }
 }

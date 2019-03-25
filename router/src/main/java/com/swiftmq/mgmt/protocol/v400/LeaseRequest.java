@@ -17,32 +17,28 @@
 
 package com.swiftmq.mgmt.protocol.v400;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class LeaseRequest extends Request
-{
-  public LeaseRequest()
-  {
-    super(0, false);
-  }
+public class LeaseRequest extends Request {
+    public LeaseRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return ProtocolFactory.LEASE_REQ;
-  }
+    public int getDumpId() {
+        return ProtocolFactory.LEASE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[LeaseRequest "+super.toString()+"]";
-  }
+    public String toString() {
+        return "[LeaseRequest " + super.toString() + "]";
+    }
 }

@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: CreateSessionReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: CreateSessionReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CreateSessionReply extends ReplyNE
-{
-  private int sessionDispatchId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateSessionReply(int sessionDispatchId)
-  {
-    this.sessionDispatchId = sessionDispatchId;
-  }
+public class CreateSessionReply extends ReplyNE {
+    private int sessionDispatchId;
 
-  protected CreateSessionReply()
-  {
-  }
-  
-  public void setSessionDispatchId(int sessionDispatchId)
-  {
-    this.sessionDispatchId = sessionDispatchId;
-  }
+    public CreateSessionReply(int sessionDispatchId) {
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  public int getSessionDispatchId()
-  {
-    return sessionDispatchId;
-  }
+    protected CreateSessionReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATESESSION_REP;
-  }
+    public void setSessionDispatchId(int sessionDispatchId) {
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(sessionDispatchId,out);
-  }
+    public int getSessionDispatchId() {
+        return sessionDispatchId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    sessionDispatchId = SMQPUtil.read(sessionDispatchId,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATESESSION_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/CreateSessionReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("sessionDispatchId=");
-    _b.append(sessionDispatchId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(sessionDispatchId, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        sessionDispatchId = SMQPUtil.read(sessionDispatchId, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/CreateSessionReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("sessionDispatchId=");
+        _b.append(sessionDispatchId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

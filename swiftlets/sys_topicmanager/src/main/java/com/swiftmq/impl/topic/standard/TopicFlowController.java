@@ -17,19 +17,16 @@
 
 package com.swiftmq.impl.topic.standard;
 
-import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.swiftlet.queue.FlowController;
 
-public class TopicFlowController extends FlowController
-{
+public class TopicFlowController extends FlowController {
 
-	public synchronized void setLastDelay(long lastDelay)
-	{
-		this.lastDelay = lastDelay;
-	}
-	
-	public synchronized long getNewDelay()
-	{
-		return lastDelay;
-	}
+    public synchronized void setLastDelay(long lastDelay) {
+        this.lastDelay = lastDelay;
+    }
+
+    public synchronized long getNewDelay() {
+        return lastDelay;
+    }
 }
 

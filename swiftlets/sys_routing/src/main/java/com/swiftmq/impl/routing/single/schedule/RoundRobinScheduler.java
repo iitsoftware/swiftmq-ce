@@ -20,29 +20,26 @@ package com.swiftmq.impl.routing.single.schedule;
 import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 
-public class RoundRobinScheduler extends DefaultScheduler
-{
-  int next = 0;
+public class RoundRobinScheduler extends DefaultScheduler {
+    int next = 0;
 
-  public RoundRobinScheduler(SwiftletContext ctx, String destinationRouter, String queueName)
-  {
-    super(ctx, destinationRouter, queueName);
-  }
+    public RoundRobinScheduler(SwiftletContext ctx, String destinationRouter, String queueName) {
+        super(ctx, destinationRouter, queueName);
+    }
 
-  protected synchronized RoutingConnection getNextConnection()
-  {
-    if (connections.size() == 0)
-      return null;
-    if (next > connections.size()-1)
-      next = 0;
-    RoutingConnection rc = connections.size() == 0?null:((ConnectionEntry) connections.get(next)).getRoutingConnection();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString()+"/getNextConnection, rc="+rc);
-    next++;
-    return rc;
-  }
+    protected synchronized RoutingConnection getNextConnection() {
+        if (connections.size() == 0)
+            return null;
+        if (next > connections.size() - 1)
+            next = 0;
+        RoutingConnection rc = connections.size() == 0 ? null : ((ConnectionEntry) connections.get(next)).getRoutingConnection();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, rc=" + rc);
+        next++;
+        return rc;
+    }
 
-  public String toString()
-  {
-    return "[RoundRobinScheduler " + super.toString() + ", next=" + next + "]";
-  }
+    public String toString() {
+        return "[RoundRobinScheduler " + super.toString() + ", next=" + next + "]";
+    }
 }

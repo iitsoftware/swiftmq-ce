@@ -38,7 +38,7 @@ public class QueueOutput extends Output {
 
     @Override
     protected void setDestination(Destination destination) {
-        this.destination = (QueueImpl)destination;
+        this.destination = (QueueImpl) destination;
     }
 
     @Override

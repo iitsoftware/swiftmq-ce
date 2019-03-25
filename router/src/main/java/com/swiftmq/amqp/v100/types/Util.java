@@ -21,117 +21,100 @@ import com.swiftmq.amqp.ProtocolHeader;
 
 import java.util.List;
 
-public class Util
-{
-  public static final ProtocolHeader SASL_INIT = new ProtocolHeader("AMQP", 3, 1, 0, 0);
-  public static final ProtocolHeader AMQP_INIT = new ProtocolHeader("AMQP", 0, 1, 0, 0);
+public class Util {
+    public static final ProtocolHeader SASL_INIT = new ProtocolHeader("AMQP", 3, 1, 0, 0);
+    public static final ProtocolHeader AMQP_INIT = new ProtocolHeader("AMQP", 0, 1, 0, 0);
 
-  public static void ensureSize(List list, int size)
-  {
-    if (list.size() < size + 1)
-    {
-      for (int i = list.size(); i < size + 1; i++)
-        list.add(null);
-    }
-  }
-
-  public static List addToList(List list, Object[] obj)
-  {
-    for (int i = 0; i < obj.length; i++)
-      list.add(obj[i]);
-    return list;
-  }
-
-  public static String toHex(byte[] bytes, int len)
-  {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < len; i++)
-    {
-      sb.append(String.format("0x%1$02X ", bytes[i]));
+    public static void ensureSize(List list, int size) {
+        if (list.size() < size + 1) {
+            for (int i = list.size(); i < size + 1; i++)
+                list.add(null);
+        }
     }
 
-    return sb.toString();
-  }
+    public static List addToList(List list, Object[] obj) {
+        for (int i = 0; i < obj.length; i++)
+            list.add(obj[i]);
+        return list;
+    }
 
-  public static short readShort(byte[] b, int offset)
-  {
-    int pos = offset;
-    int i1 = b[pos++] & 0xff;
-    int i2 = b[pos++] & 0xff;
-    return (short) ((i1 << 8) + (i2 << 0));
-  }
+    public static String toHex(byte[] bytes, int len) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append(String.format("0x%1$02X ", bytes[i]));
+        }
 
-  public static int readUnsignedShort(byte[] b, int offset)
-  {
-    int pos = offset;
-    int i1 = b[pos++] & 0xff;
-    int i2 = b[pos++] & 0xff;
-    return ((i1 << 8) + (i2 << 0));
-  }
+        return sb.toString();
+    }
 
-  public static int readInt(byte[] b, int offset)
-  {
-    int pos = offset;
-    int i1 = b[pos++] & 0xff;
-    int i2 = b[pos++] & 0xff;
-    int i3 = b[pos++] & 0xff;
-    int i4 = b[pos++] & 0xff;
-    int i = (i1 << 24) + (i2 << 16) + (i3 << 8) + (i4 << 0);
-    return i;
-  }
+    public static short readShort(byte[] b, int offset) {
+        int pos = offset;
+        int i1 = b[pos++] & 0xff;
+        int i2 = b[pos++] & 0xff;
+        return (short) ((i1 << 8) + (i2 << 0));
+    }
 
-  public static long readLong(byte[] b, int offset)
-  {
-    long l = ((long) (readInt(b, offset)) << 32) + (readInt(b, offset + 4) & 0xFFFFFFFFL);
-    return l;
-  }
+    public static int readUnsignedShort(byte[] b, int offset) {
+        int pos = offset;
+        int i1 = b[pos++] & 0xff;
+        int i2 = b[pos++] & 0xff;
+        return ((i1 << 8) + (i2 << 0));
+    }
 
-  public static float readFloat(byte[] b, int offset)
-  {
-    return Float.intBitsToFloat(readInt(b, offset));
-  }
+    public static int readInt(byte[] b, int offset) {
+        int pos = offset;
+        int i1 = b[pos++] & 0xff;
+        int i2 = b[pos++] & 0xff;
+        int i3 = b[pos++] & 0xff;
+        int i4 = b[pos++] & 0xff;
+        int i = (i1 << 24) + (i2 << 16) + (i3 << 8) + (i4 << 0);
+        return i;
+    }
 
-  public static double readDouble(byte[] b, int offset)
-  {
-    return Double.longBitsToDouble(readLong(b, offset));
-  }
+    public static long readLong(byte[] b, int offset) {
+        long l = ((long) (readInt(b, offset)) << 32) + (readInt(b, offset + 4) & 0xFFFFFFFFL);
+        return l;
+    }
 
-  public static void writeShort(int s, byte[] b, int offset)
-  {
-    int pos = offset;
-    b[pos++] = (byte) ((s >>> 8) & 0xFF);
-    b[pos++] = (byte) ((s >>> 0) & 0xFF);
-  }
+    public static float readFloat(byte[] b, int offset) {
+        return Float.intBitsToFloat(readInt(b, offset));
+    }
 
-  public static void writeInt(int i, byte[] b, int offset)
-  {
-    int pos = offset;
-    b[pos++] = (byte) ((i >>> 24) & 0xFF);
-    b[pos++] = (byte) ((i >>> 16) & 0xFF);
-    b[pos++] = (byte) ((i >>> 8) & 0xFF);
-    b[pos++] = (byte) ((i >>> 0) & 0xFF);
-  }
+    public static double readDouble(byte[] b, int offset) {
+        return Double.longBitsToDouble(readLong(b, offset));
+    }
 
-  public static void writeLong(long l, byte[] b, int offset)
-  {
-    int pos = offset;
-    b[pos++] = (byte) ((l >>> 56) & 0xFF);
-    b[pos++] = (byte) ((l >>> 48) & 0xFF);
-    b[pos++] = (byte) ((l >>> 40) & 0xFF);
-    b[pos++] = (byte) ((l >>> 32) & 0xFF);
-    b[pos++] = (byte) ((l >>> 24) & 0xFF);
-    b[pos++] = (byte) ((l >>> 16) & 0xFF);
-    b[pos++] = (byte) ((l >>> 8) & 0xFF);
-    b[pos++] = (byte) ((l >>> 0) & 0xFF);
-  }
+    public static void writeShort(int s, byte[] b, int offset) {
+        int pos = offset;
+        b[pos++] = (byte) ((s >>> 8) & 0xFF);
+        b[pos++] = (byte) ((s >>> 0) & 0xFF);
+    }
 
-  public static void writeFloat(float v, byte[] b, int offset)
-  {
-    writeInt(Float.floatToIntBits(v), b, offset);
-  }
+    public static void writeInt(int i, byte[] b, int offset) {
+        int pos = offset;
+        b[pos++] = (byte) ((i >>> 24) & 0xFF);
+        b[pos++] = (byte) ((i >>> 16) & 0xFF);
+        b[pos++] = (byte) ((i >>> 8) & 0xFF);
+        b[pos++] = (byte) ((i >>> 0) & 0xFF);
+    }
 
-  public static void writeDouble(double v, byte[] b, int offset)
-  {
-    writeLong(Double.doubleToLongBits(v), b, offset);
-  }
+    public static void writeLong(long l, byte[] b, int offset) {
+        int pos = offset;
+        b[pos++] = (byte) ((l >>> 56) & 0xFF);
+        b[pos++] = (byte) ((l >>> 48) & 0xFF);
+        b[pos++] = (byte) ((l >>> 40) & 0xFF);
+        b[pos++] = (byte) ((l >>> 32) & 0xFF);
+        b[pos++] = (byte) ((l >>> 24) & 0xFF);
+        b[pos++] = (byte) ((l >>> 16) & 0xFF);
+        b[pos++] = (byte) ((l >>> 8) & 0xFF);
+        b[pos++] = (byte) ((l >>> 0) & 0xFF);
+    }
+
+    public static void writeFloat(float v, byte[] b, int offset) {
+        writeInt(Float.floatToIntBits(v), b, offset);
+    }
+
+    public static void writeDouble(double v, byte[] b, int offset) {
+        writeLong(Double.doubleToLongBits(v), b, offset);
+    }
 }

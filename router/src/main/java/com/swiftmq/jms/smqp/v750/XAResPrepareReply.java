@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: XAResPrepareReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: XAResPrepareReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class XAResPrepareReply extends ReplyNE
-{
-  private int errorCode;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public XAResPrepareReply(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+public class XAResPrepareReply extends ReplyNE {
+    private int errorCode;
 
-  protected XAResPrepareReply()
-  {
-  }
-  
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public XAResPrepareReply(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
+    protected XAResPrepareReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESPREPARE_REP;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(errorCode,out);
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = SMQPUtil.read(errorCode,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESPREPARE_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/XAResPrepareReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("errorCode=");
-    _b.append(errorCode);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(errorCode, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = SMQPUtil.read(errorCode, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/XAResPrepareReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("errorCode=");
+        _b.append(errorCode);
+        _b.append("]");
+        return _b.toString();
+    }
 }

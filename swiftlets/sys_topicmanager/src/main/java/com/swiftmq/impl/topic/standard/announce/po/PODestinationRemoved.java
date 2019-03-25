@@ -17,32 +17,26 @@
 
 package com.swiftmq.impl.topic.standard.announce.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.swiftlet.routing.Route;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class PODestinationRemoved extends POObject
-{
-  String destination = null;
-  
-  public PODestinationRemoved(String destination)
-  {
-    super(null, null);
-    this.destination = destination;
-  }
+public class PODestinationRemoved extends POObject {
+    String destination = null;
 
-  public String getDestination()
-  {
-    return destination;
-  }
+    public PODestinationRemoved(String destination) {
+        super(null, null);
+        this.destination = destination;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POAnnounceSenderVisitor)visitor).visit(this);
-  }
+    public String getDestination() {
+        return destination;
+    }
 
-  public String toString()
-  {
-    return "[PODestinationRemoved, destination="+destination+"]";
-  }
+    public void accept(POVisitor visitor) {
+        ((POAnnounceSenderVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        return "[PODestinationRemoved, destination=" + destination + "]";
+    }
 }

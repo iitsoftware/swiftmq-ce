@@ -1,7 +1,7 @@
 <swiftlet name="sys$accounting"
           displayname="Accounting Swiftlet"
           class="com.swiftmq.impl.accounting.standard.AccountingSwiftletImpl"
-          icon="com/swiftmq/impl/accounting/standard/images/swiftlet.png"
+          icon="/sys_accounting/images/swiftlet.png"
           description="Accounting Swiftlet"
           release="${release}"
           vendor="IIT Software GmbH">

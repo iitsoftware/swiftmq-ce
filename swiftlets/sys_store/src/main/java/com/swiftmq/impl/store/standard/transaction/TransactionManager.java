@@ -30,183 +30,150 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class TransactionManager implements CheckPointHandler
-{
-  static final InitiateSyncOperation init = new InitiateSyncOperation();
-  static final SyncLogOperation sync = new SyncLogOperation();
-  StoreContext ctx;
-  long txidCount = 0;
-  int activeTransactions = 0;
-  boolean checkPointInProgress = false;
-  List finishedListeners = null;
-  Lock lock = new ReentrantLock();
-  Condition checkpointFinished = null;
+public class TransactionManager implements CheckPointHandler {
+    static final InitiateSyncOperation init = new InitiateSyncOperation();
+    static final SyncLogOperation sync = new SyncLogOperation();
+    StoreContext ctx;
+    long txidCount = 0;
+    int activeTransactions = 0;
+    boolean checkPointInProgress = false;
+    List finishedListeners = null;
+    Lock lock = new ReentrantLock();
+    Condition checkpointFinished = null;
 
-  public TransactionManager(StoreContext ctx)
-  {
-    this.ctx = ctx;
-    checkpointFinished = lock.newCondition();
-/*{evaltimer2}*/
-  }
-
-  public long getTxidCount()
-  {
-    return txidCount;
-  }
-
-  public int getActiveTransactions()
-  {
-    return activeTransactions;
-  }
-
-  public boolean isCheckPointInProgress()
-  {
-    return checkPointInProgress;
-  }
-
-  private void waitForCheckPoint()
-  {
-    do
-    {
-      checkpointFinished.awaitUninterruptibly();
-    } while (checkPointInProgress);
-  }
-
-  public synchronized void lockForCheckPoint()
-  {
-    lock.lock();
-    try
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/lockForCheckPoint...");
-      checkPointInProgress = true;
-      if (activeTransactions == 0)
-        ctx.logManager.enqueue(sync);
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/lockForCheckPoint...done.");
-    } finally
-    {
-      lock.unlock();
+    public TransactionManager(StoreContext ctx) {
+        this.ctx = ctx;
+        checkpointFinished = lock.newCondition();
+        /*{evaltimer2}*/
     }
-  }
 
-  public void performCheckPoint()
-  {
-    lock.lock();
-    try
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/performCheckPoint...");
-      try
-      {
-        // CacheManager must call the listeners inside flush to ensure synchronized access during checkpoint & shrink/backup
-        ctx.cacheManager.flush(finishedListeners);
-      } catch (Exception e)
-      {
-        // PANIC
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace("sys$store", toString() + "/performCheckPoint, exception occurred=" + e);
-        ctx.logSwiftlet.logError("sys$store", toString() + "/performCheckPoint, PANIC! EXITING! Exception occurred=" + e);
-        SwiftletManager.getInstance().disableShutdownHook();
-        System.exit(-1);
-      }
-      finishedListeners = null;
-      ctx.referenceMap.removeReferencesLessThan(1);
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/performCheckPoint...done.");
-    } finally
-    {
-      lock.unlock();
+    public long getTxidCount() {
+        return txidCount;
     }
-  }
 
-  public void checkPointDone()
-  {
-    lock.lock();
-    try
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/checkPointDone...");
-      checkPointInProgress = false;
-      checkpointFinished.signalAll();
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/checkPointDone...done.");
-    } finally
-    {
-      lock.unlock();
+    public int getActiveTransactions() {
+        return activeTransactions;
     }
-  }
 
-  public void initiateCheckPoint(CheckPointFinishedListener finishedListener)
-  {
-    lock.lock();
-    try
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$store", toString() + "/initiateCheckPoint, finishedListener=" + finishedListener + "...");
-      if (checkPointInProgress)
-        waitForCheckPoint();
-      if (finishedListeners == null)
-      {
-        finishedListeners = new ArrayList();
-        ctx.logManager.enqueue(init);
-      }
-      finishedListeners.add(finishedListener);
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$store", toString() + "/initiateCheckPoint, finishedListener=" + finishedListener + " done");
-    } finally
-    {
-      lock.unlock();
+    public boolean isCheckPointInProgress() {
+        return checkPointInProgress;
     }
-  }
 
-  public long createTxId()
-  {
-    return createTxId(true);
-  }
-
-  public long createTxId(boolean doWait)
-  {
-    lock.lock();
-    try
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createTxId, doWait=" + doWait);
-      if (checkPointInProgress)
-      {
-        if (doWait || activeTransactions == 0)
-        {
-          do
-          {
+    private void waitForCheckPoint() {
+        do {
             checkpointFinished.awaitUninterruptibly();
-          } while (checkPointInProgress && (doWait || activeTransactions == 0));
+        } while (checkPointInProgress);
+    }
+
+    public synchronized void lockForCheckPoint() {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/lockForCheckPoint...");
+            checkPointInProgress = true;
+            if (activeTransactions == 0)
+                ctx.logManager.enqueue(sync);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/lockForCheckPoint...done.");
+        } finally {
+            lock.unlock();
         }
-      }
-      activeTransactions++;
-      long txId = txidCount++;
-      if (txId == Long.MAX_VALUE)
-        txidCount = 0;
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createTxId, txId=" + txId);
-      return txId;
-    } finally
-    {
-      lock.unlock();
     }
-  }
 
-  public void removeTxId(long txId)
-  {
-    lock.lock();
-    try
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/removeTxId, txId=" + txId);
-      activeTransactions--;
-      if (checkPointInProgress && activeTransactions == 0)
-        ctx.logManager.enqueue(sync);
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$store", toString() + "/removeTxId, txId=" + txId + ", done.");
-    } finally
-    {
-      lock.unlock();
+    public void performCheckPoint() {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/performCheckPoint...");
+            try {
+                // CacheManager must call the listeners inside flush to ensure synchronized access during checkpoint & shrink/backup
+                ctx.cacheManager.flush(finishedListeners);
+            } catch (Exception e) {
+                // PANIC
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$store", toString() + "/performCheckPoint, exception occurred=" + e);
+                ctx.logSwiftlet.logError("sys$store", toString() + "/performCheckPoint, PANIC! EXITING! Exception occurred=" + e);
+                SwiftletManager.getInstance().disableShutdownHook();
+                System.exit(-1);
+            }
+            finishedListeners = null;
+            ctx.referenceMap.removeReferencesLessThan(1);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/performCheckPoint...done.");
+        } finally {
+            lock.unlock();
+        }
     }
-  }
 
-  public String toString()
-  {
-    return "TransactionManager, activeTransctions=" + activeTransactions;
-  }
+    public void checkPointDone() {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/checkPointDone...");
+            checkPointInProgress = false;
+            checkpointFinished.signalAll();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/checkPointDone...done.");
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void initiateCheckPoint(CheckPointFinishedListener finishedListener) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$store", toString() + "/initiateCheckPoint, finishedListener=" + finishedListener + "...");
+            if (checkPointInProgress)
+                waitForCheckPoint();
+            if (finishedListeners == null) {
+                finishedListeners = new ArrayList();
+                ctx.logManager.enqueue(init);
+            }
+            finishedListeners.add(finishedListener);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$store", toString() + "/initiateCheckPoint, finishedListener=" + finishedListener + " done");
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public long createTxId() {
+        return createTxId(true);
+    }
+
+    public long createTxId(boolean doWait) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createTxId, doWait=" + doWait);
+            if (checkPointInProgress) {
+                if (doWait || activeTransactions == 0) {
+                    do {
+                        checkpointFinished.awaitUninterruptibly();
+                    } while (checkPointInProgress && (doWait || activeTransactions == 0));
+                }
+            }
+            activeTransactions++;
+            long txId = txidCount++;
+            if (txId == Long.MAX_VALUE)
+                txidCount = 0;
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createTxId, txId=" + txId);
+            return txId;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void removeTxId(long txId) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/removeTxId, txId=" + txId);
+            activeTransactions--;
+            if (checkPointInProgress && activeTransactions == 0)
+                ctx.logManager.enqueue(sync);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$store", toString() + "/removeTxId, txId=" + txId + ", done.");
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public String toString() {
+        return "TransactionManager, activeTransctions=" + activeTransactions;
+    }
 }
 

@@ -17,52 +17,44 @@
 
 package com.swiftmq.impl.scheduler.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class JobTerminated extends POObject
-{
-  String name = null;
-  String message = null;
-  JobException jobException = null;
+public class JobTerminated extends POObject {
+    String name = null;
+    String message = null;
+    JobException jobException = null;
 
-  public JobTerminated(String name, String message)
-  {
-    super(null, null);
-    this.name = name;
-    this.message = message;
-  }
+    public JobTerminated(String name, String message) {
+        super(null, null);
+        this.name = name;
+        this.message = message;
+    }
 
-  public JobTerminated(String name, JobException jobException)
-  {
-    super(null, null);
-    this.name = name;
-    this.jobException = jobException;
-  }
+    public JobTerminated(String name, JobException jobException) {
+        super(null, null);
+        this.name = name;
+        this.jobException = jobException;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getMessage()
-  {
-    return message;
-  }
+    public String getMessage() {
+        return message;
+    }
 
-  public JobException getJobException()
-  {
-    return jobException;
-  }
+    public JobException getJobException() {
+        return jobException;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[JobTerminated, name="+name+", message="+message+", exception="+jobException+"]";
-  }
+    public String toString() {
+        return "[JobTerminated, name=" + name + ", message=" + message + ", exception=" + jobException + "]";
+    }
 }

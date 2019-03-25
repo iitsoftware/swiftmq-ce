@@ -24,35 +24,30 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
-public class SwiftletContext
-{
-  public MonitorSwiftlet swiftlet = null;
-  public TraceSwiftlet traceSwiftlet = null;
-  public TraceSpace traceSpace = null;
-  public LogSwiftlet logSwiftlet = null;
-  public TimerSwiftlet timerSwiftlet = null;
-  public Entity root = null;
-  public MailGenerator mailGenerator = null;
+public class SwiftletContext {
+    public MonitorSwiftlet swiftlet = null;
+    public TraceSwiftlet traceSwiftlet = null;
+    public TraceSpace traceSpace = null;
+    public LogSwiftlet logSwiftlet = null;
+    public TimerSwiftlet timerSwiftlet = null;
+    public Entity root = null;
+    public MailGenerator mailGenerator = null;
 
-  public SwiftletContext(MonitorSwiftlet swiftlet, Entity root)
-  {
-    try
-    {
-      this.swiftlet = swiftlet;
-      this.root = root;
-      traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-      traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-      timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
-      logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-      mailGenerator = new MailGenerator(this);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
+    public SwiftletContext(MonitorSwiftlet swiftlet, Entity root) {
+        try {
+            this.swiftlet = swiftlet;
+            this.root = root;
+            traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+            traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+            timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
+            logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+            mailGenerator = new MailGenerator(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
 
-  public void close()
-  {
-    mailGenerator.close();
-  }
+    public void close() {
+        mailGenerator.close();
+    }
 }

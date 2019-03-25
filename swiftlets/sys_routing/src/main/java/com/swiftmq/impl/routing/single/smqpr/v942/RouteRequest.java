@@ -30,65 +30,55 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class RouteRequest extends Request
-{
-  Route route = null;
-  byte[] buffer = null;
+public class RouteRequest extends Request {
+    Route route = null;
+    byte[] buffer = null;
 
-  public RouteRequest(Route route)
-  {
-    super(0, false);
-    this.route = route;
-  }
+    public RouteRequest(Route route) {
+        super(0, false);
+        this.route = route;
+    }
 
-  public RouteRequest()
-  {
-    this(null);
-  }
+    public RouteRequest() {
+        this(null);
+    }
 
-  public Route getRoute(DumpableFactory factory) throws Exception
-  {
-    DataByteArrayInputStream dbis = new DataByteArrayInputStream(buffer);
-    route = (Route) factory.createDumpable(dbis.readInt());
-    if (route == null)
-      throw new Exception("Unable to create Route!");
-    route.readContent(dbis);
-    return route;
-  }
+    public Route getRoute(DumpableFactory factory) throws Exception {
+        DataByteArrayInputStream dbis = new DataByteArrayInputStream(buffer);
+        route = (Route) factory.createDumpable(dbis.readInt());
+        if (route == null)
+            throw new Exception("Unable to create Route!");
+        route.readContent(dbis);
+        return route;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.ROUTE_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.ROUTE_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
-    route.writeContent(dbos);
-    output.writeInt(dbos.getCount());
-    output.write(dbos.getBuffer(), 0, dbos.getCount());
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
+        route.writeContent(dbos);
+        output.writeInt(dbos.getCount());
+        output.write(dbos.getBuffer(), 0, dbos.getCount());
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    buffer = new byte[input.readInt()];
-    input.readFully(buffer);
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        buffer = new byte[input.readInt()];
+        input.readFully(buffer);
+    }
 
-  public String toString()
-  {
-    return "[RouteRequest " + super.toString() + ", route=" + route + ", buffer=" + buffer + "]";
-  }
+    public String toString() {
+        return "[RouteRequest " + super.toString() + ", route=" + route + ", buffer=" + buffer + "]";
+    }
 }

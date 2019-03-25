@@ -22,24 +22,22 @@ package com.swiftmq.mgmt;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class PropertyChangeAdapter implements PropertyChangeListener
-{
-  protected Object configObject;
+public class PropertyChangeAdapter implements PropertyChangeListener {
+    protected Object configObject;
 
 
-  /**
-   * Create a new PropertyChangeAdapter.
-   * @param configObject a custom config object.
-   */
-  public PropertyChangeAdapter(Object configObject)
-  {
-    // SBgen: Assign variable
-    this.configObject = configObject;
-  }
+    /**
+     * Create a new PropertyChangeAdapter.
+     *
+     * @param configObject a custom config object.
+     */
+    public PropertyChangeAdapter(Object configObject) {
+        // SBgen: Assign variable
+        this.configObject = configObject;
+    }
 
-  public void propertyChanged(Property property, Object oldValue, Object newValue)
-    throws PropertyChangeException
-  {
-  }
+    public void propertyChanged(Property property, Object oldValue, Object newValue)
+            throws PropertyChangeException {
+    }
 }
 

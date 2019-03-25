@@ -22,52 +22,43 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POReconnect extends POObject
-{
-  RecreatableConnection recreatableConnection = null;
-  boolean internalRetry = false;
-  boolean reconnectAlreadyInProgress = false;
+public class POReconnect extends POObject {
+    RecreatableConnection recreatableConnection = null;
+    boolean internalRetry = false;
+    boolean reconnectAlreadyInProgress = false;
 
-  public POReconnect(Semaphore semaphore, RecreatableConnection recreatableConnection)
-  {
-    super(null, semaphore);
-    this.recreatableConnection = recreatableConnection;
-  }
+    public POReconnect(Semaphore semaphore, RecreatableConnection recreatableConnection) {
+        super(null, semaphore);
+        this.recreatableConnection = recreatableConnection;
+    }
 
-  public POReconnect(Semaphore semaphore, RecreatableConnection recreatableConnection, boolean internalRetry)
-  {
-    super(null, semaphore);
-    this.recreatableConnection = recreatableConnection;
-    this.internalRetry = internalRetry;
-  }
+    public POReconnect(Semaphore semaphore, RecreatableConnection recreatableConnection, boolean internalRetry) {
+        super(null, semaphore);
+        this.recreatableConnection = recreatableConnection;
+        this.internalRetry = internalRetry;
+    }
 
-  public RecreatableConnection getRecreatableConnection()
-  {
-    return recreatableConnection;
-  }
+    public RecreatableConnection getRecreatableConnection() {
+        return recreatableConnection;
+    }
 
-  public boolean isInternalRetry()
-  {
-    return internalRetry;
-  }
+    public boolean isInternalRetry() {
+        return internalRetry;
+    }
 
-  public boolean isReconnectAlreadyInProgress()
-  {
-    return reconnectAlreadyInProgress;
-  }
+    public boolean isReconnectAlreadyInProgress() {
+        return reconnectAlreadyInProgress;
+    }
 
-  public void setReconnectAlreadyInProgress(boolean reconnectAlreadyInProgress)
-  {
-    this.reconnectAlreadyInProgress = reconnectAlreadyInProgress;
-  }
+    public void setReconnectAlreadyInProgress(boolean reconnectAlreadyInProgress) {
+        this.reconnectAlreadyInProgress = reconnectAlreadyInProgress;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POReconnect, recreatableConnection=" + recreatableConnection + "]";
-  }
+    public String toString() {
+        return "[POReconnect, recreatableConnection=" + recreatableConnection + "]";
+    }
 }

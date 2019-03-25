@@ -23,84 +23,76 @@ package com.swiftmq.swiftlet.scheduler;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2003, All Rights Reserved
  */
-public class JobParameter
-{
-  String name = null;
-  String description = null;
-  String defaultValue = null;
-  boolean mandatory = false;
-  JobParameterVerifier verifier = null;
+public class JobParameter {
+    String name = null;
+    String description = null;
+    String defaultValue = null;
+    boolean mandatory = false;
+    JobParameterVerifier verifier = null;
 
-  /**
-   * Creates a new JobParameter object.
-   *
-   * @param name Name
-   * @param description Short Description
-   * @param defaultValue optional default value
-   * @param mandatory whether it is mandatory or optional
-   * @param verifier optional verifier
-   */
-  public JobParameter(String name, String description, String defaultValue, boolean mandatory, JobParameterVerifier verifier)
-  {
-    this.name = name;
-    this.description = description;
-    this.defaultValue = defaultValue;
-    this.mandatory = mandatory;
-    this.verifier = verifier;
-  }
+    /**
+     * Creates a new JobParameter object.
+     *
+     * @param name         Name
+     * @param description  Short Description
+     * @param defaultValue optional default value
+     * @param mandatory    whether it is mandatory or optional
+     * @param verifier     optional verifier
+     */
+    public JobParameter(String name, String description, String defaultValue, boolean mandatory, JobParameterVerifier verifier) {
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.mandatory = mandatory;
+        this.verifier = verifier;
+    }
 
-  /**
-   * Returns the name.
-   *
-   * @return Name
-   */
-  public String getName()
-  {
-    return name;
-  }
+    /**
+     * Returns the name.
+     *
+     * @return Name
+     */
+    public String getName() {
+        return name;
+    }
 
-  /**
-   * Returns the description.
-   *
-   * @return description
-   */
-  public String getDescription()
-  {
-    return description;
-  }
+    /**
+     * Returns the description.
+     *
+     * @return description
+     */
+    public String getDescription() {
+        return description;
+    }
 
-  /**
-   * Returns the default value (null if no default is specified).
-   *
-   * @return default value
-   */
-  public String getDefaultValue()
-  {
-    return defaultValue;
-  }
+    /**
+     * Returns the default value (null if no default is specified).
+     *
+     * @return default value
+     */
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 
-  /**
-   * Returns whether this parameter is optional or mandatory.
-   *
-   * @return true / false
-   */
-  public boolean isMandatory()
-  {
-    return mandatory;
-  }
+    /**
+     * Returns whether this parameter is optional or mandatory.
+     *
+     * @return true / false
+     */
+    public boolean isMandatory() {
+        return mandatory;
+    }
 
-  /**
-   * Returns the optional verifier.
-   *
-   * @return verifier
-   */
-  public JobParameterVerifier getVerifier()
-  {
-    return verifier;
-  }
+    /**
+     * Returns the optional verifier.
+     *
+     * @return verifier
+     */
+    public JobParameterVerifier getVerifier() {
+        return verifier;
+    }
 
-  public String toString()
-  {
-    return "JobParameter, name="+name+", description="+description+", defaultValue="+defaultValue+", mandatory="+mandatory+", verifier="+verifier+"]";
-  }
+    public String toString() {
+        return "JobParameter, name=" + name + ", description=" + description + ", defaultValue=" + defaultValue + ", mandatory=" + mandatory + ", verifier=" + verifier + "]";
+    }
 }

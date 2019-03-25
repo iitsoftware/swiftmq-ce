@@ -17,35 +17,28 @@
 
 package com.swiftmq.amqp.v091.generated.confirm;
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-
 /**
- *  The Confirm method visitor adapter.
+ * The Confirm method visitor adapter.
  *
- *  @version AMQP Version 091. Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version 091. Generation Date: Thu Apr 12 12:18:24 CEST 2012
  **/
 
-public class ConfirmMethodVisitorAdapter implements ConfirmMethodVisitor
-{
+public class ConfirmMethodVisitorAdapter implements ConfirmMethodVisitor {
 
-  /**
-   * Visitor method for a Select type object.
-   *
-   * @param impl a Select type object
-   */
-  public void visit(Select impl)
-  {
-  }
+    /**
+     * Visitor method for a Select type object.
+     *
+     * @param impl a Select type object
+     */
+    public void visit(Select impl) {
+    }
 
-  /**
-   * Visitor method for a SelectOk type object.
-   *
-   * @param impl a SelectOk type object
-   */
-  public void visit(SelectOk impl)
-  {
-  }
+    /**
+     * Visitor method for a SelectOk type object.
+     *
+     * @param impl a SelectOk type object
+     */
+    public void visit(SelectOk impl) {
+    }
 }

@@ -21,36 +21,35 @@ package com.swiftmq.amqp.v100.client;
  * <p>
  * Quality of Service for message transfer.
  * </p>
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ *
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class QoS
-{
-  /**
-   * Message transfer is settled before send.
-   */
-  public static final int AT_MOST_ONCE = 0;
+public class QoS {
+    /**
+     * Message transfer is settled before send.
+     */
+    public static final int AT_MOST_ONCE = 0;
 
-  /**
-   * Message transfer is settled after receive.
-   */
-  public static final int AT_LEAST_ONCE = 1;
+    /**
+     * Message transfer is settled after receive.
+     */
+    public static final int AT_LEAST_ONCE = 1;
 
-  /**
-   * Message transfer is settled in a 2 way fashion: First after receive at the receiver and thereafter at the sender.
-   */
-  public static final int EXACTLY_ONCE = 2;
+    /**
+     * Message transfer is settled in a 2 way fashion: First after receive at the receiver and thereafter at the sender.
+     */
+    public static final int EXACTLY_ONCE = 2;
 
-  /**
-   * Verifies a given QoS parameter.
-   *
-   * @param qos quality of service
-   * @throws InvalidQualityOfServiceException if it is invalid
-   */
-  public static void verify(int qos) throws InvalidQualityOfServiceException
-  {
-    if (!(qos == AT_MOST_ONCE ||
-        qos == AT_LEAST_ONCE ||
-        qos == EXACTLY_ONCE))
-      throw new InvalidQualityOfServiceException("Invalid: " + qos);
-  }
+    /**
+     * Verifies a given QoS parameter.
+     *
+     * @param qos quality of service
+     * @throws InvalidQualityOfServiceException if it is invalid
+     */
+    public static void verify(int qos) throws InvalidQualityOfServiceException {
+        if (!(qos == AT_MOST_ONCE ||
+                qos == AT_LEAST_ONCE ||
+                qos == EXACTLY_ONCE))
+            throw new InvalidQualityOfServiceException("Invalid: " + qos);
+    }
 }

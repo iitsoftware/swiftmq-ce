@@ -20,11 +20,10 @@ package com.swiftmq.tools.log;
 /**
  * Base interface for all log and logDebug implementations
  */
-public interface Log
-{
-  /**
-   * @param logValue The log value
-   */
-  public void logMessage(LogValue logValue);
+public interface Log {
+    /**
+     * @param logValue The log value
+     */
+    public void logMessage(LogValue logValue);
 }
 

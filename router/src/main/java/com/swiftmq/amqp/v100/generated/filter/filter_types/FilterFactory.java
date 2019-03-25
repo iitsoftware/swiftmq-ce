@@ -18,81 +18,65 @@
 package com.swiftmq.amqp.v100.generated.filter.filter_types;
 
 import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import java.io.*;
-import java.util.*;
+
+import java.io.IOException;
 
 /**
- *  Factory class to create FilterIF objects out of a bare AMQPType
+ * Factory class to create FilterIF objects out of a bare AMQPType
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class FilterFactory
-{
+public class FilterFactory {
 
-  /**
-   * Creates a FilterIF object.
-   *
-   * @param bare the bare AMQP type
-   * @return FilterIF
-   */
-  public static FilterIF create(AMQPType bare) throws Exception
-  {
-    if (bare.getCode() == AMQPTypeDecoder.NULL)
-      return null;
-    AMQPDescribedConstructor constructor = bare.getConstructor();
-    if (constructor == null)
-      throw new IOException("Missing constructor: " + bare);
-    AMQPType descriptor = constructor.getDescriptor();
-    int code = descriptor.getCode();
-    if (AMQPTypeDecoder.isULong(code))
-    {
-      long type = ((AMQPUnsignedLong) descriptor).getValue();
-      if (type == NoLocalFilter.DESCRIPTOR_CODE)
-        return new NoLocalFilter(((AMQPList)bare).getValue());
-      if (type == SelectorFilter.DESCRIPTOR_CODE)
-        return new SelectorFilter(((AMQPString)bare).getValue());
-      throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
-    } else if (AMQPTypeDecoder.isSymbol(code))
-    {
-      String type = ((AMQPSymbol) descriptor).getValue();
-      if (type.equals(NoLocalFilter.DESCRIPTOR_NAME))
-        return new NoLocalFilter(((AMQPList)bare).getValue());
-      if (type.equals(SelectorFilter.DESCRIPTOR_NAME))
-        return new SelectorFilter(((AMQPString)bare).getValue());
-      throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
-    } else
-      throw new Exception("Invalid type of constructor descriptor (actual type=" + code + ", expected=symbold or ulong), bare= " + bare);
-  }
+    /**
+     * Creates a FilterIF object.
+     *
+     * @param bare the bare AMQP type
+     * @return FilterIF
+     */
+    public static FilterIF create(AMQPType bare) throws Exception {
+        if (bare.getCode() == AMQPTypeDecoder.NULL)
+            return null;
+        AMQPDescribedConstructor constructor = bare.getConstructor();
+        if (constructor == null)
+            throw new IOException("Missing constructor: " + bare);
+        AMQPType descriptor = constructor.getDescriptor();
+        int code = descriptor.getCode();
+        if (AMQPTypeDecoder.isULong(code)) {
+            long type = ((AMQPUnsignedLong) descriptor).getValue();
+            if (type == NoLocalFilter.DESCRIPTOR_CODE)
+                return new NoLocalFilter(((AMQPList) bare).getValue());
+            if (type == SelectorFilter.DESCRIPTOR_CODE)
+                return new SelectorFilter(((AMQPString) bare).getValue());
+            throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
+        } else if (AMQPTypeDecoder.isSymbol(code)) {
+            String type = ((AMQPSymbol) descriptor).getValue();
+            if (type.equals(NoLocalFilter.DESCRIPTOR_NAME))
+                return new NoLocalFilter(((AMQPList) bare).getValue());
+            if (type.equals(SelectorFilter.DESCRIPTOR_NAME))
+                return new SelectorFilter(((AMQPString) bare).getValue());
+            throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
+        } else
+            throw new Exception("Invalid type of constructor descriptor (actual type=" + code + ", expected=symbold or ulong), bare= " + bare);
+    }
 
-  /**
-   * Converts an AMQP array of type FilterIF into a native array
-   *
-   * @param array AMQP array
-   * @return native array
-   */
-  public static FilterIF[] toNativeArray(AMQPArray array) throws Exception
-  {
-    if (array == null)
-      return null;
-    AMQPType[] value = array.getValue();
-    if (value == null)
-      return null;
-    FilterIF[] n = new FilterIF[value.length];
-    for (int i=0;i<value.length;i++)
-      n[i] = create(value[i]);
-    return n;
-  }
+    /**
+     * Converts an AMQP array of type FilterIF into a native array
+     *
+     * @param array AMQP array
+     * @return native array
+     */
+    public static FilterIF[] toNativeArray(AMQPArray array) throws Exception {
+        if (array == null)
+            return null;
+        AMQPType[] value = array.getValue();
+        if (value == null)
+            return null;
+        FilterIF[] n = new FilterIF[value.length];
+        for (int i = 0; i < value.length; i++)
+            n[i] = create(value[i]);
+        return n;
+    }
 }

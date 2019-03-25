@@ -17,158 +17,141 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: XAResStartRequest
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:11 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: XAResStartRequest
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:11 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.XidImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResStartRequest extends Request 
-{
-  private XidImpl xid;
-  private int flags;
-  private boolean retry;
-  private List recoverRequestList;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
-  public XAResStartRequest()
-  {
-    super(0,true);
-  }
+public class XAResStartRequest extends Request {
+    private XidImpl xid;
+    private int flags;
+    private boolean retry;
+    private List recoverRequestList;
 
-  public XAResStartRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public XAResStartRequest() {
+        super(0, true);
+    }
 
-  public XAResStartRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public XAResStartRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XAResStartRequest(int dispatchId, XidImpl xid, int flags, boolean retry, List recoverRequestList)
-  {
-    super(dispatchId,true);
-    this.xid = xid;
-    this.flags = flags;
-    this.retry = retry;
-    this.recoverRequestList = recoverRequestList;
-  }
+    public XAResStartRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public XAResStartRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, int flags, boolean retry, List recoverRequestList)
-  {
-    super(dispatchId,true,validator);
-    this.xid = xid;
-    this.flags = flags;
-    this.retry = retry;
-    this.recoverRequestList = recoverRequestList;
-  }
-  
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public XAResStartRequest(int dispatchId, XidImpl xid, int flags, boolean retry, List recoverRequestList) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.flags = flags;
+        this.retry = retry;
+        this.recoverRequestList = recoverRequestList;
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
-  
-  public void setFlags(int flags)
-  {
-    this.flags = flags;
-  }
+    public XAResStartRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, int flags, boolean retry, List recoverRequestList) {
+        super(dispatchId, true, validator);
+        this.xid = xid;
+        this.flags = flags;
+        this.retry = retry;
+        this.recoverRequestList = recoverRequestList;
+    }
 
-  public int getFlags()
-  {
-    return flags;
-  }
-  
-  public void setRetry(boolean retry)
-  {
-    this.retry = retry;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public boolean isRetry()
-  {
-    return retry;
-  }
-  
-  public void setRecoverRequestList(List recoverRequestList)
-  {
-    this.recoverRequestList = recoverRequestList;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public List getRecoverRequestList()
-  {
-    return recoverRequestList;
-  }
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESSTART_REQ;
-  }
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setRetry(boolean retry) {
+        this.retry = retry;
+    }
+
+    public boolean isRetry() {
+        return retry;
+    }
+
+    public void setRecoverRequestList(List recoverRequestList) {
+        this.recoverRequestList = recoverRequestList;
+    }
+
+    public List getRecoverRequestList() {
+        return recoverRequestList;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESSTART_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(xid,out);
-    SMQPUtil.write(flags,out);
-    SMQPUtil.write(retry,out);
-    if (recoverRequestList != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writeRequest(recoverRequestList,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(xid, out);
+        SMQPUtil.write(flags, out);
+        SMQPUtil.write(retry, out);
+        if (recoverRequestList != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writeRequest(recoverRequestList, out);
+        } else
+            out.writeBoolean(false);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = SMQPUtil.read(xid,in);
-    flags = SMQPUtil.read(flags,in);
-    retry = SMQPUtil.read(retry,in);
-    boolean recoverRequestList_set = in.readBoolean();
-    if (recoverRequestList_set)
-      recoverRequestList = SMQPUtil.readRequest(recoverRequestList,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = SMQPUtil.read(xid, in);
+        flags = SMQPUtil.read(flags, in);
+        retry = SMQPUtil.read(retry, in);
+        boolean recoverRequestList_set = in.readBoolean();
+        if (recoverRequestList_set)
+            recoverRequestList = SMQPUtil.readRequest(recoverRequestList, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResStartReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResStartReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/XAResStartRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("xid=");
-    _b.append(xid);
-    _b.append(", ");
-    _b.append("flags=");
-    _b.append(flags);
-    _b.append(", ");
-    _b.append("retry=");
-    _b.append(retry);
-    _b.append(", ");
-    _b.append("recoverRequestList=");
-    _b.append(recoverRequestList);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/XAResStartRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("xid=");
+        _b.append(xid);
+        _b.append(", ");
+        _b.append("flags=");
+        _b.append(flags);
+        _b.append(", ");
+        _b.append("retry=");
+        _b.append(retry);
+        _b.append(", ");
+        _b.append("recoverRequestList=");
+        _b.append(recoverRequestList);
+        _b.append("]");
+        return _b.toString();
+    }
 }

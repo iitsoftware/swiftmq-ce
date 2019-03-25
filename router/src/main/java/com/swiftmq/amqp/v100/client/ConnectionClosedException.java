@@ -18,19 +18,17 @@
 package com.swiftmq.amqp.v100.client;
 
 /**
- *  An exception thrown if a connection is closed.
+ * An exception thrown if a connection is closed.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class ConnectionClosedException extends AMQPException
-{
-  /**
-   * Create a ConnectionClosedException.
-   *
-   * @param s exception message
-   */
-  public ConnectionClosedException(String s)
-  {
-    super(s);
-  }
+public class ConnectionClosedException extends AMQPException {
+    /**
+     * Create a ConnectionClosedException.
+     *
+     * @param s exception message
+     */
+    public ConnectionClosedException(String s) {
+        super(s);
+    }
 }

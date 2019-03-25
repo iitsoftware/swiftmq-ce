@@ -18,22 +18,19 @@
 package com.swiftmq.impl.jms.standard.v600;
 
 
-public class QueueProducer extends Producer
-{
-  String queueName = null;
+public class QueueProducer extends Producer {
+    String queueName = null;
 
-  protected QueueProducer(SessionContext ctx, String queueName)
-    throws Exception
-  {
-    super(ctx);
-    this.queueName = queueName;
-    setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-  }
+    protected QueueProducer(SessionContext ctx, String queueName)
+            throws Exception {
+        super(ctx);
+        this.queueName = queueName;
+        setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
+    }
 
-  public String toString()
-  {
-    return "QueueProducer, queue=" + queueName;
-  }
+    public String toString() {
+        return "QueueProducer, queue=" + queueName;
+    }
 }
 

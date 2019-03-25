@@ -19,20 +19,18 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-public class AuthResponseReply extends Reply
-{
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_AUTH_RESPONSE_REP;
-  }
+public class AuthResponseReply extends Reply {
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_AUTH_RESPONSE_REP;
+    }
 
-  public String toString()
-  {
-    return "[AuthResponseReply " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AuthResponseReply " + super.toString() + "]";
+    }
 }
 

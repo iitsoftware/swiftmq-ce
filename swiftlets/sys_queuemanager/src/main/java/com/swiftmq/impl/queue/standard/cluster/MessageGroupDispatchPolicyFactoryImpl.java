@@ -20,10 +20,8 @@ package com.swiftmq.impl.queue.standard.cluster;
 import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.mgmt.Entity;
 
-public class MessageGroupDispatchPolicyFactoryImpl implements MessageGroupDispatchPolicyFactory
-{
-  public MessageGroupDispatchPolicy create(SwiftletContext ctx, Entity myEntity, String clusteredQueueName, DispatchPolicy parent)
-  {
-    return new MessageGroupDispatchPolicy(ctx, myEntity, clusteredQueueName, parent);
-  }
+public class MessageGroupDispatchPolicyFactoryImpl implements MessageGroupDispatchPolicyFactory {
+    public MessageGroupDispatchPolicy create(SwiftletContext ctx, Entity myEntity, String clusteredQueueName, DispatchPolicy parent) {
+        return new MessageGroupDispatchPolicy(ctx, myEntity, clusteredQueueName, parent);
+    }
 }

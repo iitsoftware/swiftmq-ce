@@ -17,63 +17,55 @@
 
 package com.swiftmq.tools.collection;
 
-public class LongRingBuffer
-{
-  private long[] elements;
-  private int first = 0;
-  private int size = 0;
-  private int extendSize = 32;
+public class LongRingBuffer {
+    private long[] elements;
+    private int first = 0;
+    private int size = 0;
+    private int extendSize = 32;
 
-  public LongRingBuffer(int extendSize)
-  {
-    this.extendSize = extendSize;
-    elements = new long[extendSize];
-  }
-
-  public LongRingBuffer(LongRingBuffer base)
-  {
-    extendSize = base.extendSize;
-    first = base.first;
-    size = base.size;
-    elements = new long[base.extendSize];
-    System.arraycopy(base.elements,0,elements,0,base.elements.length);
-  }
-   
-  public void add(long obj)
-  {
-    if (size == elements.length)
-    {
-      int newSize = elements.length + extendSize;
-      long[] newElements = new long[newSize];
-      int n = elements.length - first;
-      System.arraycopy(elements, first, newElements, 0, n);
-      if (first != 0)
-        System.arraycopy(elements, 0, newElements, n, first);
-      elements = newElements;
-      first = 0;
+    public LongRingBuffer(int extendSize) {
+        this.extendSize = extendSize;
+        elements = new long[extendSize];
     }
-    elements[(first + size) % elements.length] = obj;
-    size++;
-  }
 
-  public long remove()
-  {
-    long obj = elements[first];
-    first++;
-    size--;
-    if (first == elements.length)
-      first = 0;
-    return obj;
-  }
+    public LongRingBuffer(LongRingBuffer base) {
+        extendSize = base.extendSize;
+        first = base.first;
+        size = base.size;
+        elements = new long[base.extendSize];
+        System.arraycopy(base.elements, 0, elements, 0, base.elements.length);
+    }
 
-  public int getSize()
-  {
-    return size;
-  }
+    public void add(long obj) {
+        if (size == elements.length) {
+            int newSize = elements.length + extendSize;
+            long[] newElements = new long[newSize];
+            int n = elements.length - first;
+            System.arraycopy(elements, first, newElements, 0, n);
+            if (first != 0)
+                System.arraycopy(elements, 0, newElements, n, first);
+            elements = newElements;
+            first = 0;
+        }
+        elements[(first + size) % elements.length] = obj;
+        size++;
+    }
 
-  public void clear()
-  {
-    first = 0;
-    size = 0;
-  }
+    public long remove() {
+        long obj = elements[first];
+        first++;
+        size--;
+        if (first == elements.length)
+            first = 0;
+        return obj;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void clear() {
+        first = 0;
+        size = 0;
+    }
 }

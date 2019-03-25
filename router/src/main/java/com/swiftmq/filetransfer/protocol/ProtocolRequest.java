@@ -22,52 +22,43 @@ import com.swiftmq.jms.MessageImpl;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public class ProtocolRequest extends MessageBasedRequest
-{
-  public static final String VERSION_PROP = "JMS_SWIFTMQ_FT_VERSION";
-  int version = 0;
+public class ProtocolRequest extends MessageBasedRequest {
+    public static final String VERSION_PROP = "JMS_SWIFTMQ_FT_VERSION";
+    int version = 0;
 
-  public ProtocolRequest(int version)
-  {
-    this.version = version;
-    setReplyRequired(true);
-  }
+    public ProtocolRequest(int version) {
+        this.version = version;
+        setReplyRequired(true);
+    }
 
-  public ProtocolRequest(Message message) throws JMSException
-  {
-    this(message.getIntProperty(VERSION_PROP));
-  }
+    public ProtocolRequest(Message message) throws JMSException {
+        this(message.getIntProperty(VERSION_PROP));
+    }
 
-  public int getVersion()
-  {
-    return version;
-  }
+    public int getVersion() {
+        return version;
+    }
 
-  public void setVersion(int version)
-  {
-    this.version = version;
-  }
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
-  public MessageBasedReply createReplyInstance()
-  {
-    return new ProtocolReply();
-  }
+    public MessageBasedReply createReplyInstance() {
+        return new ProtocolReply();
+    }
 
-  public void accept(MessageBasedRequestVisitor visitor)
-  {
-    ((ProtocolVisitor) visitor).visit(this);
-  }
+    public void accept(MessageBasedRequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    Message message = new MessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.PROTOCOL_REQ);
-    message.setIntProperty(VERSION_PROP, version);
-    return message;
-  }
+    public Message toMessage() throws JMSException {
+        Message message = new MessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.PROTOCOL_REQ);
+        message.setIntProperty(VERSION_PROP, version);
+        return message;
+    }
 
-  public String toString()
-  {
-    return "[ProtocolRequest, version=" + version + "]";
-  }
+    public String toString() {
+        return "[ProtocolRequest, version=" + version + "]";
+    }
 }

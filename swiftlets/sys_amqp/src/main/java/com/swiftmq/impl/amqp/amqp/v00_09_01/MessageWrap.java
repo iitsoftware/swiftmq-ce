@@ -23,54 +23,46 @@ import com.swiftmq.amqp.v091.types.ContentHeaderProperties;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MessageWrap
-{
-  Publish publish = null;
-  ContentHeaderProperties contentHeaderProperties = null;
-  List<byte[]> bodyParts = new ArrayList<byte[]>();
-  int currentSize = 0;
+public class MessageWrap {
+    Publish publish = null;
+    ContentHeaderProperties contentHeaderProperties = null;
+    List<byte[]> bodyParts = new ArrayList<byte[]>();
+    int currentSize = 0;
 
-  public MessageWrap(Publish publish)
-  {
-    this.publish = publish;
-  }
+    public MessageWrap(Publish publish) {
+        this.publish = publish;
+    }
 
-  public Publish getPublish()
-  {
-    return publish;
-  }
+    public Publish getPublish() {
+        return publish;
+    }
 
-  public void setContentHeaderProperties(ContentHeaderProperties contentHeaderProperties)
-  {
-    this.contentHeaderProperties = contentHeaderProperties;
-  }
+    public void setContentHeaderProperties(ContentHeaderProperties contentHeaderProperties) {
+        this.contentHeaderProperties = contentHeaderProperties;
+    }
 
-  public ContentHeaderProperties getContentHeaderProperties()
-  {
-    return contentHeaderProperties;
-  }
+    public ContentHeaderProperties getContentHeaderProperties() {
+        return contentHeaderProperties;
+    }
 
-  public boolean addBodyPart(byte[] part)
-  {
-    currentSize += part.length;
-    bodyParts.add(part);
-    return currentSize >= contentHeaderProperties.getBodySize();
-  }
+    public boolean addBodyPart(byte[] part) {
+        currentSize += part.length;
+        bodyParts.add(part);
+        return currentSize >= contentHeaderProperties.getBodySize();
+    }
 
-  public List<byte[]> getBodyParts()
-  {
-    return bodyParts;
-  }
+    public List<byte[]> getBodyParts() {
+        return bodyParts;
+    }
 
-  public String toString()
-  {
-    final StringBuffer sb = new StringBuffer();
-    sb.append("[MessageWrap");
-    sb.append(" publish=").append(publish);
-    sb.append(", contentHeaderProperties=").append(contentHeaderProperties);
-    sb.append(", bodyParts=").append(bodyParts);
-    sb.append(", currentSize=").append(currentSize);
-    sb.append(']');
-    return sb.toString();
-  }
+    public String toString() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append("[MessageWrap");
+        sb.append(" publish=").append(publish);
+        sb.append(", contentHeaderProperties=").append(contentHeaderProperties);
+        sb.append(", bodyParts=").append(bodyParts);
+        sb.append(", currentSize=").append(currentSize);
+        sb.append(']');
+        return sb.toString();
+    }
 }

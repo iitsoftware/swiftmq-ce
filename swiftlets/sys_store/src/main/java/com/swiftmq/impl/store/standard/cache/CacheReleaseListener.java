@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.store.standard.cache;
 
-public interface CacheReleaseListener
-{
-  public void releaseCache();
+public interface CacheReleaseListener {
+    public void releaseCache();
 }

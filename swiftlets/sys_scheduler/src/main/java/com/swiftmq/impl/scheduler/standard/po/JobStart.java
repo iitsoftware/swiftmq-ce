@@ -17,64 +17,55 @@
 
 package com.swiftmq.impl.scheduler.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.impl.scheduler.standard.Scheduler;
+import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class JobStart extends POObject implements TimerListener
-{
-  String name = null;
-  long startTime = 0;
-  int startTimeSec = 0;
-  long maxRuntime = 0;
-  Scheduler scheduler = null;
+public class JobStart extends POObject implements TimerListener {
+    String name = null;
+    long startTime = 0;
+    int startTimeSec = 0;
+    long maxRuntime = 0;
+    Scheduler scheduler = null;
 
-  public JobStart(String name, long startTime, int startTimeSec, long maxRuntime)
-  {
-    super(null, null);
-    this.name = name;
-    this.startTime = startTime;
-    this.startTimeSec = startTimeSec;
-    this.maxRuntime = maxRuntime;
-  }
+    public JobStart(String name, long startTime, int startTimeSec, long maxRuntime) {
+        super(null, null);
+        this.name = name;
+        this.startTime = startTime;
+        this.startTimeSec = startTimeSec;
+        this.maxRuntime = maxRuntime;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public long getStartTime()
-  {
-    return startTime;
-  }
+    public long getStartTime() {
+        return startTime;
+    }
 
-  public int getStartTimeSec()
-  {
-    return startTimeSec;
-  }
+    public int getStartTimeSec() {
+        return startTimeSec;
+    }
 
-  public long getMaxRuntime()
-  {
-    return maxRuntime;
-  }
+    public long getMaxRuntime() {
+        return maxRuntime;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public void setScheduler(Scheduler scheduler)
-  {
-    this.scheduler = scheduler;
-  }
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
 
-  public void performTimeAction()
-  {
-    scheduler.enqueue(this);
-  }
+    public void performTimeAction() {
+        scheduler.enqueue(this);
+    }
 
-  public String toString()
-  {
-    return "[JobStart, name="+name+"]";
-  }
+    public String toString() {
+        return "[JobStart, name=" + name + "]";
+    }
 }

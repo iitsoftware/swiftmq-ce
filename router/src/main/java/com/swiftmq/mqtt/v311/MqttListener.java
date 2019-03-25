@@ -23,5 +23,6 @@ import java.util.List;
 
 public interface MqttListener {
     void onMessage(List<MqttMessage> messageList);
+
     void onException(Exception e);
 }

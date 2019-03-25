@@ -17,38 +17,29 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: AcknowledgeMessageReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:43 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: AcknowledgeMessageReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:43 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class AcknowledgeMessageReply extends ReplyNE
-{
+public class AcknowledgeMessageReply extends ReplyNE {
 
-  protected AcknowledgeMessageReply()
-  {
-  }
+    protected AcknowledgeMessageReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ACKNOWLEDGEMESSAGE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_ACKNOWLEDGEMESSAGE_REP;
+    }
 
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[AcknowledgeMessageReply, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[AcknowledgeMessageReply, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

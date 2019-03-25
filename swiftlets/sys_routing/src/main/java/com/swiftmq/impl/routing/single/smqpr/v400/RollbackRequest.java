@@ -27,61 +27,50 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class RollbackRequest extends Request
-{
-  XidImpl xid = null;
+public class RollbackRequest extends Request {
+    XidImpl xid = null;
 
-  RollbackRequest()
-  {
-    this(null);
-  }
+    RollbackRequest() {
+        this(null);
+    }
 
-  public RollbackRequest(XidImpl xid)
-  {
-    super(0, false);
-    this.xid = xid;
-  }
+    public RollbackRequest(XidImpl xid) {
+        super(0, false);
+        this.xid = xid;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.ROLLBACK_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.ROLLBACK_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    xid.writeContent(output);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        xid.writeContent(output);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    xid = new XidImpl();
-    xid.readContent(input);
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        xid = new XidImpl();
+        xid.readContent(input);
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[RollbackRequest " + super.toString() + ", xid=" + xid + "]";
-  }
+    public String toString() {
+        return "[RollbackRequest " + super.toString() + ", xid=" + xid + "]";
+    }
 }

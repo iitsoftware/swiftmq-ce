@@ -17,67 +17,53 @@
 
 package com.swiftmq.amqp.v100.generated.transport.definitions;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPSymbol;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
 public class SessionError extends AMQPSymbol
-       implements ErrorConditionIF
-{
+        implements ErrorConditionIF {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add("amqp:session:window-violation");
-    POSSIBLE_VALUES.add("amqp:session:errant-link");
-    POSSIBLE_VALUES.add("amqp:session:handle-in-use");
-    POSSIBLE_VALUES.add("amqp:session:unattached-handle");
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final SessionError WINDOW_VIOLATION = new SessionError("amqp:session:window-violation");
-  public static final SessionError ERRANT_LINK = new SessionError("amqp:session:errant-link");
-  public static final SessionError HANDLE_IN_USE = new SessionError("amqp:session:handle-in-use");
-  public static final SessionError UNATTACHED_HANDLE = new SessionError("amqp:session:unattached-handle");
+    static {
+        POSSIBLE_VALUES.add("amqp:session:window-violation");
+        POSSIBLE_VALUES.add("amqp:session:errant-link");
+        POSSIBLE_VALUES.add("amqp:session:handle-in-use");
+        POSSIBLE_VALUES.add("amqp:session:unattached-handle");
+    }
 
-  /**
-   * Constructs a SessionError.
-   *
-   * @param initValue initial value
-   */
-  public SessionError(String initValue) 
-  {
-    super(initValue);
-  }
+    public static final SessionError WINDOW_VIOLATION = new SessionError("amqp:session:window-violation");
+    public static final SessionError ERRANT_LINK = new SessionError("amqp:session:errant-link");
+    public static final SessionError HANDLE_IN_USE = new SessionError("amqp:session:handle-in-use");
+    public static final SessionError UNATTACHED_HANDLE = new SessionError("amqp:session:unattached-handle");
 
-  /**
-   * Accept method for a ErrorCondition visitor.
-   *
-   * @param visitor ErrorCondition visitor
-   */
-   public void accept(ErrorConditionVisitor visitor)
-   {
-     visitor.visit(this);
-   }
+    /**
+     * Constructs a SessionError.
+     *
+     * @param initValue initial value
+     */
+    public SessionError(String initValue) {
+        super(initValue);
+    }
+
+    /**
+     * Accept method for a ErrorCondition visitor.
+     *
+     * @param visitor ErrorCondition visitor
+     */
+    public void accept(ErrorConditionVisitor visitor) {
+        visitor.visit(this);
+    }
 
 
-  public String toString()
-  {
-    return "[SessionError " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[SessionError " + super.toString() + "]";
+    }
 }

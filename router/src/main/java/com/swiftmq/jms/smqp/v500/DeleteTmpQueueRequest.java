@@ -23,126 +23,113 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class DeleteTmpQueueRequest extends Request
-{
-  String queueName;
+public class DeleteTmpQueueRequest extends Request {
+    String queueName;
 
-  /**
-   * @param queueName
-   * @SBGen Constructor assigns queueName
-   */
-  public DeleteTmpQueueRequest(String queueName)
-  {
-    super(0, true);
+    /**
+     * @param queueName
+     * @SBGen Constructor assigns queueName
+     */
+    public DeleteTmpQueueRequest(String queueName) {
+        super(0, true);
 
-    // SBgen: Assign variable
-    this.queueName = queueName;
-  }
-
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DELETE_TMP_QUEUE_REQ;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (queueName == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(queueName);
+        // SBgen: Assign variable
+        this.queueName = queueName;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      queueName = null;
-    } else
-    {
-      queueName = in.readUTF();
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_DELETE_TMP_QUEUE_REQ;
     }
-  }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new DeleteTmpQueueReply();
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * @param queueName
-   * @SBGen Method set queueName
-   */
-  public void setQueueName(String queueName)
-  {
+        if (queueName == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(queueName);
+        }
+    }
 
-    // SBgen: Assign variable
-    this.queueName = queueName;
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  /**
-   * @return
-   * @SBGen Method get queueName
-   */
-  public String getQueueName()
-  {
+        byte set = in.readByte();
 
-    // SBgen: Get variable
-    return (queueName);
-  }
+        if (set == 0) {
+            queueName = null;
+        } else {
+            queueName = in.readUTF();
+        }
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitDeleteTmpQueueRequest(this);
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new DeleteTmpQueueReply();
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[DeleteTmpQueueRequest " + super.toString() + " queueName="
-        + queueName + "]";
-  }
+    /**
+     * @param queueName
+     * @SBGen Method set queueName
+     */
+    public void setQueueName(String queueName) {
+
+        // SBgen: Assign variable
+        this.queueName = queueName;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get queueName
+     */
+    public String getQueueName() {
+
+        // SBgen: Get variable
+        return (queueName);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitDeleteTmpQueueRequest(this);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[DeleteTmpQueueRequest " + super.toString() + " queueName="
+                + queueName + "]";
+    }
 
 }
 

@@ -17,20 +17,10 @@
 
 package com.swiftmq.amqp.v100.generated.messaging.addressing;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPUnsignedInt;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <p>
@@ -40,37 +30,35 @@ import java.util.*;
  * </p><p>
  * </p>
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class TerminusDurability extends AMQPUnsignedInt
-{
+public class TerminusDurability extends AMQPUnsignedInt {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add(0L);
-    POSSIBLE_VALUES.add(1L);
-    POSSIBLE_VALUES.add(2L);
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final TerminusDurability NONE = new TerminusDurability(0L);
-  public static final TerminusDurability CONFIGURATION = new TerminusDurability(1L);
-  public static final TerminusDurability UNSETTLED_STATE = new TerminusDurability(2L);
+    static {
+        POSSIBLE_VALUES.add(0L);
+        POSSIBLE_VALUES.add(1L);
+        POSSIBLE_VALUES.add(2L);
+    }
 
-  /**
-   * Constructs a TerminusDurability.
-   *
-   * @param initValue initial value
-   */
-  public TerminusDurability(long initValue) 
-  {
-    super(initValue);
-  }
+    public static final TerminusDurability NONE = new TerminusDurability(0L);
+    public static final TerminusDurability CONFIGURATION = new TerminusDurability(1L);
+    public static final TerminusDurability UNSETTLED_STATE = new TerminusDurability(2L);
+
+    /**
+     * Constructs a TerminusDurability.
+     *
+     * @param initValue initial value
+     */
+    public TerminusDurability(long initValue) {
+        super(initValue);
+    }
 
 
-  public String toString()
-  {
-    return "[TerminusDurability " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[TerminusDurability " + super.toString() + "]";
+    }
 }

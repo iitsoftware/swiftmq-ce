@@ -22,15 +22,12 @@ import javax.jms.QueueSession;
 import javax.jms.XAQueueSession;
 
 public class XAQueueSessionImpl extends XASessionImpl
-    implements XAQueueSession
-{
-  XAQueueSessionImpl(SessionImpl session)
-  {
-    super(session);
-  }
+        implements XAQueueSession {
+    XAQueueSessionImpl(SessionImpl session) {
+        super(session);
+    }
 
-  public QueueSession getQueueSession() throws JMSException
-  {
-    return (QueueSession) session;
-  }
+    public QueueSession getQueueSession() throws JMSException {
+        return (QueueSession) session;
+    }
 }

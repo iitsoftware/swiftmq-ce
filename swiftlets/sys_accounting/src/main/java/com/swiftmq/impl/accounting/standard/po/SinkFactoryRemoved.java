@@ -21,35 +21,29 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class SinkFactoryRemoved extends POObject
-{
-  String group = null;
-  String name = null;
+public class SinkFactoryRemoved extends POObject {
+    String group = null;
+    String name = null;
 
-  public SinkFactoryRemoved(Semaphore semaphore, String group, String name)
-  {
-    super(null, semaphore);
-    this.group = group;
-    this.name = name;
-  }
+    public SinkFactoryRemoved(Semaphore semaphore, String group, String name) {
+        super(null, semaphore);
+        this.group = group;
+        this.name = name;
+    }
 
-  public String getGroup()
-  {
-    return group;
-  }
+    public String getGroup() {
+        return group;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor) poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SinkFactoryRemoved, group=" + group + ", name=" + name + "]";
-  }
+    public String toString() {
+        return "[SinkFactoryRemoved, group=" + group + ", name=" + name + "]";
+    }
 }

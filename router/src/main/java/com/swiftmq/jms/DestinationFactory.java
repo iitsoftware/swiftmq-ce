@@ -21,42 +21,38 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class DestinationFactory
-{
-  public static final byte TYPE_QUEUE = 0;
-  public static final byte TYPE_TOPIC = 1;
-  public static final byte TYPE_TEMPTOPIC = 2;
-  public static final byte TYPE_TEMPQUEUE = 3;
+public class DestinationFactory {
+    public static final byte TYPE_QUEUE = 0;
+    public static final byte TYPE_TOPIC = 1;
+    public static final byte TYPE_TEMPTOPIC = 2;
+    public static final byte TYPE_TEMPQUEUE = 3;
 
-  public static final DestinationImpl createDestination(DataInput in)
-      throws IOException
-  {
-    byte b = in.readByte();
-    DestinationImpl dest = null;
-    switch (b)
-    {
-      case TYPE_TEMPQUEUE:
-        dest = new TemporaryQueueImpl(null, null);
-        break;
-      case TYPE_QUEUE:
-        dest = new QueueImpl();
-        break;
-      case TYPE_TOPIC:
-        dest = new TopicImpl();
-        break;
-      case TYPE_TEMPTOPIC:
-        dest = new TemporaryTopicImpl();
-        break;
+    public static final DestinationImpl createDestination(DataInput in)
+            throws IOException {
+        byte b = in.readByte();
+        DestinationImpl dest = null;
+        switch (b) {
+            case TYPE_TEMPQUEUE:
+                dest = new TemporaryQueueImpl(null, null);
+                break;
+            case TYPE_QUEUE:
+                dest = new QueueImpl();
+                break;
+            case TYPE_TOPIC:
+                dest = new TopicImpl();
+                break;
+            case TYPE_TEMPTOPIC:
+                dest = new TemporaryTopicImpl();
+                break;
+        }
+        dest.readContent(in);
+        return dest;
     }
-    dest.readContent(in);
-    return dest;
-  }
 
-  public static final void dumpDestination(DestinationImpl dest, DataOutput out)
-      throws IOException
-  {
-    out.writeByte(dest.getType());
-    dest.writeContent(out);
-  }
+    public static final void dumpDestination(DestinationImpl dest, DataOutput out)
+            throws IOException {
+        out.writeByte(dest.getType());
+        dest.writeContent(out);
+    }
 }
 

@@ -38,62 +38,59 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
-public class StoreContext
-{
-  public CacheManager cacheManager = null;
-  public StableStore stableStore = null;
-  public PreparedLog preparedLog = null;
-  public DurableSubscriberStoreImpl durableStore = null;
-  public LogManager logManager = null;
-  public TransactionManager transactionManager = null;
-  public RecoveryManager recoveryManager = null;
-  public BackupProcessor backupProcessor = null;
-  public ShrinkProcessor shrinkProcessor = null;
-  public TimerSwiftlet timerSwiftlet = null;
-  public SchedulerSwiftlet schedulerSwiftlet = null;
-  public TraceSwiftlet traceSwiftlet = null;
-  public TraceSpace traceSpace = null;
-  public LogSwiftlet logSwiftlet = null;
-  public ThreadpoolSwiftlet threadpoolSwiftlet = null;
-  public StoreSwiftletImpl storeSwiftlet = null;
-  public Configuration config = null;
-  public Entity backupEntity = null;
-  public Entity txEntity = null;
-  public Entity dbEntity = null;
-  public Entity cacheEntity = null;
-  public Entity swapEntity = null;
-  public Entity durableEntity = null;
-  public EntityList backupList = null;
-  public EntityList filesList = null;
-  public SwapFileFactory swapFileFactory = null;
-  public String swapPath = null;
-  public ReferenceMap referenceMap = null;
+public class StoreContext {
+    public CacheManager cacheManager = null;
+    public StableStore stableStore = null;
+    public PreparedLog preparedLog = null;
+    public DurableSubscriberStoreImpl durableStore = null;
+    public LogManager logManager = null;
+    public TransactionManager transactionManager = null;
+    public RecoveryManager recoveryManager = null;
+    public BackupProcessor backupProcessor = null;
+    public ShrinkProcessor shrinkProcessor = null;
+    public TimerSwiftlet timerSwiftlet = null;
+    public SchedulerSwiftlet schedulerSwiftlet = null;
+    public TraceSwiftlet traceSwiftlet = null;
+    public TraceSpace traceSpace = null;
+    public LogSwiftlet logSwiftlet = null;
+    public ThreadpoolSwiftlet threadpoolSwiftlet = null;
+    public StoreSwiftletImpl storeSwiftlet = null;
+    public Configuration config = null;
+    public Entity backupEntity = null;
+    public Entity txEntity = null;
+    public Entity dbEntity = null;
+    public Entity cacheEntity = null;
+    public Entity swapEntity = null;
+    public Entity durableEntity = null;
+    public EntityList backupList = null;
+    public EntityList filesList = null;
+    public SwapFileFactory swapFileFactory = null;
+    public String swapPath = null;
+    public ReferenceMap referenceMap = null;
 
-  public StoreContext(StoreSwiftletImpl storeSwiftlet, Configuration config)
-  {
-    this.storeSwiftlet = storeSwiftlet;
-    this.config = config;
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    backupEntity = config.getEntity("backup");
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
-    threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-    txEntity = config.getEntity("transaction-log");
-    dbEntity = config.getEntity("database");
-    cacheEntity = config.getEntity("cache");
-    durableEntity = config.getEntity("durable-subscriber");
-    swapEntity = config.getEntity("swap");
-    backupList = (EntityList) config.getEntity("usage").getEntity("backup");
-    filesList = (EntityList) config.getEntity("usage").getEntity("files");
-    referenceMap = new ReferenceMap(this);
-  }
+    public StoreContext(StoreSwiftletImpl storeSwiftlet, Configuration config) {
+        this.storeSwiftlet = storeSwiftlet;
+        this.config = config;
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        backupEntity = config.getEntity("backup");
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
+        threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        txEntity = config.getEntity("transaction-log");
+        dbEntity = config.getEntity("database");
+        cacheEntity = config.getEntity("cache");
+        durableEntity = config.getEntity("durable-subscriber");
+        swapEntity = config.getEntity("swap");
+        backupList = (EntityList) config.getEntity("usage").getEntity("backup");
+        filesList = (EntityList) config.getEntity("usage").getEntity("files");
+        referenceMap = new ReferenceMap(this);
+    }
 
-  public StoreContext()
-  {
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-  }
+    public StoreContext() {
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+    }
 }
 

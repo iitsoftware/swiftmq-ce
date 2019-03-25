@@ -17,13 +17,12 @@
 
 package com.swiftmq.mgmt;
 
-public interface Authenticator
-{
-  public boolean isContextGranted(Entity entity);
+public interface Authenticator {
+    public boolean isContextGranted(Entity entity);
 
-  public boolean isCommandGranted(Entity entity, String command);
+    public boolean isCommandGranted(Entity entity, String command);
 
-  public boolean isPropertyGranted(Entity entity, String property);
+    public boolean isPropertyGranted(Entity entity, String property);
 
-  public boolean isPropertyReadOnly(Entity entity, String property);
+    public boolean isPropertyReadOnly(Entity entity, String property);
 }

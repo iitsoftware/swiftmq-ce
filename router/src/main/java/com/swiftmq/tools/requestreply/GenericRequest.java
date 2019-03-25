@@ -26,101 +26,90 @@ import java.io.*;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class GenericRequest extends Request
-{
-  Serializable payload = null;
+public class GenericRequest extends Request {
+    Serializable payload = null;
 
-  /**
-   * @param dispatchId
-   * @param replyRequired
-   * @param payload
-   * @SBGen Constructor
-   */
-  public GenericRequest(int dispatchId, boolean replyRequired, Serializable payload)
-  {
-    super(dispatchId, replyRequired);
-    this.payload = payload;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    super.writeContent(out);
-    if (payload == null)
-      out.writeByte(0);
-    else
-    {
-      out.writeByte(1);
-      DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
-      (new ObjectOutputStream(dos)).writeObject(payload);
-      out.writeInt(dos.getCount());
-      out.write(dos.getBuffer(),0,dos.getCount());
+    /**
+     * @param dispatchId
+     * @param replyRequired
+     * @param payload
+     * @SBGen Constructor
+     */
+    public GenericRequest(int dispatchId, boolean replyRequired, Serializable payload) {
+        super(dispatchId, replyRequired);
+        this.payload = payload;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    super.readContent(in);
-    byte set = in.readByte();
-    if (set == 0)
-      payload = null;
-    else
-    {
-      try
-      {
-        byte[] b = new byte[in.readInt()];
-        in.readFully(b);
-        payload = (Serializable) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
-      } catch (ClassNotFoundException ignored)
-      {
-      }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        if (payload == null)
+            out.writeByte(0);
+        else {
+            out.writeByte(1);
+            DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
+            (new ObjectOutputStream(dos)).writeObject(payload);
+            out.writeInt(dos.getCount());
+            out.write(dos.getBuffer(), 0, dos.getCount());
+        }
     }
-  }
 
-  protected Reply createReplyInstance()
-  {
-    return new GenericReply();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        byte set = in.readByte();
+        if (set == 0)
+            payload = null;
+        else {
+            try {
+                byte[] b = new byte[in.readInt()];
+                in.readFully(b);
+                payload = (Serializable) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+    }
 
-  /**
-   * @param payload
-   * @SBGen Method set payload
-   */
-  public void setPayload(Serializable payload)
-  {
-    // SBgen: Assign variable
-    this.payload = payload;
-  }
+    protected Reply createReplyInstance() {
+        return new GenericReply();
+    }
 
-  /**
-   * @return
-   * @SBGen Method get payload
-   */
-  public Serializable getPayload()
-  {
-    // SBgen: Get variable
-    return (payload);
-  }
+    /**
+     * @param payload
+     * @SBGen Method set payload
+     */
+    public void setPayload(Serializable payload) {
+        // SBgen: Assign variable
+        this.payload = payload;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    visitor.visitGenericRequest(this);
-  }
+    /**
+     * @return
+     * @SBGen Method get payload
+     */
+    public Serializable getPayload() {
+        // SBgen: Get variable
+        return (payload);
+    }
 
-  public String toString()
-  {
-    return "[GenericRequest " + super.toString() + " payload=" + payload + "]";
-  }
+    public void accept(RequestVisitor visitor) {
+        visitor.visitGenericRequest(this);
+    }
+
+    public String toString() {
+        return "[GenericRequest " + super.toString() + " payload=" + payload + "]";
+    }
 }
 

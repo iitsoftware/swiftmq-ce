@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: ProduceMessageReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: ProduceMessageReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,54 +30,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ProduceMessageReply extends ReplyNE
-{
-  private long delay;
+public class ProduceMessageReply extends ReplyNE {
+    private long delay;
 
-  public ProduceMessageReply(long delay)
-  {
-    this.delay = delay;
-  }
+    public ProduceMessageReply(long delay) {
+        this.delay = delay;
+    }
 
-  protected ProduceMessageReply()
-  {
-  }
+    protected ProduceMessageReply() {
+    }
 
-  public void setDelay(long delay)
-  {
-    this.delay = delay;
-  }
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
 
-  public long getDelay()
-  {
-    return delay;
-  }
+    public long getDelay() {
+        return delay;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_PRODUCEMESSAGE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_PRODUCEMESSAGE_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(delay, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(delay, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    delay = SMQPUtil.read(delay, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        delay = SMQPUtil.read(delay, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/ProduceMessageReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("delay=");
-    _b.append(delay);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/ProduceMessageReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("delay=");
+        _b.append(delay);
+        _b.append("]");
+        return _b.toString();
+    }
 }

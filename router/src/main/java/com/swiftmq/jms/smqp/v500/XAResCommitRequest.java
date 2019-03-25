@@ -17,71 +17,61 @@
 
 package com.swiftmq.jms.smqp.v500;
 
+import com.swiftmq.jms.XidImpl;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.jms.XidImpl;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResCommitRequest extends Request
-{
-  XidImpl xid = null;
-  boolean onePhase = false;
+public class XAResCommitRequest extends Request {
+    XidImpl xid = null;
+    boolean onePhase = false;
 
-  public XAResCommitRequest(int dispatchId, XidImpl xid, boolean onePhase)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-    this.onePhase = onePhase;
-  }
+    public XAResCommitRequest(int dispatchId, XidImpl xid, boolean onePhase) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.onePhase = onePhase;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESCOMMIT_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESCOMMIT_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResCommitReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResCommitReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResCommitRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResCommitRequest(this);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    xid.writeContent(out);
-    out.writeBoolean(onePhase);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        xid.writeContent(out);
+        out.writeBoolean(onePhase);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = new XidImpl();
-    xid.readContent(in);
-    onePhase = in.readBoolean();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = new XidImpl();
+        xid.readContent(in);
+        onePhase = in.readBoolean();
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public boolean isOnePhase()
-  {
-    return onePhase;
-  }
+    public boolean isOnePhase() {
+        return onePhase;
+    }
 
-  public String toString()
-  {
-    return "[XAResCommitRequest " + super.toString() + ", xid=" + xid + ", onePhase=" + onePhase + "]";
-  }
+    public String toString() {
+        return "[XAResCommitRequest " + super.toString() + ", xid=" + xid + ", onePhase=" + onePhase + "]";
+    }
 
 }
 

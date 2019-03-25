@@ -28,56 +28,53 @@ import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
-public class SwiftletContext
-{
-  public static final String JOBGROUP = "Scheduler";
-  public static final String JOBNAME = "Message Sender";
-  public static final String PARM = "ID";
-  public static final String PROP_SCHED_ID = "JMS_SWIFTMQ_SCHEDULER_ID";
-  public static final String PROP_SCHED_DEST = "JMS_SWIFTMQ_SCHEDULER_DESTINATION";
-  public static final String PROP_SCHED_DEST_TYPE = "JMS_SWIFTMQ_SCHEDULER_DESTINATION_TYPE";
-  public static final String PROP_SCHED_CALENDAR = "JMS_SWIFTMQ_SCHEDULER_CALENDAR";
-  public static final String PROP_SCHED_TIME = "JMS_SWIFTMQ_SCHEDULER_TIME_EXPRESSION";
-  public static final String PROP_SCHED_EXPIRATION = "JMS_SWIFTMQ_SCHEDULER_EXPIRATION";
-  public static final String PROP_SCHED_FROM = "JMS_SWIFTMQ_SCHEDULER_DATE_FROM";
-  public static final String PROP_SCHED_TO = "JMS_SWIFTMQ_SCHEDULER_DATE_TO";
-  public static final String PROP_SCHED_ENABLE_LOGGING = "JMS_SWIFTMQ_SCHEDULER_ENABLE_LOGGING";
-  public static final String PROP_SCHED_MAY_EXPIRE = "JMS_SWIFTMQ_SCHEDULER_MAY_EXPIRE_WHILE_ROUTER_DOWN";
-  public static final String REQUEST_QUEUE = "swiftmqscheduler";
-  public static final String INTERNAL_QUEUE = "sys$scheduler";
-  public static final String QUEUE = "queue";
-  public static final String TOPIC = "topic";
-  public SchedulerSwiftletImpl schedulerSwiftlet = null;
-  public TraceSwiftlet traceSwiftlet = null;
-  public TraceSpace traceSpace = null;
-  public LogSwiftlet logSwiftlet = null;
-  public TimerSwiftlet timerSwiftlet = null;
-  public ThreadpoolSwiftlet threadpoolSwiftlet = null;
-  public QueueManager queueManager = null;
-  public TopicManager topicManager = null;
-  public Entity root = null;
-  public EntityList jobGroupList = null;
-  public EntityList activeScheduleList = null;
-  public EntityList activeMessageScheduleList = null;
-  public Scheduler scheduler = null;
+public class SwiftletContext {
+    public static final String JOBGROUP = "Scheduler";
+    public static final String JOBNAME = "Message Sender";
+    public static final String PARM = "ID";
+    public static final String PROP_SCHED_ID = "JMS_SWIFTMQ_SCHEDULER_ID";
+    public static final String PROP_SCHED_DEST = "JMS_SWIFTMQ_SCHEDULER_DESTINATION";
+    public static final String PROP_SCHED_DEST_TYPE = "JMS_SWIFTMQ_SCHEDULER_DESTINATION_TYPE";
+    public static final String PROP_SCHED_CALENDAR = "JMS_SWIFTMQ_SCHEDULER_CALENDAR";
+    public static final String PROP_SCHED_TIME = "JMS_SWIFTMQ_SCHEDULER_TIME_EXPRESSION";
+    public static final String PROP_SCHED_EXPIRATION = "JMS_SWIFTMQ_SCHEDULER_EXPIRATION";
+    public static final String PROP_SCHED_FROM = "JMS_SWIFTMQ_SCHEDULER_DATE_FROM";
+    public static final String PROP_SCHED_TO = "JMS_SWIFTMQ_SCHEDULER_DATE_TO";
+    public static final String PROP_SCHED_ENABLE_LOGGING = "JMS_SWIFTMQ_SCHEDULER_ENABLE_LOGGING";
+    public static final String PROP_SCHED_MAY_EXPIRE = "JMS_SWIFTMQ_SCHEDULER_MAY_EXPIRE_WHILE_ROUTER_DOWN";
+    public static final String REQUEST_QUEUE = "swiftmqscheduler";
+    public static final String INTERNAL_QUEUE = "sys$scheduler";
+    public static final String QUEUE = "queue";
+    public static final String TOPIC = "topic";
+    public SchedulerSwiftletImpl schedulerSwiftlet = null;
+    public TraceSwiftlet traceSwiftlet = null;
+    public TraceSpace traceSpace = null;
+    public LogSwiftlet logSwiftlet = null;
+    public TimerSwiftlet timerSwiftlet = null;
+    public ThreadpoolSwiftlet threadpoolSwiftlet = null;
+    public QueueManager queueManager = null;
+    public TopicManager topicManager = null;
+    public Entity root = null;
+    public EntityList jobGroupList = null;
+    public EntityList activeScheduleList = null;
+    public EntityList activeMessageScheduleList = null;
+    public Scheduler scheduler = null;
 
-  public SwiftletContext(SchedulerSwiftletImpl schedulerSwiftlet, Entity root) throws Exception
-  {
-    this.schedulerSwiftlet = schedulerSwiftlet;
-    this.root = root;
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
-    threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-    queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
-    topicManager = (TopicManager) SwiftletManager.getInstance().getSwiftlet("sys$topicmanager");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    jobGroupList = (EntityList)root.getEntity("usage").getEntity("job-groups");
-    activeScheduleList = (EntityList)root.getEntity("usage").getEntity("active-job-schedules");
-    activeMessageScheduleList = (EntityList)root.getEntity("usage").getEntity("active-message-schedules");
-  }
+    public SwiftletContext(SchedulerSwiftletImpl schedulerSwiftlet, Entity root) throws Exception {
+        this.schedulerSwiftlet = schedulerSwiftlet;
+        this.root = root;
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
+        threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
+        topicManager = (TopicManager) SwiftletManager.getInstance().getSwiftlet("sys$topicmanager");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        jobGroupList = (EntityList) root.getEntity("usage").getEntity("job-groups");
+        activeScheduleList = (EntityList) root.getEntity("usage").getEntity("active-job-schedules");
+        activeMessageScheduleList = (EntityList) root.getEntity("usage").getEntity("active-message-schedules");
+    }
 
-  public void close() throws Exception
-  {
-  }
+    public void close() throws Exception {
+    }
 }

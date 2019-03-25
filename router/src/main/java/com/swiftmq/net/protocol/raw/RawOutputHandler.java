@@ -25,117 +25,97 @@ import com.swiftmq.net.protocol.ProtocolOutputHandler;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class RawOutputHandler extends ProtocolOutputHandler
-{
-  final static int BUFFER_SIZE = 1024*128;
-  final static int EXTEND_SIZE = 1024*64;
+public class RawOutputHandler extends ProtocolOutputHandler {
+    final static int BUFFER_SIZE = 1024 * 128;
+    final static int EXTEND_SIZE = 1024 * 64;
 
-  int bufferSize = BUFFER_SIZE;
-  int extendSize = EXTEND_SIZE;
-  byte[] currentInput = null;
-  int inputLength = 0;
-  byte[] currentOutput = null;
-  int outputOffset = 0;
-  int outputLength = 0;
-  int chunkCount = 0;
+    int bufferSize = BUFFER_SIZE;
+    int extendSize = EXTEND_SIZE;
+    byte[] currentInput = null;
+    int inputLength = 0;
+    byte[] currentOutput = null;
+    int outputOffset = 0;
+    int outputLength = 0;
+    int chunkCount = 0;
 
-  public RawOutputHandler(int bufferSize, int extendSize)
-  {
-    this.bufferSize = bufferSize;
-    this.extendSize = extendSize;
-  }
-
-  public RawOutputHandler()
-  {
-    this(BUFFER_SIZE,EXTEND_SIZE);
-  }
-
-  private void ensureInput(int size)
-  {
-    if (currentInput == null)
-    {
-      currentInput = new byte[Math.max(bufferSize, size)];
-      inputLength = 0;
-    } else
-    {
-      if (currentInput.length - inputLength < size)
-      {
-        byte b[] = new byte[Math.max(extendSize, size + inputLength)];
-        System.arraycopy(currentInput, 0, b, 0, inputLength);
-        currentInput = b;
-      }
+    public RawOutputHandler(int bufferSize, int extendSize) {
+        this.bufferSize = bufferSize;
+        this.extendSize = extendSize;
     }
-  }
 
-  public ProtocolOutputHandler create()
-  {
-    return new RawOutputHandler();
-  }
-
-  public ProtocolOutputHandler create(int bufferSize, int extendSize)
-  {
-    return new RawOutputHandler(bufferSize,extendSize);
-  }
-
-  public int getChunkCount()
-  {
-    return chunkCount;
-  }
-
-  protected byte[] getByteArray()
-  {
-    if (currentOutput == null)
-    {
-      currentOutput = currentInput;
-      outputOffset = 0;
-      outputLength = inputLength;
+    public RawOutputHandler() {
+        this(BUFFER_SIZE, EXTEND_SIZE);
     }
-    return currentOutput;
-  }
 
-  protected int getOffset()
-  {
-    return outputOffset;
-  }
-
-  protected int getLength()
-  {
-    return outputLength - outputOffset;
-  }
-
-  protected void setBytesWritten(int written)
-  {
-    outputOffset += written;
-    if (outputOffset == outputLength)
-    {
-      currentOutput = null;
-      outputOffset = 0;
-      outputLength = 0;
-      inputLength = 0;
-      chunkCount = 0;
+    private void ensureInput(int size) {
+        if (currentInput == null) {
+            currentInput = new byte[Math.max(bufferSize, size)];
+            inputLength = 0;
+        } else {
+            if (currentInput.length - inputLength < size) {
+                byte b[] = new byte[Math.max(extendSize, size + inputLength)];
+                System.arraycopy(currentInput, 0, b, 0, inputLength);
+                currentInput = b;
+            }
+        }
     }
-  }
 
-  protected void addByte(byte b)
-  {
-    ensureInput(1);
-    currentInput[inputLength++] = b;
-  }
+    public ProtocolOutputHandler create() {
+        return new RawOutputHandler();
+    }
 
-  protected void addBytes(byte[] b, int offset, int len)
-  {
-    ensureInput(len);
-    System.arraycopy(b, offset, currentInput, inputLength, len);
-    inputLength += len;
-  }
+    public ProtocolOutputHandler create(int bufferSize, int extendSize) {
+        return new RawOutputHandler(bufferSize, extendSize);
+    }
 
-  protected void markChunkCompleted()
-  {
-    chunkCount = 1;
-  }
+    public int getChunkCount() {
+        return chunkCount;
+    }
 
-  public String toString()
-  {
-    return "[RawOutputHandler]";
-  }
+    protected byte[] getByteArray() {
+        if (currentOutput == null) {
+            currentOutput = currentInput;
+            outputOffset = 0;
+            outputLength = inputLength;
+        }
+        return currentOutput;
+    }
+
+    protected int getOffset() {
+        return outputOffset;
+    }
+
+    protected int getLength() {
+        return outputLength - outputOffset;
+    }
+
+    protected void setBytesWritten(int written) {
+        outputOffset += written;
+        if (outputOffset == outputLength) {
+            currentOutput = null;
+            outputOffset = 0;
+            outputLength = 0;
+            inputLength = 0;
+            chunkCount = 0;
+        }
+    }
+
+    protected void addByte(byte b) {
+        ensureInput(1);
+        currentInput[inputLength++] = b;
+    }
+
+    protected void addBytes(byte[] b, int offset, int len) {
+        ensureInput(len);
+        System.arraycopy(b, offset, currentInput, inputLength, len);
+        inputLength += len;
+    }
+
+    protected void markChunkCompleted() {
+        chunkCount = 1;
+    }
+
+    public String toString() {
+        return "[RawOutputHandler]";
+    }
 }

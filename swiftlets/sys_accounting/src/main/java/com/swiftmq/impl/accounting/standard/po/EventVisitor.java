@@ -19,25 +19,24 @@ package com.swiftmq.impl.accounting.standard.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface EventVisitor extends POVisitor
-{
-  public void visit(SourceFactoryAdded po);
+public interface EventVisitor extends POVisitor {
+    public void visit(SourceFactoryAdded po);
 
-  public void visit(SourceFactoryRemoved po);
+    public void visit(SourceFactoryRemoved po);
 
-  public void visit(SinkFactoryAdded po);
+    public void visit(SinkFactoryAdded po);
 
-  public void visit(SinkFactoryRemoved po);
+    public void visit(SinkFactoryRemoved po);
 
-  public void visit(ConnectionAdded po);
+    public void visit(ConnectionAdded po);
 
-  public void visit(ConnectionRemoved po);
+    public void visit(ConnectionRemoved po);
 
-  public void visit(ConnectionStateChanged po);
+    public void visit(ConnectionStateChanged po);
 
-  public void visit(ConnectionStopped po);
+    public void visit(ConnectionStopped po);
 
-  public void visit(CheckConnections po);
+    public void visit(CheckConnections po);
 
-  public void visit(Close po);
+    public void visit(Close po);
 }

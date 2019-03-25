@@ -22,66 +22,55 @@ import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 
-public class SessionQueue extends SingleProcessorQueue
-{
-  ThreadPool pool;
-  Session session;
-  QueueProcessor queueProcessor;
+public class SessionQueue extends SingleProcessorQueue {
+    ThreadPool pool;
+    Session session;
+    QueueProcessor queueProcessor;
 
-  SessionQueue(ThreadPool pool, Session session)
-  {
-    super(100);
-    this.pool = pool;
-    this.session = session;
-    queueProcessor = new QueueProcessor();
-  }
-
-  protected void startProcessor()
-  {
-    if (!session.closed)
-      pool.dispatchTask(queueProcessor);
-  }
-
-  /**
-   * @param obj
-   */
-  protected void process(Object[] bulk, int n)
-  {
-    for (int i=0;i<n;i++)
-    {
-      if (!session.closed)
-        ((Request)bulk[i]).accept(session);
-      else
-        break;
-    }
-  }
-
-  private class QueueProcessor implements AsyncTask
-  {
-    public boolean isValid()
-    {
-      return !session.closed;
+    SessionQueue(ThreadPool pool, Session session) {
+        super(100);
+        this.pool = pool;
+        this.session = session;
+        queueProcessor = new QueueProcessor();
     }
 
-    public String getDispatchToken()
-    {
-      return Session.TP_SESSIONSVC;
+    protected void startProcessor() {
+        if (!session.closed)
+            pool.dispatchTask(queueProcessor);
     }
 
-    public String getDescription()
-    {
-      return session.toString() + "/QueueProcessor";
+    /**
+     * @param obj
+     */
+    protected void process(Object[] bulk, int n) {
+        for (int i = 0; i < n; i++) {
+            if (!session.closed)
+                ((Request) bulk[i]).accept(session);
+            else
+                break;
+        }
     }
 
-    public void stop()
-    {
-    }
+    private class QueueProcessor implements AsyncTask {
+        public boolean isValid() {
+            return !session.closed;
+        }
 
-    public void run()
-    {
-      if (!session.closed && dequeue())
-        pool.dispatchTask(this);
+        public String getDispatchToken() {
+            return Session.TP_SESSIONSVC;
+        }
+
+        public String getDescription() {
+            return session.toString() + "/QueueProcessor";
+        }
+
+        public void stop() {
+        }
+
+        public void run() {
+            if (!session.closed && dequeue())
+                pool.dispatchTask(this);
+        }
     }
-  }
 }
 

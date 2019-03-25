@@ -19,105 +19,85 @@ package com.swiftmq.tools.gc;
 
 import com.swiftmq.tools.collection.RingBuffer;
 
-import java.util.List;
-import java.util.LinkedList;
+public abstract class Recycler {
+    static final int DEFAULT_SIZE = 128;
+    RingBuffer freeList = null;
+    Recyclable[] useList = null;
+    int maxSize = -1;
+    int nUsed = 0;
 
-public abstract class Recycler
-{
-  static final int DEFAULT_SIZE = 128;
-  RingBuffer freeList = null;
-  Recyclable[] useList = null;
-  int maxSize = -1;
-  int nUsed = 0;
-
-  public Recycler(int maxSize)
-  {
-    this.maxSize = maxSize;
-    freeList = new RingBuffer(DEFAULT_SIZE);
-    useList = new Recyclable[DEFAULT_SIZE];
-  }
-
-  public Recycler()
-  {
-    this(-1);
-  }
-
-  protected abstract Recyclable createRecyclable();
-
-  private Recyclable getFirstUsed(Recyclable[] list)
-  {
-    for (int i=0;i<list.length;i++)
-    {
-      if (list[i] != null)
-      {
-        Recyclable r = list[i];
-        list[i] = null;
-        return r;
-      }
+    public Recycler(int maxSize) {
+        this.maxSize = maxSize;
+        freeList = new RingBuffer(DEFAULT_SIZE);
+        useList = new Recyclable[DEFAULT_SIZE];
     }
-    return null;
-  }
 
-  private int setFirstFree(Recyclable[] list, Recyclable recyclable)
-  {
-    for (int i=0;i<list.length;i++)
-    {
-      if (list[i] == null)
-      {
-        list[i] = recyclable;
-        return i;
-      }
+    public Recycler() {
+        this(-1);
     }
-    return -1;
-  }
 
-  public Recyclable checkOut()
-  {
-    Recyclable recyclable = null;
-    if (freeList.getSize() > 0)
-      recyclable = (Recyclable)freeList.remove();
-    else
-    {
-      recyclable = createRecyclable();
-      if (nUsed == useList.length)
-      {
-        Recyclable[] r = new Recyclable[useList.length+DEFAULT_SIZE];
-        System.arraycopy(useList,0,r,0,useList.length);
-        useList = r;
-      }
+    protected abstract Recyclable createRecyclable();
+
+    private Recyclable getFirstUsed(Recyclable[] list) {
+        for (int i = 0; i < list.length; i++) {
+            if (list[i] != null) {
+                Recyclable r = list[i];
+                list[i] = null;
+                return r;
+            }
+        }
+        return null;
     }
-    recyclable.setRecycleIndex(setFirstFree(useList,recyclable));
-    nUsed++;
-    return recyclable;
-  }
 
-  public void checkIn(Recyclable recyclable)
-  {
-    useList[recyclable.getRecycleIndex()] = null;
-    nUsed--;
-    recyclable.setRecycleIndex(-1);
-    if (maxSize == -1 || freeList.getSize() < maxSize)
-    {
-      recyclable.reset();
-      freeList.add(recyclable);
+    private int setFirstFree(Recyclable[] list, Recyclable recyclable) {
+        for (int i = 0; i < list.length; i++) {
+            if (list[i] == null) {
+                list[i] = recyclable;
+                return i;
+            }
+        }
+        return -1;
     }
-  }
 
-  public Recyclable get(int index)
-  {
-    return useList[index];
-  }
+    public Recyclable checkOut() {
+        Recyclable recyclable = null;
+        if (freeList.getSize() > 0)
+            recyclable = (Recyclable) freeList.remove();
+        else {
+            recyclable = createRecyclable();
+            if (nUsed == useList.length) {
+                Recyclable[] r = new Recyclable[useList.length + DEFAULT_SIZE];
+                System.arraycopy(useList, 0, r, 0, useList.length);
+                useList = r;
+            }
+        }
+        recyclable.setRecycleIndex(setFirstFree(useList, recyclable));
+        nUsed++;
+        return recyclable;
+    }
 
-  public Recyclable[] getUseList()
-  {
-    return useList;
-  }
+    public void checkIn(Recyclable recyclable) {
+        useList[recyclable.getRecycleIndex()] = null;
+        nUsed--;
+        recyclable.setRecycleIndex(-1);
+        if (maxSize == -1 || freeList.getSize() < maxSize) {
+            recyclable.reset();
+            freeList.add(recyclable);
+        }
+    }
 
-  public void clear()
-  {
-    freeList.clear();
-    for (int i=0;i<useList.length;i++)
-      useList[i] = null;
-    nUsed = 0;
-  }
+    public Recyclable get(int index) {
+        return useList[index];
+    }
+
+    public Recyclable[] getUseList() {
+        return useList;
+    }
+
+    public void clear() {
+        freeList.clear();
+        for (int i = 0; i < useList.length; i++)
+            useList[i] = null;
+        nUsed = 0;
+    }
 }

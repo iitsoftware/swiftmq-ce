@@ -19,7 +19,6 @@ package com.swiftmq.impl.queue.standard;
 
 import java.util.Map;
 
-public interface CacheTableFactory
-{
-  public Map createCacheTable(String queueName, int initialSize);
+public interface CacheTableFactory {
+    public Map createCacheTable(String queueName, int initialSize);
 }

@@ -26,32 +26,35 @@ import java.util.List;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface PrepareLogRecord
-{
-  public static final int READ_TRANSACTION = 0;
-  public static final int WRITE_TRANSACTION = 1;
+public interface PrepareLogRecord {
+    public static final int READ_TRANSACTION = 0;
+    public static final int WRITE_TRANSACTION = 1;
 
-  /**
-   * Returns the transaction type.
-   * @return transaction type.
-   */
-  public int getType();
+    /**
+     * Returns the transaction type.
+     *
+     * @return transaction type.
+     */
+    public int getType();
 
-  /**
-   * Returns the global tx id.
-   * @return global tx id.
-   */
-  public XidImpl getGlobalTxId();
+    /**
+     * Returns the global tx id.
+     *
+     * @return global tx id.
+     */
+    public XidImpl getGlobalTxId();
 
-  /**
-   * Returns the queue name.
-   * @return queue name.
-   */
-  public String getQueueName();
+    /**
+     * Returns the queue name.
+     *
+     * @return queue name.
+     */
+    public String getQueueName();
 
-  /**
-   * Returns a list of keys in the persistent store this transaction refers to.
-   * @return key list.
-   */
-  public List getKeyList();
+    /**
+     * Returns a list of keys in the persistent store this transaction refers to.
+     *
+     * @return key list.
+     */
+    public List getKeyList();
 }

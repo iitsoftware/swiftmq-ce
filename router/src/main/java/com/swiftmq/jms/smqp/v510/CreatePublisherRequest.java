@@ -17,85 +17,75 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CreatePublisherRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CreatePublisherRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.TopicImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CreatePublisherRequest extends Request
-{
-  private TopicImpl topic;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreatePublisherRequest()
-  {
-    super(0,true);
-  }
+public class CreatePublisherRequest extends Request {
+    private TopicImpl topic;
 
-  public CreatePublisherRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public CreatePublisherRequest() {
+        super(0, true);
+    }
 
-  public CreatePublisherRequest(int dispatchId, TopicImpl topic)
-  {
-    super(dispatchId,true);
-    this.topic = topic;
-  }
-  
-  public void setTopic(TopicImpl topic)
-  {
-    this.topic = topic;
-  }
+    public CreatePublisherRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public TopicImpl getTopic()
-  {
-    return topic;
-  }
+    public CreatePublisherRequest(int dispatchId, TopicImpl topic) {
+        super(dispatchId, true);
+        this.topic = topic;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEPUBLISHER_REQ;
-  }
+    public void setTopic(TopicImpl topic) {
+        this.topic = topic;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(topic,out);
-  }
+    public TopicImpl getTopic() {
+        return topic;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    topic = SMQPUtil.read(topic,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEPUBLISHER_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreatePublisherReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(topic, out);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        topic = SMQPUtil.read(topic, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CreatePublisherRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("topic=");
-    _b.append(topic);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new CreatePublisherReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CreatePublisherRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("topic=");
+        _b.append(topic);
+        _b.append("]");
+        return _b.toString();
+    }
 }

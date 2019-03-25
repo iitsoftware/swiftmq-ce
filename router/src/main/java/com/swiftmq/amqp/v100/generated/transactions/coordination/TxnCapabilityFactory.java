@@ -17,60 +17,47 @@
 
 package com.swiftmq.amqp.v100.generated.transactions.coordination;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPArray;
+import com.swiftmq.amqp.v100.types.AMQPSymbol;
+import com.swiftmq.amqp.v100.types.AMQPType;
+import com.swiftmq.amqp.v100.types.AMQPTypeDecoder;
 
 /**
- *  Factory class to create TxnCapabilityIF objects out of a bare AMQPType
+ * Factory class to create TxnCapabilityIF objects out of a bare AMQPType
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class TxnCapabilityFactory
-{
+public class TxnCapabilityFactory {
 
-  /**
-   * Creates a TxnCapabilityIF object.
-   *
-   * @param bare the bare AMQP type
-   * @return TxnCapabilityIF
-   */
-  public static TxnCapabilityIF create(AMQPType bare) throws Exception
-  {
-    if (bare.getCode() == AMQPTypeDecoder.NULL)
-      return null;
-    return new TxnCapability(((AMQPSymbol)bare).getValue());
-  }
+    /**
+     * Creates a TxnCapabilityIF object.
+     *
+     * @param bare the bare AMQP type
+     * @return TxnCapabilityIF
+     */
+    public static TxnCapabilityIF create(AMQPType bare) throws Exception {
+        if (bare.getCode() == AMQPTypeDecoder.NULL)
+            return null;
+        return new TxnCapability(((AMQPSymbol) bare).getValue());
+    }
 
-  /**
-   * Converts an AMQP array of type TxnCapabilityIF into a native array
-   *
-   * @param array AMQP array
-   * @return native array
-   */
-  public static TxnCapabilityIF[] toNativeArray(AMQPArray array) throws Exception
-  {
-    if (array == null)
-      return null;
-    AMQPType[] value = array.getValue();
-    if (value == null)
-      return null;
-    TxnCapabilityIF[] n = new TxnCapabilityIF[value.length];
-    for (int i=0;i<value.length;i++)
-      n[i] = create(value[i]);
-    return n;
-  }
+    /**
+     * Converts an AMQP array of type TxnCapabilityIF into a native array
+     *
+     * @param array AMQP array
+     * @return native array
+     */
+    public static TxnCapabilityIF[] toNativeArray(AMQPArray array) throws Exception {
+        if (array == null)
+            return null;
+        AMQPType[] value = array.getValue();
+        if (value == null)
+            return null;
+        TxnCapabilityIF[] n = new TxnCapabilityIF[value.length];
+        for (int i = 0; i < value.length; i++)
+            n[i] = create(value[i]);
+        return n;
+    }
 }

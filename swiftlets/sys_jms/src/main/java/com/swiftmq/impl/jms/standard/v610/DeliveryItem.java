@@ -19,32 +19,29 @@ package com.swiftmq.impl.jms.standard.v610;
 
 import com.swiftmq.jms.smqp.v610.AsyncMessageDeliveryRequest;
 import com.swiftmq.swiftlet.queue.MessageEntry;
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class DeliveryItem extends Request
-{
-  MessageEntry messageEntry = null;
-  Consumer consumer = null;
-  AsyncMessageDeliveryRequest request = null;
+public class DeliveryItem extends Request {
+    MessageEntry messageEntry = null;
+    Consumer consumer = null;
+    AsyncMessageDeliveryRequest request = null;
 
-  public DeliveryItem()
-  {
-    super(0, false);
-  }
+    public DeliveryItem() {
+        super(0, false);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public String toString()
-  {
-    return "[DeliveryItem, consumer=" + consumer + ", messageEntry=" + messageEntry + ", request=" + request + "]";
-  }
+    public String toString() {
+        return "[DeliveryItem, consumer=" + consumer + ", messageEntry=" + messageEntry + ", request=" + request + "]";
+    }
 }
 

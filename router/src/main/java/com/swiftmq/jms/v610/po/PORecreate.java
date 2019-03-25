@@ -24,35 +24,29 @@ import com.swiftmq.tools.pipeline.POVisitor;
 import com.swiftmq.tools.requestreply.Request;
 
 
-public class PORecreate extends POObject
-{
-  Recreatable recreatable = null;
-  Request request = null;
+public class PORecreate extends POObject {
+    Recreatable recreatable = null;
+    Request request = null;
 
-  public PORecreate(Semaphore semaphore, Recreatable recreatable, Request request)
-  {
-    super(null, semaphore);
-    this.recreatable = recreatable;
-    this.request = request;
-  }
+    public PORecreate(Semaphore semaphore, Recreatable recreatable, Request request) {
+        super(null, semaphore);
+        this.recreatable = recreatable;
+        this.request = request;
+    }
 
-  public Recreatable getRecreatable()
-  {
-    return recreatable;
-  }
+    public Recreatable getRecreatable() {
+        return recreatable;
+    }
 
-  public Request getRequest()
-  {
-    return request;
-  }
+    public Request getRequest() {
+        return request;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[PORecreate, recreatable=" + recreatable + ", request=" + request + "]";
-  }
+    public String toString() {
+        return "[PORecreate, recreatable=" + recreatable + ", request=" + request + "]";
+    }
 }

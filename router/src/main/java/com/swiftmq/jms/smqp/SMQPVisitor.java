@@ -17,7 +17,6 @@
 
 package com.swiftmq.jms.smqp;
 
-public interface SMQPVisitor
-{
-  public void visit(SMQPVersionRequest request);
+public interface SMQPVisitor {
+    public void visit(SMQPVersionRequest request);
 }

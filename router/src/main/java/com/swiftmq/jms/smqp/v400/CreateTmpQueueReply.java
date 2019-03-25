@@ -21,101 +21,91 @@ package com.swiftmq.jms.smqp.v400;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreateTmpQueueReply extends Reply
-{
-  String queueName;
+public class CreateTmpQueueReply extends Reply {
+    String queueName;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_TMP_QUEUE_REP;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (queueName == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(queueName);
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_TMP_QUEUE_REP;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      queueName = null;
-    } else
-    {
-      queueName = in.readUTF();
+        if (queueName == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(queueName);
+        }
     }
-  }
 
-  /**
-   * @param queueName
-   * @SBGen Method set queueName
-   */
-  public void setQueueName(String queueName)
-  {
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    // SBgen: Assign variable
-    this.queueName = queueName;
-  }
+        byte set = in.readByte();
 
-  /**
-   * @return
-   * @SBGen Method get queueName
-   */
-  public String getQueueName()
-  {
+        if (set == 0) {
+            queueName = null;
+        } else {
+            queueName = in.readUTF();
+        }
+    }
 
-    // SBgen: Get variable
-    return (queueName);
-  }
+    /**
+     * @param queueName
+     * @SBGen Method set queueName
+     */
+    public void setQueueName(String queueName) {
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreateTmpQueueReply " + super.toString() + " queueName="
-        + queueName + "]";
-  }
+        // SBgen: Assign variable
+        this.queueName = queueName;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get queueName
+     */
+    public String getQueueName() {
+
+        // SBgen: Get variable
+        return (queueName);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreateTmpQueueReply " + super.toString() + " queueName="
+                + queueName + "]";
+    }
 
 }
 

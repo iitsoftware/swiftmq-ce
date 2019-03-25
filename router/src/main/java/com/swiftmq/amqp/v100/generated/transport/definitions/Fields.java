@@ -17,20 +17,10 @@
 
 package com.swiftmq.amqp.v100.generated.transport.definitions;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPMap;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * <p>
@@ -42,28 +32,25 @@ import java.util.*;
  * </p><p>
  * </p>
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class Fields extends AMQPMap
-{
+public class Fields extends AMQPMap {
 
 
-  /**
-   * Constructs a Fields.
-   *
-   * @param initValue initial value
-   * @exception error during initialization
-   */
-  public Fields(Map initValue) throws IOException
-  {
-    super(initValue);
-  }
+    /**
+     * Constructs a Fields.
+     *
+     * @param initValue initial value
+     * @throws error during initialization
+     */
+    public Fields(Map initValue) throws IOException {
+        super(initValue);
+    }
 
 
-  public String toString()
-  {
-    return "[Fields " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[Fields " + super.toString() + "]";
+    }
 }

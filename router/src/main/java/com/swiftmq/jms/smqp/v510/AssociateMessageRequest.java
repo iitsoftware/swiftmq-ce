@@ -17,85 +17,75 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: AssociateMessageRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: AssociateMessageRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.swiftlet.queue.MessageIndex;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class AssociateMessageRequest extends Request
-{
-  private MessageIndex messageIndex;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public AssociateMessageRequest()
-  {
-    super(0,true);
-  }
+public class AssociateMessageRequest extends Request {
+    private MessageIndex messageIndex;
 
-  public AssociateMessageRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public AssociateMessageRequest() {
+        super(0, true);
+    }
 
-  public AssociateMessageRequest(int dispatchId, MessageIndex messageIndex)
-  {
-    super(dispatchId,true);
-    this.messageIndex = messageIndex;
-  }
-  
-  public void setMessageIndex(MessageIndex messageIndex)
-  {
-    this.messageIndex = messageIndex;
-  }
+    public AssociateMessageRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public MessageIndex getMessageIndex()
-  {
-    return messageIndex;
-  }
+    public AssociateMessageRequest(int dispatchId, MessageIndex messageIndex) {
+        super(dispatchId, true);
+        this.messageIndex = messageIndex;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ASSOCIATEMESSAGE_REQ;
-  }
+    public void setMessageIndex(MessageIndex messageIndex) {
+        this.messageIndex = messageIndex;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(messageIndex,out);
-  }
+    public MessageIndex getMessageIndex() {
+        return messageIndex;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    messageIndex = SMQPUtil.read(messageIndex,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_ASSOCIATEMESSAGE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new AssociateMessageReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(messageIndex, out);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        messageIndex = SMQPUtil.read(messageIndex, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[AssociateMessageRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("messageIndex=");
-    _b.append(messageIndex);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new AssociateMessageReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[AssociateMessageRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("messageIndex=");
+        _b.append(messageIndex);
+        _b.append("]");
+        return _b.toString();
+    }
 }

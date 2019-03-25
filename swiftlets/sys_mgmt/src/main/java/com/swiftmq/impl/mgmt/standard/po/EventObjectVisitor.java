@@ -19,14 +19,20 @@ package com.swiftmq.impl.mgmt.standard.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface EventObjectVisitor extends POVisitor
-{
-  public void visit(EntityAdded event);
-  public void visit(EntityRemoved event);
-  public void visit(SwiftletAdded event);
-  public void visit(SwiftletRemoved event);
-  public void visit(PropertyChanged event);
-  public void visit(ClientRequest event);
-  public void visit(RouterAvailable event);
-  public void visit(RouterUnavailable event);
+public interface EventObjectVisitor extends POVisitor {
+    public void visit(EntityAdded event);
+
+    public void visit(EntityRemoved event);
+
+    public void visit(SwiftletAdded event);
+
+    public void visit(SwiftletRemoved event);
+
+    public void visit(PropertyChanged event);
+
+    public void visit(ClientRequest event);
+
+    public void visit(RouterAvailable event);
+
+    public void visit(RouterUnavailable event);
 }

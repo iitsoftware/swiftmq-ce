@@ -20,17 +20,15 @@ package com.swiftmq.amqp.v100.client;
 /**
  * Base AMQP exception.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPException extends Exception
-{
-  /**
-   * Constructs an AMQP exception.
-   *
-   * @param s exception message
-   */
-  public AMQPException(String s)
-  {
-    super(s);
-  }
+public class AMQPException extends Exception {
+    /**
+     * Constructs an AMQP exception.
+     *
+     * @param s exception message
+     */
+    public AMQPException(String s) {
+        super(s);
+    }
 }

@@ -22,42 +22,35 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class SourceFactoryAdded extends POObject
-{
-  String group = null;
-  String name = null;
-  AccountingSourceFactory factory = null;
+public class SourceFactoryAdded extends POObject {
+    String group = null;
+    String name = null;
+    AccountingSourceFactory factory = null;
 
-  public SourceFactoryAdded(Semaphore semaphore, String group, String name, AccountingSourceFactory factory)
-  {
-    super(null, semaphore);
-    this.group = group;
-    this.name = name;
-    this.factory = factory;
-  }
+    public SourceFactoryAdded(Semaphore semaphore, String group, String name, AccountingSourceFactory factory) {
+        super(null, semaphore);
+        this.group = group;
+        this.name = name;
+        this.factory = factory;
+    }
 
-  public String getGroup()
-  {
-    return group;
-  }
+    public String getGroup() {
+        return group;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public AccountingSourceFactory getFactory()
-  {
-    return factory;
-  }
+    public AccountingSourceFactory getFactory() {
+        return factory;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor) poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SourceFactoryAdded, group=" + group + ", name=" + name + ", factory=" + factory + "]";
-  }
+    public String toString() {
+        return "[SourceFactoryAdded, group=" + group + ", name=" + name + ", factory=" + factory + "]";
+    }
 }

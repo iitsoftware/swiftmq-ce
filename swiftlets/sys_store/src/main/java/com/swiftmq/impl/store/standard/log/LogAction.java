@@ -18,50 +18,49 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public abstract class LogAction
-{
-	public final static int INSERT = 1;
-	public final static int UPDATE = 2;
-	public final static int DELETE = 3;
-	public final static int UPDATE_PORTION = 4;
-	
-	public static LogAction create(int type)
-	{
-		LogAction la = null;
-		switch (type)
-		{
-		case INSERT:
-			la = new InsertLogAction(0);
-			break;
-		case UPDATE:
-			la = new UpdateLogAction(null,null);
-			break;
-		case DELETE:
-			la = new DeleteLogAction(0,null);
-			break;
-		case UPDATE_PORTION:
-			la = new UpdatePortionLogAction(0,0,null,null);
-			break;
-		}
-		return la;
-	}
-	
-	public abstract int getType();
-	
-	/**
-	 * @param out 
-	 * @exception IOException 
-	 */
-	protected abstract void writeContent(DataOutput out)
-		throws IOException;
-	
-	/**
-	 * @param in 
-	 * @exception IOException 
-	 */
-	protected abstract void readContent(DataInput in)
-		throws IOException;
+public abstract class LogAction {
+    public final static int INSERT = 1;
+    public final static int UPDATE = 2;
+    public final static int DELETE = 3;
+    public final static int UPDATE_PORTION = 4;
+
+    public static LogAction create(int type) {
+        LogAction la = null;
+        switch (type) {
+            case INSERT:
+                la = new InsertLogAction(0);
+                break;
+            case UPDATE:
+                la = new UpdateLogAction(null, null);
+                break;
+            case DELETE:
+                la = new DeleteLogAction(0, null);
+                break;
+            case UPDATE_PORTION:
+                la = new UpdatePortionLogAction(0, 0, null, null);
+                break;
+        }
+        return la;
+    }
+
+    public abstract int getType();
+
+    /**
+     * @param out
+     * @throws IOException
+     */
+    protected abstract void writeContent(DataOutput out)
+            throws IOException;
+
+    /**
+     * @param in
+     * @throws IOException
+     */
+    protected abstract void readContent(DataInput in)
+            throws IOException;
 }
 

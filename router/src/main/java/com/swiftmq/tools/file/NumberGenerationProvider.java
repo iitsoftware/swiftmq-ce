@@ -17,7 +17,6 @@
 
 package com.swiftmq.tools.file;
 
-public interface NumberGenerationProvider
-{
-  public int getNumberGenerations();
+public interface NumberGenerationProvider {
+    public int getNumberGenerations();
 }

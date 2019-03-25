@@ -20,20 +20,16 @@ package com.swiftmq.jms.v630.po;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POVersionRequest extends POObject
-{
-  public POVersionRequest()
-  {
-    super(null, null);
-  }
+public class POVersionRequest extends POObject {
+    public POVersionRequest() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POVersionRequest]";
-  }
+    public String toString() {
+        return "[POVersionRequest]";
+    }
 }

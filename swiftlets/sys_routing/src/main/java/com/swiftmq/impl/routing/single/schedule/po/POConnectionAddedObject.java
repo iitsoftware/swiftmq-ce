@@ -18,31 +18,26 @@
 package com.swiftmq.impl.routing.single.schedule.po;
 
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POConnectionAddedObject extends POObject
-{
-  RoutingConnection connection = null;
+public class POConnectionAddedObject extends POObject {
+    RoutingConnection connection = null;
 
-  public POConnectionAddedObject(RoutingConnection connection)
-  {
-    super(null, null);
-    this.connection = connection;
-  }
+    public POConnectionAddedObject(RoutingConnection connection) {
+        super(null, null);
+        this.connection = connection;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POSchedulerVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POSchedulerVisitor) visitor).visit(this);
+    }
 
-  public RoutingConnection getConnection()
-  {
-    return connection;
-  }
+    public RoutingConnection getConnection() {
+        return connection;
+    }
 
-  public String toString()
-  {
-    return "[POConnectionAddedObject, connection="+connection+"]";
-  }
+    public String toString() {
+        return "[POConnectionAddedObject, connection=" + connection + "]";
+    }
 }

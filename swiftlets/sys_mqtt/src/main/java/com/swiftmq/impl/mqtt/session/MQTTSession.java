@@ -28,11 +28,11 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityAddException;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
+import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.*;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.QueueTransactionClosedException;
 import com.swiftmq.util.SwiftUtilities;
-import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
 import org.magicwerk.brownies.collections.GapList;
 
 import java.util.*;
@@ -493,7 +493,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
                 addReplay(packetId, new MqttPublishMessage(new MqttFixedHeader(MqttMessageType.PUBLISH, true, qos, false, 0),
                         new MqttPublishVariableHeader(topicName, packetId), byteBuf));
             incMsgsReceived(1);
-        } catch (QueueTransactionClosedException qtc){
+        } catch (QueueTransactionClosedException qtc) {
 
         } catch (Exception e) {
             mqttConnection.initiateClose("send message: exception=" + e);

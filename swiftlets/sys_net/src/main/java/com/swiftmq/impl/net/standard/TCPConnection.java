@@ -27,122 +27,98 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class TCPConnection extends Connection
-{
-  Socket socket;
-  InputStream in;
-  OutputStream out;
-  String hostname = null;
-  int port = 0;
-  int bufferSize;
-  BlockingHandler handler = null;
+public class TCPConnection extends Connection {
+    Socket socket;
+    InputStream in;
+    OutputStream out;
+    String hostname = null;
+    int port = 0;
+    int bufferSize;
+    BlockingHandler handler = null;
 
-  public TCPConnection(boolean dnsResolve, boolean useTcpNoDelay, Socket socket) throws IOException
-  {
-    super(dnsResolve);
-    // SBgen: Assign variable
-    this.socket = socket;
-    try
-    {
-      this.socket.setTcpNoDelay(useTcpNoDelay);
-    } catch (SocketException e)
-    {
+    public TCPConnection(boolean dnsResolve, boolean useTcpNoDelay, Socket socket) throws IOException {
+        super(dnsResolve);
+        // SBgen: Assign variable
+        this.socket = socket;
+        try {
+            this.socket.setTcpNoDelay(useTcpNoDelay);
+        } catch (SocketException e) {
+        }
+        in = new CountableBufferedInputStream(socket.getInputStream());
     }
-    in = new CountableBufferedInputStream(socket.getInputStream());
-  }
 
-  private void determineHostnamePort()
-  {
-    if (hostname != null)
-      return;
-    try
-    {
-      hostname = dnsResolve ? socket.getInetAddress().getHostName() : socket.getInetAddress().getHostAddress();
-      port = socket.getPort();
-    } catch (Exception e)
-    {
-      hostname = null;
-      port = -1;
+    private void determineHostnamePort() {
+        if (hostname != null)
+            return;
+        try {
+            hostname = dnsResolve ? socket.getInetAddress().getHostName() : socket.getInetAddress().getHostAddress();
+            port = socket.getPort();
+        } catch (Exception e) {
+            hostname = null;
+            port = -1;
+        }
     }
-  }
 
-  public void setHandler(BlockingHandler handler)
-  {
-    this.handler = handler;
-  }
-
-  public synchronized void setMetaData(ConnectionMetaData meta)
-  {
-    super.setMetaData(meta);
-    try
-    {
-      setProtocolOutputHandler(meta.createProtocolOutputHandler());
-      out = new CountableBufferedOutputStream(getProtocolOutputHandler(), socket.getOutputStream());
-    } catch (Exception e)
-    {
+    public void setHandler(BlockingHandler handler) {
+        this.handler = handler;
     }
-  }
 
-  public Socket getSocket()
-  {
-    return socket;
-  }
-
-  public String getHostname()
-  {
-    determineHostnamePort();
-    if (hostname == null)
-      return "unresolvable";
-    return hostname;
-  }
-
-  public int getPort()
-  {
-    determineHostnamePort();
-    return port;
-  }
-
-  public InputStream getInputStream()
-  {
-    return in;
-  }
-
-  public OutputStream getOutputStream()
-  {
-    return out;
-  }
-
-  public void close()
-  {
-    if (isClosed())
-      return;
-    super.close();
-    // to ensure that a connector reconnects while an old handler still listens on an input stream
-    if (handler != null)
-      handler.internalClose();
-    try
-    {
-      socket.shutdownInput();
-    } catch (Exception ignored)
-    {
+    public synchronized void setMetaData(ConnectionMetaData meta) {
+        super.setMetaData(meta);
+        try {
+            setProtocolOutputHandler(meta.createProtocolOutputHandler());
+            out = new CountableBufferedOutputStream(getProtocolOutputHandler(), socket.getOutputStream());
+        } catch (Exception e) {
+        }
     }
-    try
-    {
-      socket.shutdownOutput();
-    } catch (Exception ignored)
-    {
-    }
-    try
-    {
-      socket.close();
-    } catch (Exception ignored)
-    {
-    }
-  }
 
-  public String toString()
-  {
-    return getHostname() + ":" + getPort();
-  }
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public String getHostname() {
+        determineHostnamePort();
+        if (hostname == null)
+            return "unresolvable";
+        return hostname;
+    }
+
+    public int getPort() {
+        determineHostnamePort();
+        return port;
+    }
+
+    public InputStream getInputStream() {
+        return in;
+    }
+
+    public OutputStream getOutputStream() {
+        return out;
+    }
+
+    public void close() {
+        if (isClosed())
+            return;
+        super.close();
+        // to ensure that a connector reconnects while an old handler still listens on an input stream
+        if (handler != null)
+            handler.internalClose();
+        try {
+            socket.shutdownInput();
+        } catch (Exception ignored) {
+        }
+        try {
+            socket.shutdownOutput();
+        } catch (Exception ignored) {
+        }
+        try {
+            socket.close();
+        } catch (Exception ignored) {
+        }
+    }
+
+    public String toString() {
+        return getHostname() + ":" + getPort();
+    }
 }
 

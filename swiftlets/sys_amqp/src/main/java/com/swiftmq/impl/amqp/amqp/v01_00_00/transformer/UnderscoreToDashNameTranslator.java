@@ -17,10 +17,8 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00.transformer;
 
-public class UnderscoreToDashNameTranslator implements NameTranslator
-{
-  public String translate(String source)
-  {
-    return source.replace('_', '-');
-  }
+public class UnderscoreToDashNameTranslator implements NameTranslator {
+    public String translate(String source) {
+        return source.replace('_', '-');
+    }
 }

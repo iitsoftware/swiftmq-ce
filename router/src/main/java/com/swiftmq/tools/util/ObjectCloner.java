@@ -26,44 +26,37 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class ObjectCloner
-{
+public class ObjectCloner {
 
-  public static Dumpable copy(Dumpable old, DumpableFactory factory) throws Exception
-  {
-    DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
-    Dumpalizer.dump(dos,old);
-    DataByteArrayInputStream dis = new DataByteArrayInputStream();
-    dis.setBuffer(dos.getBuffer(),0,dos.getCount());
-    return Dumpalizer.construct(dis,factory);
-  }
-
-  public static Object deepCopy(Object oldObj) throws Exception
-  {
-    ObjectOutputStream oos = null;
-    ObjectInputStream ois = null;
-    Object obj = null;
-
-    try
-    {
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      oos = new ObjectOutputStream(bos);
-      oos.writeObject(oldObj);
-      oos.flush();
-
-      ByteArrayInputStream bin = new ByteArrayInputStream(bos.toByteArray());
-      ois = new ObjectInputStream(bin);
-      obj = ois.readObject();
-    } finally
-    {
-      try
-      {
-        oos.close();
-        ois.close();
-      } catch (Exception ignored)
-      {
-      }
+    public static Dumpable copy(Dumpable old, DumpableFactory factory) throws Exception {
+        DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
+        Dumpalizer.dump(dos, old);
+        DataByteArrayInputStream dis = new DataByteArrayInputStream();
+        dis.setBuffer(dos.getBuffer(), 0, dos.getCount());
+        return Dumpalizer.construct(dis, factory);
     }
-    return obj;
-  }
+
+    public static Object deepCopy(Object oldObj) throws Exception {
+        ObjectOutputStream oos = null;
+        ObjectInputStream ois = null;
+        Object obj = null;
+
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(bos);
+            oos.writeObject(oldObj);
+            oos.flush();
+
+            ByteArrayInputStream bin = new ByteArrayInputStream(bos.toByteArray());
+            ois = new ObjectInputStream(bin);
+            obj = ois.readObject();
+        } finally {
+            try {
+                oos.close();
+                ois.close();
+            } catch (Exception ignored) {
+            }
+        }
+        return obj;
+    }
 }

@@ -22,41 +22,34 @@ package com.swiftmq.swiftlet.xa;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2003, All Rights Reserved
  */
-public class XAContextException extends Exception
-{
-  int errorCode = 0;
-  String message = null;
+public class XAContextException extends Exception {
+    int errorCode = 0;
+    String message = null;
 
-  public XAContextException(String message)
-  {
-    super(message);
-    this.message = message;
-  }
+    public XAContextException(String message) {
+        super(message);
+        this.message = message;
+    }
 
-  public XAContextException(int errorCode, String message)
-  {
-    super(message);
-    this.errorCode = errorCode;
-    this.message = message;
-  }
+    public XAContextException(int errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+        this.message = message;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public String getMessage()
-  {
-    return message;
-  }
+    public String getMessage() {
+        return message;
+    }
 
-  public String toString()
-  {
-    return "[XAContextException, errorCode="+errorCode+", message="+message+"]";
-  }
+    public String toString() {
+        return "[XAContextException, errorCode=" + errorCode + ", message=" + message + "]";
+    }
 }

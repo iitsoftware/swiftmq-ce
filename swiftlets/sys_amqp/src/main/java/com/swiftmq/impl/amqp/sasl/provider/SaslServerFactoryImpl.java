@@ -26,29 +26,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SaslServerFactoryImpl implements SaslServerFactory
-{
-  public SaslServer createSaslServer(String mechanism, String protocol, String serverName, Map props, CallbackHandler callbackHandler) throws SaslException
-  {
-    if (mechanism.equals(AnonServer.MECHNAME))
-      return new AnonServer(callbackHandler);
-    if (mechanism.equals(PlainServer.MECHNAME))
-      return new PlainServer(callbackHandler);
-    return null;
-  }
-
-  public String[] getMechanismNames(Map properties)
-  {
-    List list = new ArrayList();
-    if (!(properties != null &&
-        (properties.containsKey(Sasl.POLICY_NOPLAINTEXT) ||
-            properties.containsKey(Sasl.POLICY_NODICTIONARY) ||
-            properties.containsKey(Sasl.POLICY_NOACTIVE))))
-    {
-      list.add(PlainServer.MECHNAME);
-      if (properties == null || !properties.containsKey(Sasl.POLICY_NOANONYMOUS))
-        list.add(AnonServer.MECHNAME);
+public class SaslServerFactoryImpl implements SaslServerFactory {
+    public SaslServer createSaslServer(String mechanism, String protocol, String serverName, Map props, CallbackHandler callbackHandler) throws SaslException {
+        if (mechanism.equals(AnonServer.MECHNAME))
+            return new AnonServer(callbackHandler);
+        if (mechanism.equals(PlainServer.MECHNAME))
+            return new PlainServer(callbackHandler);
+        return null;
     }
-    return (String[]) list.toArray(new String[list.size()]);
-  }
+
+    public String[] getMechanismNames(Map properties) {
+        List list = new ArrayList();
+        if (!(properties != null &&
+                (properties.containsKey(Sasl.POLICY_NOPLAINTEXT) ||
+                        properties.containsKey(Sasl.POLICY_NODICTIONARY) ||
+                        properties.containsKey(Sasl.POLICY_NOACTIVE)))) {
+            list.add(PlainServer.MECHNAME);
+            if (properties == null || !properties.containsKey(Sasl.POLICY_NOANONYMOUS))
+                list.add(AnonServer.MECHNAME);
+        }
+        return (String[]) list.toArray(new String[list.size()]);
+    }
 }

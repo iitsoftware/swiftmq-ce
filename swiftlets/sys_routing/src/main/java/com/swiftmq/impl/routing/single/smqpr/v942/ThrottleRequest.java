@@ -21,37 +21,30 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class ThrottleRequest extends Request
-{
-  long delay = 0;
+public class ThrottleRequest extends Request {
+    long delay = 0;
 
-  public ThrottleRequest(long delay)
-  {
-    super(0, false);
-    this.delay = delay;
-  }
+    public ThrottleRequest(long delay) {
+        super(0, false);
+        this.delay = delay;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.THROTTLE_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.THROTTLE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-  }
+    public void accept(RequestVisitor visitor) {
+    }
 
-  public long getDelay()
-  {
-    return delay;
-  }
+    public long getDelay() {
+        return delay;
+    }
 
-  public String toString()
-  {
-    return "[ThrottleRequest, delay=" + delay + "]";
-  }
+    public String toString() {
+        return "[ThrottleRequest, delay=" + delay + "]";
+    }
 }

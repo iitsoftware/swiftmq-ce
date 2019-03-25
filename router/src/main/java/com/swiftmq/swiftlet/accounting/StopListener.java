@@ -25,12 +25,12 @@ package com.swiftmq.swiftlet.accounting;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2010, All Rights Reserved
  */
-public interface StopListener
-{
-  /**
-   * Called when the AccountingSource is stopped internally due to an Exception
-   * @param source AccountinSource
-   * @param cause the exception leading to the stop
-   */
-  public void sourceStopped(AccountingSource source, Exception cause);
+public interface StopListener {
+    /**
+     * Called when the AccountingSource is stopped internally due to an Exception
+     *
+     * @param source AccountinSource
+     * @param cause  the exception leading to the stop
+     */
+    public void sourceStopped(AccountingSource source, Exception cause);
 }

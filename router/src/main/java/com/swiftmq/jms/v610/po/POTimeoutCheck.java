@@ -20,20 +20,16 @@ package com.swiftmq.jms.v610.po;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POTimeoutCheck extends POObject
-{
-  public POTimeoutCheck()
-  {
-    super(null, null);
-  }
+public class POTimeoutCheck extends POObject {
+    public POTimeoutCheck() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POTimeoutCheck]";
-  }
+    public String toString() {
+        return "[POTimeoutCheck]";
+    }
 }

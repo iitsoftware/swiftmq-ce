@@ -17,65 +17,56 @@
 
 package com.swiftmq.impl.auth.standard;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Group
-{
-  String name;
-  Map queueGrants = new HashMap();
-  Map topicGrants = new HashMap();
+public class Group {
+    String name;
+    Map queueGrants = new HashMap();
+    Map topicGrants = new HashMap();
 
-  protected Group(String name)
-  {
-    this.name = name;
-  }
+    protected Group(String name) {
+        this.name = name;
+    }
 
-  public String getName()
-  {
-    return (name);
-  }
+    public String getName() {
+        return (name);
+    }
 
-  synchronized void addQueueResourceGrant(QueueResourceGrant queueResourceGrant)
-  {
-    queueGrants.put(queueResourceGrant.getResourceName(), queueResourceGrant);
-  }
+    synchronized void addQueueResourceGrant(QueueResourceGrant queueResourceGrant) {
+        queueGrants.put(queueResourceGrant.getResourceName(), queueResourceGrant);
+    }
 
-  synchronized QueueResourceGrant getQueueResourceGrant(String queueName)
-  {
-    return (QueueResourceGrant) queueGrants.get(queueName);
-  }
+    synchronized QueueResourceGrant getQueueResourceGrant(String queueName) {
+        return (QueueResourceGrant) queueGrants.get(queueName);
+    }
 
-  synchronized void removeQueueResourceGrant(String queueName)
-  {
-    queueGrants.remove(queueName);
-  }
+    synchronized void removeQueueResourceGrant(String queueName) {
+        queueGrants.remove(queueName);
+    }
 
-  synchronized void addTopicResourceGrant(TopicResourceGrant topicResourceGrant)
-  {
-    topicGrants.put(topicResourceGrant.getResourceName(), topicResourceGrant);
-  }
+    synchronized void addTopicResourceGrant(TopicResourceGrant topicResourceGrant) {
+        topicGrants.put(topicResourceGrant.getResourceName(), topicResourceGrant);
+    }
 
-  synchronized TopicResourceGrant getTopicResourceGrant(String topicName)
-  {
-    return (TopicResourceGrant) topicGrants.get(topicName);
-  }
+    synchronized TopicResourceGrant getTopicResourceGrant(String topicName) {
+        return (TopicResourceGrant) topicGrants.get(topicName);
+    }
 
-  synchronized void removeTopicResourceGrant(String topicName)
-  {
-    topicGrants.remove(topicName);
-  }
+    synchronized void removeTopicResourceGrant(String topicName) {
+        topicGrants.remove(topicName);
+    }
 
-  public String toString()
-  {
-    StringBuffer s = new StringBuffer();
-    s.append("[Group, name=");
-    s.append(name);
-    s.append(", queueGrants=");
-    s.append(queueGrants);
-    s.append(", topicGrants=");
-    s.append(topicGrants);
-    s.append("]");
-    return s.toString();
-  }
+    public String toString() {
+        StringBuffer s = new StringBuffer();
+        s.append("[Group, name=");
+        s.append(name);
+        s.append(", queueGrants=");
+        s.append(queueGrants);
+        s.append(", topicGrants=");
+        s.append(topicGrants);
+        s.append("]");
+        return s.toString();
+    }
 }
 

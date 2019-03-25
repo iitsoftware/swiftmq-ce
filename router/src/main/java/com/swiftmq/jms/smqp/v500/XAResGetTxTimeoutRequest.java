@@ -17,34 +17,30 @@
 
 package com.swiftmq.jms.smqp.v500;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResGetTxTimeoutRequest extends Request
-{
-  public XAResGetTxTimeoutRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+public class XAResGetTxTimeoutRequest extends Request {
+    public XAResGetTxTimeoutRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESGETTXTIMEOUT_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESGETTXTIMEOUT_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResGetTxTimeoutReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResGetTxTimeoutReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResGetTxTimeoutRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResGetTxTimeoutRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[XAResGetTxTimeoutRequest " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[XAResGetTxTimeoutRequest " + super.toString() + "]";
+    }
 
 }
 

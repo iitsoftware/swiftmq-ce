@@ -26,88 +26,78 @@ import java.io.IOException;
  *
  * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPLong extends AMQPType
-{
-  byte[] bytes = new byte[8];
+public class AMQPLong extends AMQPType {
+    byte[] bytes = new byte[8];
 
-  /**
-   * Constructs an AMQPLong with an undefined value
-   */
-  public AMQPLong()
-  {
-    super("long", AMQPTypeDecoder.LONG);
-  }
+    /**
+     * Constructs an AMQPLong with an undefined value
+     */
+    public AMQPLong() {
+        super("long", AMQPTypeDecoder.LONG);
+    }
 
-  /**
-   * Constructs an AMQPLong with a value
-   *
-   * @param value value
-   */
-  public AMQPLong(long value)
-  {
-    super("long", AMQPTypeDecoder.LONG);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPLong with a value
+     *
+     * @param value value
+     */
+    public AMQPLong(long value) {
+        super("long", AMQPTypeDecoder.LONG);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(long value)
-  {
-    Util.writeLong(value, bytes, 0);
-    code = AMQPTypeDecoder.LONG;
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(long value) {
+        Util.writeLong(value, bytes, 0);
+        code = AMQPTypeDecoder.LONG;
+    }
 
-  /**
-   * Returns the value
-   *
-   * @return value
-   */
-  public long getValue()
-  {
-    if (code == AMQPTypeDecoder.LONG)
-      return Util.readLong(bytes, 0);
-    return (long) bytes[0];
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public long getValue() {
+        if (code == AMQPTypeDecoder.LONG)
+            return Util.readLong(bytes, 0);
+        return (long) bytes[0];
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize();
-    if (code == AMQPTypeDecoder.LONG)
-      n += 8;
-    else if (code == AMQPTypeDecoder.SLONG)
-      n += 1;
-    return n;
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize();
+        if (code == AMQPTypeDecoder.LONG)
+            n += 8;
+        else if (code == AMQPTypeDecoder.SLONG)
+            n += 1;
+        return n;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    if (code == AMQPTypeDecoder.LONG)
-      in.readFully(bytes);
-    else if (code == AMQPTypeDecoder.SLONG)
-      bytes[0] = in.readByte();
-    else
-      throw new IOException("Invalid code: " + code);
-  }
+    public void readContent(DataInput in) throws IOException {
+        if (code == AMQPTypeDecoder.LONG)
+            in.readFully(bytes);
+        else if (code == AMQPTypeDecoder.SLONG)
+            bytes[0] = in.readByte();
+        else
+            throw new IOException("Invalid code: " + code);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (code == AMQPTypeDecoder.LONG)
-      out.write(bytes);
-    else
-      out.writeByte(bytes[0]);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (code == AMQPTypeDecoder.LONG)
+            out.write(bytes);
+        else
+            out.writeByte(bytes[0]);
+    }
 
-  public String getValueString()
-  {
-    return Long.toString(getValue());
-  }
+    public String getValueString() {
+        return Long.toString(getValue());
+    }
 
-  public String toString()
-  {
-    return "[AMQPLong, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AMQPLong, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

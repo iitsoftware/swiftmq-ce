@@ -27,51 +27,44 @@ import com.swiftmq.tools.requestreply.RequestVisitor;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreateTmpQueueRequest extends Request
-{
+public class CreateTmpQueueRequest extends Request {
 
-  /**
-   * @SBGen Constructor
-   */
-  public CreateTmpQueueRequest()
-  {
-    super(0, true);
-  }
+    /**
+     * @SBGen Constructor
+     */
+    public CreateTmpQueueRequest() {
+        super(0, true);
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_TMP_QUEUE_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_TMP_QUEUE_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CreateTmpQueueReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CreateTmpQueueReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCreateTmpQueueRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCreateTmpQueueRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreateTmpQueueRequest " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreateTmpQueueRequest " + super.toString() + "]";
+    }
 
 }
 

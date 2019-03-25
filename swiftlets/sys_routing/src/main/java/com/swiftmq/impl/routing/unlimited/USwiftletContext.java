@@ -17,20 +17,18 @@
 
 package com.swiftmq.impl.routing.unlimited;
 
-import com.swiftmq.impl.routing.single.*;
+import com.swiftmq.impl.routing.single.RoutingSwiftletImpl;
+import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.manager.ConnectionManager;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.swiftlet.SwiftletException;
 
-public class USwiftletContext extends SwiftletContext
-{
-  public USwiftletContext(RoutingSwiftletImpl swiftlet, Entity entity) throws SwiftletException
-  {
-    super(swiftlet, entity);
-  }
+public class USwiftletContext extends SwiftletContext {
+    public USwiftletContext(RoutingSwiftletImpl swiftlet, Entity entity) throws SwiftletException {
+        super(swiftlet, entity);
+    }
 
-  protected ConnectionManager createConnectionManager()
-  {
-    return new UConnectionManager(this);
-  }
+    protected ConnectionManager createConnectionManager() {
+        return new UConnectionManager(this);
+    }
 }

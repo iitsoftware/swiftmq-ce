@@ -22,35 +22,30 @@ import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.ms.MessageSelector;
 
-public class QueueConsumer extends Consumer
-{
-  String queueName = null;
+public class QueueConsumer extends Consumer {
+    String queueName = null;
 
-  protected QueueConsumer(SessionContext ctx, String queueName, String selector)
-      throws Exception
-  {
-    super(ctx);
-    this.queueName = queueName;
-    MessageSelector msel = null;
-    if (selector != null)
-    {
-      msel = new MessageSelector(selector);
-      msel.compile();
+    protected QueueConsumer(SessionContext ctx, String queueName, String selector)
+            throws Exception {
+        super(ctx);
+        this.queueName = queueName;
+        MessageSelector msel = null;
+        if (selector != null) {
+            msel = new MessageSelector(selector);
+            msel.compile();
+        }
+        setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, msel));
+        setSelector(msel);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
     }
-    setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, msel));
-    setSelector(msel);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-  }
 
-  public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache)
-  {
-    if (accountingProfile.isMatchQueueName(queueName))
-      collector = cache.getDestinationCollector(queueName, DestinationCollector.DTYPE_QUEUE, DestinationCollector.ATYPE_CONSUMER);
-  }
+    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
+        if (accountingProfile.isMatchQueueName(queueName))
+            collector = cache.getDestinationCollector(queueName, DestinationCollector.DTYPE_QUEUE, DestinationCollector.ATYPE_CONSUMER);
+    }
 
-  public String toString()
-  {
-    return "QueueConsumer, queue=" + queueName;
-  }
+    public String toString() {
+        return "QueueConsumer, queue=" + queueName;
+    }
 }
 

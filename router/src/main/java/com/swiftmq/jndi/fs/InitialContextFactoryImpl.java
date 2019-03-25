@@ -25,24 +25,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Hashtable;
 
-public class InitialContextFactoryImpl implements InitialContextFactory, java.io.Serializable
-{
-  public Context getInitialContext(Hashtable env) throws NamingException
-  {
-    if (env == null)
-      throw new NamingException("Environment is null");
-    String dirName = (String) env.get(Context.PROVIDER_URL);
-    if (dirName == null)
-      throw new NamingException("Missing environment property " + Context.PROVIDER_URL);
-    try
-    {
-      File dir = new File(new URI(dirName));
-      if (!dir.exists())
-        throw new NamingException("Directory does not exist: " + dirName);
-      return new ContextImpl(dir);
-    } catch (URISyntaxException e)
-    {
-      throw new NamingException(e.getMessage());
+public class InitialContextFactoryImpl implements InitialContextFactory, java.io.Serializable {
+    public Context getInitialContext(Hashtable env) throws NamingException {
+        if (env == null)
+            throw new NamingException("Environment is null");
+        String dirName = (String) env.get(Context.PROVIDER_URL);
+        if (dirName == null)
+            throw new NamingException("Missing environment property " + Context.PROVIDER_URL);
+        try {
+            File dir = new File(new URI(dirName));
+            if (!dir.exists())
+                throw new NamingException("Directory does not exist: " + dirName);
+            return new ContextImpl(dir);
+        } catch (URISyntaxException e) {
+            throw new NamingException(e.getMessage());
+        }
     }
-  }
 }

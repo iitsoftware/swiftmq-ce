@@ -20,29 +20,28 @@ package com.swiftmq.impl.queue.standard.cluster;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.swiftlet.queue.event.QueueReceiverListener;
 
-public interface DispatchPolicy extends QueueReceiverListener
-{
-  public void setDispatchPolicyListener(DispatchPolicyListener l);
+public interface DispatchPolicy extends QueueReceiverListener {
+    public void setDispatchPolicyListener(DispatchPolicyListener l);
 
-  public void addLocalMetric(QueueMetric metric);
+    public void addLocalMetric(QueueMetric metric);
 
-  public void removeLocalMetric(QueueMetric metric);
+    public void removeLocalMetric(QueueMetric metric);
 
-  public ClusteredQueueMetric getLocalMetric();
+    public ClusteredQueueMetric getLocalMetric();
 
-  public void addMetric(String routerName, ClusteredQueueMetric metric);
+    public void addMetric(String routerName, ClusteredQueueMetric metric);
 
-  public void removeMetric(String routerName);
+    public void removeMetric(String routerName);
 
-  public boolean isReceiverSomewhere();
+    public boolean isReceiverSomewhere();
 
-  public boolean isMessageBasedDispatch();
+    public boolean isMessageBasedDispatch();
 
-  public String getNextSendQueue();
+    public String getNextSendQueue();
 
-  public String getNextSendQueue(MessageImpl message);
+    public String getNextSendQueue(MessageImpl message);
 
-  public String getNextReceiveQueue();
+    public String getNextReceiveQueue();
 
-  public void close();
+    public void close();
 }

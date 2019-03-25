@@ -1,7 +1,7 @@
 <swiftlet name="sys$topicmanager"
           displayname="Topic Manager Swiftlet"
           class="com.swiftmq.impl.topic.standard.TopicManagerImpl"
-          icon="/com/swiftmq/impl/topic/standard/images/swiftlet.png"
+          icon="/sys_topicmanager/images/swiftlet.png"
           description="Topic Manager"
           release="${release}"
           vendor="IIT Software GmbH">

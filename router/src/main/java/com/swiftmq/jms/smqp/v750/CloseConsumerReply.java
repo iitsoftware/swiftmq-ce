@@ -17,38 +17,29 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: CloseConsumerReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: CloseConsumerReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CloseConsumerReply extends ReplyNE
-{
+public class CloseConsumerReply extends ReplyNE {
 
-  protected CloseConsumerReply()
-  {
-  }
+    protected CloseConsumerReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSECONSUMER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSECONSUMER_REP;
+    }
 
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/CloseConsumerReply, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/CloseConsumerReply, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

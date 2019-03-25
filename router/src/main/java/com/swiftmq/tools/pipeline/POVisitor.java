@@ -17,6 +17,5 @@
 
 package com.swiftmq.tools.pipeline;
 
-public interface POVisitor
-{
+public interface POVisitor {
 }

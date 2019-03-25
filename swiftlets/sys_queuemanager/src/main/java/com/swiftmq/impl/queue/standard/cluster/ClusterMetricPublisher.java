@@ -39,139 +39,118 @@ import com.swiftmq.tools.versioning.Versioned;
 
 import java.util.List;
 
-public class ClusterMetricPublisher implements TimerListener, PropertyChangeListener
-{
-  static final String PROP_SOURCE_ROUTER = "sourcerouter";
-  SwiftletContext ctx = null;
-  QueueSender sender = null;
-  DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
-  Property prop = null;
-  long interval = -1;
+public class ClusterMetricPublisher implements TimerListener, PropertyChangeListener {
+    static final String PROP_SOURCE_ROUTER = "sourcerouter";
+    SwiftletContext ctx = null;
+    QueueSender sender = null;
+    DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
+    Property prop = null;
+    long interval = -1;
 
-  public ClusterMetricPublisher(SwiftletContext ctx) throws Exception
-  {
-    this.ctx = ctx;
-    sender = ctx.queueManager.createQueueSender(ctx.topicManager.getQueueForTopic(QueueManagerImpl.CLUSTER_TOPIC), null);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/created");
-    prop = ctx.root.getProperty("cluster-metric-interval");
-    interval = ((Long) prop.getValue()).longValue();
-    prop.setPropertyChangeListener(this);
-    intervalChanged(-1, interval);
-  }
-
-  private void intervalChanged(long oldInterval, long newInterval)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/intervalChanged: old interval: " + oldInterval + " new interval: " + newInterval);
-    if (oldInterval > 0)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/intervalChanged: removeTimerListener for interval " + oldInterval);
-      ctx.timerSwiftlet.removeTimerListener(this);
+    public ClusterMetricPublisher(SwiftletContext ctx) throws Exception {
+        this.ctx = ctx;
+        sender = ctx.queueManager.createQueueSender(ctx.topicManager.getQueueForTopic(QueueManagerImpl.CLUSTER_TOPIC), null);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/created");
+        prop = ctx.root.getProperty("cluster-metric-interval");
+        interval = ((Long) prop.getValue()).longValue();
+        prop.setPropertyChangeListener(this);
+        intervalChanged(-1, interval);
     }
-    if (newInterval > 0)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/intervalChanged: addTimerListener for interval " + newInterval);
-      ctx.timerSwiftlet.addTimerListener(newInterval, this);
-    }
-  }
 
-  private Versioned createVersioned(int version, Dumpable dumpable) throws Exception
-  {
-    dos.rewind();
-    Dumpalizer.dump(dos, dumpable);
-    return new Versioned(version, dos.getBuffer(), dos.getCount());
-  }
-
-  private BytesMessageImpl createMessage(Versionable versionable) throws Exception
-  {
-    BytesMessageImpl msg = new BytesMessageImpl();
-    versionable.transferToMessage(msg);
-    msg.setJMSDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
-    msg.setJMSDestination(new TopicImpl(QueueManagerImpl.CLUSTER_TOPIC));
-    msg.setJMSPriority(MessageImpl.MAX_PRIORITY);
-    if (interval > 0)
-      msg.setJMSExpiration(System.currentTimeMillis() + interval * 2);
-    msg.setStringProperty(PROP_SOURCE_ROUTER, SwiftletManager.getInstance().getRouterName());
-    msg.setReadOnly(false);
-    return msg;
-  }
-
-  public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException
-  {
-    intervalChanged(((Long) oldValue).longValue(), ((Long) newValue).longValue());
-    interval = ((Long) newValue).longValue();
-  }
-
-  public void performTimeAction()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction ...");
-    ClusteredQueueMetricCollection cmc = ctx.dispatchPolicyRegistry.getClusteredQueueMetricCollection();
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, cmc=" + cmc);
-    List list = cmc.getClusteredQueueMetrics();
-    if (list != null)
-    {
-      for (int i = 0; i < list.size(); i++)
-      {
-        ClusteredQueueMetric cm = (ClusteredQueueMetric) list.get(i);
-        List list2 = cm.getQueueMetrics();
-        if (list2 != null)
-        {
-          for (int j = 0; j < list2.size(); j++)
-          {
-            QueueMetric qm = (QueueMetric) list2.get(j);
-            AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(qm.getQueueName());
-            if (queue != null)
-            {
-              try
-              {
-                if (ctx.traceSpace.enabled)
-                  ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, queue=" + qm.getQueueName() + ", qm.hasReceiver()=" + qm.hasReceiver() + ", cm.isReceiverSomewhere()=" + cm.isReceiverSomewhere() + ", qm.isRedispatch()=" + qm.isRedispatch() + ", queue.getNumberQueueMessages()=" + queue.getNumberQueueMessages());
-                if (!qm.hasReceiver() && cm.isReceiverSomewhere() && qm.isRedispatch() && queue.getNumberQueueMessages() > 0)
-                  ctx.redispatcherController.redispatch(qm.getQueueName(), cm.getClusteredQueueName());
-              } catch (QueueException e)
-              {
-
-              }
-            }
-          }
+    private void intervalChanged(long oldInterval, long newInterval) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/intervalChanged: old interval: " + oldInterval + " new interval: " + newInterval);
+        if (oldInterval > 0) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/intervalChanged: removeTimerListener for interval " + oldInterval);
+            ctx.timerSwiftlet.removeTimerListener(this);
         }
-      }
+        if (newInterval > 0) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/intervalChanged: addTimerListener for interval " + newInterval);
+            ctx.timerSwiftlet.addTimerListener(newInterval, this);
+        }
     }
-    try
-    {
-      QueuePushTransaction transaction = sender.createTransaction();
-      Versionable versionable = new Versionable();
-      versionable.addVersioned(700, createVersioned(700, cmc), "com.swiftmq.impl.queue.standard.cluster.v700.MetricFactory");
-      BytesMessageImpl msg = createMessage(versionable);
-      transaction.putMessage(msg);
-      transaction.commit();
-    } catch (Exception e)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, exception=" + e);
-    }
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction done");
-  }
 
-  public void close()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/close");
-    intervalChanged(interval, -1);
-    prop.setPropertyChangeListener(null);
-    try
-    {
-      sender.close();
-    } catch (QueueException e)
-    {
+    private Versioned createVersioned(int version, Dumpable dumpable) throws Exception {
+        dos.rewind();
+        Dumpalizer.dump(dos, dumpable);
+        return new Versioned(version, dos.getBuffer(), dos.getCount());
     }
-  }
 
-  public String toString()
-  {
-    return "ClusterMetricPublisher";
-  }
+    private BytesMessageImpl createMessage(Versionable versionable) throws Exception {
+        BytesMessageImpl msg = new BytesMessageImpl();
+        versionable.transferToMessage(msg);
+        msg.setJMSDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
+        msg.setJMSDestination(new TopicImpl(QueueManagerImpl.CLUSTER_TOPIC));
+        msg.setJMSPriority(MessageImpl.MAX_PRIORITY);
+        if (interval > 0)
+            msg.setJMSExpiration(System.currentTimeMillis() + interval * 2);
+        msg.setStringProperty(PROP_SOURCE_ROUTER, SwiftletManager.getInstance().getRouterName());
+        msg.setReadOnly(false);
+        return msg;
+    }
+
+    public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
+        intervalChanged(((Long) oldValue).longValue(), ((Long) newValue).longValue());
+        interval = ((Long) newValue).longValue();
+    }
+
+    public void performTimeAction() {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction ...");
+        ClusteredQueueMetricCollection cmc = ctx.dispatchPolicyRegistry.getClusteredQueueMetricCollection();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, cmc=" + cmc);
+        List list = cmc.getClusteredQueueMetrics();
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                ClusteredQueueMetric cm = (ClusteredQueueMetric) list.get(i);
+                List list2 = cm.getQueueMetrics();
+                if (list2 != null) {
+                    for (int j = 0; j < list2.size(); j++) {
+                        QueueMetric qm = (QueueMetric) list2.get(j);
+                        AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(qm.getQueueName());
+                        if (queue != null) {
+                            try {
+                                if (ctx.traceSpace.enabled)
+                                    ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, queue=" + qm.getQueueName() + ", qm.hasReceiver()=" + qm.hasReceiver() + ", cm.isReceiverSomewhere()=" + cm.isReceiverSomewhere() + ", qm.isRedispatch()=" + qm.isRedispatch() + ", queue.getNumberQueueMessages()=" + queue.getNumberQueueMessages());
+                                if (!qm.hasReceiver() && cm.isReceiverSomewhere() && qm.isRedispatch() && queue.getNumberQueueMessages() > 0)
+                                    ctx.redispatcherController.redispatch(qm.getQueueName(), cm.getClusteredQueueName());
+                            } catch (QueueException e) {
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        try {
+            QueuePushTransaction transaction = sender.createTransaction();
+            Versionable versionable = new Versionable();
+            versionable.addVersioned(700, createVersioned(700, cmc), "com.swiftmq.impl.queue.standard.cluster.v700.MetricFactory");
+            BytesMessageImpl msg = createMessage(versionable);
+            transaction.putMessage(msg);
+            transaction.commit();
+        } catch (Exception e) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, exception=" + e);
+        }
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction done");
+    }
+
+    public void close() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/close");
+        intervalChanged(interval, -1);
+        prop.setPropertyChangeListener(null);
+        try {
+            sender.close();
+        } catch (QueueException e) {
+        }
+    }
+
+    public String toString() {
+        return "ClusterMetricPublisher";
+    }
 }

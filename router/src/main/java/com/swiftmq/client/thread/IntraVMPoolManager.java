@@ -21,33 +21,28 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 
-public class IntraVMPoolManager extends PoolManager
-{
-  static final String CONNECTION_TOKEN = "sys$jms.client.connection.%";
-  static final String SESSION_TOKEN = "sys$jms.client.session.%";
+public class IntraVMPoolManager extends PoolManager {
+    static final String CONNECTION_TOKEN = "sys$jms.client.connection.%";
+    static final String SESSION_TOKEN = "sys$jms.client.session.%";
 
-  ThreadPool connectionPool = null;
-  ThreadPool sessionPool = null;
+    ThreadPool connectionPool = null;
+    ThreadPool sessionPool = null;
 
-  protected IntraVMPoolManager()
-  {
-    ThreadpoolSwiftlet threadpoolSwiftlet = (ThreadpoolSwiftlet)SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-    connectionPool = threadpoolSwiftlet.getPool(CONNECTION_TOKEN);
-    sessionPool = threadpoolSwiftlet.getPool(SESSION_TOKEN);
-  }
+    protected IntraVMPoolManager() {
+        ThreadpoolSwiftlet threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        connectionPool = threadpoolSwiftlet.getPool(CONNECTION_TOKEN);
+        sessionPool = threadpoolSwiftlet.getPool(SESSION_TOKEN);
+    }
 
-  public synchronized ThreadPool getConnectorPool()
-  {
-    return connectionPool;
-  }
+    public synchronized ThreadPool getConnectorPool() {
+        return connectionPool;
+    }
 
-  public synchronized ThreadPool getConnectionPool()
-  {
-    return connectionPool;
-  }
+    public synchronized ThreadPool getConnectionPool() {
+        return connectionPool;
+    }
 
-  public synchronized ThreadPool getSessionPool()
-  {
-    return sessionPool;
-  }
+    public synchronized ThreadPool getSessionPool() {
+        return sessionPool;
+    }
 }

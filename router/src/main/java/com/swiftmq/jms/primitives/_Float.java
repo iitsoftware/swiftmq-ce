@@ -23,53 +23,43 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Float implements Dumpable, Primitive
-{
-  Float value = null;
+public class _Float implements Dumpable, Primitive {
+    Float value = null;
 
-  public _Float()
-  {
-  }
+    public _Float() {
+    }
 
-  public _Float(float value)
-  {
-    this.value = new Float(value);
-  }
+    public _Float(float value) {
+        this.value = new Float(value);
+    }
 
-  public _Float(String s)
-  {
-    this.value = Float.valueOf(s);
-  }
+    public _Float(String s) {
+        this.value = Float.valueOf(s);
+    }
 
-  public float floatValue()
-  {
-    return value.floatValue();
-  }
+    public float floatValue() {
+        return value.floatValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return FLOAT;
-  }
+    public int getDumpId() {
+        return FLOAT;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeFloat(value.floatValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeFloat(value.floatValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Float(in.readFloat());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Float(in.readFloat());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

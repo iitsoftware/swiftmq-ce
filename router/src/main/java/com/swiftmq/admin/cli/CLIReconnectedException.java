@@ -27,10 +27,8 @@ package com.swiftmq.admin.cli;
  * @author IIT GmbH, Bremen/Germany
  * @since 6.0
  */
-public class CLIReconnectedException extends CLIException
-{
-  CLIReconnectedException(String msg)
-  {
-    super(msg);
-  }
+public class CLIReconnectedException extends CLIException {
+    CLIReconnectedException(String msg) {
+        super(msg);
+    }
 }

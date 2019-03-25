@@ -17,97 +17,85 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: RouterConnectRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: RouterConnectRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class RouterConnectRequest extends Request 
-{
-  private String routerName;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public RouterConnectRequest()
-  {
-    super(0,true);
-  }
+public class RouterConnectRequest extends Request {
+    private String routerName;
 
-  public RouterConnectRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public RouterConnectRequest() {
+        super(0, true);
+    }
 
-  public RouterConnectRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public RouterConnectRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public RouterConnectRequest(int dispatchId, String routerName)
-  {
-    super(dispatchId,true);
-    this.routerName = routerName;
-  }
+    public RouterConnectRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public RouterConnectRequest(RequestRetryValidator validator, int dispatchId, String routerName)
-  {
-    super(dispatchId,true,validator);
-    this.routerName = routerName;
-  }
-  
-  public void setRouterName(String routerName)
-  {
-    this.routerName = routerName;
-  }
+    public RouterConnectRequest(int dispatchId, String routerName) {
+        super(dispatchId, true);
+        this.routerName = routerName;
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public RouterConnectRequest(RequestRetryValidator validator, int dispatchId, String routerName) {
+        super(dispatchId, true, validator);
+        this.routerName = routerName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROUTERCONNECT_REQ;
-  }
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
+
+    public String getRouterName() {
+        return routerName;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_ROUTERCONNECT_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(routerName,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(routerName, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    routerName = SMQPUtil.read(routerName,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        routerName = SMQPUtil.read(routerName, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new RouterConnectReply();
-  }
+    protected Reply createReplyInstance() {
+        return new RouterConnectReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/RouterConnectRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("routerName=");
-    _b.append(routerName);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/RouterConnectRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("routerName=");
+        _b.append(routerName);
+        _b.append("]");
+        return _b.toString();
+    }
 }

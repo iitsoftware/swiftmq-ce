@@ -18,15 +18,12 @@
 package com.swiftmq.impl.store.standard.swap;
 
 
+public class SwapAddress {
+    public SwapFile swapFile = null;
+    public long filePointer = 0;
 
-public class SwapAddress
-{
-	public SwapFile swapFile = null;
-	public long filePointer = 0;
-
-	public String toString()
-	{
-		return "[SwapAddress, swapFile="+swapFile+", filePointer="+filePointer+"]";
-	}
+    public String toString() {
+        return "[SwapAddress, swapFile=" + swapFile + ", filePointer=" + filePointer + "]";
+    }
 }
 

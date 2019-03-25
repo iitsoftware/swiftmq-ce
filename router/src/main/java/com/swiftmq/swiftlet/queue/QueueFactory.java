@@ -24,15 +24,15 @@ import com.swiftmq.mgmt.Entity;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface QueueFactory
-{
-  /**
-   * Creates a new abstract queue from the given entity.
-   * @param queueName queue name
-   * @param queueEntity queue entity
-   * @exception QueueException on error creating the queue
-   */
-  public AbstractQueue createQueue(String queueName, Entity queueEntity)
-      throws QueueException;
+public interface QueueFactory {
+    /**
+     * Creates a new abstract queue from the given entity.
+     *
+     * @param queueName   queue name
+     * @param queueEntity queue entity
+     * @throws QueueException on error creating the queue
+     */
+    public AbstractQueue createQueue(String queueName, Entity queueEntity)
+            throws QueueException;
 }
 

@@ -17,23 +17,20 @@
 
 package com.swiftmq.impl.store.standard.backup.po;
 
-import com.swiftmq.tools.pipeline.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class Close extends POObject
-{
-  public Close(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public class Close extends POObject {
+    public Close(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[Close]";
-  }
+    public String toString() {
+        return "[Close]";
+    }
 }

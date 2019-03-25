@@ -27,70 +27,65 @@ import com.swiftmq.swiftlet.store.PersistentStore;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.util.SwiftUtilities;
 
-public class SystemQueueFactory implements QueueFactory
-{
-  SwiftletContext ctx = null;
-  ThreadPool myTP = null;
+public class SystemQueueFactory implements QueueFactory {
+    SwiftletContext ctx = null;
+    ThreadPool myTP = null;
 
-  SystemQueueFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    myTP = ctx.threadpoolSwiftlet.getPool(QueueManagerImpl.TP_TIMEOUTPROC);
-    /*{evaltimer3}*/
-  }
-
-  public AbstractQueue createQueue(String queueName, Entity queueController)
-      throws QueueException
-  {
-    PersistentStore pStore = null;
-    NonPersistentStore nStore = null;
-
-    try
-    {
-      pStore = ctx.storeSwiftlet.getPersistentStore(queueName);
-      nStore = ctx.storeSwiftlet.getNonPersistentStore(queueName);
-    } catch (Exception e)
-    {
-      throw new QueueException(e.toString());
+    SystemQueueFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        myTP = ctx.threadpoolSwiftlet.getPool(QueueManagerImpl.TP_TIMEOUTPROC);
+        /*{evaltimer3}*/
     }
 
-    Property prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
-    int cacheSize = ((Integer) prop.getValue()).intValue();
-    prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
-    int cacheSizeBytesKB = ((Integer) prop.getValue()).intValue();
+    public AbstractQueue createQueue(String queueName, Entity queueController)
+            throws QueueException {
+        PersistentStore pStore = null;
+        NonPersistentStore nStore = null;
 
-    Cache cache = new CacheImpl(cacheSize, cacheSizeBytesKB, pStore, nStore);
-    cache.setCacheTable(ctx.cacheTableFactory.createCacheTable(queueName, cacheSize));
+        try {
+            pStore = ctx.storeSwiftlet.getPersistentStore(queueName);
+            nStore = ctx.storeSwiftlet.getNonPersistentStore(queueName);
+        } catch (Exception e) {
+            throw new QueueException(e.toString());
+        }
 
-    prop = queueController.getProperty(QueueManagerImpl.PROP_CLEANUP_INTERVAL);
-    long cleanUp = ((Long) prop.getValue()).longValue();
+        Property prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
+        int cacheSize = ((Integer) prop.getValue()).intValue();
+        prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
+        int cacheSizeBytesKB = ((Integer) prop.getValue()).intValue();
 
-    MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, pStore, nStore, cleanUp, myTP);
+        Cache cache = new CacheImpl(cacheSize, cacheSizeBytesKB, pStore, nStore);
+        cache.setCacheTable(ctx.cacheTableFactory.createCacheTable(queueName, cacheSize));
 
-    prop = queueController.getProperty(QueueManagerImpl.PROP_MESSAGES_MAXIMUM);
-    int maxMessages = ((Integer) prop.getValue()).intValue();
-    mq.setMaxMessages(maxMessages);
+        prop = queueController.getProperty(QueueManagerImpl.PROP_CLEANUP_INTERVAL);
+        long cleanUp = ((Long) prop.getValue()).longValue();
 
-    prop = queueController.getProperty(QueueManagerImpl.PROP_PERSISTENCE);
-    int pm = SwiftUtilities.persistenceModeToInt((String) prop.getValue());
-    mq.setPersistenceMode(pm);
+        MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, pStore, nStore, cleanUp, myTP);
 
-    prop = queueController.getProperty(QueueManagerImpl.PROP_FLOWCONTROL_QUEUE_SIZE);
-    int fcQueueSize = ((Integer) prop.getValue()).intValue();
-    if (fcQueueSize >= 0)
-      mq.setFlowController(new FlowControllerImpl(fcQueueSize, ctx.queueManager.getMaxFlowControlDelay()));
+        prop = queueController.getProperty(QueueManagerImpl.PROP_MESSAGES_MAXIMUM);
+        int maxMessages = ((Integer) prop.getValue()).intValue();
+        mq.setMaxMessages(maxMessages);
 
-    prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_ENABLED);
-    mq.setDuplicateDetectionEnabled(((Boolean) prop.getValue()).booleanValue());
+        prop = queueController.getProperty(QueueManagerImpl.PROP_PERSISTENCE);
+        int pm = SwiftUtilities.persistenceModeToInt((String) prop.getValue());
+        mq.setPersistenceMode(pm);
 
-    prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_BACKLOG_SIZE);
-    mq.setDuplicateDetectionBacklogSize(((Integer) prop.getValue()).intValue());
+        prop = queueController.getProperty(QueueManagerImpl.PROP_FLOWCONTROL_QUEUE_SIZE);
+        int fcQueueSize = ((Integer) prop.getValue()).intValue();
+        if (fcQueueSize >= 0)
+            mq.setFlowController(new FlowControllerImpl(fcQueueSize, ctx.queueManager.getMaxFlowControlDelay()));
 
-    prop = queueController.getProperty(QueueManagerImpl.PROP_CONSUMER);
-    mq.setConsumerMode(ctx.consumerModeInt((String) prop.getValue()));
+        prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_ENABLED);
+        mq.setDuplicateDetectionEnabled(((Boolean) prop.getValue()).booleanValue());
 
-    mq.setQueueController(queueController);
-    return mq;
-  }
+        prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_BACKLOG_SIZE);
+        mq.setDuplicateDetectionBacklogSize(((Integer) prop.getValue()).intValue());
+
+        prop = queueController.getProperty(QueueManagerImpl.PROP_CONSUMER);
+        mq.setConsumerMode(ctx.consumerModeInt((String) prop.getValue()));
+
+        mq.setQueueController(queueController);
+        return mq;
+    }
 }
 

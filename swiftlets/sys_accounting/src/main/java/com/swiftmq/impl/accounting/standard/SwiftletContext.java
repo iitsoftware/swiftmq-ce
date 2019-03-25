@@ -28,33 +28,31 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
-public class SwiftletContext
-{
-  public Configuration config = null;
-  public Entity root = null;
-  public Entity usage = null;
-  public ThreadpoolSwiftlet threadpoolSwiftlet = null;
-  public TimerSwiftlet timerSwiftlet = null;
-  public QueueManager queueManager = null;
-  public LogSwiftlet logSwiftlet = null;
-  public TraceSwiftlet traceSwiftlet = null;
-  public TraceSpace traceSpace = null;
-  public AccountingSwiftletImpl accountingSwiftlet = null;
-  public SchedulerSwiftlet schedulerSwiftlet = null;
-  public EventProcessor eventProcessor = null;
+public class SwiftletContext {
+    public Configuration config = null;
+    public Entity root = null;
+    public Entity usage = null;
+    public ThreadpoolSwiftlet threadpoolSwiftlet = null;
+    public TimerSwiftlet timerSwiftlet = null;
+    public QueueManager queueManager = null;
+    public LogSwiftlet logSwiftlet = null;
+    public TraceSwiftlet traceSwiftlet = null;
+    public TraceSpace traceSpace = null;
+    public AccountingSwiftletImpl accountingSwiftlet = null;
+    public SchedulerSwiftlet schedulerSwiftlet = null;
+    public EventProcessor eventProcessor = null;
 
-  public SwiftletContext(Configuration config, AccountingSwiftletImpl accountingSwiftlet)
-  {
-    this.config = config;
-    this.accountingSwiftlet = accountingSwiftlet;
-    root = config;
-    usage = root.getEntity("usage");
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
-    queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
-    threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-    eventProcessor = new EventProcessor(this);
-  }
+    public SwiftletContext(Configuration config, AccountingSwiftletImpl accountingSwiftlet) {
+        this.config = config;
+        this.accountingSwiftlet = accountingSwiftlet;
+        root = config;
+        usage = root.getEntity("usage");
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
+        queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
+        threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        eventProcessor = new EventProcessor(this);
+    }
 }

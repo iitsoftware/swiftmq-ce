@@ -19,30 +19,29 @@ package com.swiftmq.jms.v400;
 
 import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
 
 public class QueueReceiverImpl extends MessageConsumerImpl
-  implements QueueReceiver
-{
-  Queue queue = null;
+        implements QueueReceiver {
+    Queue queue = null;
 
-  public QueueReceiverImpl(boolean transacted, int acknowledgeMode,
-                           int dispatchId, RequestRegistry requestRegistry,
-                           Queue queue, String messageSelector,
-                           SessionImpl session)
-  {
-    super(transacted, acknowledgeMode, dispatchId, requestRegistry,
-      messageSelector, session);
+    public QueueReceiverImpl(boolean transacted, int acknowledgeMode,
+                             int dispatchId, RequestRegistry requestRegistry,
+                             Queue queue, String messageSelector,
+                             SessionImpl session) {
+        super(transacted, acknowledgeMode, dispatchId, requestRegistry,
+                messageSelector, session);
 
-    this.queue = queue;
-  }
+        this.queue = queue;
+    }
 
-  public Queue getQueue() throws JMSException
-  {
-    verifyState();
+    public Queue getQueue() throws JMSException {
+        verifyState();
 
-    return (queue);
-  }
+        return (queue);
+    }
 
 }
 

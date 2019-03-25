@@ -19,16 +19,13 @@ package com.swiftmq.jms;
 
 import javax.jms.JMSException;
 
-public class ConnectionLostException extends JMSException
-{
-  public ConnectionLostException(String reason)
-  {
-    super(reason);
-  }
+public class ConnectionLostException extends JMSException {
+    public ConnectionLostException(String reason) {
+        super(reason);
+    }
 
-  public ConnectionLostException(String reason, Exception linkedException)
-  {
-    super(reason);
-    setLinkedException(linkedException);
-  }
+    public ConnectionLostException(String reason, Exception linkedException) {
+        super(reason);
+        setLinkedException(linkedException);
+    }
 }

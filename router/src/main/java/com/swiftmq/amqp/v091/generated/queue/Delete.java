@@ -17,146 +17,130 @@
 
 package com.swiftmq.amqp.v091.generated.queue;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Delete extends QueueMethod
-{
-  int reserved1;
-  String queue;
-  boolean ifUnused;
-  boolean ifEmpty;
-  boolean noWait;
+import java.io.IOException;
 
-  public Delete()
-  {
-    _classId = 50;
-    _methodId = 40;
-  }
+public class Delete extends QueueMethod {
+    int reserved1;
+    String queue;
+    boolean ifUnused;
+    boolean ifEmpty;
+    boolean noWait;
 
-  public void accept(QueueMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Delete() {
+        _classId = 50;
+        _methodId = 40;
+    }
 
-  public int getReserved1()
-  {
-    return reserved1;
-  }
+    public void accept(QueueMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReserved1(int reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public int getReserved1() {
+        return reserved1;
+    }
 
-  public String getQueue()
-  {
-    return queue;
-  }
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  public void setQueue(String queue)
-  {
-    this.queue = queue;
-  }
+    public String getQueue() {
+        return queue;
+    }
 
-  public boolean getIfUnused()
-  {
-    return ifUnused;
-  }
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-  public void setIfUnused(boolean ifUnused)
-  {
-    this.ifUnused = ifUnused;
-  }
+    public boolean getIfUnused() {
+        return ifUnused;
+    }
 
-  public boolean getIfEmpty()
-  {
-    return ifEmpty;
-  }
+    public void setIfUnused(boolean ifUnused) {
+        this.ifUnused = ifUnused;
+    }
 
-  public void setIfEmpty(boolean ifEmpty)
-  {
-    this.ifEmpty = ifEmpty;
-  }
+    public boolean getIfEmpty() {
+        return ifEmpty;
+    }
 
-  public boolean getNoWait()
-  {
-    return noWait;
-  }
+    public void setIfEmpty(boolean ifEmpty) {
+        this.ifEmpty = ifEmpty;
+    }
 
-  public void setNoWait(boolean noWait)
-  {
-    this.noWait = noWait;
-  }
+    public boolean getNoWait() {
+        return noWait;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    reserved1 = Coder.readShort(in);
-    queue = Coder.readShortString(in);
-    ifUnused = Coder.readBit(in);
-    ifEmpty = Coder.readBit(in);
-    noWait = Coder.readBit(in);
-  }
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShort(reserved1, out);
-    Coder.writeShortString(queue, out);
-    Coder.writeBit(ifUnused, out);
-    Coder.writeBit(ifEmpty, out);
-    Coder.writeBit(noWait, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        reserved1 = Coder.readShort(in);
+        queue = Coder.readShortString(in);
+        ifUnused = Coder.readBit(in);
+        ifEmpty = Coder.readBit(in);
+        noWait = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("queue=");
-    b.append(queue);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("ifUnused=");
-    b.append(ifUnused);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("ifEmpty=");
-    b.append(ifEmpty);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noWait=");
-    b.append(noWait);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShort(reserved1, out);
+        Coder.writeShortString(queue, out);
+        Coder.writeBit(ifUnused, out);
+        Coder.writeBit(ifEmpty, out);
+        Coder.writeBit(noWait, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Delete " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("queue=");
+        b.append(queue);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("ifUnused=");
+        b.append(ifUnused);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("ifEmpty=");
+        b.append(ifEmpty);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noWait=");
+        b.append(noWait);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Delete " + super.toString() + getDisplayString() + "]";
+    }
 }

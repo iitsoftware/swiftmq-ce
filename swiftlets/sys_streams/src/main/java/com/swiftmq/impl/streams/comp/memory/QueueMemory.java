@@ -289,7 +289,7 @@ public class QueueMemory extends Memory {
             sender.close();
         } catch (Exception e) {
 
-    }
+        }
         ctx.stream.removeMemory(this);
     }
 

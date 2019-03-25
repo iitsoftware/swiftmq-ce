@@ -19,7 +19,6 @@ package com.swiftmq.swiftlet.xa;
 
 import com.swiftmq.jms.XidImpl;
 
-public interface XidFilter
-{
-  public boolean isMatch(XidImpl xid);
+public interface XidFilter {
+    public boolean isMatch(XidImpl xid);
 }

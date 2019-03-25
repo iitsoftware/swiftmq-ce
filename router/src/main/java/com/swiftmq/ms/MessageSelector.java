@@ -24,32 +24,26 @@ import javax.jms.InvalidSelectorException;
 
 // This is a proxy class for compatibility reasons (Swiftlet API)
 
-public class MessageSelector implements Selector
-{
-  com.swiftmq.ms.artemis.MessageSelector instance = null;
+public class MessageSelector implements Selector {
+    com.swiftmq.ms.artemis.MessageSelector instance = null;
 
-  public MessageSelector(String conditionString)
-  {
-    instance = new com.swiftmq.ms.artemis.MessageSelector(conditionString);
-  }
+    public MessageSelector(String conditionString) {
+        instance = new com.swiftmq.ms.artemis.MessageSelector(conditionString);
+    }
 
-  public String getConditionString()
-  {
-    return instance.getConditionString();
-  }
+    public String getConditionString() {
+        return instance.getConditionString();
+    }
 
-  public void compile() throws InvalidSelectorException
-  {
-    instance.compile();
-  }
+    public void compile() throws InvalidSelectorException {
+        instance.compile();
+    }
 
-  public boolean isSelected(MessageImpl message)
-  {
-    return instance.isSelected(message);
-  }
+    public boolean isSelected(MessageImpl message) {
+        return instance.isSelected(message);
+    }
 
-  public String toString()
-  {
-    return "[MessageSelector instance = " + instance.toString() + "]";
-  }
+    public String toString() {
+        return "[MessageSelector instance = " + instance.toString() + "]";
+    }
 }

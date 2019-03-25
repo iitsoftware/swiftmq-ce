@@ -17,25 +17,20 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00.po;
 
-import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPConnectionVisitor;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPSessionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSessionFlushAccounting extends POObject
-{
-  public POSessionFlushAccounting()
-  {
-    super(null, null);
-  }
+public class POSessionFlushAccounting extends POObject {
+    public POSessionFlushAccounting() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPSessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPSessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSessionFlushAccounting]";
-  }
+    public String toString() {
+        return "[POSessionFlushAccounting]";
+    }
 }

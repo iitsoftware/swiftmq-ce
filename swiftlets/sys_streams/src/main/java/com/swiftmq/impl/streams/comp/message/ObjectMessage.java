@@ -39,14 +39,14 @@ public class ObjectMessage extends Message {
         super(ctx, _impl);
     }
 
-  /**
-   * return the type of this Message
-   *
-   * @return "object"
-   */
-  public String type() {
-    return "object";
-  }
+    /**
+     * return the type of this Message
+     *
+     * @return "object"
+     */
+    public String type() {
+        return "object";
+    }
 
     /**
      * Returns the body.

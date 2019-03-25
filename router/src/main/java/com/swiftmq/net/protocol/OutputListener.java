@@ -26,18 +26,18 @@ import java.io.IOException;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  * @see ProtocolOutputHandler
  */
-public interface OutputListener
-{
+public interface OutputListener {
 
-  /**
-   * Performs the write to the network.
-   * @param b byte array.
-   * @param offset offset.
-   * @param len length.
-   * @return number of bytes written.
-   * @exception IOException on error.
-   */
-  public int performWrite(byte[] b, int offset, int len)
-      throws IOException;
+    /**
+     * Performs the write to the network.
+     *
+     * @param b      byte array.
+     * @param offset offset.
+     * @param len    length.
+     * @return number of bytes written.
+     * @throws IOException on error.
+     */
+    public int performWrite(byte[] b, int offset, int len)
+            throws IOException;
 }
 

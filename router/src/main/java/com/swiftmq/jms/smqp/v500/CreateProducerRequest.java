@@ -24,127 +24,114 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreateProducerRequest extends Request
-{
-  QueueImpl queue = null;
+public class CreateProducerRequest extends Request {
+    QueueImpl queue = null;
 
-  /**
-   * @param queue
-   * @param dispatchId
-   * @SBGen Constructor assigns queue
-   */
-  public CreateProducerRequest(int dispatchId, QueueImpl queue)
-  {
-    super(dispatchId, true);
+    /**
+     * @param queue
+     * @param dispatchId
+     * @SBGen Constructor assigns queue
+     */
+    public CreateProducerRequest(int dispatchId, QueueImpl queue) {
+        super(dispatchId, true);
 
-    // SBgen: Assign variable
-    this.queue = queue;
-  }
-
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_PRODUCER_REQ;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (queue == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(queue.toString());
+        // SBgen: Assign variable
+        this.queue = queue;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      queue = null;
-    } else
-    {
-      queue = new QueueImpl(in.readUTF());
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_PRODUCER_REQ;
     }
-  }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CreateProducerReply();
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * @param queue
-   * @SBGen Method set queue
-   */
-  public void setQueue(QueueImpl queue)
-  {
+        if (queue == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(queue.toString());
+        }
+    }
 
-    // SBgen: Assign variable
-    this.queue = queue;
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  /**
-   * @return
-   * @SBGen Method get queue
-   */
-  public QueueImpl getQueue()
-  {
+        byte set = in.readByte();
 
-    // SBgen: Get variable
-    return (queue);
-  }
+        if (set == 0) {
+            queue = null;
+        } else {
+            queue = new QueueImpl(in.readUTF());
+        }
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCreateProducerRequest(this);
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CreateProducerReply();
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreateProducerRequest " + super.toString() + " queue=" + queue
-        + "]";
-  }
+    /**
+     * @param queue
+     * @SBGen Method set queue
+     */
+    public void setQueue(QueueImpl queue) {
+
+        // SBgen: Assign variable
+        this.queue = queue;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get queue
+     */
+    public QueueImpl getQueue() {
+
+        // SBgen: Get variable
+        return (queue);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCreateProducerRequest(this);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreateProducerRequest " + super.toString() + " queue=" + queue
+                + "]";
+    }
 
 }
 

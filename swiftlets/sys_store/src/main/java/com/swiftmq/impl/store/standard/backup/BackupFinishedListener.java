@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.store.standard.backup;
 
-public interface BackupFinishedListener
-{
-  public void backupFinished(boolean success, String exception);
+public interface BackupFinishedListener {
+    public void backupFinished(boolean success, String exception);
 }

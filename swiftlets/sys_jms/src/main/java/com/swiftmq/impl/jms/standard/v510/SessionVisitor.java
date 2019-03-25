@@ -21,13 +21,10 @@ import com.swiftmq.jms.smqp.v510.SMQPVisitorAdapter;
 import com.swiftmq.tools.requestreply.GenericRequest;
 
 
-public class SessionVisitor extends SMQPVisitorAdapter
-{
-  public void visit(DeliveryItem item)
-  {
-  }
+public class SessionVisitor extends SMQPVisitorAdapter {
+    public void visit(DeliveryItem item) {
+    }
 
-  public void visitGenericRequest(GenericRequest request)
-  {
-  }
+    public void visitGenericRequest(GenericRequest request) {
+    }
 }

@@ -24,20 +24,21 @@ import com.swiftmq.jms.MessageImpl;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface Selector
-{
+public interface Selector {
 
-  /**
-   * Returns the condition string in SQL92 syntax
-   * @return condition string
-   */
-  public String getConditionString();
+    /**
+     * Returns the condition string in SQL92 syntax
+     *
+     * @return condition string
+     */
+    public String getConditionString();
 
-  /**
-   * Returns true if the message matches the selector criteria
-   * @param message the message
-   * @return true if the message matches
-   */
-  public boolean isSelected(MessageImpl message);
+    /**
+     * Returns true if the message matches the selector criteria
+     *
+     * @param message the message
+     * @return true if the message matches
+     */
+    public boolean isSelected(MessageImpl message);
 }
 

@@ -17,46 +17,41 @@
 
 package com.swiftmq.mgmt.protocol;
 
-import com.swiftmq.tools.dump.*;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
 
-public class ProtocolFactory extends DumpableFactory
-{
-  public static final int PROTOCOL_REQ = 0;
-  public static final int PROTOCOL_REP = 1;
+public class ProtocolFactory extends DumpableFactory {
+    public static final int PROTOCOL_REQ = 0;
+    public static final int PROTOCOL_REP = 1;
 
-  DumpableFactory protocolFactory = null;
+    DumpableFactory protocolFactory = null;
 
-  public ProtocolFactory()
-  {
-  }
-
-  public ProtocolFactory(DumpableFactory protocolFactory)
-  {
-    this.protocolFactory = protocolFactory;
-  }
-
-  public void setProtocolFactory(DumpableFactory protocolFactory)
-  {
-    this.protocolFactory = protocolFactory;
-  }
-
-  public Dumpable createDumpable(int dumpId)
-  {
-    Dumpable dumpable = null;
-
-    switch (dumpId)
-    {
-      case PROTOCOL_REQ:
-        dumpable = new ProtocolRequest();
-        break;
-      case PROTOCOL_REP:
-        dumpable = new ProtocolReply();
-        break;
-      default:
-        if (protocolFactory != null)
-          dumpable = protocolFactory.createDumpable(dumpId);
-        break;
+    public ProtocolFactory() {
     }
-    return dumpable;
-  }
+
+    public ProtocolFactory(DumpableFactory protocolFactory) {
+        this.protocolFactory = protocolFactory;
+    }
+
+    public void setProtocolFactory(DumpableFactory protocolFactory) {
+        this.protocolFactory = protocolFactory;
+    }
+
+    public Dumpable createDumpable(int dumpId) {
+        Dumpable dumpable = null;
+
+        switch (dumpId) {
+            case PROTOCOL_REQ:
+                dumpable = new ProtocolRequest();
+                break;
+            case PROTOCOL_REP:
+                dumpable = new ProtocolReply();
+                break;
+            default:
+                if (protocolFactory != null)
+                    dumpable = protocolFactory.createDumpable(dumpId);
+                break;
+        }
+        return dumpable;
+    }
 }

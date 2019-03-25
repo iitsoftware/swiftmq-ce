@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: CloseSessionRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: CloseSessionRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,82 +33,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CloseSessionRequest extends Request
-{
-  private int sessionDispatchId;
+public class CloseSessionRequest extends Request {
+    private int sessionDispatchId;
 
-  public CloseSessionRequest()
-  {
-    super(0, true);
-  }
+    public CloseSessionRequest() {
+        super(0, true);
+    }
 
-  public CloseSessionRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public CloseSessionRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CloseSessionRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public CloseSessionRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public CloseSessionRequest(int dispatchId, int sessionDispatchId)
-  {
-    super(dispatchId, true);
-    this.sessionDispatchId = sessionDispatchId;
-  }
+    public CloseSessionRequest(int dispatchId, int sessionDispatchId) {
+        super(dispatchId, true);
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  public CloseSessionRequest(RequestRetryValidator validator, int dispatchId, int sessionDispatchId)
-  {
-    super(dispatchId, true, validator);
-    this.sessionDispatchId = sessionDispatchId;
-  }
+    public CloseSessionRequest(RequestRetryValidator validator, int dispatchId, int sessionDispatchId) {
+        super(dispatchId, true, validator);
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  public void setSessionDispatchId(int sessionDispatchId)
-  {
-    this.sessionDispatchId = sessionDispatchId;
-  }
+    public void setSessionDispatchId(int sessionDispatchId) {
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  public int getSessionDispatchId()
-  {
-    return sessionDispatchId;
-  }
+    public int getSessionDispatchId() {
+        return sessionDispatchId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSESESSION_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSESESSION_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(sessionDispatchId, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(sessionDispatchId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    sessionDispatchId = SMQPUtil.read(sessionDispatchId, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        sessionDispatchId = SMQPUtil.read(sessionDispatchId, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CloseSessionReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CloseSessionReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/CloseSessionRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("sessionDispatchId=");
-    _b.append(sessionDispatchId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/CloseSessionRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("sessionDispatchId=");
+        _b.append(sessionDispatchId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -17,120 +17,105 @@
 
 package com.swiftmq.impl.auth.standard;
 
-import com.swiftmq.swiftlet.auth.*;
+import com.swiftmq.swiftlet.auth.ResourceLimitException;
+import com.swiftmq.swiftlet.auth.ResourceLimitGroup;
 import com.swiftmq.tools.sql.LikeComparator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class User
-{
-  String name;
-  String password;
-  Group group;
-  ResourceLimitGroup rlgroup;
-  List hostList = new ArrayList();
-  int numberConnections = 0;
+public class User {
+    String name;
+    String password;
+    Group group;
+    ResourceLimitGroup rlgroup;
+    List hostList = new ArrayList();
+    int numberConnections = 0;
 
-  protected User(String name, String password, Group group, ResourceLimitGroup rlgroup)
-  {
-    this.name = name;
-    this.password = password;
-    this.group = group;
-    this.rlgroup = rlgroup;
-  }
-
-  public String getName()
-  {
-    return (name);
-  }
-
-  public synchronized String getPassword()
-  {
-    return (password);
-  }
-
-  public synchronized void setPassword(String password)
-  {
-    this.password = password;
-  }
-
-  public synchronized Group getGroup()
-  {
-    return (group);
-  }
-
-  public synchronized void setGroup(Group group)
-  {
-    this.group = group;
-  }
-
-  public synchronized ResourceLimitGroup getResourceLimitGroup()
-  {
-    return (rlgroup);
-  }
-
-  public synchronized void setResourceLimitGroup(ResourceLimitGroup rlgroup)
-  {
-    this.rlgroup = rlgroup;
-  }
-
-  public synchronized int getNumberConnections()
-  {
-    return numberConnections;
-  }
-
-  public synchronized void incNumberConnections() throws ResourceLimitException
-  {
-    rlgroup.verifyConnectionLimit(numberConnections);
-    numberConnections++;
-  }
-
-  public synchronized void decNumberConnections()
-  {
-    if (numberConnections > 0)
-      numberConnections--;
-  }
-
-  public synchronized void addHost(String predicate)
-  {
-    hostList.add(predicate);
-  }
-
-  public synchronized void removeHost(String predicate)
-  {
-    hostList.remove(predicate);
-  }
-
-  public synchronized boolean isHostAllowed(String hostname)
-  {
-    if (hostList.size() == 0)
-      return true;
-    for (int i = 0; i < hostList.size(); i++)
-    {
-      String predicate = (String) hostList.get(i);
-      if (LikeComparator.compare(hostname, predicate, '\\'))
-        return true;
+    protected User(String name, String password, Group group, ResourceLimitGroup rlgroup) {
+        this.name = name;
+        this.password = password;
+        this.group = group;
+        this.rlgroup = rlgroup;
     }
-    return false;
-  }
 
-  public String toString()
-  {
-    StringBuffer s = new StringBuffer();
-    s.append("[User, name=");
-    s.append(name);
-    s.append(", password=");
-    s.append(password);
-    s.append(", group=");
-    s.append(group);
-    s.append(", rlgroup=");
-    s.append(rlgroup);
-    s.append(", numberConnections=");
-    s.append(numberConnections);
-    s.append(", hostList=");
-    s.append(hostList);
-    s.append("]");
-    return s.toString();
-  }
+    public String getName() {
+        return (name);
+    }
+
+    public synchronized String getPassword() {
+        return (password);
+    }
+
+    public synchronized void setPassword(String password) {
+        this.password = password;
+    }
+
+    public synchronized Group getGroup() {
+        return (group);
+    }
+
+    public synchronized void setGroup(Group group) {
+        this.group = group;
+    }
+
+    public synchronized ResourceLimitGroup getResourceLimitGroup() {
+        return (rlgroup);
+    }
+
+    public synchronized void setResourceLimitGroup(ResourceLimitGroup rlgroup) {
+        this.rlgroup = rlgroup;
+    }
+
+    public synchronized int getNumberConnections() {
+        return numberConnections;
+    }
+
+    public synchronized void incNumberConnections() throws ResourceLimitException {
+        rlgroup.verifyConnectionLimit(numberConnections);
+        numberConnections++;
+    }
+
+    public synchronized void decNumberConnections() {
+        if (numberConnections > 0)
+            numberConnections--;
+    }
+
+    public synchronized void addHost(String predicate) {
+        hostList.add(predicate);
+    }
+
+    public synchronized void removeHost(String predicate) {
+        hostList.remove(predicate);
+    }
+
+    public synchronized boolean isHostAllowed(String hostname) {
+        if (hostList.size() == 0)
+            return true;
+        for (int i = 0; i < hostList.size(); i++) {
+            String predicate = (String) hostList.get(i);
+            if (LikeComparator.compare(hostname, predicate, '\\'))
+                return true;
+        }
+        return false;
+    }
+
+    public String toString() {
+        StringBuffer s = new StringBuffer();
+        s.append("[User, name=");
+        s.append(name);
+        s.append(", password=");
+        s.append(password);
+        s.append(", group=");
+        s.append(group);
+        s.append(", rlgroup=");
+        s.append(rlgroup);
+        s.append(", numberConnections=");
+        s.append(numberConnections);
+        s.append(", hostList=");
+        s.append(hostList);
+        s.append("]");
+        return s.toString();
+    }
 }
 

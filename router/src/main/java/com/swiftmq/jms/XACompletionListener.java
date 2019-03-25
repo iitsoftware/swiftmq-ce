@@ -17,10 +17,12 @@
 
 package com.swiftmq.jms;
 
-public interface XACompletionListener
-{
-  public void transactionStarted(XidImpl xid, Object session);
-  public void transactionEnded(XidImpl xid);
-  public void transactionCommitted(XidImpl xid);
-  public void transactionAborted(XidImpl xid);
+public interface XACompletionListener {
+    public void transactionStarted(XidImpl xid, Object session);
+
+    public void transactionEnded(XidImpl xid);
+
+    public void transactionCommitted(XidImpl xid);
+
+    public void transactionAborted(XidImpl xid);
 }

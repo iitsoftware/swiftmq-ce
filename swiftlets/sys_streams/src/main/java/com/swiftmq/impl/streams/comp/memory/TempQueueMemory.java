@@ -27,8 +27,7 @@ import javax.jms.DeliveryMode;
  *
  * @author IIT Software GmbH, Muenster/Germany, (c) 2016, All Rights Reserved
  */
-public class TempQueueMemory extends QueueMemory
-{
+public class TempQueueMemory extends QueueMemory {
     TempQueueMemory(StreamContext ctx, String name) throws Exception {
         super(ctx, name, ctx.ctx.queueManager.createTemporaryQueue());
     }
@@ -50,6 +49,6 @@ public class TempQueueMemory extends QueueMemory
             ctx.ctx.queueManager.deleteTemporaryQueue(getQueueName());
         } catch (QueueException e) {
 
-    }
+        }
     }
 }

@@ -18,29 +18,24 @@
 package com.swiftmq.net.client;
 
 
-public class ServerEntry
-{
-  String hostname = null;
-  int port = 0;
+public class ServerEntry {
+    String hostname = null;
+    int port = 0;
 
-  public ServerEntry(String hostname, int port)
-  {
-    this.hostname = hostname;
-    this.port = port;
-  }
+    public ServerEntry(String hostname, int port) {
+        this.hostname = hostname;
+        this.port = port;
+    }
 
-  public String getHostname()
-  {
-    return hostname;
-  }
+    public String getHostname() {
+        return hostname;
+    }
 
-  public int getPort()
-  {
-    return port;
-  }
+    public int getPort() {
+        return port;
+    }
 
-  public String toString()
-  {
-    return "[ServerEntry, hostname="+hostname+", port="+port+"]";
-  }
+    public String toString() {
+        return "[ServerEntry, hostname=" + hostname + ", port=" + port + "]";
+    }
 }

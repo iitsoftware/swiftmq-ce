@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: CreatePublisherReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: CreatePublisherReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CreatePublisherReply extends ReplyNE
-{
-  private int topicPublisherId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreatePublisherReply(int topicPublisherId)
-  {
-    this.topicPublisherId = topicPublisherId;
-  }
+public class CreatePublisherReply extends ReplyNE {
+    private int topicPublisherId;
 
-  protected CreatePublisherReply()
-  {
-  }
-  
-  public void setTopicPublisherId(int topicPublisherId)
-  {
-    this.topicPublisherId = topicPublisherId;
-  }
+    public CreatePublisherReply(int topicPublisherId) {
+        this.topicPublisherId = topicPublisherId;
+    }
 
-  public int getTopicPublisherId()
-  {
-    return topicPublisherId;
-  }
+    protected CreatePublisherReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEPUBLISHER_REP;
-  }
+    public void setTopicPublisherId(int topicPublisherId) {
+        this.topicPublisherId = topicPublisherId;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(topicPublisherId,out);
-  }
+    public int getTopicPublisherId() {
+        return topicPublisherId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    topicPublisherId = SMQPUtil.read(topicPublisherId,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEPUBLISHER_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/CreatePublisherReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("topicPublisherId=");
-    _b.append(topicPublisherId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(topicPublisherId, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        topicPublisherId = SMQPUtil.read(topicPublisherId, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/CreatePublisherReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("topicPublisherId=");
+        _b.append(topicPublisherId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

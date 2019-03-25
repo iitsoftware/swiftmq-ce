@@ -37,611 +37,509 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import java.util.*;
 
-public class NonXADeliveryStage extends Stage
-{
-  SMQRVisitor visitor = null;
-  boolean listener = false;
-  int txNo = 0;
-  Map outboundTransactions = null;
-  Map producers = null;
-  Map consumers = null;
-  Map notificationList = null;
-  boolean closed = false;
-  ThrottleQueue throttleQueue = null;
-  AccountingProfile accountingProfile = null;
-  DestinationCollectorCache inboundCollectorCache = null;
-  DestinationCollectorCache outboundCollectorCache = null;
+public class NonXADeliveryStage extends Stage {
+    SMQRVisitor visitor = null;
+    boolean listener = false;
+    int txNo = 0;
+    Map outboundTransactions = null;
+    Map producers = null;
+    Map consumers = null;
+    Map notificationList = null;
+    boolean closed = false;
+    ThrottleQueue throttleQueue = null;
+    AccountingProfile accountingProfile = null;
+    DestinationCollectorCache inboundCollectorCache = null;
+    DestinationCollectorCache outboundCollectorCache = null;
 
-  public NonXADeliveryStage(SwiftletContext ctx, RoutingConnection routingConnection)
-  {
-    super(ctx, routingConnection);
-    visitor = routingConnection.getVisitor();
-    listener = routingConnection.isListener();
-    outboundTransactions = new HashMap();
-    notificationList = new HashMap();
-    producers = new HashMap();
-    consumers = new HashMap();
-    if (ctx.inboundFCEnabled)
-      throttleQueue = new ThrottleQueue(ctx, routingConnection);
+    public NonXADeliveryStage(SwiftletContext ctx, RoutingConnection routingConnection) {
+        super(ctx, routingConnection);
+        visitor = routingConnection.getVisitor();
+        listener = routingConnection.isListener();
+        outboundTransactions = new HashMap();
+        notificationList = new HashMap();
+        producers = new HashMap();
+        consumers = new HashMap();
+        if (ctx.inboundFCEnabled)
+            throttleQueue = new ThrottleQueue(ctx, routingConnection);
 
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/created");
-    try
-    {
-      producers.put(RoutingSwiftletImpl.UNROUTABLE_QUEUE, ctx.queueManager.createQueueSender(RoutingSwiftletImpl.UNROUTABLE_QUEUE, null));
-    } catch (Exception e)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/Exception creating unroutable sender: " + e);
-    }
-  }
-
-  private long processTransactionRequest(NonXATransactionRequest request) throws Exception
-  {
-    long delay = 0;
-    int txNo = request.getSequenceNo();
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + " ...");
-    Tx tx = new Tx(txNo);
-    List messageList = request.getMessageList();
-    for (int i = 0; i < messageList.size(); i++)
-    {
-      boolean msgValid = true;
-      MessageImpl msg = (MessageImpl) messageList.get(i);
-      String queueName = null;
-      if (msg.getDestRouter().equals(ctx.routerName))
-        queueName = msg.getDestQueue();
-      else
-        queueName = SchedulerRegistry.QUEUE_PREFIX + msg.getDestRouter();
-      QueueSender sender = (QueueSender) producers.get(queueName);
-      if (sender == null)
-      {
-        try
-        {
-          sender = ctx.queueManager.createQueueSender(queueName, null);
-          producers.put(queueName, sender);
-        } catch (Exception e)
-        {
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", exception creating sender, queue=" + queueName);
-          if (ctx.queueManager.isTemporaryQueue(queueName))
-          {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/created");
+        try {
+            producers.put(RoutingSwiftletImpl.UNROUTABLE_QUEUE, ctx.queueManager.createQueueSender(RoutingSwiftletImpl.UNROUTABLE_QUEUE, null));
+        } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", temp queue, forget it");
-            msgValid = false;
-          } else
-          {
-            if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", using unroutable queue");
-            sender = (QueueSender) producers.get(RoutingSwiftletImpl.UNROUTABLE_QUEUE);
-            msg.setStringProperty(MessageImpl.PROP_UNROUTABLE_REASON, e.toString());
-          }
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/Exception creating unroutable sender: " + e);
         }
-      }
-      if (msgValid)
-      {
-        try
-        {
-          // Check redelivered and activate duplicate message detection for this message by setting the DOUBT property
-          if (msg.getJMSRedelivered())
-          {
-            if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", message is redelivered, activating dups detection for it");
-            msg.setJMSRedelivered(false);
-            msg.setBooleanProperty(MessageImpl.PROP_DOUBT_DUPLICATE, true);
-          }
-          QueuePushTransaction t = tx.getTransaction(queueName);
-          if (t == null)
-          {
-            t = sender.createTransaction();
-            tx.addTransaction(queueName, t);
-          }
-          t.putMessage(msg);
-          collect(msg, inboundCollectorCache, DestinationCollector.DIRECTION_INBOUND);
-        } catch (Exception e)
-        {
-          try
-          {
-            if (!sender.getQueueName().startsWith(RoutingSwiftletImpl.UNROUTABLE_QUEUE))
-              sender.close();
-          } catch (Exception e1)
-          {
-          }
-          producers.remove(queueName);
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", exception put message, queue=" + queueName);
-          if (ctx.queueManager.isTemporaryQueue(queueName))
-          {
-            if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", temp queue, forget it");
-          } else
-          {
-            if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", using unroutable queue");
-            sender = (QueueSender) producers.get(RoutingSwiftletImpl.UNROUTABLE_QUEUE);
-            msg.setStringProperty(MessageImpl.PROP_UNROUTABLE_REASON, e.toString());
-            QueuePushTransaction t = tx.getTransaction(RoutingSwiftletImpl.UNROUTABLE_QUEUE);
-            if (t == null)
-            {
-              t = sender.createTransaction();
-              tx.addTransaction(RoutingSwiftletImpl.UNROUTABLE_QUEUE, t);
+    }
+
+    private long processTransactionRequest(NonXATransactionRequest request) throws Exception {
+        long delay = 0;
+        int txNo = request.getSequenceNo();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + " ...");
+        Tx tx = new Tx(txNo);
+        List messageList = request.getMessageList();
+        for (int i = 0; i < messageList.size(); i++) {
+            boolean msgValid = true;
+            MessageImpl msg = (MessageImpl) messageList.get(i);
+            String queueName = null;
+            if (msg.getDestRouter().equals(ctx.routerName))
+                queueName = msg.getDestQueue();
+            else
+                queueName = SchedulerRegistry.QUEUE_PREFIX + msg.getDestRouter();
+            QueueSender sender = (QueueSender) producers.get(queueName);
+            if (sender == null) {
+                try {
+                    sender = ctx.queueManager.createQueueSender(queueName, null);
+                    producers.put(queueName, sender);
+                } catch (Exception e) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", exception creating sender, queue=" + queueName);
+                    if (ctx.queueManager.isTemporaryQueue(queueName)) {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", temp queue, forget it");
+                        msgValid = false;
+                    } else {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", using unroutable queue");
+                        sender = (QueueSender) producers.get(RoutingSwiftletImpl.UNROUTABLE_QUEUE);
+                        msg.setStringProperty(MessageImpl.PROP_UNROUTABLE_REASON, e.toString());
+                    }
+                }
             }
-            t.putMessage(msg);
-          }
-        }
-      }
-    }
-    try
-    {
-      delay = tx.commit();
-    } catch (Exception e)
-    {
-      tx.rollback();
-      throw e;
-    }
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + " done");
-    return delay;
-  }
-
-  private void collect(MessageImpl msg, DestinationCollectorCache cache, String direction)
-      throws JMSException
-  {
-    if (accountingProfile != null &&
-        cache != null &&
-        accountingProfile.isMatchSourceRouter(msg.getSourceRouter()) &&
-        accountingProfile.isMatchDestinationRouter(msg.getDestRouter()))
-    {
-      boolean match = false;
-      String destName = null;
-      String destType = null;
-      Destination d = msg.getJMSDestination();
-      if (d instanceof Topic)
-      {
-        destName = ((Topic) d).getTopicName();
-        destType = DestinationCollector.DTYPE_TOPIC;
-        match = accountingProfile.isMatchTopicName(destName);
-      } else
-      {
-        destName = ((Queue) d).getQueueName();
-        destType = DestinationCollector.DTYPE_QUEUE;
-        match = accountingProfile.isMatchQueueName(destName);
-      }
-      if (match)
-      {
-        DestinationCollector c = cache.getDestinationCollector(msg.getSourceRouter(), msg.getDestRouter(), destName, destType, direction);
-        c.incTotal(1, msg.getMessageLength());
-      }
-    }
-  }
-
-  protected void init()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init...");
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
-        int txSize = ((Integer) routingConnection.getEntity().getProperty("inbound-transaction-size").getValue()).intValue();
-        int windowSize = ((Integer) routingConnection.getEntity().getProperty("inbound-window-size").getValue()).intValue();
-        AdjustRequest rc = new AdjustRequest(txSize, windowSize);
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
-        routingConnection.getOutboundQueue().enqueue(rc);
-        AccountingProfile ap = ctx.routingSwiftlet.getAccountingProfile();
-        if (ap != null && ap.isMatchConnectedRouter(routingConnection.getRouterName()))
-        {
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does match accounting profile");
-          accountingProfile = ap;
-          if (ap.isInbound())
-            inboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("INBOUND"));
-          if (ap.isOutbound())
-            outboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("OUTBOUND"));
-        }
-        routingConnection.setXaSelected(false);
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.SEND_ROUTE_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
-        RouteRequest rc = new RouteRequest(((SendRouteRequest) request).getRoute());
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
-        routingConnection.getOutboundQueue().enqueue(rc);
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ROUTE_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + "...");
-        RouteRequest rc = (RouteRequest) request;
-        try
-        {
-          ctx.routeExchanger.processRoute(routingConnection, rc.getRoute(ctx.routeExchanger.getRouteConverter()));
-        } catch (Exception e)
-        {
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " exception=" + e);
-          ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e);
-        }
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ADJUST_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
-        AdjustRequest rc = (AdjustRequest) request;
-        routingConnection.setTransactionSize(rc.getTransactionSize());
-        routingConnection.setWindowSize(rc.getWindowSize());
-        // A listener must wait until the connector sends a request.
-        // It then sends a request by itself to ensure the NonXADeliveryStage is active at the connector side.
-        if (listener)
-          getStageQueue().enqueue(new StartStageRequest());
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + ", activating connection");
-        routingConnection.getActivationListener().activated(routingConnection);
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.DELIVERY_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
-        try
-        {
-          DeliveryRequest rc = (DeliveryRequest) request;
-          QueuePullTransaction srcTx = rc.readTransaction;
-          QueueReceiver receiver = (QueueReceiver) consumers.get(srcTx.getQueueName());
-          if (receiver == null)
-          {
-            receiver = ctx.queueManager.createQueueReceiver(srcTx.getQueueName(), null, null);
-            consumers.put(srcTx.getQueueName(), receiver);
-          }
-          QueuePullTransaction destTx = receiver.createTransaction(true);  // mark redelivered on rollback
-          List al = new ArrayList(rc.len);
-          for (int i = 0; i < rc.len; i++)
-          {
-            MessageIndex messageIndex = rc.entries[i].getMessageIndex();
-            destTx.moveToTransaction(messageIndex, srcTx);
-            MessageImpl msg = rc.entries[i].getMessage();
-            if (msg.getSourceRouter() == null)
-              msg.setSourceRouter(ctx.routerName);
-            if (msg.getDestRouter() == null)
-              msg.setDestRouter(rc.destinationRouter);
-            msg.setJMSRedelivered(messageIndex.getDeliveryCount() > 1); // mark redelivered for dups detection at the receiving router
-            al.add(msg);
-            collect(msg, outboundCollectorCache, DestinationCollector.DIRECTION_OUTBOUND);
-          }
-          txNo++;
-          if (txNo == Integer.MAX_VALUE)
-            txNo = 0;
-          outboundTransactions.put(txNo, destTx);
-          NonXATransactionRequest txr = new NonXATransactionRequest(txNo, al);
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " sending request=" + txr);
-          routingConnection.getOutboundQueue().enqueue(txr);
-          if (outboundTransactions.size() <= routingConnection.getWindowSize())
-            rc.callback.delivered(rc);
-          else
-            notificationList.put(txNo, rc);
-        } catch (Exception e)
-        {
-          e.printStackTrace();
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " exception=" + e);
-          ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e + ", disconnecting");
-          ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
-        }
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_COMMIT_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
-        NonXACommitRequest rc = (NonXACommitRequest) request;
-        int sequenceNo = rc.getSequenceNo();
-        QueuePullTransaction t = (QueuePullTransaction) outboundTransactions.remove(sequenceNo);
-        try
-        {
-          t.commit();
-          DeliveryRequest dr = (DeliveryRequest) notificationList.remove(sequenceNo);
-          if (dr != null)
-          {
-            dr.callback.delivered(dr);
-          }
-        } catch (Exception e)
-        {
-          e.printStackTrace();
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " exception=" + e);
-          ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e + ", disconnecting");
-          ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
-        }
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_TRANSACTION_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + "...");
-        NonXATransactionRequest rc = (NonXATransactionRequest) request;
-        try
-        {
-          long delay = processTransactionRequest(rc);
-          NonXACommitRequest cr = new NonXACommitRequest(rc.getSequenceNo());
-          if (throttleQueue != null)
-          {
-            if (delay > 0)
-            {
-              if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " enqueue throttle request with delay="+delay);
-              throttleQueue.enqueue(new ThrottleRequest(delay));
+            if (msgValid) {
+                try {
+                    // Check redelivered and activate duplicate message detection for this message by setting the DOUBT property
+                    if (msg.getJMSRedelivered()) {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", message is redelivered, activating dups detection for it");
+                        msg.setJMSRedelivered(false);
+                        msg.setBooleanProperty(MessageImpl.PROP_DOUBT_DUPLICATE, true);
+                    }
+                    QueuePushTransaction t = tx.getTransaction(queueName);
+                    if (t == null) {
+                        t = sender.createTransaction();
+                        tx.addTransaction(queueName, t);
+                    }
+                    t.putMessage(msg);
+                    collect(msg, inboundCollectorCache, DestinationCollector.DIRECTION_INBOUND);
+                } catch (Exception e) {
+                    try {
+                        if (!sender.getQueueName().startsWith(RoutingSwiftletImpl.UNROUTABLE_QUEUE))
+                            sender.close();
+                    } catch (Exception e1) {
+                    }
+                    producers.remove(queueName);
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", exception put message, queue=" + queueName);
+                    if (ctx.queueManager.isTemporaryQueue(queueName)) {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", temp queue, forget it");
+                    } else {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + ", using unroutable queue");
+                        sender = (QueueSender) producers.get(RoutingSwiftletImpl.UNROUTABLE_QUEUE);
+                        msg.setStringProperty(MessageImpl.PROP_UNROUTABLE_REASON, e.toString());
+                        QueuePushTransaction t = tx.getTransaction(RoutingSwiftletImpl.UNROUTABLE_QUEUE);
+                        if (t == null) {
+                            t = sender.createTransaction();
+                            tx.addTransaction(RoutingSwiftletImpl.UNROUTABLE_QUEUE, t);
+                        }
+                        t.putMessage(msg);
+                    }
+                }
             }
-            throttleQueue.enqueue(cr);
-          } else
-            routingConnection.getOutboundQueue().enqueue(cr);
-        } catch (Exception e)
-        {
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " exception=" + e);
-          ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e + ", disconnecting");
-          ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
         }
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
-        AccountingProfile ap = ((StartAccountingRequest) request).getAccountingProfile();
-        if (ap.isMatchConnectedRouter(routingConnection.getRouterName()))
-        {
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does match accounting profile");
-          accountingProfile = ap;
-          if (ap.isInbound())
-            inboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("INBOUND"));
-          if (ap.isOutbound())
-            outboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("OUTBOUND"));
-        } else
-        {
-          if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does NOT match accounting profile");
+        try {
+            delay = tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+            throw e;
         }
         if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " done");
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
-        if (accountingProfile != null)
-          flushCollectorCaches();
-      }
-    });
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, new RequestHandler()
-    {
-      public void visited(Request request)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
-        if (accountingProfile != null)
-        {
-          flushCollectorCaches();
-          accountingProfile = null;
-          inboundCollectorCache = null;
-          outboundCollectorCache = null;
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString("INBOUND") + "/processTransactionRequest, txNo=" + txNo + " done");
+        return delay;
+    }
+
+    private void collect(MessageImpl msg, DestinationCollectorCache cache, String direction)
+            throws JMSException {
+        if (accountingProfile != null &&
+                cache != null &&
+                accountingProfile.isMatchSourceRouter(msg.getSourceRouter()) &&
+                accountingProfile.isMatchDestinationRouter(msg.getDestRouter())) {
+            boolean match = false;
+            String destName = null;
+            String destType = null;
+            Destination d = msg.getJMSDestination();
+            if (d instanceof Topic) {
+                destName = ((Topic) d).getTopicName();
+                destType = DestinationCollector.DTYPE_TOPIC;
+                match = accountingProfile.isMatchTopicName(destName);
+            } else {
+                destName = ((Queue) d).getQueueName();
+                destType = DestinationCollector.DTYPE_QUEUE;
+                match = accountingProfile.isMatchQueueName(destName);
+            }
+            if (match) {
+                DestinationCollector c = cache.getDestinationCollector(msg.getSourceRouter(), msg.getDestRouter(), destName, destType, direction);
+                c.incTotal(1, msg.getMessageLength());
+            }
         }
-      }
-    });
-    if (!listener)
-      getStageQueue().enqueue(new StartStageRequest());
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init done");
-  }
-
-  private void flushCollectorCaches()
-  {
-    if (inboundCollectorCache != null)
-    {
-      inboundCollectorCache.flush(accountingProfile.getSource(), ctx.routerName, routingConnection.getRouterName(), routingConnection.getRemoteHostName(), routingConnection.getProtocolVersion());
-      inboundCollectorCache.clear();
     }
-    if (outboundCollectorCache != null)
-    {
-      outboundCollectorCache.flush(accountingProfile.getSource(), ctx.routerName, routingConnection.getRouterName(), routingConnection.getRemoteHostName(), routingConnection.getProtocolVersion());
-      outboundCollectorCache.clear();
+
+    protected void init() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init...");
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
+                int txSize = ((Integer) routingConnection.getEntity().getProperty("inbound-transaction-size").getValue()).intValue();
+                int windowSize = ((Integer) routingConnection.getEntity().getProperty("inbound-window-size").getValue()).intValue();
+                AdjustRequest rc = new AdjustRequest(txSize, windowSize);
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
+                routingConnection.getOutboundQueue().enqueue(rc);
+                AccountingProfile ap = ctx.routingSwiftlet.getAccountingProfile();
+                if (ap != null && ap.isMatchConnectedRouter(routingConnection.getRouterName())) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does match accounting profile");
+                    accountingProfile = ap;
+                    if (ap.isInbound())
+                        inboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("INBOUND"));
+                    if (ap.isOutbound())
+                        outboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("OUTBOUND"));
+                }
+                routingConnection.setXaSelected(false);
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.SEND_ROUTE_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
+                RouteRequest rc = new RouteRequest(((SendRouteRequest) request).getRoute());
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
+                routingConnection.getOutboundQueue().enqueue(rc);
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ROUTE_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + "...");
+                RouteRequest rc = (RouteRequest) request;
+                try {
+                    ctx.routeExchanger.processRoute(routingConnection, rc.getRoute(ctx.routeExchanger.getRouteConverter()));
+                } catch (Exception e) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " exception=" + e);
+                    ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e);
+                }
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ADJUST_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
+                AdjustRequest rc = (AdjustRequest) request;
+                routingConnection.setTransactionSize(rc.getTransactionSize());
+                routingConnection.setWindowSize(rc.getWindowSize());
+                // A listener must wait until the connector sends a request.
+                // It then sends a request by itself to ensure the NonXADeliveryStage is active at the connector side.
+                if (listener)
+                    getStageQueue().enqueue(new StartStageRequest());
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + ", activating connection");
+                routingConnection.getActivationListener().activated(routingConnection);
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.DELIVERY_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
+                try {
+                    DeliveryRequest rc = (DeliveryRequest) request;
+                    QueuePullTransaction srcTx = rc.readTransaction;
+                    QueueReceiver receiver = (QueueReceiver) consumers.get(srcTx.getQueueName());
+                    if (receiver == null) {
+                        receiver = ctx.queueManager.createQueueReceiver(srcTx.getQueueName(), null, null);
+                        consumers.put(srcTx.getQueueName(), receiver);
+                    }
+                    QueuePullTransaction destTx = receiver.createTransaction(true);  // mark redelivered on rollback
+                    List al = new ArrayList(rc.len);
+                    for (int i = 0; i < rc.len; i++) {
+                        MessageIndex messageIndex = rc.entries[i].getMessageIndex();
+                        destTx.moveToTransaction(messageIndex, srcTx);
+                        MessageImpl msg = rc.entries[i].getMessage();
+                        if (msg.getSourceRouter() == null)
+                            msg.setSourceRouter(ctx.routerName);
+                        if (msg.getDestRouter() == null)
+                            msg.setDestRouter(rc.destinationRouter);
+                        msg.setJMSRedelivered(messageIndex.getDeliveryCount() > 1); // mark redelivered for dups detection at the receiving router
+                        al.add(msg);
+                        collect(msg, outboundCollectorCache, DestinationCollector.DIRECTION_OUTBOUND);
+                    }
+                    txNo++;
+                    if (txNo == Integer.MAX_VALUE)
+                        txNo = 0;
+                    outboundTransactions.put(txNo, destTx);
+                    NonXATransactionRequest txr = new NonXATransactionRequest(txNo, al);
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " sending request=" + txr);
+                    routingConnection.getOutboundQueue().enqueue(txr);
+                    if (outboundTransactions.size() <= routingConnection.getWindowSize())
+                        rc.callback.delivered(rc);
+                    else
+                        notificationList.put(txNo, rc);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " exception=" + e);
+                    ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e + ", disconnecting");
+                    ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
+                }
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_COMMIT_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + "...");
+                NonXACommitRequest rc = (NonXACommitRequest) request;
+                int sequenceNo = rc.getSequenceNo();
+                QueuePullTransaction t = (QueuePullTransaction) outboundTransactions.remove(sequenceNo);
+                try {
+                    t.commit();
+                    DeliveryRequest dr = (DeliveryRequest) notificationList.remove(sequenceNo);
+                    if (dr != null) {
+                        dr.callback.delivered(dr);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " exception=" + e);
+                    ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e + ", disconnecting");
+                    ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
+                }
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_TRANSACTION_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + "...");
+                NonXATransactionRequest rc = (NonXATransactionRequest) request;
+                try {
+                    long delay = processTransactionRequest(rc);
+                    NonXACommitRequest cr = new NonXACommitRequest(rc.getSequenceNo());
+                    if (throttleQueue != null) {
+                        if (delay > 0) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " enqueue throttle request with delay=" + delay);
+                            throttleQueue.enqueue(new ThrottleRequest(delay));
+                        }
+                        throttleQueue.enqueue(cr);
+                    } else
+                        routingConnection.getOutboundQueue().enqueue(cr);
+                } catch (Exception e) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " exception=" + e);
+                    ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " exception=" + e + ", disconnecting");
+                    ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
+                }
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
+                AccountingProfile ap = ((StartAccountingRequest) request).getAccountingProfile();
+                if (ap.isMatchConnectedRouter(routingConnection.getRouterName())) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does match accounting profile");
+                    accountingProfile = ap;
+                    if (ap.isInbound())
+                        inboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("INBOUND"));
+                    if (ap.isOutbound())
+                        outboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("OUTBOUND"));
+                } else {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does NOT match accounting profile");
+                }
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " done");
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
+                if (accountingProfile != null)
+                    flushCollectorCaches();
+            }
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, new RequestHandler() {
+            public void visited(Request request) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
+                if (accountingProfile != null) {
+                    flushCollectorCaches();
+                    accountingProfile = null;
+                    inboundCollectorCache = null;
+                    outboundCollectorCache = null;
+                }
+            }
+        });
+        if (!listener)
+            getStageQueue().enqueue(new StartStageRequest());
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init done");
     }
-  }
 
-  public void process(Request request)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/process, request=" + request);
-    request.accept(visitor);
-  }
+    private void flushCollectorCaches() {
+        if (inboundCollectorCache != null) {
+            inboundCollectorCache.flush(accountingProfile.getSource(), ctx.routerName, routingConnection.getRouterName(), routingConnection.getRemoteHostName(), routingConnection.getProtocolVersion());
+            inboundCollectorCache.clear();
+        }
+        if (outboundCollectorCache != null) {
+            outboundCollectorCache.flush(accountingProfile.getSource(), ctx.routerName, routingConnection.getRouterName(), routingConnection.getRemoteHostName(), routingConnection.getProtocolVersion());
+            outboundCollectorCache.clear();
+        }
+    }
 
-  public void close()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close ...");
-    flushCollectorCaches();
-    super.close();
-    closed = true;
-    if (notificationList.size() > 0)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, final notify ...");
-      for (Iterator iter = notificationList.entrySet().iterator(); iter.hasNext(); )
-      {
-        Map.Entry entry = (Map.Entry) iter.next();
-        DeliveryRequest dr = (DeliveryRequest) entry.getValue();
+    public void process(Request request) {
         if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, final notify: " + dr);
-        dr.callback.delivered(dr);
-      }
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, final notify done");
-      notificationList.clear();
-    }
-    if (outboundTransactions.size() > 0)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, rollback open outbound tx ...");
-      for (Iterator iter = outboundTransactions.entrySet().iterator(); iter.hasNext(); )
-      {
-        try
-        {
-          Map.Entry entry = (Map.Entry) iter.next();
-          QueuePullTransaction t = (QueuePullTransaction) entry.getValue();
-          t.rollback();
-        } catch (Exception e)
-        {
-          ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), toString() + "/close, rollback open outbound tx, exception: " + e);
-        }
-      }
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, rollback open outbound tx done");
-      outboundTransactions.clear();
-    }
-    for (Iterator iter = producers.entrySet().iterator(); iter.hasNext(); )
-    {
-      QueueSender sender = (QueueSender) ((Map.Entry) iter.next()).getValue();
-      try
-      {
-        sender.close();
-      } catch (Exception e)
-      {
-      }
-    }
-    producers.clear();
-    for (Iterator iter = consumers.entrySet().iterator(); iter.hasNext(); )
-    {
-      QueueReceiver receiver = (QueueReceiver) ((Map.Entry) iter.next()).getValue();
-      try
-      {
-        receiver.close();
-      } catch (Exception e)
-      {
-      }
-    }
-    consumers.clear();
-    if (throttleQueue != null)
-      throttleQueue.close();
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.SEND_ROUTE_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.DELIVERY_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ROUTE_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ADJUST_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_TRANSACTION_REQ, null);
-    visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_COMMIT_REQ, null);
-  }
-
-  public String toString(String direction)
-  {
-    return routingConnection.toString() + "/v942NonXADeliveryStage " + direction;
-  }
-
-  public String toString()
-  {
-    return routingConnection.toString() + "/v942NonXADeliveryStage";
-  }
-
-  private class Tx
-  {
-    int txNo;
-    Map transactions = null;
-
-    public Tx(int txNo)
-    {
-      this.txNo = txNo;
-      transactions = new HashMap();
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/process, request=" + request);
+        request.accept(visitor);
     }
 
-    QueuePushTransaction getTransaction(String queueName)
-    {
-      return (QueuePushTransaction) transactions.get(queueName);
-    }
-
-    void addTransaction(String queueName, QueuePushTransaction t)
-    {
-      transactions.put(queueName, t);
-    }
-
-    void rollback()
-    {
-      for (Iterator iter = transactions.entrySet().iterator(); iter.hasNext(); )
-      {
-        QueuePushTransaction t = (QueuePushTransaction) ((Map.Entry) iter.next()).getValue();
-        try
-        {
-          t.rollback();
-        } catch (Exception e)
-        {
-        }
-      }
-      transactions.clear();
-    }
-
-    long commit() throws Exception
-    {
-      long fc = 0;
-      for (Iterator iter = transactions.entrySet().iterator(); iter.hasNext(); )
-      {
-        QueuePushTransaction t = (QueuePushTransaction) ((Map.Entry) iter.next()).getValue();
-        String name = t.getQueueName();
-        try
-        {
-          t.commit();
-          fc = Math.max(fc, t.getFlowControlDelay());
-        } catch (Exception e)
-        {
-          iter.remove();
-          if (!ctx.queueManager.isTemporaryQueue(name))
-          {
+    public void close() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close ...");
+        flushCollectorCaches();
+        super.close();
+        closed = true;
+        if (notificationList.size() > 0) {
             if (ctx.traceSpace.enabled)
-              ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/commit, queue=" + name + ", exception: " + e);
-            ctx.logSwiftlet.logWarning(ctx.routingSwiftlet.getName(), toString() + "/commit, queue=" + name + ", exception: " + e);
-          }
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, final notify ...");
+            for (Iterator iter = notificationList.entrySet().iterator(); iter.hasNext(); ) {
+                Map.Entry entry = (Map.Entry) iter.next();
+                DeliveryRequest dr = (DeliveryRequest) entry.getValue();
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, final notify: " + dr);
+                dr.callback.delivered(dr);
+            }
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, final notify done");
+            notificationList.clear();
         }
-        if (ctx.queueManager.isTemporaryQueue(name))
-        {
-          QueueSender sender = (QueueSender) producers.remove(name);
-          try
-          {
-            sender.close();
-          } catch (Exception ignored)
-          {
-          }
+        if (outboundTransactions.size() > 0) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, rollback open outbound tx ...");
+            for (Iterator iter = outboundTransactions.entrySet().iterator(); iter.hasNext(); ) {
+                try {
+                    Map.Entry entry = (Map.Entry) iter.next();
+                    QueuePullTransaction t = (QueuePullTransaction) entry.getValue();
+                    t.rollback();
+                } catch (Exception e) {
+                    ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), toString() + "/close, rollback open outbound tx, exception: " + e);
+                }
+            }
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close, rollback open outbound tx done");
+            outboundTransactions.clear();
         }
-      }
-      transactions.clear();
-      return fc;
+        for (Iterator iter = producers.entrySet().iterator(); iter.hasNext(); ) {
+            QueueSender sender = (QueueSender) ((Map.Entry) iter.next()).getValue();
+            try {
+                sender.close();
+            } catch (Exception e) {
+            }
+        }
+        producers.clear();
+        for (Iterator iter = consumers.entrySet().iterator(); iter.hasNext(); ) {
+            QueueReceiver receiver = (QueueReceiver) ((Map.Entry) iter.next()).getValue();
+            try {
+                receiver.close();
+            } catch (Exception e) {
+            }
+        }
+        consumers.clear();
+        if (throttleQueue != null)
+            throttleQueue.close();
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.SEND_ROUTE_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.DELIVERY_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ROUTE_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ADJUST_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_TRANSACTION_REQ, null);
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_COMMIT_REQ, null);
     }
 
-    public String toString()
-    {
-      return NonXADeliveryStage.this.toString() + "/Tx=" + txNo;
+    public String toString(String direction) {
+        return routingConnection.toString() + "/v942NonXADeliveryStage " + direction;
     }
-  }
+
+    public String toString() {
+        return routingConnection.toString() + "/v942NonXADeliveryStage";
+    }
+
+    private class Tx {
+        int txNo;
+        Map transactions = null;
+
+        public Tx(int txNo) {
+            this.txNo = txNo;
+            transactions = new HashMap();
+        }
+
+        QueuePushTransaction getTransaction(String queueName) {
+            return (QueuePushTransaction) transactions.get(queueName);
+        }
+
+        void addTransaction(String queueName, QueuePushTransaction t) {
+            transactions.put(queueName, t);
+        }
+
+        void rollback() {
+            for (Iterator iter = transactions.entrySet().iterator(); iter.hasNext(); ) {
+                QueuePushTransaction t = (QueuePushTransaction) ((Map.Entry) iter.next()).getValue();
+                try {
+                    t.rollback();
+                } catch (Exception e) {
+                }
+            }
+            transactions.clear();
+        }
+
+        long commit() throws Exception {
+            long fc = 0;
+            for (Iterator iter = transactions.entrySet().iterator(); iter.hasNext(); ) {
+                QueuePushTransaction t = (QueuePushTransaction) ((Map.Entry) iter.next()).getValue();
+                String name = t.getQueueName();
+                try {
+                    t.commit();
+                    fc = Math.max(fc, t.getFlowControlDelay());
+                } catch (Exception e) {
+                    iter.remove();
+                    if (!ctx.queueManager.isTemporaryQueue(name)) {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/commit, queue=" + name + ", exception: " + e);
+                        ctx.logSwiftlet.logWarning(ctx.routingSwiftlet.getName(), toString() + "/commit, queue=" + name + ", exception: " + e);
+                    }
+                }
+                if (ctx.queueManager.isTemporaryQueue(name)) {
+                    QueueSender sender = (QueueSender) producers.remove(name);
+                    try {
+                        sender.close();
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            transactions.clear();
+            return fc;
+        }
+
+        public String toString() {
+            return NonXADeliveryStage.this.toString() + "/Tx=" + txNo;
+        }
+    }
 }
 

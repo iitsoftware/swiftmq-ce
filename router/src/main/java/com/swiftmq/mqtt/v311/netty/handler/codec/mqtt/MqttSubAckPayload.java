@@ -36,7 +36,7 @@ public class MqttSubAckPayload {
         }
 
         List<Integer> list = new ArrayList<Integer>(grantedQoSLevels.length);
-        for (int v: grantedQoSLevels) {
+        for (int v : grantedQoSLevels) {
             list.add(v);
         }
         this.grantedQoSLevels = Collections.unmodifiableList(list);
@@ -47,7 +47,7 @@ public class MqttSubAckPayload {
             throw new NullPointerException("grantedQoSLevels");
         }
         List<Integer> list = new ArrayList<Integer>();
-        for (Integer v: grantedQoSLevels) {
+        for (Integer v : grantedQoSLevels) {
             if (v == null) {
                 break;
             }
@@ -63,9 +63,9 @@ public class MqttSubAckPayload {
     @Override
     public String toString() {
         return new StringBuilder(StringUtil.simpleClassName(this))
-            .append('[')
-            .append("grantedQoSLevels=").append(grantedQoSLevels)
-            .append(']')
-            .toString();
+                .append('[')
+                .append("grantedQoSLevels=").append(grantedQoSLevels)
+                .append(']')
+                .toString();
     }
 }

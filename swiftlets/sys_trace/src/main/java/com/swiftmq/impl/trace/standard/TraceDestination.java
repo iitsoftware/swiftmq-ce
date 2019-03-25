@@ -30,109 +30,89 @@ import com.swiftmq.util.SwiftUtilities;
 import java.io.PrintWriter;
 import java.util.Hashtable;
 
-class TraceDestination
-{
-  static final String VAL_CONSOLE = "console";
+class TraceDestination {
+    static final String VAL_CONSOLE = "console";
 
-  TraceSwiftletImpl traceSwiftlet = null;
-  Entity entity = null;
-  volatile boolean enabled;
-  volatile String predicate;
-  volatile PrintWriter writer;
-  Hashtable writerCache = null;
-  NumberGenerationProvider numberGenerationProvider = null;
+    TraceSwiftletImpl traceSwiftlet = null;
+    Entity entity = null;
+    volatile boolean enabled;
+    volatile String predicate;
+    volatile PrintWriter writer;
+    Hashtable writerCache = null;
+    NumberGenerationProvider numberGenerationProvider = null;
 
-  TraceDestination(final TraceSwiftletImpl traceSwiftlet, Entity entity, Hashtable writerCache) throws Exception
-  {
-    this.traceSwiftlet = traceSwiftlet;
-    this.entity = entity;
-    this.writerCache = writerCache;
-    numberGenerationProvider = new NumberGenerationProvider() {
-      @Override
-      public int getNumberGenerations() {
-        return traceSwiftlet.getNumberFileGenerations();
-      }
-    };
+    TraceDestination(final TraceSwiftletImpl traceSwiftlet, Entity entity, Hashtable writerCache) throws Exception {
+        this.traceSwiftlet = traceSwiftlet;
+        this.entity = entity;
+        this.writerCache = writerCache;
+        numberGenerationProvider = new NumberGenerationProvider() {
+            @Override
+            public int getNumberGenerations() {
+                return traceSwiftlet.getNumberFileGenerations();
+            }
+        };
 
-    Property prop = entity.getProperty("enabled");
-    enabled = ((Boolean) prop.getValue()).booleanValue();
-    prop.setPropertyChangeListener(new PropertyChangeListener()
-    {
-      public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException
-      {
-        enabled = ((Boolean) newValue).booleanValue();
-      }
-    });
-    prop = entity.getProperty("value");
-    predicate = (String) prop.getValue();
-    prop.setPropertyChangeListener(new PropertyChangeListener()
-    {
-      public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException
-      {
-        predicate = (String) newValue;
-      }
-    });
-    prop = entity.getProperty("filename");
-    writer = getWriter((String) prop.getValue());
-    prop.setPropertyChangeListener(new PropertyChangeListener()
-    {
-      public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException
-      {
-        try
-        {
-          writer = getWriter((String) newValue);
-        } catch (Exception e)
-        {
-          throw new PropertyChangeException(e.toString());
+        Property prop = entity.getProperty("enabled");
+        enabled = ((Boolean) prop.getValue()).booleanValue();
+        prop.setPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException {
+                enabled = ((Boolean) newValue).booleanValue();
+            }
+        });
+        prop = entity.getProperty("value");
+        predicate = (String) prop.getValue();
+        prop.setPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException {
+                predicate = (String) newValue;
+            }
+        });
+        prop = entity.getProperty("filename");
+        writer = getWriter((String) prop.getValue());
+        prop.setPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException {
+                try {
+                    writer = getWriter((String) newValue);
+                } catch (Exception e) {
+                    throw new PropertyChangeException(e.toString());
+                }
+            }
+        });
+    }
+
+    private PrintWriter getWriter(String filename) throws Exception {
+        PrintWriter w = (PrintWriter) writerCache.get(filename);
+        if (w == null) {
+            if (filename.equals(VAL_CONSOLE)) {
+                w = new PrintWriter(System.out);
+            } else {
+                filename = SwiftUtilities.addWorkingDir(filename);
+                SwiftUtilities.createDirectoryOfFile(filename);
+                w = new PrintWriter(new RollingFileWriter(filename, new RolloverSizeProvider() {
+                    public long getRollOverSize() {
+                        return traceSwiftlet.getMaxFileSize();
+                    }
+                }, numberGenerationProvider));
+            }
+            writerCache.put(filename, w);
         }
-      }
-    });
-  }
-
-  private PrintWriter getWriter(String filename) throws Exception
-  {
-    PrintWriter w = (PrintWriter) writerCache.get(filename);
-    if (w == null)
-    {
-      if (filename.equals(VAL_CONSOLE))
-      {
-        w = new PrintWriter(System.out);
-      } else
-      {
-        filename = SwiftUtilities.addWorkingDir(filename);
-        SwiftUtilities.createDirectoryOfFile(filename);
-        w = new PrintWriter(new RollingFileWriter(filename, new RolloverSizeProvider()
-        {
-          public long getRollOverSize()
-          {
-            return traceSwiftlet.getMaxFileSize();
-          }
-        }, numberGenerationProvider));
-      }
-      writerCache.put(filename, w);
+        return w;
     }
-    return w;
-  }
 
-  boolean isEnabled()
-  {
-    return enabled;
-  }
-
-  void trace(String subEntity, String message)
-  {
-    if (!enabled)
-      return;
-    PrintWriter w = writer;
-    if (w != null && equals(subEntity))
-    {
-      w.println(message);
-      w.flush();
+    boolean isEnabled() {
+        return enabled;
     }
-  }
 
-  boolean equals(String that)
-  {
-    return that != null && LikeComparator.compare(that, predicate, '\\');
-  }
+    void trace(String subEntity, String message) {
+        if (!enabled)
+            return;
+        PrintWriter w = writer;
+        if (w != null && equals(subEntity)) {
+            w.println(message);
+            w.flush();
+        }
+    }
+
+    boolean equals(String that) {
+        return that != null && LikeComparator.compare(that, predicate, '\\');
+    }
 }

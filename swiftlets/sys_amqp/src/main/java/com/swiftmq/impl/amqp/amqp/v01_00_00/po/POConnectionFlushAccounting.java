@@ -21,20 +21,16 @@ import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPConnectionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POConnectionFlushAccounting extends POObject
-{
-  public POConnectionFlushAccounting()
-  {
-    super(null, null);
-  }
+public class POConnectionFlushAccounting extends POObject {
+    public POConnectionFlushAccounting() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POConnectionFlushAccounting]";
-  }
+    public String toString() {
+        return "[POConnectionFlushAccounting]";
+    }
 }

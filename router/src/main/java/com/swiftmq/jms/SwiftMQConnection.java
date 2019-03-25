@@ -19,15 +19,14 @@ package com.swiftmq.jms;
 
 import javax.jms.JMSException;
 
-public interface SwiftMQConnection
-{
-  public String getUserName();
+public interface SwiftMQConnection {
+    public String getUserName();
 
-  public boolean isReconnectEnabled();
+    public boolean isReconnectEnabled();
 
-  public void addReconnectListener(ReconnectListener listener);
+    public void addReconnectListener(ReconnectListener listener);
 
-  public void removeReconnectListener(ReconnectListener listener);
+    public void removeReconnectListener(ReconnectListener listener);
 
-  public void deleteTempQueue(String queueName) throws JMSException;
+    public void deleteTempQueue(String queueName) throws JMSException;
 }

@@ -25,30 +25,26 @@ import com.swiftmq.tools.requestreply.Reply;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CloseSessionReply extends Reply
-{
+public class CloseSessionReply extends Reply {
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSE_SESSION_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSE_SESSION_REP;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CloseSessionReply " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CloseSessionReply " + super.toString() + "]";
+    }
 
 }
 

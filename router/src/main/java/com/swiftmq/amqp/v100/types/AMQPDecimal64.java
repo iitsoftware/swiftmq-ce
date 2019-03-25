@@ -26,75 +26,65 @@ import java.math.MathContext;
 /**
  * 64-bit decimal number (IEEE 754-2008 decimal64)
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPDecimal64 extends AMQPType
-{
-  byte[] bytes = new byte[8];
+public class AMQPDecimal64 extends AMQPType {
+    byte[] bytes = new byte[8];
 
-  /**
-   * Constructs an AMQPDecimal64 with an undefined value
-   *
-   */
-  public AMQPDecimal64()
-  {
-    super("decimal64", AMQPTypeDecoder.DECIMAL64);
-  }
+    /**
+     * Constructs an AMQPDecimal64 with an undefined value
+     */
+    public AMQPDecimal64() {
+        super("decimal64", AMQPTypeDecoder.DECIMAL64);
+    }
 
-  /**
-   * Constructs an AMQPDecimal64 with a value
-   *
-   * @param value value
-   */
-  public AMQPDecimal64(BigDecimal value)
-  {
-    super("decimal64", AMQPTypeDecoder.DECIMAL64);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPDecimal64 with a value
+     *
+     * @param value value
+     */
+    public AMQPDecimal64(BigDecimal value) {
+        super("decimal64", AMQPTypeDecoder.DECIMAL64);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(BigDecimal value)
-  {
-    Util.writeLong(value.longValue(), bytes, 0);
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(BigDecimal value) {
+        Util.writeLong(value.longValue(), bytes, 0);
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public BigDecimal getValue()
-  {
-    return new BigDecimal(Util.readLong(bytes, 0), MathContext.DECIMAL64);
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public BigDecimal getValue() {
+        return new BigDecimal(Util.readLong(bytes, 0), MathContext.DECIMAL64);
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+bytes.length;
-    return n;
-  }
- 
-  public void readContent(DataInput in) throws IOException
-  {
-    in.readFully(bytes);
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + bytes.length;
+        return n;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.write(bytes);
-  }
+    public void readContent(DataInput in) throws IOException {
+        in.readFully(bytes);
+    }
 
-  public String getValueString()
-  {
-    return getValue().toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.write(bytes);
+    }
 
-  public String toString()
-  {
-    return "[AMQPDecimal64, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String getValueString() {
+        return getValue().toString();
+    }
+
+    public String toString() {
+        return "[AMQPDecimal64, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

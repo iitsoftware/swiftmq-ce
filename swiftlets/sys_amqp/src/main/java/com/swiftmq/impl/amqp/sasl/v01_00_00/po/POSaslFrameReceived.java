@@ -22,28 +22,23 @@ import com.swiftmq.impl.amqp.sasl.v01_00_00.SASLVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSaslFrameReceived extends POObject
-{
-  SaslFrameIF frame = null;
+public class POSaslFrameReceived extends POObject {
+    SaslFrameIF frame = null;
 
-  public POSaslFrameReceived(SaslFrameIF frame)
-  {
-    super(null, null);
-    this.frame = frame;
-  }
+    public POSaslFrameReceived(SaslFrameIF frame) {
+        super(null, null);
+        this.frame = frame;
+    }
 
-  public SaslFrameIF getFrame()
-  {
-    return frame;
-  }
+    public SaslFrameIF getFrame() {
+        return frame;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SASLVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SASLVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSaslFrameReceived, frame=" + frame + "]";
-  }
+    public String toString() {
+        return "[POSaslFrameReceived, frame=" + frame + "]";
+    }
 }

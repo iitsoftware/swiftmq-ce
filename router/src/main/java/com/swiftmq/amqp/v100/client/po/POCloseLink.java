@@ -23,28 +23,23 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POCloseLink extends POObject
-{
-  Link link = null;
+public class POCloseLink extends POObject {
+    Link link = null;
 
-  public POCloseLink(Semaphore semaphore, Link link)
-  {
-    super(null, semaphore);
-    this.link = link;
-  }
+    public POCloseLink(Semaphore semaphore, Link link) {
+        super(null, semaphore);
+        this.link = link;
+    }
 
-  public Link getLink()
-  {
-    return link;
-  }
+    public Link getLink() {
+        return link;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POCloseLink, link="+link+"]";
-  }
+    public String toString() {
+        return "[POCloseLink, link=" + link + "]";
+    }
 }

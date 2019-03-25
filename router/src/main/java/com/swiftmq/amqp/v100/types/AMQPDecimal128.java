@@ -20,81 +20,69 @@ package com.swiftmq.amqp.v100.types;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.MathContext;
 
 /**
  * 128-bit decimal number (IEEE 754-2008 decimal128)
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPDecimal128 extends AMQPType
-{
-  byte[] bytes = new byte[16];
+public class AMQPDecimal128 extends AMQPType {
+    byte[] bytes = new byte[16];
 
-  /**
-   * Constructs an AMQPDecimal128 with an undefined value
-   *
-   */
-  public AMQPDecimal128()
-  {
-    super("decimal128", AMQPTypeDecoder.DECIMAL128);
-  }
+    /**
+     * Constructs an AMQPDecimal128 with an undefined value
+     */
+    public AMQPDecimal128() {
+        super("decimal128", AMQPTypeDecoder.DECIMAL128);
+    }
 
-  /**
-   * Constructs an AMQPDecimal128 with a value
-   *
-   * @param value value
-   */
-  public AMQPDecimal128(byte[] value)
-  {
-    super("decimal128", AMQPTypeDecoder.DECIMAL128);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPDecimal128 with a value
+     *
+     * @param value value
+     */
+    public AMQPDecimal128(byte[] value) {
+        super("decimal128", AMQPTypeDecoder.DECIMAL128);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(byte[] value)
-  {
-    System.arraycopy(value, 0, bytes, 0, Math.min(value.length, bytes.length));
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(byte[] value) {
+        System.arraycopy(value, 0, bytes, 0, Math.min(value.length, bytes.length));
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public byte[] getValue()
-  {
-    return bytes  ;
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public byte[] getValue() {
+        return bytes;
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+bytes.length;
-    return n;
-  }
- 
-  public void readContent(DataInput in) throws IOException
-  {
-    in.readFully(bytes);
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + bytes.length;
+        return n;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.write(bytes);
-  }
+    public void readContent(DataInput in) throws IOException {
+        in.readFully(bytes);
+    }
 
-  public String getValueString()
-  {
-    return getValue().toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.write(bytes);
+    }
 
-  public String toString()
-  {
-    return "[AMQPDecimal128, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String getValueString() {
+        return getValue().toString();
+    }
+
+    public String toString() {
+        return "[AMQPDecimal128, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

@@ -17,36 +17,35 @@
 
 package com.swiftmq.impl.topic.standard.jobs;
 
-import com.swiftmq.impl.topic.standard.*;
-import com.swiftmq.swiftlet.scheduler.*;
+import com.swiftmq.impl.topic.standard.TopicManagerContext;
+import com.swiftmq.impl.topic.standard.TopicManagerImpl;
+import com.swiftmq.swiftlet.scheduler.JobFactory;
+import com.swiftmq.swiftlet.scheduler.JobGroup;
+import com.swiftmq.swiftlet.scheduler.SchedulerSwiftlet;
 
-public class JobRegistrar
-{
-  TopicManagerImpl topicManager = null;
-  SchedulerSwiftlet schedulerSwiftlet = null;
-  TopicManagerContext ctx = null;
-  JobGroup jobGroup = null;
+public class JobRegistrar {
+    TopicManagerImpl topicManager = null;
+    SchedulerSwiftlet schedulerSwiftlet = null;
+    TopicManagerContext ctx = null;
+    JobGroup jobGroup = null;
 
-  public JobRegistrar(TopicManagerImpl topicManager, SchedulerSwiftlet schedulerSwiftlet, TopicManagerContext ctx)
-  {
-    this.topicManager = topicManager;
-    this.schedulerSwiftlet = schedulerSwiftlet;
-    this.ctx = ctx;
-  }
+    public JobRegistrar(TopicManagerImpl topicManager, SchedulerSwiftlet schedulerSwiftlet, TopicManagerContext ctx) {
+        this.topicManager = topicManager;
+        this.schedulerSwiftlet = schedulerSwiftlet;
+        this.ctx = ctx;
+    }
 
-  public void register()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(),toString()+"/register ...");
-    jobGroup = schedulerSwiftlet.getJobGroup("Topic Manager");
-    JobFactory jf = new DeleteDurableJobFactory(topicManager,ctx.traceSpace,ctx.activeDurableList);
-    jobGroup.addJobFactory(jf.getName(),jf);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(),toString()+"/register done");
-  }
+    public void register() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(), toString() + "/register ...");
+        jobGroup = schedulerSwiftlet.getJobGroup("Topic Manager");
+        JobFactory jf = new DeleteDurableJobFactory(topicManager, ctx.traceSpace, ctx.activeDurableList);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(), toString() + "/register done");
+    }
 
-  public void unregister()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(),toString()+"/unregister ...");
-    jobGroup.removeAll();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(),toString()+"/unregister done");
-  }
+    public void unregister() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(), toString() + "/unregister ...");
+        jobGroup.removeAll();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(topicManager.getName(), toString() + "/unregister done");
+    }
 }

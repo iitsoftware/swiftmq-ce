@@ -20,9 +20,9 @@ package com.swiftmq.swiftlet.queue;
 import com.swiftmq.jms.MessageImpl;
 
 public interface WireTapSubscriber {
-  public boolean requieresDeepCopy();
+    public boolean requieresDeepCopy();
 
-  public boolean isSelected(MessageImpl message);
+    public boolean isSelected(MessageImpl message);
 
-  public void putMessage(MessageImpl message);
+    public void putMessage(MessageImpl message);
 }

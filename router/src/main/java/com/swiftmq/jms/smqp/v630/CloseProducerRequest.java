@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: CloseProducerRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: CloseProducerRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,82 +33,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CloseProducerRequest extends Request
-{
-  private int queueProducerId;
+public class CloseProducerRequest extends Request {
+    private int queueProducerId;
 
-  public CloseProducerRequest()
-  {
-    super(0, true);
-  }
+    public CloseProducerRequest() {
+        super(0, true);
+    }
 
-  public CloseProducerRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public CloseProducerRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CloseProducerRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public CloseProducerRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public CloseProducerRequest(int dispatchId, int queueProducerId)
-  {
-    super(dispatchId, true);
-    this.queueProducerId = queueProducerId;
-  }
+    public CloseProducerRequest(int dispatchId, int queueProducerId) {
+        super(dispatchId, true);
+        this.queueProducerId = queueProducerId;
+    }
 
-  public CloseProducerRequest(RequestRetryValidator validator, int dispatchId, int queueProducerId)
-  {
-    super(dispatchId, true, validator);
-    this.queueProducerId = queueProducerId;
-  }
+    public CloseProducerRequest(RequestRetryValidator validator, int dispatchId, int queueProducerId) {
+        super(dispatchId, true, validator);
+        this.queueProducerId = queueProducerId;
+    }
 
-  public void setQueueProducerId(int queueProducerId)
-  {
-    this.queueProducerId = queueProducerId;
-  }
+    public void setQueueProducerId(int queueProducerId) {
+        this.queueProducerId = queueProducerId;
+    }
 
-  public int getQueueProducerId()
-  {
-    return queueProducerId;
-  }
+    public int getQueueProducerId() {
+        return queueProducerId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSEPRODUCER_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSEPRODUCER_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueProducerId, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueProducerId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueProducerId = SMQPUtil.read(queueProducerId, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueProducerId = SMQPUtil.read(queueProducerId, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CloseProducerReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CloseProducerReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/CloseProducerRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueProducerId=");
-    _b.append(queueProducerId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/CloseProducerRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueProducerId=");
+        _b.append(queueProducerId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

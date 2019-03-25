@@ -40,7 +40,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public boolean readBoolean() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readBoolean();
+        return ((StreamMessageImpl) message.getImpl()).readBoolean();
     }
 
     /**
@@ -50,7 +50,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public byte readByte() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readByte();
+        return ((StreamMessageImpl) message.getImpl()).readByte();
     }
 
     /**
@@ -60,7 +60,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public char readChar() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readChar();
+        return ((StreamMessageImpl) message.getImpl()).readChar();
     }
 
     /**
@@ -70,7 +70,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public void readBytes(byte[] bytes) throws JMSException {
-        ((StreamMessageImpl)message.getImpl()).readBytes(bytes);
+        ((StreamMessageImpl) message.getImpl()).readBytes(bytes);
     }
 
     /**
@@ -80,7 +80,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public short readShort() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readShort();
+        return ((StreamMessageImpl) message.getImpl()).readShort();
     }
 
     /**
@@ -90,7 +90,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public int readInt() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readInt();
+        return ((StreamMessageImpl) message.getImpl()).readInt();
     }
 
     /**
@@ -100,16 +100,17 @@ public class StreamBody {
      * @throws JMSException
      */
     public long readLong() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readLong();
+        return ((StreamMessageImpl) message.getImpl()).readLong();
     }
 
     /**
      * Reads a double.
+     *
      * @return double
      * @throws JMSException
      */
     public double readDouble() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readDouble();
+        return ((StreamMessageImpl) message.getImpl()).readDouble();
     }
 
     /**
@@ -119,7 +120,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public float readFloat() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readFloat();
+        return ((StreamMessageImpl) message.getImpl()).readFloat();
     }
 
     /**
@@ -129,7 +130,7 @@ public class StreamBody {
      * @throws JMSException
      */
     public String readString() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readString();
+        return ((StreamMessageImpl) message.getImpl()).readString();
     }
 
     /**
@@ -139,16 +140,17 @@ public class StreamBody {
      * @throws JMSException
      */
     public Object readObject() throws JMSException {
-        return ((StreamMessageImpl)message.getImpl()).readObject();
+        return ((StreamMessageImpl) message.getImpl()).readObject();
     }
 
     /**
      * Resets the stream body to the beginning.
+     *
      * @return StreamBody
      * @throws JMSException
      */
     public StreamBody reset() throws JMSException {
-        ((StreamMessageImpl)message.getImpl()).reset();
+        ((StreamMessageImpl) message.getImpl()).reset();
         return this;
     }
 
@@ -161,7 +163,7 @@ public class StreamBody {
      */
     public StreamBody writeBoolean(boolean b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeBoolean(b);
+        ((StreamMessageImpl) message.getImpl()).writeBoolean(b);
         return this;
     }
 
@@ -174,7 +176,7 @@ public class StreamBody {
      */
     public StreamBody writeChar(char b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeChar(b);
+        ((StreamMessageImpl) message.getImpl()).writeChar(b);
         return this;
     }
 
@@ -187,7 +189,7 @@ public class StreamBody {
      */
     public StreamBody writeByte(byte b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeByte(b);
+        ((StreamMessageImpl) message.getImpl()).writeByte(b);
         return this;
     }
 
@@ -200,14 +202,14 @@ public class StreamBody {
      */
     public StreamBody writeBytes(byte[] b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeBytes(b);
+        ((StreamMessageImpl) message.getImpl()).writeBytes(b);
         return this;
     }
 
     /**
      * Write a byte array with offset and length.
      *
-     * @param b byte array
+     * @param b   byte array
      * @param off offset
      * @param len length
      * @return StreamBody
@@ -215,7 +217,7 @@ public class StreamBody {
      */
     public StreamBody writeBytes(byte[] b, int off, int len) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeBytes(b, off, len);
+        ((StreamMessageImpl) message.getImpl()).writeBytes(b, off, len);
         return this;
     }
 
@@ -228,7 +230,7 @@ public class StreamBody {
      */
     public StreamBody writeShort(short b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeShort(b);
+        ((StreamMessageImpl) message.getImpl()).writeShort(b);
         return this;
     }
 
@@ -241,7 +243,7 @@ public class StreamBody {
      */
     public StreamBody writeInt(int b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeInt(b);
+        ((StreamMessageImpl) message.getImpl()).writeInt(b);
         return this;
     }
 
@@ -254,7 +256,7 @@ public class StreamBody {
      */
     public StreamBody writeLong(long b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeLong(b);
+        ((StreamMessageImpl) message.getImpl()).writeLong(b);
         return this;
     }
 
@@ -267,7 +269,7 @@ public class StreamBody {
      */
     public StreamBody writeDouble(double b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeDouble(b);
+        ((StreamMessageImpl) message.getImpl()).writeDouble(b);
         return this;
     }
 
@@ -280,7 +282,7 @@ public class StreamBody {
      */
     public StreamBody writeFloat(float b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeFloat(b);
+        ((StreamMessageImpl) message.getImpl()).writeFloat(b);
         return this;
     }
 
@@ -293,7 +295,7 @@ public class StreamBody {
      */
     public StreamBody writeString(String b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeString(b);
+        ((StreamMessageImpl) message.getImpl()).writeString(b);
         return this;
     }
 
@@ -306,7 +308,7 @@ public class StreamBody {
      */
     public StreamBody writeObject(Object b) throws JMSException {
         message.ensureLocalCopy();
-        ((StreamMessageImpl)message.getImpl()).writeObject(b);
+        ((StreamMessageImpl) message.getImpl()).writeObject(b);
         return this;
     }
 

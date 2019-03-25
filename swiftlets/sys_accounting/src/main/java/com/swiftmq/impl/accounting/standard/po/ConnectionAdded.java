@@ -22,28 +22,23 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ConnectionAdded extends POObject
-{
-  Entity entity = null;
+public class ConnectionAdded extends POObject {
+    Entity entity = null;
 
-  public ConnectionAdded(Semaphore semaphore, Entity entity)
-  {
-    super(null, semaphore);
-    this.entity = entity;
-  }
+    public ConnectionAdded(Semaphore semaphore, Entity entity) {
+        super(null, semaphore);
+        this.entity = entity;
+    }
 
-  public Entity getEntity()
-  {
-    return entity;
-  }
+    public Entity getEntity() {
+        return entity;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor) poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ConnectionAdded, name=" + entity.getName() + "]";
-  }
+    public String toString() {
+        return "[ConnectionAdded, name=" + entity.getName() + "]";
+    }
 }

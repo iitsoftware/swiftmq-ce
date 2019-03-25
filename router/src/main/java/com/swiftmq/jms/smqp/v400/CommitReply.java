@@ -21,83 +21,77 @@ package com.swiftmq.jms.smqp.v400;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CommitReply extends Reply
-{
-  long delay = 0;
+public class CommitReply extends Reply {
+    long delay = 0;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_COMMIT_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_COMMIT_REP;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeLong(delay);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeLong(delay);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    delay = in.readLong();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        delay = in.readLong();
+    }
 
-  /**
-   * @param delay
-   * @SBGen Method set delay
-   */
-  public void setDelay(long delay)
-  {
+    /**
+     * @param delay
+     * @SBGen Method set delay
+     */
+    public void setDelay(long delay) {
 
-    // SBgen: Assign variable
-    this.delay = delay;
-  }
+        // SBgen: Assign variable
+        this.delay = delay;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get delay
-   */
-  public long getDelay()
-  {
+    /**
+     * @return
+     * @SBGen Method get delay
+     */
+    public long getDelay() {
 
-    // SBgen: Get variable
-    return (delay);
-  }
+        // SBgen: Get variable
+        return (delay);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CommitReply " + super.toString() + ", delay=" + delay + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CommitReply " + super.toString() + ", delay=" + delay + "]";
+    }
 
 }
 

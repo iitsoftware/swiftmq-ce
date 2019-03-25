@@ -19,87 +19,76 @@ package com.swiftmq.impl.jms.standard.accounting;
 
 import java.util.regex.Pattern;
 
-public class AccountingProfile
-{
-  JMSSource source = null;
-  Pattern userNameFilter = null;
-  Pattern clientIdFilter = null;
-  Pattern hostNameFilter = null;
-  Pattern queueNameFilter = null;
-  Pattern topicNameFilter = null;
-  boolean userNameFilterNegate = false;
-  boolean clientIdFilterNegate = false;
-  boolean hostNameFilterNegate = false;
-  boolean queueNameFilterNegate = false;
-  boolean topicNameFilterNegate = false;
+public class AccountingProfile {
+    JMSSource source = null;
+    Pattern userNameFilter = null;
+    Pattern clientIdFilter = null;
+    Pattern hostNameFilter = null;
+    Pattern queueNameFilter = null;
+    Pattern topicNameFilter = null;
+    boolean userNameFilterNegate = false;
+    boolean clientIdFilterNegate = false;
+    boolean hostNameFilterNegate = false;
+    boolean queueNameFilterNegate = false;
+    boolean topicNameFilterNegate = false;
 
-  public AccountingProfile(Pattern userNameFilter, boolean userNameFilterNegate,
-                           Pattern clientIdFilter, boolean clientIdFilterNegate,
-                           Pattern hostNameFilter, boolean hostNameFilterNegate,
-                           Pattern queueNameFilter, boolean queueNameFilterNegate,
-                           Pattern topicNameFilter, boolean topicNameFilterNegate)
-  {
-    this.userNameFilter = userNameFilter;
-    this.userNameFilterNegate = userNameFilterNegate;
-    this.clientIdFilter = clientIdFilter;
-    this.clientIdFilterNegate = clientIdFilterNegate;
-    this.hostNameFilter = hostNameFilter;
-    this.hostNameFilterNegate = hostNameFilterNegate;
-    this.queueNameFilter = queueNameFilter;
-    this.queueNameFilterNegate = queueNameFilterNegate;
-    this.topicNameFilter = topicNameFilter;
-    this.topicNameFilterNegate = topicNameFilterNegate;
-  }
+    public AccountingProfile(Pattern userNameFilter, boolean userNameFilterNegate,
+                             Pattern clientIdFilter, boolean clientIdFilterNegate,
+                             Pattern hostNameFilter, boolean hostNameFilterNegate,
+                             Pattern queueNameFilter, boolean queueNameFilterNegate,
+                             Pattern topicNameFilter, boolean topicNameFilterNegate) {
+        this.userNameFilter = userNameFilter;
+        this.userNameFilterNegate = userNameFilterNegate;
+        this.clientIdFilter = clientIdFilter;
+        this.clientIdFilterNegate = clientIdFilterNegate;
+        this.hostNameFilter = hostNameFilter;
+        this.hostNameFilterNegate = hostNameFilterNegate;
+        this.queueNameFilter = queueNameFilter;
+        this.queueNameFilterNegate = queueNameFilterNegate;
+        this.topicNameFilter = topicNameFilter;
+        this.topicNameFilterNegate = topicNameFilterNegate;
+    }
 
-  public void setSource(JMSSource source)
-  {
-    this.source = source;
-  }
+    public void setSource(JMSSource source) {
+        this.source = source;
+    }
 
-  public JMSSource getSource()
-  {
-    return source;
-  }
+    public JMSSource getSource() {
+        return source;
+    }
 
-  private boolean checkMatch(Pattern p, boolean negate, String value)
-  {
-    if (value == null && p != null)
-      return false;
-    if (p == null)
-      return true;
-    boolean b = p.matcher(value).matches();
-    return negate ? !b : b;
-  }
+    private boolean checkMatch(Pattern p, boolean negate, String value) {
+        if (value == null && p != null)
+            return false;
+        if (p == null)
+            return true;
+        boolean b = p.matcher(value).matches();
+        return negate ? !b : b;
+    }
 
-  public boolean isMatchUserName(String userName)
-  {
-    return checkMatch(userNameFilter, userNameFilterNegate, userName);
-  }
+    public boolean isMatchUserName(String userName) {
+        return checkMatch(userNameFilter, userNameFilterNegate, userName);
+    }
 
-  public boolean isMatchClientId(String clientId)
-  {
-    return checkMatch(clientIdFilter, clientIdFilterNegate, clientId);
-  }
+    public boolean isMatchClientId(String clientId) {
+        return checkMatch(clientIdFilter, clientIdFilterNegate, clientId);
+    }
 
-  public boolean isMatchHostName(String hostName)
-  {
-    return checkMatch(hostNameFilter, hostNameFilterNegate, hostName);
-  }
+    public boolean isMatchHostName(String hostName) {
+        return checkMatch(hostNameFilter, hostNameFilterNegate, hostName);
+    }
 
-  public boolean isMatchQueueName(String queueName)
-  {
-    return checkMatch(queueNameFilter, queueNameFilterNegate, queueName);
-  }
+    public boolean isMatchQueueName(String queueName) {
+        return checkMatch(queueNameFilter, queueNameFilterNegate, queueName);
+    }
 
-  public boolean isMatchTopicName(String topicName)
-  {
-    return checkMatch(topicNameFilter, topicNameFilterNegate, topicName);
-  }
+    public boolean isMatchTopicName(String topicName) {
+        return checkMatch(topicNameFilter, topicNameFilterNegate, topicName);
+    }
 
-  public String toString()
-  {
-    return "[AccountingProfile, source=" + source + ", userNameFilter=" + userNameFilter + ", userNameFilterNegate=" + userNameFilterNegate + ", clientIdFilter=" + clientIdFilter + ", clientIdFilterNegate=" + clientIdFilterNegate +
-        ", hostNameFilter=" + hostNameFilter + ", hostNameFilterNegate=" + hostNameFilterNegate + ", queueNameFilter=" + queueNameFilter + ", queueNameFilterNegate=" + queueNameFilterNegate +
-        ", topicNameFilter=" + topicNameFilter + ", topicNameFilterNegate=" + topicNameFilterNegate + "]";
-  }
+    public String toString() {
+        return "[AccountingProfile, source=" + source + ", userNameFilter=" + userNameFilter + ", userNameFilterNegate=" + userNameFilterNegate + ", clientIdFilter=" + clientIdFilter + ", clientIdFilterNegate=" + clientIdFilterNegate +
+                ", hostNameFilter=" + hostNameFilter + ", hostNameFilterNegate=" + hostNameFilterNegate + ", queueNameFilter=" + queueNameFilter + ", queueNameFilterNegate=" + queueNameFilterNegate +
+                ", topicNameFilter=" + topicNameFilter + ", topicNameFilterNegate=" + topicNameFilterNegate + "]";
+    }
 }

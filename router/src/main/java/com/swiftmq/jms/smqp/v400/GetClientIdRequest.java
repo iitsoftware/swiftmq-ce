@@ -27,51 +27,44 @@ import com.swiftmq.tools.requestreply.RequestVisitor;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class GetClientIdRequest extends Request
-{
+public class GetClientIdRequest extends Request {
 
-  /**
-   * @SBGen Constructor
-   */
-  public GetClientIdRequest()
-  {
-    super(0, true);
-  }
+    /**
+     * @SBGen Constructor
+     */
+    public GetClientIdRequest() {
+        super(0, true);
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GET_CLIENT_ID_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_GET_CLIENT_ID_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new GetClientIdReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new GetClientIdReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitGetClientIdRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitGetClientIdRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[GetClientIdRequest " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[GetClientIdRequest " + super.toString() + "]";
+    }
 
 }
 

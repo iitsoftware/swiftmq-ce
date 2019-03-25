@@ -17,52 +17,44 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
+import com.swiftmq.tools.pipeline.POVisitor;
 import com.swiftmq.util.SwiftUtilities;
-import com.swiftmq.tools.pipeline.*;
 
-public class PropertyChanged extends EventObject
-{
-  String[] entityListContext = null;
-  String[] context = null;
-  String name = null;
-  Object value = null;
+public class PropertyChanged extends EventObject {
+    String[] entityListContext = null;
+    String[] context = null;
+    String name = null;
+    Object value = null;
 
-  public PropertyChanged(String[] entityListContext, String[] context, String name, Object value)
-  {
-    this.entityListContext = entityListContext;
-    this.context = context;
-    this.name = name;
-    this.value = value;
-  }
+    public PropertyChanged(String[] entityListContext, String[] context, String name, Object value) {
+        this.entityListContext = entityListContext;
+        this.context = context;
+        this.name = name;
+        this.value = value;
+    }
 
-  public String[] getEntityListContext()
-  {
-    return entityListContext;
-  }
+    public String[] getEntityListContext() {
+        return entityListContext;
+    }
 
-  public String[] getContext()
-  {
-    return context;
-  }
+    public String[] getContext() {
+        return context;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public Object getValue()
-  {
-    return value;
-  }
+    public Object getValue() {
+        return value;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventObjectVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventObjectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[PropertyChanged, entityListContext="+(entityListContext != null?SwiftUtilities.concat(entityListContext,"/"):"null")+
-        ", context="+(context != null?SwiftUtilities.concat(context,"/"):"null")+", name="+name+", value="+value+"]";
-  }
+    public String toString() {
+        return "[PropertyChanged, entityListContext=" + (entityListContext != null ? SwiftUtilities.concat(entityListContext, "/") : "null") +
+                ", context=" + (context != null ? SwiftUtilities.concat(context, "/") : "null") + ", name=" + name + ", value=" + value + "]";
+    }
 }

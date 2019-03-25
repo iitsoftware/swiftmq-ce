@@ -26,75 +26,65 @@ import java.math.MathContext;
 /**
  * 32-bit decimal number (IEEE 754-2008 decimal32)
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPDecimal32 extends AMQPType
-{
-  byte[] bytes = new byte[4];
+public class AMQPDecimal32 extends AMQPType {
+    byte[] bytes = new byte[4];
 
-  /**
-   * Constructs an AMQPDecimal32 with an undefined value
-   *
-   */
-  public AMQPDecimal32()
-  {
-    super("decimal32", AMQPTypeDecoder.DECIMAL32);
-  }
+    /**
+     * Constructs an AMQPDecimal32 with an undefined value
+     */
+    public AMQPDecimal32() {
+        super("decimal32", AMQPTypeDecoder.DECIMAL32);
+    }
 
-  /**
-   * Constructs an AMQPDecimal32 with a value
-   *
-   * @param value value
-   */
-  public AMQPDecimal32(BigDecimal value)
-  {
-    super("decimal32", AMQPTypeDecoder.DECIMAL32);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPDecimal32 with a value
+     *
+     * @param value value
+     */
+    public AMQPDecimal32(BigDecimal value) {
+        super("decimal32", AMQPTypeDecoder.DECIMAL32);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(BigDecimal value)
-  {
-    Util.writeInt(value.intValue(), bytes, 0);
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(BigDecimal value) {
+        Util.writeInt(value.intValue(), bytes, 0);
+    }
 
-  /**
-   * Returns the value
-   * @return  value
-   */
-  public BigDecimal getValue()
-  {
-    return new BigDecimal(Util.readInt(bytes, 0), MathContext.DECIMAL32);
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public BigDecimal getValue() {
+        return new BigDecimal(Util.readInt(bytes, 0), MathContext.DECIMAL32);
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+bytes.length;
-    return n;
-  }
- 
-  public void readContent(DataInput in) throws IOException
-  {
-    in.readFully(bytes);
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + bytes.length;
+        return n;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.write(bytes);
-  }
+    public void readContent(DataInput in) throws IOException {
+        in.readFully(bytes);
+    }
 
-  public String getValueString()
-  {
-    return getValue().toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.write(bytes);
+    }
 
-  public String toString()
-  {
-    return "[AMQPDecimal32, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String getValueString() {
+        return getValue().toString();
+    }
+
+    public String toString() {
+        return "[AMQPDecimal32, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

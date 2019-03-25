@@ -19,36 +19,34 @@ package com.swiftmq.jms.v510;
 
 import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
 
 public class TopicSubscriberImpl extends MessageConsumerImpl
-  implements TopicSubscriber
-{
-  Topic topic = null;
-  boolean noLocal = false;
+        implements TopicSubscriber {
+    Topic topic = null;
+    boolean noLocal = false;
 
-  public TopicSubscriberImpl(boolean transacted, int acknowledgeMode,
-                             int dispatchId, RequestRegistry requestRegistry,
-                             Topic topic, String messageSelector,
-                             SessionImpl session, boolean noLocal)
-  {
-    super(transacted, acknowledgeMode, dispatchId, requestRegistry,
-      messageSelector, session);
+    public TopicSubscriberImpl(boolean transacted, int acknowledgeMode,
+                               int dispatchId, RequestRegistry requestRegistry,
+                               Topic topic, String messageSelector,
+                               SessionImpl session, boolean noLocal) {
+        super(transacted, acknowledgeMode, dispatchId, requestRegistry,
+                messageSelector, session);
 
-    this.topic = topic;
-    this.noLocal = noLocal;
-  }
+        this.topic = topic;
+        this.noLocal = noLocal;
+    }
 
-  public Topic getTopic()
-    throws JMSException
-  {
-    return topic;
-  }
+    public Topic getTopic()
+            throws JMSException {
+        return topic;
+    }
 
-  public boolean getNoLocal()
-    throws JMSException
-  {
-    return noLocal;
-  }
+    public boolean getNoLocal()
+            throws JMSException {
+        return noLocal;
+    }
 }
 

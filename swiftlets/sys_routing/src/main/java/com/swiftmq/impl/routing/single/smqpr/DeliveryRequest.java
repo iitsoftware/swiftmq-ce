@@ -24,48 +24,41 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class DeliveryRequest extends Request
-{
-  public String destinationRouter = null;
-  public QueueReceiver receiver = null;
-  public QueuePullTransaction readTransaction = null;
-  public MessageEntry[] entries = null;
-  public int len = 0;
-  public DeliveryCallback callback = null;
+public class DeliveryRequest extends Request {
+    public String destinationRouter = null;
+    public QueueReceiver receiver = null;
+    public QueuePullTransaction readTransaction = null;
+    public MessageEntry[] entries = null;
+    public int len = 0;
+    public DeliveryCallback callback = null;
 
-  public DeliveryRequest(String destinationRouter, QueueReceiver receiver, QueuePullTransaction readTransaction, MessageEntry[] entries, int len, DeliveryCallback callback)
-  {
-    super(0, false);
-    this.destinationRouter = destinationRouter;
-    this.receiver = receiver;
-    this.readTransaction = readTransaction;
-    this.entries = entries;
-    this.len = len;
-    this.callback = callback;
-  }
+    public DeliveryRequest(String destinationRouter, QueueReceiver receiver, QueuePullTransaction readTransaction, MessageEntry[] entries, int len, DeliveryCallback callback) {
+        super(0, false);
+        this.destinationRouter = destinationRouter;
+        this.receiver = receiver;
+        this.readTransaction = readTransaction;
+        this.entries = entries;
+        this.len = len;
+        this.callback = callback;
+    }
 
-  public DeliveryRequest()
-  {
-    this(null, null, null, null, 0, null);
-  }
+    public DeliveryRequest() {
+        this(null, null, null, null, 0, null);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.DELIVERY_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.DELIVERY_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[DeliveryRequest receiver=" + receiver + ", readTransaction=" + readTransaction + ", entries=" + entries + ", len=" + len + ", callback=" + callback + "]";
-  }
+    public String toString() {
+        return "[DeliveryRequest receiver=" + receiver + ", readTransaction=" + readTransaction + ", entries=" + entries + ", len=" + len + ", callback=" + callback + "]";
+    }
 }

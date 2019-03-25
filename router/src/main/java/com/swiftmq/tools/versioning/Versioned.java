@@ -19,94 +19,80 @@ package com.swiftmq.tools.versioning;
 
 import com.swiftmq.tools.dump.Dumpable;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class Versioned implements VersionObject, Dumpable
-{
-  int version = 0;
-  byte[] payload = null;
-  int length = 0;
+public class Versioned implements VersionObject, Dumpable {
+    int version = 0;
+    byte[] payload = null;
+    int length = 0;
 
-  public Versioned(int version, byte[] newpayload, int length)
-  {
-    this.version = version;
-    this.length = length;
-    payload = new byte[length];
-    System.arraycopy(newpayload,0,payload,0,length);
-  }
-
-  public Versioned()
-  {
-  }
-
-  public int getDumpId()
-  {
-    return VersionObjectFactory.VERSIONED;
-  }
-
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    out.writeInt(version);
-    if (payload != null)
-    {
-      out.writeByte(1);
-      out.writeInt(length);
-      out.write(payload,0,length);
-    } else
-      out.writeByte(0);
-  }
-
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    version = in.readInt();
-    byte set = in.readByte();
-    if (set == 1)
-    {
-      length = in.readInt();
-      payload = new byte[length];
-      in.readFully(payload);
+    public Versioned(int version, byte[] newpayload, int length) {
+        this.version = version;
+        this.length = length;
+        payload = new byte[length];
+        System.arraycopy(newpayload, 0, payload, 0, length);
     }
-  }
 
-  public int getVersion()
-  {
-    return version;
-  }
+    public Versioned() {
+    }
 
-  public void setVersion(int version)
-  {
-    this.version = version;
-  }
+    public int getDumpId() {
+        return VersionObjectFactory.VERSIONED;
+    }
 
-  public byte[] getPayload()
-  {
-    return payload;
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeInt(version);
+        if (payload != null) {
+            out.writeByte(1);
+            out.writeInt(length);
+            out.write(payload, 0, length);
+        } else
+            out.writeByte(0);
+    }
 
-  public void setPayload(byte[] payload)
-  {
-    this.payload = payload;
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        version = in.readInt();
+        byte set = in.readByte();
+        if (set == 1) {
+            length = in.readInt();
+            payload = new byte[length];
+            in.readFully(payload);
+        }
+    }
 
-  public int getLength()
-  {
-    return length;
-  }
+    public int getVersion() {
+        return version;
+    }
 
-  public void setLength(int length)
-  {
-    this.length = length;
-  }
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
-  public void accept(VersionVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public byte[] getPayload() {
+        return payload;
+    }
 
-  public String toString()
-  {
-    return "[Versioned, version="+version+", length="+length+", payload="+payload+"]";
-  }
+    public void setPayload(byte[] payload) {
+        this.payload = payload;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public void accept(VersionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    public String toString() {
+        return "[Versioned, version=" + version + ", length=" + length + ", payload=" + payload + "]";
+    }
 }

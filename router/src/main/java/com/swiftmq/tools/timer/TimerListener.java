@@ -19,11 +19,11 @@ package com.swiftmq.tools.timer;
 
 /**
  * A listener interface to register at Timers
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public interface TimerListener
-{
-  public void performTimeAction(TimerEvent evt);
+public interface TimerListener {
+    public void performTimeAction(TimerEvent evt);
 }
 

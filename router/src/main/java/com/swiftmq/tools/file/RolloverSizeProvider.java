@@ -17,7 +17,6 @@
 
 package com.swiftmq.tools.file;
 
-public interface RolloverSizeProvider
-{
-  public long getRollOverSize();
+public interface RolloverSizeProvider {
+    public long getRollOverSize();
 }

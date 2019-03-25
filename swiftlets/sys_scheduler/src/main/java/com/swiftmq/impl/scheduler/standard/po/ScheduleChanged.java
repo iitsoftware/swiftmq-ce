@@ -18,30 +18,26 @@
 package com.swiftmq.impl.scheduler.standard.po;
 
 import com.swiftmq.impl.scheduler.standard.Schedule;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ScheduleChanged extends POObject
-{
-  Schedule schedule = null;
+public class ScheduleChanged extends POObject {
+    Schedule schedule = null;
 
-  public ScheduleChanged(Schedule schedule)
-  {
-    super(null, null);
-    this.schedule = schedule;
-  }
+    public ScheduleChanged(Schedule schedule) {
+        super(null, null);
+        this.schedule = schedule;
+    }
 
-  public Schedule getSchedule()
-  {
-    return schedule;
-  }
+    public Schedule getSchedule() {
+        return schedule;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ScheduleChanged, schedule="+schedule+"]";
-  }
+    public String toString() {
+        return "[ScheduleChanged, schedule=" + schedule + "]";
+    }
 }

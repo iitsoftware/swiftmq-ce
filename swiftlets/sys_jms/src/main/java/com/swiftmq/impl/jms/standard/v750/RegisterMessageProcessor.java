@@ -17,37 +17,31 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class RegisterMessageProcessor extends Request
-{
-  AsyncMessageProcessor messageProcessor = null;
+public class RegisterMessageProcessor extends Request {
+    AsyncMessageProcessor messageProcessor = null;
 
-  public RegisterMessageProcessor(AsyncMessageProcessor messageProcessor)
-  {
-    super(0, false);
-    this.messageProcessor = messageProcessor;
-  }
+    public RegisterMessageProcessor(AsyncMessageProcessor messageProcessor) {
+        super(0, false);
+        this.messageProcessor = messageProcessor;
+    }
 
-  public AsyncMessageProcessor getMessageProcessor()
-  {
-    return messageProcessor;
-  }
+    public AsyncMessageProcessor getMessageProcessor() {
+        return messageProcessor;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[RegisterMessageProcessor, messageProcessor="+messageProcessor+"]";
-  }
+    public String toString() {
+        return "[RegisterMessageProcessor, messageProcessor=" + messageProcessor + "]";
+    }
 }

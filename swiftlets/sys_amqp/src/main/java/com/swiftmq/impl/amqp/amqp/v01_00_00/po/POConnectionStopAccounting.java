@@ -17,25 +17,20 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00.po;
 
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPConnectionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POConnectionStopAccounting extends POObject
-{
-  public POConnectionStopAccounting()
-  {
-    super(null, null);
-  }
+public class POConnectionStopAccounting extends POObject {
+    public POConnectionStopAccounting() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POConnectionStopAccounting]";
-  }
+    public String toString() {
+        return "[POConnectionStopAccounting]";
+    }
 }

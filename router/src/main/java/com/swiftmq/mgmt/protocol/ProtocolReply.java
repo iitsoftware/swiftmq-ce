@@ -19,15 +19,12 @@ package com.swiftmq.mgmt.protocol;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-public class ProtocolReply extends Reply
-{
-  public int getDumpId()
-  {
-    return ProtocolFactory.PROTOCOL_REP;
-  }
+public class ProtocolReply extends Reply {
+    public int getDumpId() {
+        return ProtocolFactory.PROTOCOL_REP;
+    }
 
-  public String toString()
-  {
-    return "[ProtocolReply "+super.toString()+"]";
-  }
+    public String toString() {
+        return "[ProtocolReply " + super.toString() + "]";
+    }
 }

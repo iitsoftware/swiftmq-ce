@@ -20,10 +20,9 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00.transformer;
 import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 import com.swiftmq.jms.MessageImpl;
 
-public interface MessageFactory
-{
-  static final String PROP_ERROR = "JMS_SWIFTMQ_TRANSFORM_ERROR";
-  static final String PROP_ERROR_CAUSE = "JMS_SWIFTMQ_TRANSFORM_CAUSE";
+public interface MessageFactory {
+    static final String PROP_ERROR = "JMS_SWIFTMQ_TRANSFORM_ERROR";
+    static final String PROP_ERROR_CAUSE = "JMS_SWIFTMQ_TRANSFORM_CAUSE";
 
-  public MessageImpl create(AMQPMessage source) throws Exception;
+    public MessageImpl create(AMQPMessage source) throws Exception;
 }

@@ -20,23 +20,19 @@ package com.swiftmq.impl.routing.single.manager.event;
 
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 
-public class ConnectionEvent
-{
-  RoutingConnection connection;
+public class ConnectionEvent {
+    RoutingConnection connection;
 
-  public ConnectionEvent(RoutingConnection connection)
-  {
-    this.connection = connection;
-  }
+    public ConnectionEvent(RoutingConnection connection) {
+        this.connection = connection;
+    }
 
-  public RoutingConnection getConnection()
-  {
-    return (connection);
-  }
+    public RoutingConnection getConnection() {
+        return (connection);
+    }
 
-  public String toString()
-  {
-    return "[ConnectionEvent, connection="+connection+"]";
-  }
+    public String toString() {
+        return "[ConnectionEvent, connection=" + connection + "]";
+    }
 }
 

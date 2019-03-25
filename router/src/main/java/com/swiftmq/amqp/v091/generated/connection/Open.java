@@ -17,108 +17,96 @@
 
 package com.swiftmq.amqp.v091.generated.connection;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Open extends ConnectionMethod
-{
-  String virtualHost;
-  String reserved1;
-  boolean reserved2;
+import java.io.IOException;
 
-  public Open()
-  {
-    _classId = 10;
-    _methodId = 40;
-  }
+public class Open extends ConnectionMethod {
+    String virtualHost;
+    String reserved1;
+    boolean reserved2;
 
-  public void accept(ConnectionMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Open() {
+        _classId = 10;
+        _methodId = 40;
+    }
 
-  public String getVirtualHost()
-  {
-    return virtualHost;
-  }
+    public void accept(ConnectionMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setVirtualHost(String virtualHost)
-  {
-    this.virtualHost = virtualHost;
-  }
+    public String getVirtualHost() {
+        return virtualHost;
+    }
 
-  public String getReserved1()
-  {
-    return reserved1;
-  }
+    public void setVirtualHost(String virtualHost) {
+        this.virtualHost = virtualHost;
+    }
 
-  public void setReserved1(String reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public String getReserved1() {
+        return reserved1;
+    }
 
-  public boolean getReserved2()
-  {
-    return reserved2;
-  }
+    public void setReserved1(String reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  public void setReserved2(boolean reserved2)
-  {
-    this.reserved2 = reserved2;
-  }
+    public boolean getReserved2() {
+        return reserved2;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    virtualHost = Coder.readShortString(in);
-    reserved1 = Coder.readShortString(in);
-    reserved2 = Coder.readBit(in);
-  }
+    public void setReserved2(boolean reserved2) {
+        this.reserved2 = reserved2;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShortString(virtualHost, out);
-    Coder.writeShortString(reserved1, out);
-    Coder.writeBit(reserved2, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        virtualHost = Coder.readShortString(in);
+        reserved1 = Coder.readShortString(in);
+        reserved2 = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("virtualHost=");
-    b.append(virtualHost);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved2=");
-    b.append(reserved2);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShortString(virtualHost, out);
+        Coder.writeShortString(reserved1, out);
+        Coder.writeBit(reserved2, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Open " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("virtualHost=");
+        b.append(virtualHost);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved2=");
+        b.append(reserved2);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Open " + super.toString() + getDisplayString() + "]";
+    }
 }

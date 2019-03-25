@@ -19,11 +19,10 @@ package com.swiftmq.swiftlet.monitor;
 
 import java.util.Map;
 
-public interface Collector
-{
-  public String getDescription();
+public interface Collector {
+    public String getDescription();
 
-  public String[] getColumnNames();
+    public String[] getColumnNames();
 
-  public Map collect();
+    public Map collect();
 }

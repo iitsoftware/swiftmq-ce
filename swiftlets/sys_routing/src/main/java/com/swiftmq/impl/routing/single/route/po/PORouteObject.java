@@ -18,31 +18,26 @@
 package com.swiftmq.impl.routing.single.route.po;
 
 import com.swiftmq.impl.routing.single.route.Route;
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class PORouteObject extends POObject
-{
-  Route route = null;
+public class PORouteObject extends POObject {
+    Route route = null;
 
-  public PORouteObject(Route route)
-  {
-    super(null, null);
-    this.route = route;
-  }
+    public PORouteObject(Route route) {
+        super(null, null);
+        this.route = route;
+    }
 
-  public Route getRoute()
-  {
-    return route;
-  }
+    public Route getRoute() {
+        return route;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POExchangeVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POExchangeVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[PORouteObject "+super.toString()+", route="+route+"]";
-  }
+    public String toString() {
+        return "[PORouteObject " + super.toString() + ", route=" + route + "]";
+    }
 }

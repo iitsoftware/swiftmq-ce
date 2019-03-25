@@ -197,6 +197,6 @@ public class JDBCLookup {
         } catch (Exception e) {
 
         }
-      ctx.stream.removeJDBCLookup(name);
+        ctx.stream.removeJDBCLookup(name);
     }
 }

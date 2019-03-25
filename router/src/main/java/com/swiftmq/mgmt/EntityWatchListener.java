@@ -24,22 +24,23 @@ package com.swiftmq.mgmt;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface EntityWatchListener
-{
+public interface EntityWatchListener {
 
-  /**
-   * Called after the entity has been added.
-   * @param parent parent.
-   * @param entity new entity.
-   */
-  public void entityAdded(Entity parent, Entity entity);
+    /**
+     * Called after the entity has been added.
+     *
+     * @param parent parent.
+     * @param entity new entity.
+     */
+    public void entityAdded(Entity parent, Entity entity);
 
 
-  /**
-   * Called after the entity has been removed.
-   * @param parent parent.
-   * @param entity removed entity.
-   */
-  public void entityRemoved(Entity parent, Entity entity);
+    /**
+     * Called after the entity has been removed.
+     *
+     * @param parent parent.
+     * @param entity removed entity.
+     */
+    public void entityRemoved(Entity parent, Entity entity);
 
 }

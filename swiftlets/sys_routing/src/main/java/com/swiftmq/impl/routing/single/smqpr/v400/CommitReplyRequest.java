@@ -27,61 +27,50 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CommitReplyRequest extends ReplyRequest
-{
-  XidImpl xid = null;
+public class CommitReplyRequest extends ReplyRequest {
+    XidImpl xid = null;
 
-  public CommitReplyRequest()
-  {
-    super(0, false);
-  }
+    public CommitReplyRequest() {
+        super(0, false);
+    }
 
-  public CommitReplyRequest(XidImpl xid)
-  {
-    this();
-    this.xid = xid;
-  }
+    public CommitReplyRequest(XidImpl xid) {
+        this();
+        this.xid = xid;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.COMMIT_REPREQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.COMMIT_REPREQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    xid.writeContent(output);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        xid.writeContent(output);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    xid = new XidImpl();
-    xid.readContent(input);
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        xid = new XidImpl();
+        xid.readContent(input);
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[CommitReplyRequest " + super.toString() + ", xid=" + xid + "]";
-  }
+    public String toString() {
+        return "[CommitReplyRequest " + super.toString() + ", xid=" + xid + "]";
+    }
 }

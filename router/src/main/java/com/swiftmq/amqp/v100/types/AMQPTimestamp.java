@@ -24,75 +24,65 @@ import java.io.IOException;
 /**
  * An absolute point in time
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPTimestamp extends AMQPType
-{
-  byte[] bytes = new byte[8];
+public class AMQPTimestamp extends AMQPType {
+    byte[] bytes = new byte[8];
 
-  /**
-   * Constructs an AMQPTimestamp with an undefined value
-   *
-   */
-  public AMQPTimestamp()
-  {
-    super("timestamp", AMQPTypeDecoder.TIMESTAMP);
-  }
+    /**
+     * Constructs an AMQPTimestamp with an undefined value
+     */
+    public AMQPTimestamp() {
+        super("timestamp", AMQPTypeDecoder.TIMESTAMP);
+    }
 
-  /**
-   * Constructs an AMQPTimestamp with a value
-   *
-   * @param value value
-   */
-  public AMQPTimestamp(long value)
-  {
-    super("timestamp", AMQPTypeDecoder.TIMESTAMP);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPTimestamp with a value
+     *
+     * @param value value
+     */
+    public AMQPTimestamp(long value) {
+        super("timestamp", AMQPTypeDecoder.TIMESTAMP);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(long value)
-  {
-    Util.writeLong(value, bytes, 0);
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(long value) {
+        Util.writeLong(value, bytes, 0);
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public long getValue()
-  {
-    return Util.readLong(bytes, 0);
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public long getValue() {
+        return Util.readLong(bytes, 0);
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+bytes.length;
-    return n;
-  }
-      
-  public void readContent(DataInput in) throws IOException
-  {
-    in.readFully(bytes);
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + bytes.length;
+        return n;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.write(bytes);
-  }
+    public void readContent(DataInput in) throws IOException {
+        in.readFully(bytes);
+    }
 
-  public String getValueString()
-  {
-    return String.valueOf(getValue());
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.write(bytes);
+    }
 
-  public String toString()
-  {
-    return "[AMQPTimestamp, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String getValueString() {
+        return String.valueOf(getValue());
+    }
+
+    public String toString() {
+        return "[AMQPTimestamp, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

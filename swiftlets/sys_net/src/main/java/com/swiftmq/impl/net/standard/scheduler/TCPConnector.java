@@ -18,77 +18,68 @@
 
 package com.swiftmq.impl.net.standard.scheduler;
 
-import com.swiftmq.swiftlet.*;
-import com.swiftmq.swiftlet.net.*;
-import com.swiftmq.swiftlet.net.event.*;
-import com.swiftmq.swiftlet.timer.*;
-import com.swiftmq.swiftlet.timer.event.*;
-import com.swiftmq.net.*;
-import java.io.*;
+import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.swiftlet.net.ConnectorMetaData;
+import com.swiftmq.swiftlet.timer.TimerSwiftlet;
+import com.swiftmq.swiftlet.timer.event.TimerListener;
 
-public abstract class TCPConnector implements TimerListener
-{
-	TimerSwiftlet timerSwiftlet = null;
-  ConnectorMetaData metaData = null;
-	boolean closed = false;
+public abstract class TCPConnector implements TimerListener {
+    TimerSwiftlet timerSwiftlet = null;
+    ConnectorMetaData metaData = null;
+    boolean closed = false;
 
-  /**
-   * @param metaData 
-   * @SBGen Constructor assigns metaData
-   */
-  public TCPConnector(ConnectorMetaData metaData)
-  {
-    // SBgen: Assign variable
-    this.metaData = metaData;
-		timerSwiftlet = (TimerSwiftlet)SwiftletManager.getInstance().getSwiftlet("sys$timer");
-  }
+    /**
+     * @param metaData
+     * @SBGen Constructor assigns metaData
+     */
+    public TCPConnector(ConnectorMetaData metaData) {
+        // SBgen: Assign variable
+        this.metaData = metaData;
+        timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
+    }
 
-  /**
-   * @return 
-   * @SBGen Method get metaData
-   */
-  public ConnectorMetaData getMetaData()
-  {
-    // SBgen: Get variable
-    return(metaData);
-  }
+    /**
+     * @return
+     * @SBGen Method get metaData
+     */
+    public ConnectorMetaData getMetaData() {
+        // SBgen: Get variable
+        return (metaData);
+    }
 
-  /**
-   * Performs the specific time action
-   * @param evt timer event
-   */
-  public void performTimeAction()
-  {
-		connect();
-  }
+    /**
+     * Performs the specific time action
+     *
+     * @param evt timer event
+     */
+    public void performTimeAction() {
+        connect();
+    }
 
-  public void start()
-  {
-		connect();
-		if (metaData.getRetryInterval() > 0)
-			timerSwiftlet.addTimerListener(metaData.getRetryInterval(),this);
-  }
+    public void start() {
+        connect();
+        if (metaData.getRetryInterval() > 0)
+            timerSwiftlet.addTimerListener(metaData.getRetryInterval(), this);
+    }
 
-  public abstract void connect();
-	
-	public void close()
-  {
-		if (closed)
-			return;
-		closed = true;
-		timerSwiftlet.removeTimerListener(this);
-  }
+    public abstract void connect();
 
-  public String toString()
-	{
-		StringBuffer b = new StringBuffer();
-		b.append("swiftlet=");
-		b.append(metaData.getSwiftlet().getName());
-		b.append(", hostname=");
-		b.append(metaData.getHostname());
-		b.append(", port=");
-		b.append(metaData.getPort());
-		return b.toString();
-	}
+    public void close() {
+        if (closed)
+            return;
+        closed = true;
+        timerSwiftlet.removeTimerListener(this);
+    }
+
+    public String toString() {
+        StringBuffer b = new StringBuffer();
+        b.append("swiftlet=");
+        b.append(metaData.getSwiftlet().getName());
+        b.append(", hostname=");
+        b.append(metaData.getHostname());
+        b.append(", port=");
+        b.append(metaData.getPort());
+        return b.toString();
+    }
 }
 

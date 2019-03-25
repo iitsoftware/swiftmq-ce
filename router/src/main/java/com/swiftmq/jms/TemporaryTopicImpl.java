@@ -18,8 +18,6 @@
 package com.swiftmq.jms;
 
 import com.swiftmq.jms.v750.SessionImpl;
-import com.swiftmq.tools.requestreply.Reply;
-import com.swiftmq.tools.requestreply.RequestRegistry;
 
 import javax.jms.JMSException;
 import javax.jms.TemporaryTopic;
@@ -28,43 +26,36 @@ import javax.jms.TemporaryTopic;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class TemporaryTopicImpl extends TopicImpl implements TemporaryTopic
-{
-  transient SwiftMQConnection connection = null;
-  transient SessionImpl creatingSession = null;
+public class TemporaryTopicImpl extends TopicImpl implements TemporaryTopic {
+    transient SwiftMQConnection connection = null;
+    transient SessionImpl creatingSession = null;
 
-  public TemporaryTopicImpl(String queueName, SwiftMQConnection connection)
-  {
-    super(queueName, queueName);
+    public TemporaryTopicImpl(String queueName, SwiftMQConnection connection) {
+        super(queueName, queueName);
 
-    this.connection = connection;
-  }
+        this.connection = connection;
+    }
 
-  protected TemporaryTopicImpl()
-  {
-  }
+    protected TemporaryTopicImpl() {
+    }
 
-  public void setCreatingSession(SessionImpl creatingSession)
-  {
-    this.creatingSession = creatingSession;
-  }
+    public void setCreatingSession(SessionImpl creatingSession) {
+        this.creatingSession = creatingSession;
+    }
 
-  public boolean isCreatingSession(SessionImpl session)
-  {
-    return creatingSession == null || creatingSession == session;
-  }
+    public boolean isCreatingSession(SessionImpl session) {
+        return creatingSession == null || creatingSession == session;
+    }
 
-  public int getType()
-  {
-    return DestinationFactory.TYPE_TEMPTOPIC;
-  }
+    public int getType() {
+        return DestinationFactory.TYPE_TEMPTOPIC;
+    }
 
-  public void delete() throws JMSException
-  {
-    if (connection == null)
-      throw new JMSException("Cannot delete; you are not the creator of this TemporaryTopic!");
-    connection.deleteTempQueue(getQueueName());
-  }
+    public void delete() throws JMSException {
+        if (connection == null)
+            throw new JMSException("Cannot delete; you are not the creator of this TemporaryTopic!");
+        connection.deleteTempQueue(getQueueName());
+    }
 
 }
 

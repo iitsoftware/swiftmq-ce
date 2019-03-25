@@ -19,106 +19,96 @@
 
 package com.swiftmq.jms.smqp.v500;
 
-import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.jms.v500.ConnectionMetaDataImpl;
+import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class GetMetaDataReply extends Reply
-{
-  ConnectionMetaDataImpl connectionMetaData = null;
+public class GetMetaDataReply extends Reply {
+    ConnectionMetaDataImpl connectionMetaData = null;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GET_META_DATA_REP;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (connectionMetaData == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      connectionMetaData.writeContent(out);
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_GET_META_DATA_REP;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      connectionMetaData = null;
-    } else
-    {
-      connectionMetaData = new ConnectionMetaDataImpl();
-
-      connectionMetaData.readContent(in);
+        if (connectionMetaData == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            connectionMetaData.writeContent(out);
+        }
     }
-  }
 
-  /**
-   * @param connectionMetaData
-   * @SBGen Method set connectionMetaData
-   */
-  public void setConnectionMetaData(ConnectionMetaDataImpl connectionMetaData)
-  {
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    // SBgen: Assign variable
-    this.connectionMetaData = connectionMetaData;
-  }
+        byte set = in.readByte();
 
-  /**
-   * @return
-   * @SBGen Method get connectionMetaData
-   */
-  public ConnectionMetaDataImpl getConnectionMetaData()
-  {
+        if (set == 0) {
+            connectionMetaData = null;
+        } else {
+            connectionMetaData = new ConnectionMetaDataImpl();
 
-    // SBgen: Get variable
-    return (connectionMetaData);
-  }
+            connectionMetaData.readContent(in);
+        }
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[GetMetaDataReply " + super.toString() + " connectionMetaData="
-        + connectionMetaData + "]";
-  }
+    /**
+     * @param connectionMetaData
+     * @SBGen Method set connectionMetaData
+     */
+    public void setConnectionMetaData(ConnectionMetaDataImpl connectionMetaData) {
+
+        // SBgen: Assign variable
+        this.connectionMetaData = connectionMetaData;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get connectionMetaData
+     */
+    public ConnectionMetaDataImpl getConnectionMetaData() {
+
+        // SBgen: Get variable
+        return (connectionMetaData);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[GetMetaDataReply " + super.toString() + " connectionMetaData="
+                + connectionMetaData + "]";
+    }
 
 }
 

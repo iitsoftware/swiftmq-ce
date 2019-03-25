@@ -18,8 +18,8 @@
 package com.swiftmq.tools.versioning;
 
 
-public interface VersionVisitor
-{
-  public void visit(VersionNotification versionedNotification);
-  public void visit(Versioned versioned);
+public interface VersionVisitor {
+    public void visit(VersionNotification versionedNotification);
+
+    public void visit(Versioned versioned);
 }

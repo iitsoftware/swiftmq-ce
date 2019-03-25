@@ -24,49 +24,41 @@ import com.swiftmq.amqp.v100.generated.transport.definitions.DeliveryTag;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendDisposition extends POObject
-{
-  Consumer consumer = null;
-  long deliveryId = 0;
-  DeliveryTag deliveryTag = null;
-  DeliveryStateIF deliveryState;
+public class POSendDisposition extends POObject {
+    Consumer consumer = null;
+    long deliveryId = 0;
+    DeliveryTag deliveryTag = null;
+    DeliveryStateIF deliveryState;
 
-  public POSendDisposition(Consumer consumer, long deliveryId, DeliveryTag deliveryTag, DeliveryStateIF deliveryState)
-  {
-    super(null, null);
-    this.consumer = consumer;
-    this.deliveryId = deliveryId;
-    this.deliveryTag = deliveryTag;
-    this.deliveryState = deliveryState;
-  }
+    public POSendDisposition(Consumer consumer, long deliveryId, DeliveryTag deliveryTag, DeliveryStateIF deliveryState) {
+        super(null, null);
+        this.consumer = consumer;
+        this.deliveryId = deliveryId;
+        this.deliveryTag = deliveryTag;
+        this.deliveryState = deliveryState;
+    }
 
-  public Consumer getConsumer()
-  {
-    return consumer;
-  }
+    public Consumer getConsumer() {
+        return consumer;
+    }
 
-  public long getDeliveryId()
-  {
-    return deliveryId;
-  }
+    public long getDeliveryId() {
+        return deliveryId;
+    }
 
-  public DeliveryTag getDeliveryTag()
-  {
-    return deliveryTag;
-  }
+    public DeliveryTag getDeliveryTag() {
+        return deliveryTag;
+    }
 
-  public DeliveryStateIF getDeliveryState()
-  {
-    return deliveryState;
-  }
+    public DeliveryStateIF getDeliveryState() {
+        return deliveryState;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendDisposition, consumer=" + consumer + ", deliveryId=" + deliveryId + ", deliveryTag="+deliveryTag+", deliveryState=" + deliveryState + "]";
-  }
+    public String toString() {
+        return "[POSendDisposition, consumer=" + consumer + ", deliveryId=" + deliveryId + ", deliveryTag=" + deliveryTag + ", deliveryState=" + deliveryState + "]";
+    }
 }

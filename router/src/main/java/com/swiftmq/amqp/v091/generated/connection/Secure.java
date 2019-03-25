@@ -17,73 +17,65 @@
 
 package com.swiftmq.amqp.v091.generated.connection;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Secure extends ConnectionMethod
-{
-  byte[] challenge;
+import java.io.IOException;
 
-  public Secure()
-  {
-    _classId = 10;
-    _methodId = 20;
-  }
+public class Secure extends ConnectionMethod {
+    byte[] challenge;
 
-  public void accept(ConnectionMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Secure() {
+        _classId = 10;
+        _methodId = 20;
+    }
 
-  public byte[] getChallenge()
-  {
-    return challenge;
-  }
+    public void accept(ConnectionMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setChallenge(byte[] challenge)
-  {
-    this.challenge = challenge;
-  }
+    public byte[] getChallenge() {
+        return challenge;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    challenge = Coder.readLongString(in);
-  }
+    public void setChallenge(byte[] challenge) {
+        this.challenge = challenge;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeLongString(challenge, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        challenge = Coder.readLongString(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("challenge=");
-    if (challenge != null)
-      b.append(new String(challenge));
-    else
-      b.append("null");
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeLongString(challenge, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Secure " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("challenge=");
+        if (challenge != null)
+            b.append(new String(challenge));
+        else
+            b.append("null");
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Secure " + super.toString() + getDisplayString() + "]";
+    }
 }

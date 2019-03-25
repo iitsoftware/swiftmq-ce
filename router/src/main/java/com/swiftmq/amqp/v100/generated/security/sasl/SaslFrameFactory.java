@@ -18,76 +18,61 @@
 package com.swiftmq.amqp.v100.generated.security.sasl;
 
 import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+
+import java.io.IOException;
 
 /**
- *  Factory class to create SaslFrameIF objects out of a bare AMQPType
+ * Factory class to create SaslFrameIF objects out of a bare AMQPType
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class SaslFrameFactory
-{
+public class SaslFrameFactory {
 
-  /**
-   * Creates a SaslFrameIF object.
-   *
-   * @param channel the channel
-   * @param bare the bare AMQP type
-   * @return SaslFrameIF
-   */
-  public static SaslFrameIF create(int channel, AMQPType bare) throws Exception
-  {
-    if (bare.getCode() == AMQPTypeDecoder.NULL)
-      return null;
-    AMQPDescribedConstructor constructor = bare.getConstructor();
-    if (constructor == null)
-      throw new IOException("Missing constructor: " + bare);
-    AMQPType descriptor = constructor.getDescriptor();
-    int code = descriptor.getCode();
-    if (AMQPTypeDecoder.isULong(code))
-    {
-      long type = ((AMQPUnsignedLong) descriptor).getValue();
-      if (type == SaslMechanismsFrame.DESCRIPTOR_CODE)
-        return new SaslMechanismsFrame(channel, (AMQPList)bare);
-      if (type == SaslInitFrame.DESCRIPTOR_CODE)
-        return new SaslInitFrame(channel, (AMQPList)bare);
-      if (type == SaslChallengeFrame.DESCRIPTOR_CODE)
-        return new SaslChallengeFrame(channel, (AMQPList)bare);
-      if (type == SaslResponseFrame.DESCRIPTOR_CODE)
-        return new SaslResponseFrame(channel, (AMQPList)bare);
-      if (type == SaslOutcomeFrame.DESCRIPTOR_CODE)
-        return new SaslOutcomeFrame(channel, (AMQPList)bare);
-      throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
-    } else if (AMQPTypeDecoder.isSymbol(code))
-    {
-      String type = ((AMQPSymbol) descriptor).getValue();
-      if (type.equals(SaslMechanismsFrame.DESCRIPTOR_NAME))
-        return new SaslMechanismsFrame(channel, (AMQPList)bare);
-      if (type.equals(SaslInitFrame.DESCRIPTOR_NAME))
-        return new SaslInitFrame(channel, (AMQPList)bare);
-      if (type.equals(SaslChallengeFrame.DESCRIPTOR_NAME))
-        return new SaslChallengeFrame(channel, (AMQPList)bare);
-      if (type.equals(SaslResponseFrame.DESCRIPTOR_NAME))
-        return new SaslResponseFrame(channel, (AMQPList)bare);
-      if (type.equals(SaslOutcomeFrame.DESCRIPTOR_NAME))
-        return new SaslOutcomeFrame(channel, (AMQPList)bare);
-      throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
-    } else
-      throw new Exception("Invalid type of constructor descriptor (actual type=" + code + ", expected=symbold or ulong), bare= " + bare);
-  }
+    /**
+     * Creates a SaslFrameIF object.
+     *
+     * @param channel the channel
+     * @param bare    the bare AMQP type
+     * @return SaslFrameIF
+     */
+    public static SaslFrameIF create(int channel, AMQPType bare) throws Exception {
+        if (bare.getCode() == AMQPTypeDecoder.NULL)
+            return null;
+        AMQPDescribedConstructor constructor = bare.getConstructor();
+        if (constructor == null)
+            throw new IOException("Missing constructor: " + bare);
+        AMQPType descriptor = constructor.getDescriptor();
+        int code = descriptor.getCode();
+        if (AMQPTypeDecoder.isULong(code)) {
+            long type = ((AMQPUnsignedLong) descriptor).getValue();
+            if (type == SaslMechanismsFrame.DESCRIPTOR_CODE)
+                return new SaslMechanismsFrame(channel, (AMQPList) bare);
+            if (type == SaslInitFrame.DESCRIPTOR_CODE)
+                return new SaslInitFrame(channel, (AMQPList) bare);
+            if (type == SaslChallengeFrame.DESCRIPTOR_CODE)
+                return new SaslChallengeFrame(channel, (AMQPList) bare);
+            if (type == SaslResponseFrame.DESCRIPTOR_CODE)
+                return new SaslResponseFrame(channel, (AMQPList) bare);
+            if (type == SaslOutcomeFrame.DESCRIPTOR_CODE)
+                return new SaslOutcomeFrame(channel, (AMQPList) bare);
+            throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
+        } else if (AMQPTypeDecoder.isSymbol(code)) {
+            String type = ((AMQPSymbol) descriptor).getValue();
+            if (type.equals(SaslMechanismsFrame.DESCRIPTOR_NAME))
+                return new SaslMechanismsFrame(channel, (AMQPList) bare);
+            if (type.equals(SaslInitFrame.DESCRIPTOR_NAME))
+                return new SaslInitFrame(channel, (AMQPList) bare);
+            if (type.equals(SaslChallengeFrame.DESCRIPTOR_NAME))
+                return new SaslChallengeFrame(channel, (AMQPList) bare);
+            if (type.equals(SaslResponseFrame.DESCRIPTOR_NAME))
+                return new SaslResponseFrame(channel, (AMQPList) bare);
+            if (type.equals(SaslOutcomeFrame.DESCRIPTOR_NAME))
+                return new SaslOutcomeFrame(channel, (AMQPList) bare);
+            throw new Exception("Invalid descriptor type: " + type + ", bare=" + bare);
+        } else
+            throw new Exception("Invalid type of constructor descriptor (actual type=" + code + ", expected=symbold or ulong), bare= " + bare);
+    }
 
 }

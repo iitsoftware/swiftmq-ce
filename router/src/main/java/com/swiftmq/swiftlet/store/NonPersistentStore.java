@@ -22,49 +22,53 @@ package com.swiftmq.swiftlet.store;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface NonPersistentStore
-{
+public interface NonPersistentStore {
 
-  /**
-   * Get a store entry.
-   * @param key the key.
-   * @return store entry.
-   * @exception StoreException on error.
-   */
-  public StoreEntry get(Object key)
-      throws StoreException;
+    /**
+     * Get a store entry.
+     *
+     * @param key the key.
+     * @return store entry.
+     * @throws StoreException on error.
+     */
+    public StoreEntry get(Object key)
+            throws StoreException;
 
-  /**
-   * Update the delivery count of a store entry.
-   * @param key the key.
-   * @param deliveryCount new count.
-   * @exception StoreException on error.
-   */
-  public void updateDeliveryCount(Object key, int deliveryCount)
-      throws StoreException;
+    /**
+     * Update the delivery count of a store entry.
+     *
+     * @param key           the key.
+     * @param deliveryCount new count.
+     * @throws StoreException on error.
+     */
+    public void updateDeliveryCount(Object key, int deliveryCount)
+            throws StoreException;
 
-  /**
-   * Insert a store entry.
-   * @param storeEntry store entry.
-   * @exception StoreException on error.
-   */
-  public void insert(StoreEntry storeEntry)
-      throws StoreException;
+    /**
+     * Insert a store entry.
+     *
+     * @param storeEntry store entry.
+     * @throws StoreException on error.
+     */
+    public void insert(StoreEntry storeEntry)
+            throws StoreException;
 
-  /**
-   * Delete a store entry.
-   * @param key the key.
-   * @exception StoreException on error.
-   */
-  public void delete(Object key)
-      throws StoreException;
+    /**
+     * Delete a store entry.
+     *
+     * @param key the key.
+     * @throws StoreException on error.
+     */
+    public void delete(Object key)
+            throws StoreException;
 
 
-  /**
-   * Close the store and delete all content.
-   * @exception StoreException on error.
-   */
-  public void close()
-      throws StoreException;
+    /**
+     * Close the store and delete all content.
+     *
+     * @throws StoreException on error.
+     */
+    public void close()
+            throws StoreException;
 }
 

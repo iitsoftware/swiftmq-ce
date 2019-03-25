@@ -19,31 +19,26 @@ package com.swiftmq.amqp.v100.mgmt;
 
 import com.swiftmq.admin.cli.CLI;
 
-public class CLILauncher
-{
-  public static void main(String[] args)
-  {
-    if (args.length == 0 || args.length > 2)
-    {
-      System.out.println();
-      System.out.println("usage: java com.swiftmq.amqp.v100.mgmt.CLILauncher <amqp-url> [<scriptfile>]");
-      System.out.println();
-      System.out.println("<amqp-url>   is the AMQP-URL like 'amqp://localhost:5672'");
-      System.out.println("<scriptfile> name of an optional file with CLI commands");
-      System.out.println();
-      System.out.println("See SwiftMQ's documentation for details");
-      System.out.println();
-      System.exit(-1);
-    }
+public class CLILauncher {
+    public static void main(String[] args) {
+        if (args.length == 0 || args.length > 2) {
+            System.out.println();
+            System.out.println("usage: java com.swiftmq.amqp.v100.mgmt.CLILauncher <amqp-url> [<scriptfile>]");
+            System.out.println();
+            System.out.println("<amqp-url>   is the AMQP-URL like 'amqp://localhost:5672'");
+            System.out.println("<scriptfile> name of an optional file with CLI commands");
+            System.out.println();
+            System.out.println("See SwiftMQ's documentation for details");
+            System.out.println();
+            System.exit(-1);
+        }
 
-    try
-    {
-      new CLI(new AMQPConnectionHolder(args[0]), args.length == 2 ? args[1] : null).run();
-    } catch (Exception e)
-    {
-      System.out.println(e);
-      System.exit(-1);
-    }
+        try {
+            new CLI(new AMQPConnectionHolder(args[0]), args.length == 2 ? args[1] : null).run();
+        } catch (Exception e) {
+            System.out.println(e);
+            System.exit(-1);
+        }
 
-  }
+    }
 }

@@ -18,80 +18,73 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-import com.swiftmq.impl.store.standard.cache.*;
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class DeleteLogAction extends LogAction
-{
-	int pageNo;
-	byte[] beforeImage;
-	
-	/**
-	 * @param beforeImage 
-	 * @SBGen Constructor assigns beforeImage
-	 */
-	public DeleteLogAction(int pageNo,byte[] beforeImage)
-	{
-		// SBgen: Assign variable
-		this.pageNo = pageNo;
-		this.beforeImage = beforeImage;
-	}
-	
-	/**
-	 * @return 
-	 */
-	public int getType()
-	{
-		return DELETE; 
-	}
-	
-	/**
-	 * @return 
-	 * @SBGen Method get pageNo
-	 */
-	public int getPageNo()
-	{
-		// SBgen: Get variable
-		return(pageNo);
-	}
-	
-	/**
-	 * @return 
-	 * @SBGen Method get beforeImage
-	 */
-	public byte[] getBeforeImage()
-	{
-		// SBgen: Get variable
-		return(beforeImage==null?null:(byte[])beforeImage.clone());
-	}
-	
-	/**
-	 * @param out 
-	 * @exception IOException 
-	 */
-	protected void writeContent(DataOutput out)
-		throws IOException
-	{
-		out.writeInt(pageNo);
-		out.writeInt(beforeImage.length);
-		out.write(beforeImage);
-	}
-	
-	/**
-	 * @param in 
-	 * @exception IOException 
-	 */
-	protected void readContent(DataInput in)
-		throws IOException
-	{
-		pageNo = in.readInt();
-		beforeImage = new byte[in.readInt()];
-		in.readFully(beforeImage);
-	}
-	
-	public String toString()
-	{
-		return "[DeleteLogAction, pageNo="+pageNo+", beforeImage="+beforeImage+"]";
-	}
+public class DeleteLogAction extends LogAction {
+    int pageNo;
+    byte[] beforeImage;
+
+    /**
+     * @param beforeImage
+     * @SBGen Constructor assigns beforeImage
+     */
+    public DeleteLogAction(int pageNo, byte[] beforeImage) {
+        // SBgen: Assign variable
+        this.pageNo = pageNo;
+        this.beforeImage = beforeImage;
+    }
+
+    /**
+     * @return
+     */
+    public int getType() {
+        return DELETE;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get pageNo
+     */
+    public int getPageNo() {
+        // SBgen: Get variable
+        return (pageNo);
+    }
+
+    /**
+     * @return
+     * @SBGen Method get beforeImage
+     */
+    public byte[] getBeforeImage() {
+        // SBgen: Get variable
+        return (beforeImage == null ? null : (byte[]) beforeImage.clone());
+    }
+
+    /**
+     * @param out
+     * @throws IOException
+     */
+    protected void writeContent(DataOutput out)
+            throws IOException {
+        out.writeInt(pageNo);
+        out.writeInt(beforeImage.length);
+        out.write(beforeImage);
+    }
+
+    /**
+     * @param in
+     * @throws IOException
+     */
+    protected void readContent(DataInput in)
+            throws IOException {
+        pageNo = in.readInt();
+        beforeImage = new byte[in.readInt()];
+        in.readFully(beforeImage);
+    }
+
+    public String toString() {
+        return "[DeleteLogAction, pageNo=" + pageNo + ", beforeImage=" + beforeImage + "]";
+    }
 }
 

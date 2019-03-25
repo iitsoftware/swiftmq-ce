@@ -17,41 +17,34 @@
 
 package com.swiftmq.impl.queue.standard.cluster;
 
-public class MessageGroupEntry
-{
-  private Object key = null;
-  private String queueName = null;
-  private long lastDispatchTime = 0;
+public class MessageGroupEntry {
+    private Object key = null;
+    private String queueName = null;
+    private long lastDispatchTime = 0;
 
-  public MessageGroupEntry(Object key, String queueName)
-  {
-    this.key = key;
-    this.queueName = queueName;
-    this.lastDispatchTime = System.currentTimeMillis();
-  }
+    public MessageGroupEntry(Object key, String queueName) {
+        this.key = key;
+        this.queueName = queueName;
+        this.lastDispatchTime = System.currentTimeMillis();
+    }
 
-  public Object getKey()
-  {
-    return key;
-  }
+    public Object getKey() {
+        return key;
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public long getLastDispatchTime()
-  {
-    return lastDispatchTime;
-  }
+    public long getLastDispatchTime() {
+        return lastDispatchTime;
+    }
 
-  public void setLastDispatchTime(long lastDispatchTime)
-  {
-    this.lastDispatchTime = lastDispatchTime;
-  }
+    public void setLastDispatchTime(long lastDispatchTime) {
+        this.lastDispatchTime = lastDispatchTime;
+    }
 
-  public String toString()
-  {
-    return "[GroupEntry, key=" + key + ", queueName=" + queueName + "]";
-  }
+    public String toString() {
+        return "[GroupEntry, key=" + key + ", queueName=" + queueName + "]";
+    }
 }

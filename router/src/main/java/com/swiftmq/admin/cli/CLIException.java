@@ -25,12 +25,10 @@ package com.swiftmq.admin.cli;
  * @since 1.2
  */
 
-public class CLIException extends Exception
-{
-  public CLIException(String msg)
-  {
-    super(msg);
-  }
+public class CLIException extends Exception {
+    public CLIException(String msg) {
+        super(msg);
+    }
 
 }
 

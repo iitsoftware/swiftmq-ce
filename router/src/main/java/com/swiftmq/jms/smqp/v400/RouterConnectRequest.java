@@ -21,86 +21,79 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class RouterConnectRequest extends Request
-{
-  String routerName;
+public class RouterConnectRequest extends Request {
+    String routerName;
 
-  /**
-   * @param routerName
-   * @SBGen Constructor assigns routerName
-   */
-  public RouterConnectRequest(String routerName)
-  {
-    super(0, true);
-    // SBgen: Assign variable
-    this.routerName = routerName;
-  }
+    /**
+     * @param routerName
+     * @SBGen Constructor assigns routerName
+     */
+    public RouterConnectRequest(String routerName) {
+        super(0, true);
+        // SBgen: Assign variable
+        this.routerName = routerName;
+    }
 
-  public RouterConnectRequest()
-  {
-    super(0, true);
-  }
+    public RouterConnectRequest() {
+        super(0, true);
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeUTF(routerName);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeUTF(routerName);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    routerName = in.readUTF();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        routerName = in.readUTF();
+    }
 
-  /**
-   * @return
-   * @SBGen Method get routerName
-   */
-  public String getRouterName()
-  {
-    // SBgen: Get variable
-    return (routerName);
-  }
+    /**
+     * @return
+     * @SBGen Method get routerName
+     */
+    public String getRouterName() {
+        // SBgen: Get variable
+        return (routerName);
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROUTER_CONNECT_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_ROUTER_CONNECT_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new RouterConnectReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new RouterConnectReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitRouterConnectRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitRouterConnectRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[RouterConnectRequest " + super.toString() + ", routerName=" + routerName + "]";
-  }
+    public String toString() {
+        return "[RouterConnectRequest " + super.toString() + ", routerName=" + routerName + "]";
+    }
 }

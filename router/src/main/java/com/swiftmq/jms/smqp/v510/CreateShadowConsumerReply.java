@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CreateShadowConsumerReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CreateShadowConsumerReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CreateShadowConsumerReply extends ReplyNE
-{
-  private int queueConsumerId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateShadowConsumerReply(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+public class CreateShadowConsumerReply extends ReplyNE {
+    private int queueConsumerId;
 
-  protected CreateShadowConsumerReply()
-  {
-  }
-  
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public CreateShadowConsumerReply(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return queueConsumerId;
-  }
+    protected CreateShadowConsumerReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATESHADOWCONSUMER_REP;
-  }
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueConsumerId,out);
-  }
+    public int getQueueConsumerId() {
+        return queueConsumerId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueConsumerId = SMQPUtil.read(queueConsumerId,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATESHADOWCONSUMER_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CreateShadowConsumerReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueConsumerId=");
-    _b.append(queueConsumerId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueConsumerId, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueConsumerId = SMQPUtil.read(queueConsumerId, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CreateShadowConsumerReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueConsumerId=");
+        _b.append(queueConsumerId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

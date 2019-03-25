@@ -26,57 +26,48 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
-public class FileQueryRequest extends MessageBasedRequest
-{
-  String selector = null;
+public class FileQueryRequest extends MessageBasedRequest {
+    String selector = null;
 
-  public FileQueryRequest(Message message) throws JMSException
-  {
-    super(message);
-    selector = ((TextMessage) message).getText();
-  }
+    public FileQueryRequest(Message message) throws JMSException {
+        super(message);
+        selector = ((TextMessage) message).getText();
+    }
 
-  public FileQueryRequest(String selector)
-  {
-    this.selector = selector;
-    setReplyRequired(true);
-  }
+    public FileQueryRequest(String selector) {
+        this.selector = selector;
+        setReplyRequired(true);
+    }
 
-  public String getSelector()
-  {
-    return selector;
-  }
+    public String getSelector() {
+        return selector;
+    }
 
-  public void setSelector(String selector)
-  {
-    this.selector = selector;
-  }
+    public void setSelector(String selector) {
+        this.selector = selector;
+    }
 
-  public MessageBasedReply createReplyInstance()
-  {
-    return new FileQueryReply();
-  }
+    public MessageBasedReply createReplyInstance() {
+        return new FileQueryReply();
+    }
 
-  public void accept(MessageBasedRequestVisitor visitor)
-  {
-    ((ProtocolVisitor) visitor).visit(this);
-  }
+    public void accept(MessageBasedRequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    TextMessage message = new TextMessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEQUERY_REQ);
-    fillMessage(message);
-    message.setText(selector);
-    return message;
-  }
+    public Message toMessage() throws JMSException {
+        TextMessage message = new TextMessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEQUERY_REQ);
+        fillMessage(message);
+        message.setText(selector);
+        return message;
+    }
 
-  public String toString()
-  {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("[FileQueryRequest");
-    sb.append(", selector='").append(selector);
-    sb.append(']');
-    return sb.toString();
-  }
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("[FileQueryRequest");
+        sb.append(", selector='").append(selector);
+        sb.append(']');
+        return sb.toString();
+    }
 }

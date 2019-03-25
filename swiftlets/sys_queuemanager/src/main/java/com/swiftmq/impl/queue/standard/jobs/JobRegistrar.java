@@ -21,39 +21,35 @@ import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.swiftlet.scheduler.JobFactory;
 import com.swiftmq.swiftlet.scheduler.JobGroup;
 
-public class JobRegistrar
-{
-  SwiftletContext ctx = null;
-  JobGroup jobGroup = null;
+public class JobRegistrar {
+    SwiftletContext ctx = null;
+    JobGroup jobGroup = null;
 
-  public JobRegistrar(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public JobRegistrar(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public void register()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/register ...");
-    jobGroup = ctx.schedulerSwiftlet.getJobGroup("Queue Manager");
-    JobFactory jf = new QueuePurgerJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(), jf);
-    jf = new MultiQueuePurgerJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(), jf);
-    jf = new QueueMoverJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(), jf);
-    jf = new QueueCleanupJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(), jf);
-    jf = new QueueCleanupDLQJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(), jf);
-    jf = new QueueResetJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(), jf);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/register done");
-  }
+    public void register() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/register ...");
+        jobGroup = ctx.schedulerSwiftlet.getJobGroup("Queue Manager");
+        JobFactory jf = new QueuePurgerJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        jf = new MultiQueuePurgerJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        jf = new QueueMoverJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        jf = new QueueCleanupJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        jf = new QueueCleanupDLQJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        jf = new QueueResetJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/register done");
+    }
 
-  public void unregister()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/unregister ...");
-    jobGroup.removeAll();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/unregister done");
-  }
+    public void unregister() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/unregister ...");
+        jobGroup.removeAll();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/unregister done");
+    }
 }

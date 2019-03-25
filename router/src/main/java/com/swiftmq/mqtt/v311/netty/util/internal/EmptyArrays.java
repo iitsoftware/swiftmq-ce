@@ -18,13 +18,10 @@
 package com.swiftmq.mqtt.v311.netty.util.internal;
 
 
-import java.nio.ByteBuffer;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-
 public final class EmptyArrays {
 
     public static final byte[] EMPTY_BYTES = {};
 
-    private EmptyArrays() { }
+    private EmptyArrays() {
+    }
 }

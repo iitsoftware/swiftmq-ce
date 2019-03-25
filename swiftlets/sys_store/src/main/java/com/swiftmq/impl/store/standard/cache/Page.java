@@ -18,48 +18,45 @@
 
 package com.swiftmq.impl.store.standard.cache;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class Page
-{
-	public static final int PAGE_SIZE = 2048;
-  public final static int HEADER_LENGTH = 1;
-  public int pageNo = -1;
-  public boolean dirty = false;
-  public boolean empty = true;
-  public byte[] data = null;
+public class Page {
+    public static final int PAGE_SIZE = 2048;
+    public final static int HEADER_LENGTH = 1;
+    public int pageNo = -1;
+    public boolean dirty = false;
+    public boolean empty = true;
+    public byte[] data = null;
 
-  public Page copy()
-  {
-		Page p = new Page();
-		p.pageNo = pageNo;
-		p.dirty = dirty;
-		p.empty = empty;
-		p.data = new byte[PAGE_SIZE];
-		System.arraycopy(data,0,p.data,0,PAGE_SIZE);
-		return p;
-  }
-	
-	public void write(DataOutput out) throws IOException
-	{
-		out.writeInt(pageNo);
-		out.writeBoolean(dirty);
-		out.writeBoolean(empty);
-		out.write(data,0,PAGE_SIZE);
-	}
-	
-	public void read(DataInput in) throws IOException
-	{
-		pageNo = in.readInt();
-		dirty = in.readBoolean();
-		empty = in.readBoolean();
-		data = new byte[PAGE_SIZE];
-		in.readFully(data);
-	}
-	
-	public String toString()
-	{
-		return "[Page, pageNo="+pageNo+", dirty="+dirty+", empty="+empty+"]";
-	}
+    public Page copy() {
+        Page p = new Page();
+        p.pageNo = pageNo;
+        p.dirty = dirty;
+        p.empty = empty;
+        p.data = new byte[PAGE_SIZE];
+        System.arraycopy(data, 0, p.data, 0, PAGE_SIZE);
+        return p;
+    }
+
+    public void write(DataOutput out) throws IOException {
+        out.writeInt(pageNo);
+        out.writeBoolean(dirty);
+        out.writeBoolean(empty);
+        out.write(data, 0, PAGE_SIZE);
+    }
+
+    public void read(DataInput in) throws IOException {
+        pageNo = in.readInt();
+        dirty = in.readBoolean();
+        empty = in.readBoolean();
+        data = new byte[PAGE_SIZE];
+        in.readFully(data);
+    }
+
+    public String toString() {
+        return "[Page, pageNo=" + pageNo + ", dirty=" + dirty + ", empty=" + empty + "]";
+    }
 }
 

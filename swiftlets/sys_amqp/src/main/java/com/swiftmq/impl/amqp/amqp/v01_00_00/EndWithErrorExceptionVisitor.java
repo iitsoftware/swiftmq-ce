@@ -17,11 +17,10 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00;
 
-public interface EndWithErrorExceptionVisitor
-{
-  public void visit(LinkEndException exception);
+public interface EndWithErrorExceptionVisitor {
+    public void visit(LinkEndException exception);
 
-  public void visit(SessionEndException exception);
+    public void visit(SessionEndException exception);
 
-  public void visit(ConnectionEndException exception);
+    public void visit(ConnectionEndException exception);
 }

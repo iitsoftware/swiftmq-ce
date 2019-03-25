@@ -21,84 +21,69 @@ import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.deploy.DeploySpace;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class DeploySwiftletImpl extends com.swiftmq.swiftlet.deploy.DeploySwiftlet
-{
-  SwiftletContext ctx = null;
-  EntityListEventAdapter spaceAdapter = null;
-  Map spaceMap = null;
+public class DeploySwiftletImpl extends com.swiftmq.swiftlet.deploy.DeploySwiftlet {
+    SwiftletContext ctx = null;
+    EntityListEventAdapter spaceAdapter = null;
+    Map spaceMap = null;
 
-  public synchronized DeploySpace getDeploySpace(String name)
-  {
-    return (DeploySpace) spaceMap.get(name);
-  }
-
-  private void createSpaceAdapter(EntityList spaceList) throws SwiftletException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createSpaceAdapter ...");
-    spaceAdapter = new EntityListEventAdapter(spaceList, true, true)
-    {
-      public void onEntityAdd(Entity parent, Entity newEntity) throws EntityAddException
-      {
-        try
-        {
-          DeploySpace space = new DeploySpaceImpl(ctx, newEntity);
-          synchronized (DeploySwiftletImpl.this)
-          {
-            spaceMap.put(newEntity.getName(), space);
-          }
-        } catch (Exception e)
-        {
-          throw new EntityAddException(e.toString());
-        }
-      }
-
-      public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException
-      {
-        DeploySpace space = null;
-        synchronized (DeploySwiftletImpl.this)
-        {
-          space = (DeploySpace) spaceMap.remove(delEntity.getName());
-        }
-        if (space != null)
-          space.close();
-      }
-    };
-    try
-    {
-      spaceAdapter.init();
-    } catch (Exception e)
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createSpaceAdapter, exception: " + e);
-      throw new SwiftletException(e.toString());
+    public synchronized DeploySpace getDeploySpace(String name) {
+        return (DeploySpace) spaceMap.get(name);
     }
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createSpaceAdapter done");
-  }
 
-  protected void startup(Configuration configuration) throws SwiftletException
-  {
-    ctx = new SwiftletContext(this, configuration);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
-    spaceMap = new HashMap();
-    createSpaceAdapter((EntityList) configuration.getEntity("deploy-spaces"));
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done");
-  }
+    private void createSpaceAdapter(EntityList spaceList) throws SwiftletException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createSpaceAdapter ...");
+        spaceAdapter = new EntityListEventAdapter(spaceList, true, true) {
+            public void onEntityAdd(Entity parent, Entity newEntity) throws EntityAddException {
+                try {
+                    DeploySpace space = new DeploySpaceImpl(ctx, newEntity);
+                    synchronized (DeploySwiftletImpl.this) {
+                        spaceMap.put(newEntity.getName(), space);
+                    }
+                } catch (Exception e) {
+                    throw new EntityAddException(e.toString());
+                }
+            }
 
-  protected void shutdown() throws SwiftletException
-  {
-    // true when shutdown while standby
-    if (ctx == null)
-      return;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
-    try
-    {
-      spaceAdapter.close();
-    } catch (Exception e)
-    {
+            public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException {
+                DeploySpace space = null;
+                synchronized (DeploySwiftletImpl.this) {
+                    space = (DeploySpace) spaceMap.remove(delEntity.getName());
+                }
+                if (space != null)
+                    space.close();
+            }
+        };
+        try {
+            spaceAdapter.init();
+        } catch (Exception e) {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createSpaceAdapter, exception: " + e);
+            throw new SwiftletException(e.toString());
+        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createSpaceAdapter done");
     }
-    spaceMap.clear();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done");
-    ctx = null;
-  }
+
+    protected void startup(Configuration configuration) throws SwiftletException {
+        ctx = new SwiftletContext(this, configuration);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
+        spaceMap = new HashMap();
+        createSpaceAdapter((EntityList) configuration.getEntity("deploy-spaces"));
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done");
+    }
+
+    protected void shutdown() throws SwiftletException {
+        // true when shutdown while standby
+        if (ctx == null)
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
+        try {
+            spaceAdapter.close();
+        } catch (Exception e) {
+        }
+        spaceMap.clear();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done");
+        ctx = null;
+    }
 }

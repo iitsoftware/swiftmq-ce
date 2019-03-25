@@ -26,59 +26,59 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WireTap {
-  String name;
-  List<WireTapSubscriber> subscribers = new ArrayList<WireTapSubscriber>();
-  int nextSubscriber = 0;
+    String name;
+    List<WireTapSubscriber> subscribers = new ArrayList<WireTapSubscriber>();
+    int nextSubscriber = 0;
 
-  public WireTap(String name, WireTapSubscriber subscriber) {
-    this.name = name;
-    subscribers.add(subscriber);
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void addSubscriber(WireTapSubscriber subscriber) {
-    subscribers.add(subscriber);
-  }
-
-  public void removeSubscriber(WireTapSubscriber subscriber) {
-    subscribers.remove(subscriber);
-  }
-
-  public boolean hasSubscribers() {
-    return subscribers.size() > 0;
-  }
-
-  private MessageImpl copyMessage(MessageImpl msg) {
-    try {
-      DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
-      DataByteArrayInputStream dbis = new DataByteArrayInputStream();
-      msg.writeContent(dbos);
-      dbis.reset();
-      dbis.setBuffer(dbos.getBuffer(), 0, dbos.getCount());
-      MessageImpl msgCopy = MessageImpl.createInstance(dbis.readInt());
-      msgCopy.readContent(dbis);
-      return msgCopy;
-    } catch (IOException e) {
-      e.printStackTrace();
+    public WireTap(String name, WireTapSubscriber subscriber) {
+        this.name = name;
+        subscribers.add(subscriber);
     }
-    return null;
-  }
 
-  public void putMessage(MessageImpl message) {
-    if (!hasSubscribers())
-      return;
-    if (nextSubscriber >= subscribers.size())
-      nextSubscriber = 0;
-    WireTapSubscriber subscriber = subscribers.get(nextSubscriber);
-    if (subscriber.isSelected(message)) {
-      if (subscriber.requieresDeepCopy())
-        subscriber.putMessage(copyMessage(message));
-      else
-        subscriber.putMessage(message);
+    public String getName() {
+        return name;
     }
-    nextSubscriber++;
-  }
+
+    public void addSubscriber(WireTapSubscriber subscriber) {
+        subscribers.add(subscriber);
+    }
+
+    public void removeSubscriber(WireTapSubscriber subscriber) {
+        subscribers.remove(subscriber);
+    }
+
+    public boolean hasSubscribers() {
+        return subscribers.size() > 0;
+    }
+
+    private MessageImpl copyMessage(MessageImpl msg) {
+        try {
+            DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
+            DataByteArrayInputStream dbis = new DataByteArrayInputStream();
+            msg.writeContent(dbos);
+            dbis.reset();
+            dbis.setBuffer(dbos.getBuffer(), 0, dbos.getCount());
+            MessageImpl msgCopy = MessageImpl.createInstance(dbis.readInt());
+            msgCopy.readContent(dbis);
+            return msgCopy;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void putMessage(MessageImpl message) {
+        if (!hasSubscribers())
+            return;
+        if (nextSubscriber >= subscribers.size())
+            nextSubscriber = 0;
+        WireTapSubscriber subscriber = subscribers.get(nextSubscriber);
+        if (subscriber.isSelected(message)) {
+            if (subscriber.requieresDeepCopy())
+                subscriber.putMessage(copyMessage(message));
+            else
+                subscriber.putMessage(message);
+        }
+        nextSubscriber++;
+    }
 }

@@ -19,115 +19,106 @@
 
 package com.swiftmq.jms.smqp.v400;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.tools.concurrent.Semaphore;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CloseSessionRequest extends Request
-{
-  int sessionDispatchId = 0;
-  public transient Semaphore sem = null;
+public class CloseSessionRequest extends Request {
+    int sessionDispatchId = 0;
+    public transient Semaphore sem = null;
 
-  /**
-   * @param dispatchId
-   * @SBGen Constructor
-   */
-  public CloseSessionRequest(int sessionDispatchId)
-  {
-    super(0, true);
+    /**
+     * @param dispatchId
+     * @SBGen Constructor
+     */
+    public CloseSessionRequest(int sessionDispatchId) {
+        super(0, true);
 
-    this.sessionDispatchId = sessionDispatchId;
-  }
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSE_SESSION_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSE_SESSION_REQ;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(sessionDispatchId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(sessionDispatchId);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    sessionDispatchId = in.readInt();
-  }
+        sessionDispatchId = in.readInt();
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CloseSessionReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CloseSessionReply();
+    }
 
-  /**
-   * @param sessionDispatchId
-   * @SBGen Method set sessionDispatchId
-   */
-  public void setSessionDispatchId(int sessionDispatchId)
-  {
+    /**
+     * @param sessionDispatchId
+     * @SBGen Method set sessionDispatchId
+     */
+    public void setSessionDispatchId(int sessionDispatchId) {
 
-    // SBgen: Assign variable
-    this.sessionDispatchId = sessionDispatchId;
-  }
+        // SBgen: Assign variable
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get sessionDispatchId
-   */
-  public int getSessionDispatchId()
-  {
+    /**
+     * @return
+     * @SBGen Method get sessionDispatchId
+     */
+    public int getSessionDispatchId() {
 
-    // SBgen: Get variable
-    return (sessionDispatchId);
-  }
+        // SBgen: Get variable
+        return (sessionDispatchId);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCloseSessionRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCloseSessionRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CloseSessionRequest " + super.toString() + " sessionDispatchId="
-        + sessionDispatchId + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CloseSessionRequest " + super.toString() + " sessionDispatchId="
+                + sessionDispatchId + "]";
+    }
 
 }
 

@@ -17,32 +17,27 @@
 
 package com.swiftmq.impl.routing.single.route.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POConnectionRemoveObject extends POObject
-{
-  RoutingConnection routingConnection = null;
+public class POConnectionRemoveObject extends POObject {
+    RoutingConnection routingConnection = null;
 
-  public POConnectionRemoveObject(RoutingConnection routingConnection)
-  {
-    super(null, null);
-    this.routingConnection = routingConnection;
-  }
+    public POConnectionRemoveObject(RoutingConnection routingConnection) {
+        super(null, null);
+        this.routingConnection = routingConnection;
+    }
 
-  public RoutingConnection getRoutingConnection()
-  {
-    return routingConnection;
-  }
+    public RoutingConnection getRoutingConnection() {
+        return routingConnection;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POExchangeVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POExchangeVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POConnectionRemoveObject "+super.toString()+", routingConnection="+routingConnection+"]";
-  }
+    public String toString() {
+        return "[POConnectionRemoveObject " + super.toString() + ", routingConnection=" + routingConnection + "]";
+    }
 }

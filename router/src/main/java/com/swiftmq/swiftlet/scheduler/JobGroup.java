@@ -23,49 +23,51 @@ package com.swiftmq.swiftlet.scheduler;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2003, All Rights Reserved
  */
-public interface JobGroup
-{
-  /**
-   * Returns the name of the JobGroup. This name should be unique and should reflect
-   * the Swiftlet in some manner, e.g. 'Store' for the StoreSwiftlet. The name is set
-   * during creation of the JobGroup.
-   * @return Name
-   */
-  public String getName();
+public interface JobGroup {
+    /**
+     * Returns the name of the JobGroup. This name should be unique and should reflect
+     * the Swiftlet in some manner, e.g. 'Store' for the StoreSwiftlet. The name is set
+     * during creation of the JobGroup.
+     *
+     * @return Name
+     */
+    public String getName();
 
-  /**
-   * Returns an array of registered JobFactory names. If no JobFactories are registered,
-   * null is returned.
-   * @return JobFactory names
-   */
-  public String[] getJobFactoryNames();
+    /**
+     * Returns an array of registered JobFactory names. If no JobFactories are registered,
+     * null is returned.
+     *
+     * @return JobFactory names
+     */
+    public String[] getJobFactoryNames();
 
-  /**
-   * Checks whether a JobFactory with a given name is registered at this JobGroup.
-   * @param name JobFactory name
-   * @return true/false
-   */
-  public boolean hasJobFactory(String name);
+    /**
+     * Checks whether a JobFactory with a given name is registered at this JobGroup.
+     *
+     * @param name JobFactory name
+     * @return true/false
+     */
+    public boolean hasJobFactory(String name);
 
-  /**
-   * Registers a JobFactory at this JobGroup. Schedules which refers to this JobFactory are activated.
-   *
-   * @param name Name of the JobFactory
-   * @param factory JobFactory
-   */
-  public void addJobFactory(String name, JobFactory factory);
+    /**
+     * Registers a JobFactory at this JobGroup. Schedules which refers to this JobFactory are activated.
+     *
+     * @param name    Name of the JobFactory
+     * @param factory JobFactory
+     */
+    public void addJobFactory(String name, JobFactory factory);
 
-  /**
-   * Removes a JobFactory from this JobGroup. Schedules which refers to this JobFactory are deactivated,
-   * running Jobs from this JobFactory are stopped.
-   *
-   * @param name Name of the JobFactory
-   */
-  public void removeJobFactory(String name);
+    /**
+     * Removes a JobFactory from this JobGroup. Schedules which refers to this JobFactory are deactivated,
+     * running Jobs from this JobFactory are stopped.
+     *
+     * @param name Name of the JobFactory
+     */
+    public void removeJobFactory(String name);
 
-  /**
-   * Removes all JobFactories from this JobGroup. Schedules which refers to this JobFactories are deactivated,
-   * running Jobs from this JobFactories are stopped.
-   */
-  public void removeAll();
+    /**
+     * Removes all JobFactories from this JobGroup. Schedules which refers to this JobFactories are deactivated,
+     * running Jobs from this JobFactories are stopped.
+     */
+    public void removeAll();
 }

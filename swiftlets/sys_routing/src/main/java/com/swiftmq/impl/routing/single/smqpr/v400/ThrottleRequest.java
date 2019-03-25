@@ -17,38 +17,34 @@
 
 package com.swiftmq.impl.routing.single.smqpr.v400;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class ThrottleRequest extends Request
-{
-  long delay = 0;
-  public ThrottleRequest(long delay)
-  {
-    super(0,false);
-    this.delay = delay;
-  }
+public class ThrottleRequest extends Request {
+    long delay = 0;
 
-  public int getDumpId()
-  {
-    return SMQRFactory.THROTTLE_REQ;
-  }
+    public ThrottleRequest(long delay) {
+        super(0, false);
+        this.delay = delay;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    public int getDumpId() {
+        return SMQRFactory.THROTTLE_REQ;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public long getDelay()
-  {
-    return delay;
-  }
+    public void accept(RequestVisitor visitor) {
+    }
 
-  public String toString()
-  {
-    return "[ThrottleRequest, delay="+delay+"]";
-  }
+    public long getDelay() {
+        return delay;
+    }
+
+    public String toString() {
+        return "[ThrottleRequest, delay=" + delay + "]";
+    }
 }

@@ -17,18 +17,15 @@
 
 package com.swiftmq.impl.auth.standard;
 
-public class ResourceGrant
-{
-  String resourceName;
+public class ResourceGrant {
+    String resourceName;
 
-  protected ResourceGrant(String resourceName)
-  {
-    this.resourceName = resourceName;
-  }
+    protected ResourceGrant(String resourceName) {
+        this.resourceName = resourceName;
+    }
 
-  public String getResourceName()
-  {
-    return (resourceName);
-  }
+    public String getResourceName() {
+        return (resourceName);
+    }
 }
 

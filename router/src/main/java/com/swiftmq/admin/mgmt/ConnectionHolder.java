@@ -19,19 +19,18 @@ package com.swiftmq.admin.mgmt;
 
 import com.swiftmq.jms.ReconnectListener;
 
-public interface ConnectionHolder
-{
-  public void connect(String username, String password) throws Exception;
+public interface ConnectionHolder {
+    public void connect(String username, String password) throws Exception;
 
-  public void start() throws Exception;
+    public void start() throws Exception;
 
-  public void setExceptionListener(ExceptionListener listener) throws Exception;
+    public void setExceptionListener(ExceptionListener listener) throws Exception;
 
-  public void addReconnectListener(ReconnectListener listener);
+    public void addReconnectListener(ReconnectListener listener);
 
-  public void removeReconnectListener(ReconnectListener listener);
+    public void removeReconnectListener(ReconnectListener listener);
 
-  public Endpoint createEndpoint(String routerName, RequestServiceFactory rsf, boolean createInternalCommands) throws Exception;
+    public Endpoint createEndpoint(String routerName, RequestServiceFactory rsf, boolean createInternalCommands) throws Exception;
 
-  public void close();
+    public void close();
 }

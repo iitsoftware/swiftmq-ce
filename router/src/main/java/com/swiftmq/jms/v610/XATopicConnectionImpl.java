@@ -19,26 +19,24 @@ package com.swiftmq.jms.v610;
 
 import com.swiftmq.net.client.Reconnector;
 
-import javax.jms.*;
-import java.net.Socket;
+import javax.jms.JMSException;
+import javax.jms.XASession;
+import javax.jms.XATopicConnection;
+import javax.jms.XATopicSession;
 
 public class XATopicConnectionImpl extends TopicConnectionImpl
-    implements XATopicConnection
-{
+        implements XATopicConnection {
 
-  protected XATopicConnectionImpl(String userName, String password, Reconnector reconnector)
-      throws JMSException
-  {
-    super(userName, password, reconnector);
-  }
+    protected XATopicConnectionImpl(String userName, String password, Reconnector reconnector)
+            throws JMSException {
+        super(userName, password, reconnector);
+    }
 
-  public XATopicSession createXATopicSession() throws JMSException
-  {
-    return new XATopicSessionImpl((SessionImpl) createTopicSession(true, 0));
-  }
+    public XATopicSession createXATopicSession() throws JMSException {
+        return new XATopicSessionImpl((SessionImpl) createTopicSession(true, 0));
+    }
 
-  public XASession createXASession() throws JMSException
-  {
-    return new XASessionImpl((SessionImpl) createSession(true, 0));
-  }
+    public XASession createXASession() throws JMSException {
+        return new XASessionImpl((SessionImpl) createSession(true, 0));
+    }
 }

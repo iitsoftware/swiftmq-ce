@@ -24,35 +24,29 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendClose extends POObject
-{
-  AMQPSymbol condition = null;
-  AMQPString description = null;
+public class POSendClose extends POObject {
+    AMQPSymbol condition = null;
+    AMQPString description = null;
 
-  public POSendClose(Semaphore semaphore, AMQPSymbol condition, AMQPString description)
-  {
-    super(null, semaphore);
-    this.condition = condition;
-    this.description = description;
-  }
+    public POSendClose(Semaphore semaphore, AMQPSymbol condition, AMQPString description) {
+        super(null, semaphore);
+        this.condition = condition;
+        this.description = description;
+    }
 
-  public AMQPSymbol getCondition()
-  {
-    return condition;
-  }
+    public AMQPSymbol getCondition() {
+        return condition;
+    }
 
-  public AMQPString getDescription()
-  {
-    return description;
-  }
+    public AMQPString getDescription() {
+        return description;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendClose, condition=" + condition + ", description=" + description + "]";
-  }
+    public String toString() {
+        return "[POSendClose, condition=" + condition + ", description=" + description + "]";
+    }
 }

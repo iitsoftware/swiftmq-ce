@@ -41,7 +41,7 @@ public class TxBookKeeper implements TransactionFlushListener {
     QueueSender sender = null;
     QueueReceiver receiver = null;
 
-    public TxBookKeeper(StreamContext ctx, String queueName) throws Exception{
+    public TxBookKeeper(StreamContext ctx, String queueName) throws Exception {
         this.ctx = ctx;
         this.queueName = queueName;
         sender = ctx.ctx.queueManager.createQueueSender(queueName, null);
@@ -49,18 +49,14 @@ public class TxBookKeeper implements TransactionFlushListener {
         ctx.addTransactionFlushListener(this);
     }
 
-    void add(String key, Message message, QueueMemory.KeyEntry keyEntry)
-    {
+    void add(String key, Message message, QueueMemory.KeyEntry keyEntry) {
         txLog.add(new Entry(key, OP_ADD, message, keyEntry));
     }
 
-    void remove(String key, QueueMemory.KeyEntry keyEntry)
-    {
-        for (Iterator<Entry> iter=txLog.iterator(); iter.hasNext();)
-        {
+    void remove(String key, QueueMemory.KeyEntry keyEntry) {
+        for (Iterator<Entry> iter = txLog.iterator(); iter.hasNext(); ) {
             Entry entry = iter.next();
-            if (entry.op == OP_ADD && entry.key.equals(key))
-            {
+            if (entry.op == OP_ADD && entry.key.equals(key)) {
                 iter.remove();
                 return;
             }
@@ -68,10 +64,8 @@ public class TxBookKeeper implements TransactionFlushListener {
         txLog.add(new Entry(key, OP_REMOVE, null, keyEntry));
     }
 
-    Message get(String key)
-    {
-        for (ListIterator<Entry> iter=txLog.listIterator(txLog.size()); iter.hasPrevious();)
-        {
+    Message get(String key) {
+        for (ListIterator<Entry> iter = txLog.listIterator(txLog.size()); iter.hasPrevious(); ) {
             Entry entry = iter.previous();
             if (entry.op == OP_ADD && entry.key.equals(key))
                 return entry.message;
@@ -79,10 +73,8 @@ public class TxBookKeeper implements TransactionFlushListener {
         return null;
     }
 
-    boolean isRemoved(String key)
-    {
-        for (ListIterator<Entry> iter=txLog.listIterator(txLog.size()); iter.hasPrevious();)
-        {
+    boolean isRemoved(String key) {
+        for (ListIterator<Entry> iter = txLog.listIterator(txLog.size()); iter.hasPrevious(); ) {
             Entry entry = iter.previous();
             if (entry.op == OP_REMOVE && entry.key.equals(key))
                 return true;
@@ -90,10 +82,8 @@ public class TxBookKeeper implements TransactionFlushListener {
         return false;
     }
 
-    void getSelected(MessageSelector selector, Memory result) throws Exception
-    {
-        for (Iterator<Entry> iter=txLog.iterator(); iter.hasNext();)
-        {
+    void getSelected(MessageSelector selector, Memory result) throws Exception {
+        for (Iterator<Entry> iter = txLog.iterator(); iter.hasNext(); ) {
             Entry entry = iter.next();
             if (entry.op == OP_ADD && entry.message.isSelected(selector)) {
                 result.add(entry.message);
@@ -101,21 +91,19 @@ public class TxBookKeeper implements TransactionFlushListener {
         }
     }
 
-    void remove(MessageSelector selector) throws Exception
-    {
-        for (Iterator<Entry> iter=txLog.iterator(); iter.hasNext();)
-        {
+    void remove(MessageSelector selector) throws Exception {
+        for (Iterator<Entry> iter = txLog.iterator(); iter.hasNext(); ) {
             Entry entry = iter.next();
             if (entry.op == OP_ADD && entry.message.isSelected(selector)) {
                 iter.remove();
             }
         }
     }
+
     @Override
     public void flush() {
         List<MessageIndex> toRemove = null;
-        for (Iterator<Entry> iter=txLog.iterator(); iter.hasNext();)
-        {
+        for (Iterator<Entry> iter = txLog.iterator(); iter.hasNext(); ) {
             Entry entry = iter.next();
             if (entry.op == OP_ADD) {
                 try {
@@ -125,16 +113,14 @@ public class TxBookKeeper implements TransactionFlushListener {
                 } catch (QueueException e) {
                     e.printStackTrace();
                 }
-            }
-            else {
+            } else {
                 if (toRemove == null)
                     toRemove = new ArrayList<MessageIndex>();
                 toRemove.add(entry.keyEntry.messageIndex);
             }
         }
         txLog.clear();
-        if (toRemove != null)
-        {
+        if (toRemove != null) {
             try {
                 QueuePullTransaction transaction = receiver.createTransaction(false);
                 transaction.removeMessages(toRemove);
@@ -145,8 +131,7 @@ public class TxBookKeeper implements TransactionFlushListener {
         }
     }
 
-    void close()
-    {
+    void close() {
         ctx.removeTransactionFlushListener(this);
         try {
             sender.close();
@@ -166,8 +151,7 @@ public class TxBookKeeper implements TransactionFlushListener {
                 '}';
     }
 
-    private class Entry
-    {
+    private class Entry {
         String key;
         int op;
         Message message;
@@ -186,8 +170,7 @@ public class TxBookKeeper implements TransactionFlushListener {
         }
     }
 
-    private class TxFinisher implements TransactionFinishListener
-    {
+    private class TxFinisher implements TransactionFinishListener {
         MessageImpl impl;
         QueueMemory.KeyEntry keyEntry;
 
@@ -198,11 +181,10 @@ public class TxBookKeeper implements TransactionFlushListener {
 
         @Override
         public void transactionFinished() {
-            if (impl != null)
-            {
+            if (impl != null) {
                 // To keep the data sync
                 synchronized (this) {
-                  keyEntry.messageIndex = (MessageIndex) impl.getStreamPKey();
+                    keyEntry.messageIndex = (MessageIndex) impl.getStreamPKey();
                 }
             }
         }

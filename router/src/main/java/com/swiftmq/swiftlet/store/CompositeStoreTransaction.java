@@ -19,22 +19,21 @@ package com.swiftmq.swiftlet.store;
 
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 
-public abstract class CompositeStoreTransaction implements StoreWriteTransaction, StoreReadTransaction
-{
-  public abstract void setReferencable(boolean referencable);
+public abstract class CompositeStoreTransaction implements StoreWriteTransaction, StoreReadTransaction {
+    public abstract void setReferencable(boolean referencable);
 
-  public abstract boolean isReferencable();
+    public abstract boolean isReferencable();
 
-  public abstract void setPersistentStore(PersistentStore pStore)
-      throws StoreException;
+    public abstract void setPersistentStore(PersistentStore pStore)
+            throws StoreException;
 
-  public abstract void commitTransaction()
-      throws StoreException;
+    public abstract void commitTransaction()
+            throws StoreException;
 
-  public abstract void commitTransaction(AsyncCompletionCallback callback);
+    public abstract void commitTransaction(AsyncCompletionCallback callback);
 
-  public abstract void abortTransaction()
-      throws StoreException;
+    public abstract void abortTransaction()
+            throws StoreException;
 
-  public abstract void abortTransaction(AsyncCompletionCallback callback);
+    public abstract void abortTransaction(AsyncCompletionCallback callback);
 }

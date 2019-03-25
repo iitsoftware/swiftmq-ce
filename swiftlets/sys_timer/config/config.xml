@@ -1,7 +1,7 @@
 <swiftlet name="sys$timer" 
 					displayname="Timer Swiftlet"
 					class="com.swiftmq.impl.timer.standard.TimerSwiftletImpl"
-					icon="/com/swiftmq/impl/timer/standard/images/swiftlet.png"
+					icon="/sys_timer/images/swiftlet.png"
 					description="Timer Swiftlet"
 					release="${release}"
 					vendor="IIT Software GmbH" >

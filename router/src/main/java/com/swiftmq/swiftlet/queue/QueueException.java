@@ -24,16 +24,15 @@ import javax.jms.JMSException;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class QueueException extends JMSException
-{
-  /**
-   * Constructs a new QueueException
-   * @param msg the message
-   */
-  public QueueException(String msg)
-  {
-    super(msg);
-  }
+public class QueueException extends JMSException {
+    /**
+     * Constructs a new QueueException
+     *
+     * @param msg the message
+     */
+    public QueueException(String msg) {
+        super(msg);
+    }
 
 }
 

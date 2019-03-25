@@ -1,7 +1,7 @@
 <swiftlet name="sys$mgmt"
           displayname="Management Swiftlet"
           class="com.swiftmq.impl.mgmt.standard.MgmtSwiftletImpl"
-          icon="/com/swiftmq/impl/mgmt/standard/images/swiftlet.png"
+          icon="/sys_mgmt/images/swiftlet.png"
           description="Management Swiftlet"
           release="${release}"
           vendor="IIT Software GmbH">

@@ -20,20 +20,16 @@ package com.swiftmq.jms.v630.po;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POAuthenticateRequest extends POObject
-{
-  public POAuthenticateRequest()
-  {
-    super(null, null);
-  }
+public class POAuthenticateRequest extends POObject {
+    public POAuthenticateRequest() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POAuthenticateRequest]";
-  }
+    public String toString() {
+        return "[POAuthenticateRequest]";
+    }
 }

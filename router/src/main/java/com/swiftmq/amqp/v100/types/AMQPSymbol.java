@@ -19,7 +19,6 @@ package com.swiftmq.amqp.v100.types;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -27,131 +26,114 @@ import java.nio.charset.Charset;
 /**
  * Symbolic values from a constrained domain
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPSymbol extends AMQPType implements Comparable
-{
-  String value = null;
-  byte[] bytes;
+public class AMQPSymbol extends AMQPType implements Comparable {
+    String value = null;
+    byte[] bytes;
 
-  /**
-   * Constructs an AMQPSymbol with an undefined value
-   *
-   */
-  public AMQPSymbol()
-  {
-    super("symbol", AMQPTypeDecoder.SYM32);
-  }
-
-  /**
-   * Constructs an AMQPSymbol with a value
-   *
-   * @param value value
-   */
-  public AMQPSymbol(String value)
-  {
-    super("symbol", AMQPTypeDecoder.SYM32);
-    setValue(value);
-  }
-
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(String value)
-  {
-    this.value = value;
-    if (value != null)
-    {
-      Charset charset = Charset.forName("US-ASCII");
-      ByteBuffer buffer = charset.encode(value);
-      bytes = new byte[buffer.limit()];
-      buffer.get(bytes);
-      code = bytes.length > 255 ? AMQPTypeDecoder.SYM32 : AMQPTypeDecoder.SYM8;
+    /**
+     * Constructs an AMQPSymbol with an undefined value
+     */
+    public AMQPSymbol() {
+        super("symbol", AMQPTypeDecoder.SYM32);
     }
-  }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public String getValue()
-  {
-    if (value == null)
-    {
-      Charset charset = Charset.forName("US-ASCII");
-      value = charset.decode(ByteBuffer.wrap(bytes)).toString();
+    /**
+     * Constructs an AMQPSymbol with a value
+     *
+     * @param value value
+     */
+    public AMQPSymbol(String value) {
+        super("symbol", AMQPTypeDecoder.SYM32);
+        setValue(value);
     }
-    return value;
-  }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize();
-    if (code == AMQPTypeDecoder.SYM8)
-      n += 1;
-    else
-      n += 4;
-    if (bytes != null)
-      n += bytes.length;
-    return n;
-  }
-
-  public void readContent(DataInput in) throws IOException
-  {
-    int len = 0;
-    if (code == AMQPTypeDecoder.SYM8)
-      len = in.readUnsignedByte();
-    else if (code == AMQPTypeDecoder.SYM32)
-      len = in.readInt();
-    else
-      throw new IOException("Invalid code: " + code);
-    if (len < 0)
-      throw new IOException("byte[] array length invalid: " + len);
-    bytes = new byte[len];
-    try
-    {
-      in.readFully(bytes);
-    } catch (Exception e)
-    {
-      System.out.println("code="+code+", len="+len);
-      e.printStackTrace();
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(String value) {
+        this.value = value;
+        if (value != null) {
+            Charset charset = Charset.forName("US-ASCII");
+            ByteBuffer buffer = charset.encode(value);
+            bytes = new byte[buffer.limit()];
+            buffer.get(bytes);
+            code = bytes.length > 255 ? AMQPTypeDecoder.SYM32 : AMQPTypeDecoder.SYM8;
+        }
     }
-  }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (code == AMQPTypeDecoder.SYM8)
-      out.writeByte(bytes.length);
-    else if (code == AMQPTypeDecoder.SYM32)
-      out.writeInt(bytes.length);
-    out.write(bytes);
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public String getValue() {
+        if (value == null) {
+            Charset charset = Charset.forName("US-ASCII");
+            value = charset.decode(ByteBuffer.wrap(bytes)).toString();
+        }
+        return value;
+    }
 
-  public boolean equals(Object o)
-  {
-    return getValue().equals(((AMQPSymbol) o).getValue());
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize();
+        if (code == AMQPTypeDecoder.SYM8)
+            n += 1;
+        else
+            n += 4;
+        if (bytes != null)
+            n += bytes.length;
+        return n;
+    }
 
-  public int compareTo(Object o)
-  {
-    return getValue().compareTo(((AMQPSymbol) o).getValue());
-  }
+    public void readContent(DataInput in) throws IOException {
+        int len = 0;
+        if (code == AMQPTypeDecoder.SYM8)
+            len = in.readUnsignedByte();
+        else if (code == AMQPTypeDecoder.SYM32)
+            len = in.readInt();
+        else
+            throw new IOException("Invalid code: " + code);
+        if (len < 0)
+            throw new IOException("byte[] array length invalid: " + len);
+        bytes = new byte[len];
+        try {
+            in.readFully(bytes);
+        } catch (Exception e) {
+            System.out.println("code=" + code + ", len=" + len);
+            e.printStackTrace();
+        }
+    }
 
-  public int hashCode()
-  {
-    return getValue().hashCode();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (code == AMQPTypeDecoder.SYM8)
+            out.writeByte(bytes.length);
+        else if (code == AMQPTypeDecoder.SYM32)
+            out.writeInt(bytes.length);
+        out.write(bytes);
+    }
 
-  public String getValueString()
-  {
-    return getValue();
-  }
+    public boolean equals(Object o) {
+        return getValue().equals(((AMQPSymbol) o).getValue());
+    }
 
-  public String toString()
-  {
-    return "[AMQPSymbol, value=" + getValue() + ", bytes.length=" + (bytes != null ? bytes.length : "null") + " " + super.toString() + "]";
-  }
+    public int compareTo(Object o) {
+        return getValue().compareTo(((AMQPSymbol) o).getValue());
+    }
+
+    public int hashCode() {
+        return getValue().hashCode();
+    }
+
+    public String getValueString() {
+        return getValue();
+    }
+
+    public String toString() {
+        return "[AMQPSymbol, value=" + getValue() + ", bytes.length=" + (bytes != null ? bytes.length : "null") + " " + super.toString() + "]";
+    }
 }

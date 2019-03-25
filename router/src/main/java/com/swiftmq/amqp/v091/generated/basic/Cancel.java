@@ -17,89 +17,79 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Cancel extends BasicMethod
-{
-  String consumerTag;
-  boolean noWait;
+import java.io.IOException;
 
-  public Cancel()
-  {
-    _classId = 60;
-    _methodId = 30;
-  }
+public class Cancel extends BasicMethod {
+    String consumerTag;
+    boolean noWait;
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Cancel() {
+        _classId = 60;
+        _methodId = 30;
+    }
 
-  public String getConsumerTag()
-  {
-    return consumerTag;
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setConsumerTag(String consumerTag)
-  {
-    this.consumerTag = consumerTag;
-  }
+    public String getConsumerTag() {
+        return consumerTag;
+    }
 
-  public boolean getNoWait()
-  {
-    return noWait;
-  }
+    public void setConsumerTag(String consumerTag) {
+        this.consumerTag = consumerTag;
+    }
 
-  public void setNoWait(boolean noWait)
-  {
-    this.noWait = noWait;
-  }
+    public boolean getNoWait() {
+        return noWait;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    consumerTag = Coder.readShortString(in);
-    noWait = Coder.readBit(in);
-  }
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShortString(consumerTag, out);
-    Coder.writeBit(noWait, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        consumerTag = Coder.readShortString(in);
+        noWait = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("consumerTag=");
-    b.append(consumerTag);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noWait=");
-    b.append(noWait);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShortString(consumerTag, out);
+        Coder.writeBit(noWait, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Cancel " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("consumerTag=");
+        b.append(consumerTag);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noWait=");
+        b.append(noWait);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Cancel " + super.toString() + getDisplayString() + "]";
+    }
 }

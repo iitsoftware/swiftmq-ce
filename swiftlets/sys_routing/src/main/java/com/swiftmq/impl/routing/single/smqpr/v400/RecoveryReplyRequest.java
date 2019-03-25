@@ -29,73 +29,59 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecoveryReplyRequest extends ReplyRequest
-{
-  List xidList = null;
+public class RecoveryReplyRequest extends ReplyRequest {
+    List xidList = null;
 
-  public RecoveryReplyRequest()
-  {
-    super(0, false);
-  }
-
-  public int getDumpId()
-  {
-    return SMQRFactory.RECOVERY_REPREQ;
-  }
-
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    if (xidList == null)
-      output.writeInt(0);
-    else
-    {
-      output.writeInt(xidList.size());
-      for (int i = 0; i < xidList.size(); i++)
-      {
-        ((XidImpl) xidList.get(i)).writeContent(output);
-      }
+    public RecoveryReplyRequest() {
+        super(0, false);
     }
-  }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    int size = input.readInt();
-    if (size > 0)
-    {
-      xidList = new ArrayList();
-      for (int i = 0; i < size; i++)
-      {
-        XidImpl xid = new XidImpl();
-        xid.readContent(input);
-        xidList.add(xid);
-      }
+    public int getDumpId() {
+        return SMQRFactory.RECOVERY_REPREQ;
     }
-  }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        if (xidList == null)
+            output.writeInt(0);
+        else {
+            output.writeInt(xidList.size());
+            for (int i = 0; i < xidList.size(); i++) {
+                ((XidImpl) xidList.get(i)).writeContent(output);
+            }
+        }
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        int size = input.readInt();
+        if (size > 0) {
+            xidList = new ArrayList();
+            for (int i = 0; i < size; i++) {
+                XidImpl xid = new XidImpl();
+                xid.readContent(input);
+                xidList.add(xid);
+            }
+        }
+    }
 
-  public List getXidList()
-  {
-    return xidList;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void setXidList(List xidList)
-  {
-    this.xidList = xidList;
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[RecoveryReplyRequest " + super.toString() + ", xidList=" + xidList + "]";
-  }
+    public List getXidList() {
+        return xidList;
+    }
+
+    public void setXidList(List xidList) {
+        this.xidList = xidList;
+    }
+
+    public String toString() {
+        return "[RecoveryReplyRequest " + super.toString() + ", xidList=" + xidList + "]";
+    }
 }

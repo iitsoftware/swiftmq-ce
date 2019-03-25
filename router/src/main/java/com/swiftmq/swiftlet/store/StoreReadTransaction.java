@@ -22,15 +22,15 @@ package com.swiftmq.swiftlet.store;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface StoreReadTransaction extends StoreTransaction
-{
+public interface StoreReadTransaction extends StoreTransaction {
 
-  /**
-   * Remove a read message out of the store.
-   * @param key the key.
-   * @exception StoreException on error.
-   */
-  public void remove(Object key)
-      throws StoreException;
+    /**
+     * Remove a read message out of the store.
+     *
+     * @param key the key.
+     * @throws StoreException on error.
+     */
+    public void remove(Object key)
+            throws StoreException;
 }
 

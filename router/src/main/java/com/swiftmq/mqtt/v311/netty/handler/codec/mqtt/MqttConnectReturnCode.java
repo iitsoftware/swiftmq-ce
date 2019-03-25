@@ -36,7 +36,7 @@ public enum MqttConnectReturnCode {
 
     static {
         final Map<Byte, MqttConnectReturnCode> valueMap = new HashMap<Byte, MqttConnectReturnCode>();
-        for (MqttConnectReturnCode code: values()) {
+        for (MqttConnectReturnCode code : values()) {
             valueMap.put(code.byteValue, code);
         }
         VALUE_TO_CODE_MAP = Collections.unmodifiableMap(valueMap);

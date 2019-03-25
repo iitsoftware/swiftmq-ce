@@ -19,33 +19,28 @@ package com.swiftmq.tools.util;
 
 import java.util.Random;
 
-public class IdGenerator
-{
-  long randomId = 0;
-  long id = 0;
+public class IdGenerator {
+    long randomId = 0;
+    long id = 0;
 
-  private IdGenerator()
-  {
-    Random random = new Random();
-    randomId = random.nextLong();
-  }
+    private IdGenerator() {
+        Random random = new Random();
+        randomId = random.nextLong();
+    }
 
-  private static class InstanceHolder
-  {
-    public static IdGenerator instance = new IdGenerator();
-  }
+    private static class InstanceHolder {
+        public static IdGenerator instance = new IdGenerator();
+    }
 
-  public static IdGenerator getInstance()
-  {
-    return InstanceHolder.instance;
-  }
+    public static IdGenerator getInstance() {
+        return InstanceHolder.instance;
+    }
 
-  public synchronized String nextId(char delimiter)
-  {
-    StringBuffer b = new StringBuffer();
-    b.append(randomId);
-    b.append(delimiter);
-    b.append(id++);
-    return b.toString();
-  }
+    public synchronized String nextId(char delimiter) {
+        StringBuffer b = new StringBuffer();
+        b.append(randomId);
+        b.append(delimiter);
+        b.append(id++);
+        return b.toString();
+    }
 }

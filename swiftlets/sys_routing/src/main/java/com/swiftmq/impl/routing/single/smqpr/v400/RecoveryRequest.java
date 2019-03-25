@@ -26,54 +26,44 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class RecoveryRequest extends Request
-{
-  String branchQualifier = null;
+public class RecoveryRequest extends Request {
+    String branchQualifier = null;
 
-  public RecoveryRequest()
-  {
-    super(0, false);
-  }
+    public RecoveryRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.RECOVERY_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.RECOVERY_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeUTF(branchQualifier);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeUTF(branchQualifier);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    branchQualifier = input.readUTF();
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        branchQualifier = input.readUTF();
+    }
 
-  public String getBranchQualifier()
-  {
-    return branchQualifier;
-  }
+    public String getBranchQualifier() {
+        return branchQualifier;
+    }
 
-  public void setBranchQualifier(String branchQualifier)
-  {
-    this.branchQualifier = branchQualifier;
-  }
+    public void setBranchQualifier(String branchQualifier) {
+        this.branchQualifier = branchQualifier;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[RecoveryRequest " + super.toString() + ", branchQualifier=" + branchQualifier + "]";
-  }
+    public String toString() {
+        return "[RecoveryRequest " + super.toString() + ", branchQualifier=" + branchQualifier + "]";
+    }
 }

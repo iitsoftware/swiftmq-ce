@@ -27,142 +27,116 @@ import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
 import com.swiftmq.tools.versioning.Versionable;
 
-public class TopicJNDIProcessor extends MessageProcessor
-{
-  SwiftletContext ctx = null;
-  volatile String queueName = null;
-  volatile QueueReceiver receiver = null;
-  volatile int subscriberId = 0;
-  volatile QueuePullTransaction t = null;
-  volatile BytesMessageImpl msg = null;
-  volatile boolean closed = false;
+public class TopicJNDIProcessor extends MessageProcessor {
+    SwiftletContext ctx = null;
+    volatile String queueName = null;
+    volatile QueueReceiver receiver = null;
+    volatile int subscriberId = 0;
+    volatile QueuePullTransaction t = null;
+    volatile BytesMessageImpl msg = null;
+    volatile boolean closed = false;
 
-  TopicJNDIProcessor(SwiftletContext ctx) throws Exception
-  {
-    this.ctx = ctx;
-    queueName = ctx.queueManager.createTemporaryQueue();
-    receiver = ctx.queueManager.createQueueReceiver(queueName, null, null);
-    subscriberId = ctx.topicManager.subscribe(JNDISwiftlet.JNDI_TOPIC, null, false, queueName);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "Starting TopicJNDIProcessor...");
-    t = receiver.createTransaction(false);
-    t.registerMessageProcessor(this);
-  }
-
-  public boolean isValid()
-  {
-    return true;
-  }
-
-  public void processMessage(MessageEntry messageEntry)
-  {
-    try
-    {
-      msg = (BytesMessageImpl) messageEntry.getMessage();
-      msg.reset();
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: receiving request: " + msg);
-      ctx.myTP.dispatchTask(this);
-    } catch (Exception e)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e + ", EXITING!");
+    TopicJNDIProcessor(SwiftletContext ctx) throws Exception {
+        this.ctx = ctx;
+        queueName = ctx.queueManager.createTemporaryQueue();
+        receiver = ctx.queueManager.createQueueReceiver(queueName, null, null);
+        subscriberId = ctx.topicManager.subscribe(JNDISwiftlet.JNDI_TOPIC, null, false, queueName);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "Starting TopicJNDIProcessor...");
+        t = receiver.createTransaction(false);
+        t.registerMessageProcessor(this);
     }
-  }
 
-  public void processException(Exception exception)
-  {
-    if (closed)
-      return;
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: processException: " + exception + ", EXITING!");
-  }
+    public boolean isValid() {
+        return true;
+    }
 
-  public String getDispatchToken()
-  {
-    return JNDISwiftletImpl.TP_LISTENER;
-  }
-
-  public String getDescription()
-  {
-    return ctx.jndiSwiftlet.getName() + "/RequestProcessor";
-  }
-
-  public void stop()
-  {
-  }
-
-  public void run()
-  {
-    try
-    {
-      t.commit();
-      try
-      {
-        Versionable versionable = Versionable.toVersionable(msg);
-        int version = versionable.selectVersions(JNDISwiftletImpl.VERSIONS);
-        switch (version)
-        {
-          case 400:
-          {
-            JNDIRequest r = (JNDIRequest) versionable.createVersionedObject();
-            com.swiftmq.impl.jndi.standard.v400.RequestVisitor visitor = new com.swiftmq.impl.jndi.standard.v400.RequestVisitor(ctx, (QueueImpl) msg.getJMSReplyTo());
-            r.accept(visitor);
-          }
-          break;
-          default:
-            throw new Exception("Invalid version: " + version);
+    public void processMessage(MessageEntry messageEntry) {
+        try {
+            msg = (BytesMessageImpl) messageEntry.getMessage();
+            msg.reset();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: receiving request: " + msg);
+            ctx.myTP.dispatchTask(this);
+        } catch (Exception e) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e + ", EXITING!");
         }
-      } catch (Exception e)
-      {
+    }
+
+    public void processException(Exception exception) {
         if (closed)
-          return;
+            return;
         if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e);
-        ctx.logSwiftlet.logError(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e);
-      }
-      msg = null;
-      if (closed)
-        return;
-      t = receiver.createTransaction(false);
-      t.registerMessageProcessor(this);
-    } catch (Exception e)
-    {
-      if (closed)
-        return;
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e + ", EXITING!");
-    }
-  }
-
-  public void close()
-  {
-    closed = true;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: close");
-    try
-    {
-      ctx.topicManager.unsubscribe(subscriberId);
-    } catch (Exception ignored)
-    {
-    }
-    try
-    {
-      if (t != null)
-        t.rollback();
-    } catch (Exception ignored)
-    {
-    }
-    try
-    {
-      receiver.close();
-    } catch (Exception ignored)
-    {
-    }
-    try
-    {
-      ctx.queueManager.deleteTemporaryQueue(queueName);
-    } catch (Exception ignored)
-    {
+            ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: processException: " + exception + ", EXITING!");
     }
 
-  }
+    public String getDispatchToken() {
+        return JNDISwiftletImpl.TP_LISTENER;
+    }
+
+    public String getDescription() {
+        return ctx.jndiSwiftlet.getName() + "/RequestProcessor";
+    }
+
+    public void stop() {
+    }
+
+    public void run() {
+        try {
+            t.commit();
+            try {
+                Versionable versionable = Versionable.toVersionable(msg);
+                int version = versionable.selectVersions(JNDISwiftletImpl.VERSIONS);
+                switch (version) {
+                    case 400: {
+                        JNDIRequest r = (JNDIRequest) versionable.createVersionedObject();
+                        com.swiftmq.impl.jndi.standard.v400.RequestVisitor visitor = new com.swiftmq.impl.jndi.standard.v400.RequestVisitor(ctx, (QueueImpl) msg.getJMSReplyTo());
+                        r.accept(visitor);
+                    }
+                    break;
+                    default:
+                        throw new Exception("Invalid version: " + version);
+                }
+            } catch (Exception e) {
+                if (closed)
+                    return;
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e);
+                ctx.logSwiftlet.logError(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e);
+            }
+            msg = null;
+            if (closed)
+                return;
+            t = receiver.createTransaction(false);
+            t.registerMessageProcessor(this);
+        } catch (Exception e) {
+            if (closed)
+                return;
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e + ", EXITING!");
+        }
+    }
+
+    public void close() {
+        closed = true;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: close");
+        try {
+            ctx.topicManager.unsubscribe(subscriberId);
+        } catch (Exception ignored) {
+        }
+        try {
+            if (t != null)
+                t.rollback();
+        } catch (Exception ignored) {
+        }
+        try {
+            receiver.close();
+        } catch (Exception ignored) {
+        }
+        try {
+            ctx.queueManager.deleteTemporaryQueue(queueName);
+        } catch (Exception ignored) {
+        }
+
+    }
 }

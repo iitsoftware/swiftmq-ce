@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: GetAuthChallengeRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: GetAuthChallengeRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,82 +33,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class GetAuthChallengeRequest extends Request
-{
-  private String userName;
+public class GetAuthChallengeRequest extends Request {
+    private String userName;
 
-  public GetAuthChallengeRequest()
-  {
-    super(0, true);
-  }
+    public GetAuthChallengeRequest() {
+        super(0, true);
+    }
 
-  public GetAuthChallengeRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public GetAuthChallengeRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public GetAuthChallengeRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public GetAuthChallengeRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public GetAuthChallengeRequest(int dispatchId, String userName)
-  {
-    super(dispatchId, true);
-    this.userName = userName;
-  }
+    public GetAuthChallengeRequest(int dispatchId, String userName) {
+        super(dispatchId, true);
+        this.userName = userName;
+    }
 
-  public GetAuthChallengeRequest(RequestRetryValidator validator, int dispatchId, String userName)
-  {
-    super(dispatchId, true, validator);
-    this.userName = userName;
-  }
+    public GetAuthChallengeRequest(RequestRetryValidator validator, int dispatchId, String userName) {
+        super(dispatchId, true, validator);
+        this.userName = userName;
+    }
 
-  public void setUserName(String userName)
-  {
-    this.userName = userName;
-  }
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
-  public String getUserName()
-  {
-    return userName;
-  }
+    public String getUserName() {
+        return userName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GETAUTHCHALLENGE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_GETAUTHCHALLENGE_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(userName, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(userName, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    userName = SMQPUtil.read(userName, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        userName = SMQPUtil.read(userName, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new GetAuthChallengeReply();
-  }
+    protected Reply createReplyInstance() {
+        return new GetAuthChallengeReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/GetAuthChallengeRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("userName=");
-    _b.append(userName);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/GetAuthChallengeRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("userName=");
+        _b.append(userName);
+        _b.append("]");
+        return _b.toString();
+    }
 }

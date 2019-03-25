@@ -18,9 +18,9 @@
 package com.swiftmq.impl.mqtt.retain;
 
 import com.swiftmq.impl.mqtt.SwiftletContext;
-import com.swiftmq.tools.sql.LikeComparator;
 import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
+import com.swiftmq.tools.sql.LikeComparator;
 
 import java.util.*;
 

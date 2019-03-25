@@ -22,31 +22,26 @@ import com.swiftmq.swiftlet.log.LogSink;
 import java.io.PrintWriter;
 import java.util.Calendar;
 
-public class LogSinkImpl extends LogSink
-{
-  PrintWriter printWriter = null;
+public class LogSinkImpl extends LogSink {
+    PrintWriter printWriter = null;
 
-  public LogSinkImpl(PrintWriter printWriter)
-  {
-    this.printWriter = printWriter;
-  }
+    public LogSinkImpl(PrintWriter printWriter) {
+        this.printWriter = printWriter;
+    }
 
-  private String createLogLine(String msg)
-  {
-    Calendar cal = Calendar.getInstance();
-    StringBuffer outline = new StringBuffer();
-    outline.append(LogSwiftletImpl.fmt.format(cal.getTime()));
-    outline.append(msg);
-    return outline.toString();
-  }
+    private String createLogLine(String msg) {
+        Calendar cal = Calendar.getInstance();
+        StringBuffer outline = new StringBuffer();
+        outline.append(LogSwiftletImpl.fmt.format(cal.getTime()));
+        outline.append(msg);
+        return outline.toString();
+    }
 
-  public void log(String message)
-  {
-    printWriter.println(createLogLine(message));
-  }
+    public void log(String message) {
+        printWriter.println(createLogLine(message));
+    }
 
-  public void close()
-  {
-    printWriter.close();
-  }
+    public void close() {
+        printWriter.close();
+    }
 }

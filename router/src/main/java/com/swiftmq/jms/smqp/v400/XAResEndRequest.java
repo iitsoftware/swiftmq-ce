@@ -17,71 +17,61 @@
 
 package com.swiftmq.jms.smqp.v400;
 
+import com.swiftmq.jms.XidImpl;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.jms.XidImpl;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResEndRequest extends Request
-{
-  XidImpl xid = null;
-  int flags = 0;
+public class XAResEndRequest extends Request {
+    XidImpl xid = null;
+    int flags = 0;
 
-  public XAResEndRequest(int dispatchId, XidImpl xid, int flags)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-    this.flags = flags;
-  }
+    public XAResEndRequest(int dispatchId, XidImpl xid, int flags) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.flags = flags;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESEND_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESEND_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResEndReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResEndReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResEndRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResEndRequest(this);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    xid.writeContent(out);
-    out.writeInt(flags);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        xid.writeContent(out);
+        out.writeInt(flags);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = new XidImpl();
-    xid.readContent(in);
-    flags = in.readInt();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = new XidImpl();
+        xid.readContent(in);
+        flags = in.readInt();
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public int getFlags()
-  {
-    return flags;
-  }
+    public int getFlags() {
+        return flags;
+    }
 
-  public String toString()
-  {
-    return "[XAResEndRequest " + super.toString() + ", xid=" + xid + ", flags=" + flags + "]";
-  }
+    public String toString() {
+        return "[XAResEndRequest " + super.toString() + ", xid=" + xid + ", flags=" + flags + "]";
+    }
 
 }
 

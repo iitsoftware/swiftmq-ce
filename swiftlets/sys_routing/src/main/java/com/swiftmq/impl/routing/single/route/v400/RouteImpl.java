@@ -17,151 +17,130 @@
 
 package com.swiftmq.impl.routing.single.route.v400;
 
-import com.swiftmq.impl.routing.single.route.*;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
+import com.swiftmq.impl.routing.single.route.Route;
+import com.swiftmq.impl.routing.single.route.RouteConverter;
 
-import java.util.*;
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class RouteImpl implements Route
-{
-  int type = 0;
-  String version = null;
-  String key = null;
-  String destinationRouter = null;
-  List hopList = null;
-  String lastHop = null;
-  RoutingConnection routingConnection = null;
+public class RouteImpl implements Route {
+    int type = 0;
+    String version = null;
+    String key = null;
+    String destinationRouter = null;
+    List hopList = null;
+    String lastHop = null;
+    RoutingConnection routingConnection = null;
 
-  public RouteImpl(String version, int type, String destinationRouter)
-  {
-    this.version = version;
-    this.type = type;
-    this.destinationRouter = destinationRouter;
-    hopList = new ArrayList();
-  }
-
-  public RouteImpl()
-  {
-    this(null,0,null);
-  }
-
-  public int getType()
-  {
-    return type;
-  }
-
-  public void setType(int type)
-  {
-    this.type = type;
-  }
-
-  public String getVersion()
-  {
-    return version;
-  }
-
-  public void setVersion(String version)
-  {
-    this.version = version;
-  }
-
-  public String getDestinationRouter()
-  {
-    return destinationRouter;
-  }
-
-  public void setDestinationRouter(String destinationRouter)
-  {
-    this.destinationRouter = destinationRouter;
-  }
-
-  public String getKey()
-  {
-    if (key == null)
-    {
-      StringBuffer b = new StringBuffer();
-      for (int i=hopList.size()-1;i>=0;i--)
-      {
-        b.append(hopList.get(i));
-        if (i>0)
-          b.append(";");
-      }
-      key = b.toString();
+    public RouteImpl(String version, int type, String destinationRouter) {
+        this.version = version;
+        this.type = type;
+        this.destinationRouter = destinationRouter;
+        hopList = new ArrayList();
     }
-    return key;
-  }
 
-  public String getLastHop()
-  {
-    return lastHop;
-  }
-
-  public void addHop(String routerName)
-  {
-    key = null;
-    lastHop = routerName;
-    hopList.add(routerName);
-  }
-
-  public boolean hasHop(String routerName)
-  {
-    for (int i=0;i<hopList.size();i++)
-    {
-      if (routerName.equals(((String)hopList.get(i))))
-        return true;
+    public RouteImpl() {
+        this(null, 0, null);
     }
-    return false;
-  }
 
-  public int getHopCount()
-  {
-    return hopList.size();
-  }
-
-  public RoutingConnection getRoutingConnection()
-  {
-    return routingConnection;
-  }
-
-  public void setRoutingConnection(RoutingConnection routingConnection)
-  {
-    this.routingConnection = routingConnection;
-  }
-
-  public int getDumpId()
-  {
-    return RouteConverter.ROUTE_V400;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    out.writeInt(getDumpId());
-    out.writeInt(type);
-    out.writeUTF(version);
-    out.writeUTF(destinationRouter);
-    out.writeInt(hopList.size());
-    for (int i=0;i<hopList.size();i++)
-    {
-      out.writeUTF((String)hopList.get(i));
+    public int getType() {
+        return type;
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    type = in.readInt();
-    version = in.readUTF();
-    destinationRouter  = in.readUTF();
-    int size = in.readInt();
-    hopList = new ArrayList();
-    for (int i=0;i<size;i++)
-    {
-      hopList.add(in.readUTF());
+    public void setType(int type) {
+        this.type = type;
     }
-  }
 
-  public String toString()
-  {
-    return "[RouteImpl, version="+version+", type="+type+", destinationRouter="+destinationRouter+", key="+key+", lastHop="+lastHop+", hopList="+hopList+"]";
-  }
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getDestinationRouter() {
+        return destinationRouter;
+    }
+
+    public void setDestinationRouter(String destinationRouter) {
+        this.destinationRouter = destinationRouter;
+    }
+
+    public String getKey() {
+        if (key == null) {
+            StringBuffer b = new StringBuffer();
+            for (int i = hopList.size() - 1; i >= 0; i--) {
+                b.append(hopList.get(i));
+                if (i > 0)
+                    b.append(";");
+            }
+            key = b.toString();
+        }
+        return key;
+    }
+
+    public String getLastHop() {
+        return lastHop;
+    }
+
+    public void addHop(String routerName) {
+        key = null;
+        lastHop = routerName;
+        hopList.add(routerName);
+    }
+
+    public boolean hasHop(String routerName) {
+        for (int i = 0; i < hopList.size(); i++) {
+            if (routerName.equals(((String) hopList.get(i))))
+                return true;
+        }
+        return false;
+    }
+
+    public int getHopCount() {
+        return hopList.size();
+    }
+
+    public RoutingConnection getRoutingConnection() {
+        return routingConnection;
+    }
+
+    public void setRoutingConnection(RoutingConnection routingConnection) {
+        this.routingConnection = routingConnection;
+    }
+
+    public int getDumpId() {
+        return RouteConverter.ROUTE_V400;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        out.writeInt(getDumpId());
+        out.writeInt(type);
+        out.writeUTF(version);
+        out.writeUTF(destinationRouter);
+        out.writeInt(hopList.size());
+        for (int i = 0; i < hopList.size(); i++) {
+            out.writeUTF((String) hopList.get(i));
+        }
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        type = in.readInt();
+        version = in.readUTF();
+        destinationRouter = in.readUTF();
+        int size = in.readInt();
+        hopList = new ArrayList();
+        for (int i = 0; i < size; i++) {
+            hopList.add(in.readUTF());
+        }
+    }
+
+    public String toString() {
+        return "[RouteImpl, version=" + version + ", type=" + type + ", destinationRouter=" + destinationRouter + ", key=" + key + ", lastHop=" + lastHop + ", hopList=" + hopList + "]";
+    }
 }

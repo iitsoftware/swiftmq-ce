@@ -20,33 +20,27 @@ package com.swiftmq.jms.v750.po;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POHandover extends POObject
-{
-  boolean ignoreNullConnection = false;
+public class POHandover extends POObject {
+    boolean ignoreNullConnection = false;
 
-  public POHandover()
-  {
-    super(null, null);
-  }
+    public POHandover() {
+        super(null, null);
+    }
 
-  public POHandover(boolean ignoreNullConnection)
-  {
-    super(null, null);
-    this.ignoreNullConnection = ignoreNullConnection;
-  }
+    public POHandover(boolean ignoreNullConnection) {
+        super(null, null);
+        this.ignoreNullConnection = ignoreNullConnection;
+    }
 
-  public boolean isIgnoreNullConnection()
-  {
-    return ignoreNullConnection;
-  }
+    public boolean isIgnoreNullConnection() {
+        return ignoreNullConnection;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POHandover, ignoreNullConnection=" + ignoreNullConnection + "]";
-  }
+    public String toString() {
+        return "[POHandover, ignoreNullConnection=" + ignoreNullConnection + "]";
+    }
 }

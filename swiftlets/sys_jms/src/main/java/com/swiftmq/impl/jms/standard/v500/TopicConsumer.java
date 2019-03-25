@@ -17,75 +17,64 @@
 
 package com.swiftmq.impl.jms.standard.v500;
 
-import com.swiftmq.jms.*;
+import com.swiftmq.jms.DestinationFactory;
+import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.topic.TopicManager;
 
-public class TopicConsumer extends Consumer
-{
-  protected TopicManager topicManager = null;
-  protected TopicImpl topic = null;
-  protected int subscriberId = -1;
-  protected String queueName = null;
+public class TopicConsumer extends Consumer {
+    protected TopicManager topicManager = null;
+    protected TopicImpl topic = null;
+    protected int subscriberId = -1;
+    protected String queueName = null;
 
-  protected TopicConsumer(SessionContext ctx, TopicImpl topic, String selector, boolean noLocal)
-    throws Exception
-  {
-    super(ctx);
-    this.topic = topic;
-    MessageSelector msel = null;
-    if (selector != null)
-    {
-      msel = new MessageSelector(selector);
-      msel.compile();
+    protected TopicConsumer(SessionContext ctx, TopicImpl topic, String selector, boolean noLocal)
+            throws Exception {
+        super(ctx);
+        this.topic = topic;
+        MessageSelector msel = null;
+        if (selector != null) {
+            msel = new MessageSelector(selector);
+            msel.compile();
+        }
+        if (topic.getType() == DestinationFactory.TYPE_TOPIC) {
+            this.topic = ctx.topicManager.verifyTopic(topic);
+            queueName = ctx.queueManager.createTemporaryQueue();
+        } else
+            queueName = topic.getQueueName();
+        try {
+            if (topic.getType() == DestinationFactory.TYPE_TOPIC) {
+                subscriberId = ctx.topicManager.subscribe(topic, msel, noLocal, queueName, ctx.activeLogin);
+                setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, null));
+            } else
+                setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, msel));
+            setSelector(msel);
+        } catch (Exception e) {
+            if (topic.getType() == DestinationFactory.TYPE_TOPIC)
+                ctx.queueManager.deleteTemporaryQueue(queueName);
+            throw e;
+        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
     }
-    if (topic.getType() == DestinationFactory.TYPE_TOPIC)
-    {
-      this.topic = ctx.topicManager.verifyTopic(topic);
-      queueName = ctx.queueManager.createTemporaryQueue();
-    } else
-      queueName = topic.getQueueName();
-    try
-    {
-      if (topic.getType() == DestinationFactory.TYPE_TOPIC)
-      {
-        subscriberId = ctx.topicManager.subscribe(topic, msel, noLocal, queueName, ctx.activeLogin);
-        setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, null));
-      } else
-        setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, msel));
-      setSelector(msel);
-    } catch (Exception e)
-    {
-      if (topic.getType() == DestinationFactory.TYPE_TOPIC)
-        ctx.queueManager.deleteTemporaryQueue(queueName);
-      throw e;
+
+    public String getQueueName() {
+        return queueName;
     }
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-  }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
-
-  protected boolean isAutoCommit()
-  {
-    return !ctx.transacted && ctx.ackMode != javax.jms.Session.CLIENT_ACKNOWLEDGE;
-  }
-
-  protected void close() throws Exception
-  {
-    super.close();
-    if (topic.getType() == DestinationFactory.TYPE_TOPIC)
-    {
-      ctx.topicManager.unsubscribe(subscriberId);
-      ctx.queueManager.deleteTemporaryQueue(queueName);
+    protected boolean isAutoCommit() {
+        return !ctx.transacted && ctx.ackMode != javax.jms.Session.CLIENT_ACKNOWLEDGE;
     }
-  }
 
-  public String toString()
-  {
-    return "TopicConsumer, topic=" + topic;
-  }
+    protected void close() throws Exception {
+        super.close();
+        if (topic.getType() == DestinationFactory.TYPE_TOPIC) {
+            ctx.topicManager.unsubscribe(subscriberId);
+            ctx.queueManager.deleteTemporaryQueue(queueName);
+        }
+    }
+
+    public String toString() {
+        return "TopicConsumer, topic=" + topic;
+    }
 }
 

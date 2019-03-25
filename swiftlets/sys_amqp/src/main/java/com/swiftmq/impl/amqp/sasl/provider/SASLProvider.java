@@ -19,16 +19,14 @@ package com.swiftmq.impl.amqp.sasl.provider;
 
 import java.security.Provider;
 
-public class SASLProvider extends Provider
-{
-  public static final String PROVIDER_NAME = "SwiftMQ";
+public class SASLProvider extends Provider {
+    public static final String PROVIDER_NAME = "SwiftMQ";
 
-  public SASLProvider(String name, double version, String info)
-  {
-    super(name, version, info);
+    public SASLProvider(String name, double version, String info) {
+        super(name, version, info);
 
-    put("SaslServerFactory." + AnonServer.MECHNAME, SaslServerFactoryImpl.class.getName());
-    put("SaslServerFactory." + PlainServer.MECHNAME, SaslServerFactoryImpl.class.getName());
+        put("SaslServerFactory." + AnonServer.MECHNAME, SaslServerFactoryImpl.class.getName());
+        put("SaslServerFactory." + PlainServer.MECHNAME, SaslServerFactoryImpl.class.getName());
 
-  }
+    }
 }

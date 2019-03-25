@@ -19,82 +19,81 @@ package com.swiftmq.jms.smqp.v400;
 
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public interface SMQPVisitor extends RequestVisitor
-{
-  void visitAcknowledgeMessageRequest(AcknowledgeMessageRequest req);
+public interface SMQPVisitor extends RequestVisitor {
+    void visitAcknowledgeMessageRequest(AcknowledgeMessageRequest req);
 
-  void visitAsyncMessageDeliveryRequest(AsyncMessageDeliveryRequest req);
+    void visitAsyncMessageDeliveryRequest(AsyncMessageDeliveryRequest req);
 
-  void visitCloseBrowserRequest(CloseBrowserRequest req);
+    void visitCloseBrowserRequest(CloseBrowserRequest req);
 
-  void visitCloseConsumerRequest(CloseConsumerRequest req);
+    void visitCloseConsumerRequest(CloseConsumerRequest req);
 
-  void visitCloseProducerRequest(CloseProducerRequest req);
+    void visitCloseProducerRequest(CloseProducerRequest req);
 
-  void visitCloseSessionRequest(CloseSessionRequest req);
+    void visitCloseSessionRequest(CloseSessionRequest req);
 
-  void visitCommitRequest(CommitRequest req);
+    void visitCommitRequest(CommitRequest req);
 
-  void visitCreateBrowserRequest(CreateBrowserRequest req);
+    void visitCreateBrowserRequest(CreateBrowserRequest req);
 
-  void visitCreateConsumerRequest(CreateConsumerRequest req);
+    void visitCreateConsumerRequest(CreateConsumerRequest req);
 
-  void visitCreateProducerRequest(CreateProducerRequest req);
+    void visitCreateProducerRequest(CreateProducerRequest req);
 
-  void visitCreatePublisherRequest(CreatePublisherRequest req);
+    void visitCreatePublisherRequest(CreatePublisherRequest req);
 
-  void visitCreateSessionRequest(CreateSessionRequest req);
+    void visitCreateSessionRequest(CreateSessionRequest req);
 
-  void visitCreateSubscriberRequest(CreateSubscriberRequest req);
+    void visitCreateSubscriberRequest(CreateSubscriberRequest req);
 
-  void visitCreateDurableRequest(CreateDurableRequest req);
+    void visitCreateDurableRequest(CreateDurableRequest req);
 
-  void visitDeleteDurableRequest(DeleteDurableRequest req);
+    void visitDeleteDurableRequest(DeleteDurableRequest req);
 
-  void visitCreateTmpQueueRequest(CreateTmpQueueRequest req);
+    void visitCreateTmpQueueRequest(CreateTmpQueueRequest req);
 
-  void visitDeleteTmpQueueRequest(DeleteTmpQueueRequest req);
+    void visitDeleteTmpQueueRequest(DeleteTmpQueueRequest req);
 
-  void visitFetchBrowserMessageRequest(FetchBrowserMessageRequest req);
+    void visitFetchBrowserMessageRequest(FetchBrowserMessageRequest req);
 
-  void visitGetClientIdRequest(GetClientIdRequest req);
+    void visitGetClientIdRequest(GetClientIdRequest req);
 
-  void visitSetClientIdRequest(SetClientIdRequest req);
+    void visitSetClientIdRequest(SetClientIdRequest req);
 
-  void visitGetMetaDataRequest(GetMetaDataRequest req);
+    void visitGetMetaDataRequest(GetMetaDataRequest req);
 
-  void visitProduceMessageRequest(ProduceMessageRequest req);
+    void visitProduceMessageRequest(ProduceMessageRequest req);
 
-  void visitRecoverSessionRequest(RecoverSessionRequest req);
+    void visitRecoverSessionRequest(RecoverSessionRequest req);
 
-  void visitRollbackRequest(RollbackRequest req);
+    void visitRollbackRequest(RollbackRequest req);
 
-  void visitStartConsumerRequest(StartConsumerRequest req);
+    void visitStartConsumerRequest(StartConsumerRequest req);
 
-  void visitGetAuthChallengeRequest(GetAuthChallengeRequest req);
+    void visitGetAuthChallengeRequest(GetAuthChallengeRequest req);
 
-  void visitAuthResponseRequest(AuthResponseRequest req);
+    void visitAuthResponseRequest(AuthResponseRequest req);
 
-  void visitRouterConnectRequest(RouterConnectRequest req);
+    void visitRouterConnectRequest(RouterConnectRequest req);
 
-  void visitDisconnectRequest(DisconnectRequest req);
+    void visitDisconnectRequest(DisconnectRequest req);
 
-  void visitXAResRecoverRequest(XAResRecoverRequest req);
+    void visitXAResRecoverRequest(XAResRecoverRequest req);
 
-  void visitXAResStartRequest(XAResStartRequest req);
+    void visitXAResStartRequest(XAResStartRequest req);
 
-  void visitXAResEndRequest(XAResEndRequest req);
+    void visitXAResEndRequest(XAResEndRequest req);
 
-  void visitXAResPrepareRequest(XAResPrepareRequest req);
+    void visitXAResPrepareRequest(XAResPrepareRequest req);
 
-  void visitXAResCommitRequest(XAResCommitRequest req);
+    void visitXAResCommitRequest(XAResCommitRequest req);
 
-  void visitXAResRollbackRequest(XAResRollbackRequest req);
+    void visitXAResRollbackRequest(XAResRollbackRequest req);
 
-  void visitCreateShadowConsumerRequest(CreateShadowConsumerRequest req);
+    void visitCreateShadowConsumerRequest(CreateShadowConsumerRequest req);
 
-  void visitAssociateMessageRequest(AssociateMessageRequest req);
+    void visitAssociateMessageRequest(AssociateMessageRequest req);
 
-  void visitMessageDeliveredRequest(MessageDeliveredRequest req);
+    void visitMessageDeliveredRequest(MessageDeliveredRequest req);
 }
 

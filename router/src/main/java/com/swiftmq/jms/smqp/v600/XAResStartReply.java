@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: XAResStartReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: XAResStartReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,54 +30,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class XAResStartReply extends ReplyNE
-{
-  private int errorCode;
+public class XAResStartReply extends ReplyNE {
+    private int errorCode;
 
-  public XAResStartReply(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public XAResStartReply(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  protected XAResStartReply()
-  {
-  }
+    protected XAResStartReply() {
+    }
 
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESSTART_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESSTART_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(errorCode, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(errorCode, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = SMQPUtil.read(errorCode, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = SMQPUtil.read(errorCode, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/XAResStartReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("errorCode=");
-    _b.append(errorCode);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/XAResStartReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("errorCode=");
+        _b.append(errorCode);
+        _b.append("]");
+        return _b.toString();
+    }
 }

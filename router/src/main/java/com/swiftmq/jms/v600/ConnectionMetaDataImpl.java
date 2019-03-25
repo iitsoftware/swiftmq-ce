@@ -27,204 +27,170 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
-public class ConnectionMetaDataImpl implements ConnectionMetaData, Enumeration
-{
-  static final String[] jmsxEnum = {"JMSXDeliveryCount", "JMSXGroupID", "JMSXGroupSeq", "JMSXUserID"};
-  int enumPos = 0;
-  String jmsVersion = null;
-  int jmsMajorVersion = 0;
-  int jmsMinorVersion = 0;
-  String jmsProviderName = null;
-  String jmsProviderVersion = null;
-  int jmsProviderMajorVersion = 0;
-  int jmsProviderMinorVersion = 0;
-  String routerName = null;
+public class ConnectionMetaDataImpl implements ConnectionMetaData, Enumeration {
+    static final String[] jmsxEnum = {"JMSXDeliveryCount", "JMSXGroupID", "JMSXGroupSeq", "JMSXUserID"};
+    int enumPos = 0;
+    String jmsVersion = null;
+    int jmsMajorVersion = 0;
+    int jmsMinorVersion = 0;
+    String jmsProviderName = null;
+    String jmsProviderVersion = null;
+    int jmsProviderMajorVersion = 0;
+    int jmsProviderMinorVersion = 0;
+    String routerName = null;
 
-  public ConnectionMetaDataImpl(String jmsVersion, int jmsMajorVersion,
-                                int jmsMinorVersion, String jmsProviderName,
-                                String jmsProviderVersion,
-                                int jmsProviderMajorVersion,
-                                int jmsProviderMinorVersion, String routerName)
-  {
-    this.jmsVersion = jmsVersion;
-    this.jmsMajorVersion = jmsMajorVersion;
-    this.jmsMinorVersion = jmsMinorVersion;
-    this.jmsProviderName = jmsProviderName;
-    this.jmsProviderVersion = jmsProviderVersion;
-    this.jmsProviderMajorVersion = jmsProviderMajorVersion;
-    this.jmsProviderMinorVersion = jmsProviderMinorVersion;
-    this.routerName = routerName;
-  }
-
-  public ConnectionMetaDataImpl(String routerName)
-  {
-    this("1.1", 1, 1, "SwiftMQ", SwiftUtilities.KERNEL_VERSION, SwiftUtilities.SWIFTMQ_MAJOR_VERSION, SwiftUtilities.SWIFTMQ_MINOR_VERSION,routerName);
-  }
-
-  public ConnectionMetaDataImpl()
-  {
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    if (jmsVersion == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(jmsVersion);
+    public ConnectionMetaDataImpl(String jmsVersion, int jmsMajorVersion,
+                                  int jmsMinorVersion, String jmsProviderName,
+                                  String jmsProviderVersion,
+                                  int jmsProviderMajorVersion,
+                                  int jmsProviderMinorVersion, String routerName) {
+        this.jmsVersion = jmsVersion;
+        this.jmsMajorVersion = jmsMajorVersion;
+        this.jmsMinorVersion = jmsMinorVersion;
+        this.jmsProviderName = jmsProviderName;
+        this.jmsProviderVersion = jmsProviderVersion;
+        this.jmsProviderMajorVersion = jmsProviderMajorVersion;
+        this.jmsProviderMinorVersion = jmsProviderMinorVersion;
+        this.routerName = routerName;
     }
 
-    out.writeInt(jmsMajorVersion);
-    out.writeInt(jmsMinorVersion);
-
-    if (jmsProviderName == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(jmsProviderName);
+    public ConnectionMetaDataImpl(String routerName) {
+        this("1.1", 1, 1, "SwiftMQ", SwiftUtilities.KERNEL_VERSION, SwiftUtilities.SWIFTMQ_MAJOR_VERSION, SwiftUtilities.SWIFTMQ_MINOR_VERSION, routerName);
     }
 
-    if (jmsProviderVersion == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(jmsProviderVersion);
+    public ConnectionMetaDataImpl() {
     }
 
-    out.writeInt(jmsProviderMajorVersion);
-    out.writeInt(jmsProviderMinorVersion);
+    public void writeContent(DataOutput out) throws IOException {
+        if (jmsVersion == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(jmsVersion);
+        }
 
-    if (routerName == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(routerName);
-    }
-  }
+        out.writeInt(jmsMajorVersion);
+        out.writeInt(jmsMinorVersion);
 
-  public void readContent(DataInput in) throws IOException
-  {
-    byte set = in.readByte();
+        if (jmsProviderName == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(jmsProviderName);
+        }
 
-    if (set == 0)
-    {
-      jmsVersion = null;
-    } else
-    {
-      jmsVersion = in.readUTF();
-    }
+        if (jmsProviderVersion == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(jmsProviderVersion);
+        }
 
-    jmsMajorVersion = in.readInt();
-    jmsMinorVersion = in.readInt();
-    set = in.readByte();
+        out.writeInt(jmsProviderMajorVersion);
+        out.writeInt(jmsProviderMinorVersion);
 
-    if (set == 0)
-    {
-      jmsProviderName = null;
-    } else
-    {
-      jmsProviderName = in.readUTF();
-    }
-
-    set = in.readByte();
-
-    if (set == 0)
-    {
-      jmsProviderVersion = null;
-    } else
-    {
-      jmsProviderVersion = in.readUTF();
+        if (routerName == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(routerName);
+        }
     }
 
-    jmsProviderMajorVersion = in.readInt();
-    jmsProviderMinorVersion = in.readInt();
+    public void readContent(DataInput in) throws IOException {
+        byte set = in.readByte();
 
-    set = in.readByte();
+        if (set == 0) {
+            jmsVersion = null;
+        } else {
+            jmsVersion = in.readUTF();
+        }
 
-    if (set == 0)
-    {
-      routerName = null;
-    } else
-    {
-      routerName = in.readUTF();
+        jmsMajorVersion = in.readInt();
+        jmsMinorVersion = in.readInt();
+        set = in.readByte();
+
+        if (set == 0) {
+            jmsProviderName = null;
+        } else {
+            jmsProviderName = in.readUTF();
+        }
+
+        set = in.readByte();
+
+        if (set == 0) {
+            jmsProviderVersion = null;
+        } else {
+            jmsProviderVersion = in.readUTF();
+        }
+
+        jmsProviderMajorVersion = in.readInt();
+        jmsProviderMinorVersion = in.readInt();
+
+        set = in.readByte();
+
+        if (set == 0) {
+            routerName = null;
+        } else {
+            routerName = in.readUTF();
+        }
     }
-  }
 
-  public String getJMSVersion() throws JMSException
-  {
-    return (jmsVersion);
-  }
+    public String getJMSVersion() throws JMSException {
+        return (jmsVersion);
+    }
 
-  public int getJMSMajorVersion() throws JMSException
-  {
-    return (jmsMajorVersion);
-  }
+    public int getJMSMajorVersion() throws JMSException {
+        return (jmsMajorVersion);
+    }
 
-  public int getJMSMinorVersion() throws JMSException
-  {
-    return (jmsMinorVersion);
-  }
+    public int getJMSMinorVersion() throws JMSException {
+        return (jmsMinorVersion);
+    }
 
-  public String getJMSProviderName() throws JMSException
-  {
-    return (jmsProviderName);
-  }
+    public String getJMSProviderName() throws JMSException {
+        return (jmsProviderName);
+    }
 
-  public String getProviderVersion() throws JMSException
-  {
-    return (jmsProviderVersion);
-  }
+    public String getProviderVersion() throws JMSException {
+        return (jmsProviderVersion);
+    }
 
-  public int getProviderMajorVersion() throws JMSException
-  {
-    return (jmsProviderMajorVersion);
-  }
+    public int getProviderMajorVersion() throws JMSException {
+        return (jmsProviderMajorVersion);
+    }
 
-  public int getProviderMinorVersion() throws JMSException
-  {
-    return (jmsProviderMinorVersion);
-  }
+    public int getProviderMinorVersion() throws JMSException {
+        return (jmsProviderMinorVersion);
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public Enumeration getJMSXPropertyNames() throws JMSException
-  {
-    enumPos = 0;
-    return this;
-  }
+    public Enumeration getJMSXPropertyNames() throws JMSException {
+        enumPos = 0;
+        return this;
+    }
 
-  public boolean hasMoreElements()
-  {
-    return enumPos < jmsxEnum.length;
-  }
+    public boolean hasMoreElements() {
+        return enumPos < jmsxEnum.length;
+    }
 
-  public Object nextElement() throws NoSuchElementException
-  {
-    if (enumPos >= jmsxEnum.length)
-      throw new NoSuchElementException("no more elements found");
-    return jmsxEnum[enumPos++];
-  }
+    public Object nextElement() throws NoSuchElementException {
+        if (enumPos >= jmsxEnum.length)
+            throw new NoSuchElementException("no more elements found");
+        return jmsxEnum[enumPos++];
+    }
 
-  public String toString()
-  {
-    return "[ConnectionMetaDataImpl " + "JMSVersion=" + jmsVersion + " "
-        + "JMSMajorVersion=" + jmsMajorVersion + " " + "JMSMinorVersion="
-        + jmsMinorVersion + " " + "JMSProviderName=" + jmsProviderName
-        + " " + "JMSProviderVersion=" + jmsProviderVersion + " "
-        + "JMSProviderMajorVersion=" + jmsProviderMajorVersion + " "
-        + "JMSProviderMinorVersion=" + jmsProviderMinorVersion + " routerName="+routerName+"]";
-  }
+    public String toString() {
+        return "[ConnectionMetaDataImpl " + "JMSVersion=" + jmsVersion + " "
+                + "JMSMajorVersion=" + jmsMajorVersion + " " + "JMSMinorVersion="
+                + jmsMinorVersion + " " + "JMSProviderName=" + jmsProviderName
+                + " " + "JMSProviderVersion=" + jmsProviderVersion + " "
+                + "JMSProviderMajorVersion=" + jmsProviderMajorVersion + " "
+                + "JMSProviderMinorVersion=" + jmsProviderMinorVersion + " routerName=" + routerName + "]";
+    }
 }
 
 

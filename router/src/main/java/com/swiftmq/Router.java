@@ -20,31 +20,25 @@ package com.swiftmq;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.util.UpgradeUtilities;
 
-public class Router
-{
-  public static void main(java.lang.String[] args)
-  {
-    if (args.length == 0)
-    {
-      System.err.println("usage: java com.swiftmq.Router <configfile> [NOAMQP|<swiftmq-dir>]");
-      System.exit(-1);
-    }
+public class Router {
+    public static void main(java.lang.String[] args) {
+        if (args.length == 0) {
+            System.err.println("usage: java com.swiftmq.Router <configfile> [NOAMQP|<swiftmq-dir>]");
+            System.exit(-1);
+        }
 
-    try
-    {
-      if (args.length > 1)
-      {
-        if (args[1].toLowerCase().equals("noamqp"))
-          UpgradeUtilities.upgrade_900_add_amqp_listeners = false;
-        else
-          SwiftletManager.getInstance().setWorkingDirectory(args[1]);
-      }
-      SwiftletManager.getInstance().startRouter(args[0]);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      System.exit(-1);
+        try {
+            if (args.length > 1) {
+                if (args[1].toLowerCase().equals("noamqp"))
+                    UpgradeUtilities.upgrade_900_add_amqp_listeners = false;
+                else
+                    SwiftletManager.getInstance().setWorkingDirectory(args[1]);
+            }
+            SwiftletManager.getInstance().startRouter(args[0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
-  }
 }
 

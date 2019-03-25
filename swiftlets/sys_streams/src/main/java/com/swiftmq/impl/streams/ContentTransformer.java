@@ -79,7 +79,7 @@ public class ContentTransformer {
             this.pathList = new ArrayList<String>();
             JSONObject object = new JSONObject(json);
             String jsonPath = "$";
-            if(json != JSONObject.NULL) {
+            if (json != JSONObject.NULL) {
                 readObject(object, jsonPath);
             }
         }
@@ -87,15 +87,14 @@ public class ContentTransformer {
         private void readObject(JSONObject object, String jsonPath) {
             Iterator<String> keysItr = object.keys();
             String parentPath = jsonPath;
-            while(keysItr.hasNext()) {
+            while (keysItr.hasNext()) {
                 String key = keysItr.next();
                 Object value = object.get(key);
                 jsonPath = parentPath + "." + key;
 
-                if(value instanceof JSONArray) {
+                if (value instanceof JSONArray) {
                     readArray((JSONArray) value, jsonPath);
-                }
-                else if(value instanceof JSONObject) {
+                } else if (value instanceof JSONObject) {
                     readObject((JSONObject) value, jsonPath);
                 } else { // is a value
                     this.pathList.add(jsonPath);
@@ -105,15 +104,16 @@ public class ContentTransformer {
 
         private void readArray(JSONArray array, String jsonPath) {
             String parentPath = jsonPath;
-            jsonPath = parentPath+"[*]";
+            jsonPath = parentPath + "[*]";
             this.pathList.add(jsonPath);
-            for(int i = 0; i < array.length(); i++) {
+            for (int i = 0; i < array.length(); i++) {
                 Object value = array.get(i);
-                if(value instanceof JSONArray) {
+                if (value instanceof JSONArray) {
                     readArray((JSONArray) value, jsonPath);
-                } else if(value instanceof JSONObject) {
+                } else if (value instanceof JSONObject) {
                     readObject((JSONObject) value, jsonPath);
-                }            }
+                }
+            }
         }
 
     }

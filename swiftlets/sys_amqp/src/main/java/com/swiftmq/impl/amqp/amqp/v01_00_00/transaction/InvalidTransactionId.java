@@ -17,10 +17,8 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00.transaction;
 
-public class InvalidTransactionId extends Exception
-{
-  public InvalidTransactionId(String s)
-  {
-    super(s);
-  }
+public class InvalidTransactionId extends Exception {
+    public InvalidTransactionId(String s) {
+        super(s);
+    }
 }

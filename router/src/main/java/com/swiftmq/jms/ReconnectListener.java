@@ -17,7 +17,6 @@
 
 package com.swiftmq.jms;
 
-public interface ReconnectListener
-{
-  public void reconnected(String host, int port);
+public interface ReconnectListener {
+    public void reconnected(String host, int port);
 }

@@ -17,8 +17,7 @@
 
 package com.swiftmq.tools.requestreply;
 
-public interface RequestVisitor
-{
-  void visitGenericRequest(GenericRequest req);
+public interface RequestVisitor {
+    void visitGenericRequest(GenericRequest req);
 }
 

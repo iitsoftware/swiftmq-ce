@@ -24,39 +24,32 @@ import java.io.IOException;
 /**
  * Indicates an empty value
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPNull extends AMQPType
-{
-  public static final AMQPNull NULL = new AMQPNull();
+public class AMQPNull extends AMQPType {
+    public static final AMQPNull NULL = new AMQPNull();
 
-  /**
-   * Constructs an AMQPNull
-   *
-   */
-  public AMQPNull()
-  {
-    super("null", AMQPTypeDecoder.NULL);
-  }
+    /**
+     * Constructs an AMQPNull
+     */
+    public AMQPNull() {
+        super("null", AMQPTypeDecoder.NULL);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    // Do nothing as the value is encoded in the code
-  }
+    public void readContent(DataInput in) throws IOException {
+        // Do nothing as the value is encoded in the code
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    // Only need to write the code
-    super.writeContent(out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        // Only need to write the code
+        super.writeContent(out);
+    }
 
-  public String getValueString()
-  {
-    return "NULL";
-  }
+    public String getValueString() {
+        return "NULL";
+    }
 
-  public String toString()
-  {
-    return "[AMQPNull " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AMQPNull " + super.toString() + "]";
+    }
 }

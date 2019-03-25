@@ -17,63 +17,54 @@
 
 package com.swiftmq.impl.auth.standard;
 
-public class QueueResourceGrant extends ResourceGrant
-{
-  boolean receiverGranted;
-  boolean senderGranted;
-  boolean browserGranted;
+public class QueueResourceGrant extends ResourceGrant {
+    boolean receiverGranted;
+    boolean senderGranted;
+    boolean browserGranted;
 
-  public QueueResourceGrant(String resourceName, boolean receiverGranted, boolean senderGranted, boolean browserGranted)
-  {
-    super(resourceName);
-    this.receiverGranted = receiverGranted;
-    this.senderGranted = senderGranted;
-    this.browserGranted = browserGranted;
-  }
+    public QueueResourceGrant(String resourceName, boolean receiverGranted, boolean senderGranted, boolean browserGranted) {
+        super(resourceName);
+        this.receiverGranted = receiverGranted;
+        this.senderGranted = senderGranted;
+        this.browserGranted = browserGranted;
+    }
 
-  public synchronized void setReceiverGranted(boolean receiverGranted)
-  {
-    this.receiverGranted = receiverGranted;
-  }
+    public synchronized void setReceiverGranted(boolean receiverGranted) {
+        this.receiverGranted = receiverGranted;
+    }
 
-  public synchronized boolean isReceiverGranted()
-  {
-    return (receiverGranted);
-  }
+    public synchronized boolean isReceiverGranted() {
+        return (receiverGranted);
+    }
 
-  public synchronized void setSenderGranted(boolean senderGranted)
-  {
-    this.senderGranted = senderGranted;
-  }
+    public synchronized void setSenderGranted(boolean senderGranted) {
+        this.senderGranted = senderGranted;
+    }
 
-  public synchronized boolean isSenderGranted()
-  {
-    return (senderGranted);
-  }
+    public synchronized boolean isSenderGranted() {
+        return (senderGranted);
+    }
 
-  public synchronized void setBrowserGranted(boolean browserGranted)
-  {
-    this.browserGranted = browserGranted;
-  }
+    public synchronized void setBrowserGranted(boolean browserGranted) {
+        this.browserGranted = browserGranted;
+    }
 
-  public synchronized boolean isBrowserGranted()
-  {
-    return (browserGranted);
-  }
+    public synchronized boolean isBrowserGranted() {
+        return (browserGranted);
+    }
 
-  public String toString()
-  {
-    StringBuffer s = new StringBuffer();
-    s.append("[QueueResourceGrant, resourceName=");
-    s.append(resourceName);
-    s.append(", receiverGranted=");
-    s.append(receiverGranted);
-    s.append(", senderGranted=");
-    s.append(senderGranted);
-    s.append(", browserGranted=");
-    s.append(browserGranted);
-    s.append("]");
-    return s.toString();
-  }
+    public String toString() {
+        StringBuffer s = new StringBuffer();
+        s.append("[QueueResourceGrant, resourceName=");
+        s.append(resourceName);
+        s.append(", receiverGranted=");
+        s.append(receiverGranted);
+        s.append(", senderGranted=");
+        s.append(senderGranted);
+        s.append(", browserGranted=");
+        s.append(browserGranted);
+        s.append("]");
+        return s.toString();
+    }
 }
 

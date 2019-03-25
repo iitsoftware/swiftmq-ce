@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CreatePublisherRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CreatePublisherRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.jms.TopicImpl;
@@ -33,82 +34,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreatePublisherRequest extends Request
-{
-  private TopicImpl topic;
+public class CreatePublisherRequest extends Request {
+    private TopicImpl topic;
 
-  public CreatePublisherRequest()
-  {
-    super(0, true);
-  }
+    public CreatePublisherRequest() {
+        super(0, true);
+    }
 
-  public CreatePublisherRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public CreatePublisherRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CreatePublisherRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public CreatePublisherRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public CreatePublisherRequest(int dispatchId, TopicImpl topic)
-  {
-    super(dispatchId, true);
-    this.topic = topic;
-  }
+    public CreatePublisherRequest(int dispatchId, TopicImpl topic) {
+        super(dispatchId, true);
+        this.topic = topic;
+    }
 
-  public CreatePublisherRequest(RequestRetryValidator validator, int dispatchId, TopicImpl topic)
-  {
-    super(dispatchId, true, validator);
-    this.topic = topic;
-  }
+    public CreatePublisherRequest(RequestRetryValidator validator, int dispatchId, TopicImpl topic) {
+        super(dispatchId, true, validator);
+        this.topic = topic;
+    }
 
-  public void setTopic(TopicImpl topic)
-  {
-    this.topic = topic;
-  }
+    public void setTopic(TopicImpl topic) {
+        this.topic = topic;
+    }
 
-  public TopicImpl getTopic()
-  {
-    return topic;
-  }
+    public TopicImpl getTopic() {
+        return topic;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEPUBLISHER_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEPUBLISHER_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(topic, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(topic, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    topic = SMQPUtil.read(topic, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        topic = SMQPUtil.read(topic, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreatePublisherReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CreatePublisherReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CreatePublisherRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("topic=");
-    _b.append(topic);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CreatePublisherRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("topic=");
+        _b.append(topic);
+        _b.append("]");
+        return _b.toString();
+    }
 }

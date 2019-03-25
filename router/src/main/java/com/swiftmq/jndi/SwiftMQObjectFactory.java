@@ -17,35 +17,32 @@
 
 package com.swiftmq.jndi;
 
-import com.swiftmq.jms.*;
+import com.swiftmq.jms.QueueImpl;
+import com.swiftmq.jms.TopicImpl;
 
-import javax.naming.*;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 import java.util.Hashtable;
 
-public class SwiftMQObjectFactory implements ObjectFactory
-{
-  public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable environment) throws Exception
-  {
-    if (obj instanceof Reference)
-    {
-      Reference ref = (Reference) obj;
-      if (ref.getClassName().equals(TopicImpl.class.getName()))
-      {
-        RefAddr addr = ref.get("topicName");
-        if (addr != null)
-        {
-          return new TopicImpl((String) addr.getContent());
+public class SwiftMQObjectFactory implements ObjectFactory {
+    public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable environment) throws Exception {
+        if (obj instanceof Reference) {
+            Reference ref = (Reference) obj;
+            if (ref.getClassName().equals(TopicImpl.class.getName())) {
+                RefAddr addr = ref.get("topicName");
+                if (addr != null) {
+                    return new TopicImpl((String) addr.getContent());
+                }
+            } else if (ref.getClassName().equals(QueueImpl.class.getName())) {
+                RefAddr addr = ref.get("queueName");
+                if (addr != null) {
+                    return new QueueImpl((String) addr.getContent());
+                }
+            }
         }
-      } else if (ref.getClassName().equals(QueueImpl.class.getName()))
-      {
-        RefAddr addr = ref.get("queueName");
-        if (addr != null)
-        {
-          return new QueueImpl((String) addr.getContent());
-        }
-      }
+        return null;
     }
-    return null;
-  }
 }

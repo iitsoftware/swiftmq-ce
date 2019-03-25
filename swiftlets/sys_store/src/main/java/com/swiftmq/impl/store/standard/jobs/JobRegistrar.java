@@ -18,33 +18,30 @@
 package com.swiftmq.impl.store.standard.jobs;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.swiftlet.scheduler.*;
+import com.swiftmq.swiftlet.scheduler.JobFactory;
+import com.swiftmq.swiftlet.scheduler.JobGroup;
 
-public class JobRegistrar
-{
-  StoreContext ctx = null;
-  JobGroup jobGroup = null;
+public class JobRegistrar {
+    StoreContext ctx = null;
+    JobGroup jobGroup = null;
 
-  public JobRegistrar(StoreContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public JobRegistrar(StoreContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public void register()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(),toString()+"/register ...");
-    jobGroup = ctx.schedulerSwiftlet.getJobGroup("Store");
-    JobFactory jf = new BackupJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(),jf);
-    jf = new ShrinkJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(),jf);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(),toString()+"/register done");
-  }
+    public void register() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/register ...");
+        jobGroup = ctx.schedulerSwiftlet.getJobGroup("Store");
+        JobFactory jf = new BackupJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        jf = new ShrinkJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/register done");
+    }
 
-  public void unregister()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(),toString()+"/unregister ...");
-    jobGroup.removeAll();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(),toString()+"/unregister done");
-  }
+    public void unregister() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/unregister ...");
+        jobGroup.removeAll();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/unregister done");
+    }
 }

@@ -22,41 +22,44 @@ import com.swiftmq.swiftlet.Swiftlet;
 /**
  * The Accounting Swiftlet is the interface for accounting (usage data) for other Swiftlets. Hereto other Swiftlets
  * register their Accounting Source and/or Sink Factories from which the user can create accounting connections.
- *
+ * <p>
  * The factories are registered under a group and factory name. The group name should be the clear name of a Swiftlet like "JMS".
  * The factory name should be the clear name of the factory like "QueueSinkFactoty".
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2010, All Rights Reserved
  */
-public abstract class AccountingSwiftlet extends Swiftlet
-{
-  /**
-   * Add a new AccountingSourceFactory.
-   * @param group group name
-   * @param name  factory name
-   * @param factory factory
-   */
-  public abstract void addAccountingSourceFactory(String group, String name, AccountingSourceFactory factory);
+public abstract class AccountingSwiftlet extends Swiftlet {
+    /**
+     * Add a new AccountingSourceFactory.
+     *
+     * @param group   group name
+     * @param name    factory name
+     * @param factory factory
+     */
+    public abstract void addAccountingSourceFactory(String group, String name, AccountingSourceFactory factory);
 
-  /**
-   * Removes a AccountingSourceFactory.
-   * @param group group name
-   * @param name  factory name
-   */
-  public abstract void removeAccountingSourceFactory(String group, String name);
+    /**
+     * Removes a AccountingSourceFactory.
+     *
+     * @param group group name
+     * @param name  factory name
+     */
+    public abstract void removeAccountingSourceFactory(String group, String name);
 
-  /**
-   * Add a new AccountingSinkFactory.
-   * @param group group name
-   * @param name  factory name
-   * @param factory factory
-   */
-  public abstract void addAccountingSinkFactory(String group, String name, AccountingSinkFactory factory);
+    /**
+     * Add a new AccountingSinkFactory.
+     *
+     * @param group   group name
+     * @param name    factory name
+     * @param factory factory
+     */
+    public abstract void addAccountingSinkFactory(String group, String name, AccountingSinkFactory factory);
 
-  /**
-   * Removes a AccountingSinkFactory.
-   * @param group group name
-   * @param name  factory name
-   */
-  public abstract void removeAccountingSinkFactory(String group, String name);
+    /**
+     * Removes a AccountingSinkFactory.
+     *
+     * @param group group name
+     * @param name  factory name
+     */
+    public abstract void removeAccountingSinkFactory(String group, String name);
 }

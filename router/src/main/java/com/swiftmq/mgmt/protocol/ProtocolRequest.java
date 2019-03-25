@@ -17,66 +17,59 @@
 
 package com.swiftmq.mgmt.protocol;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class ProtocolRequest extends Request
-{
-  int version = 0;
+public class ProtocolRequest extends Request {
+    int version = 0;
 
-  public ProtocolRequest(int version)
-  {
-    super(0,true);
-    this.version = version;
-  }
+    public ProtocolRequest(int version) {
+        super(0, true);
+        this.version = version;
+    }
 
-  public ProtocolRequest()
-  {
-    this(0);
-  }
+    public ProtocolRequest() {
+        this(0);
+    }
 
-  public int getVersion()
-  {
-    return version;
-  }
+    public int getVersion() {
+        return version;
+    }
 
-  public void setVersion(int version)
-  {
-    this.version = version;
-  }
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
-  public int getDumpId()
-  {
-    return ProtocolFactory.PROTOCOL_REQ;
-  }
+    public int getDumpId() {
+        return ProtocolFactory.PROTOCOL_REQ;
+    }
 
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(version);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        out.writeInt(version);
+    }
 
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    super.readContent(in);
-    version = in.readInt();
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        version = in.readInt();
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new ProtocolReply();
-  }
+    protected Reply createReplyInstance() {
+        return new ProtocolReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ProtocolRequest "+super.toString()+", version="+version+"]";
-  }
+    public String toString() {
+        return "[ProtocolRequest " + super.toString() + ", version=" + version + "]";
+    }
 }

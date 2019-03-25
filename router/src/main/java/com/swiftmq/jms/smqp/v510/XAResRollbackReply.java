@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: XAResRollbackReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: XAResRollbackReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class XAResRollbackReply extends ReplyNE
-{
-  private int errorCode;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public XAResRollbackReply(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+public class XAResRollbackReply extends ReplyNE {
+    private int errorCode;
 
-  protected XAResRollbackReply()
-  {
-  }
-  
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public XAResRollbackReply(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
+    protected XAResRollbackReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESROLLBACK_REP;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(errorCode,out);
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = SMQPUtil.read(errorCode,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESROLLBACK_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[XAResRollbackReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("errorCode=");
-    _b.append(errorCode);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(errorCode, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = SMQPUtil.read(errorCode, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[XAResRollbackReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("errorCode=");
+        _b.append(errorCode);
+        _b.append("]");
+        return _b.toString();
+    }
 }

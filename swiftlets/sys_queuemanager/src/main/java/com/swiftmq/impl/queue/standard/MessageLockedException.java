@@ -19,10 +19,8 @@ package com.swiftmq.impl.queue.standard;
 
 import com.swiftmq.swiftlet.queue.QueueException;
 
-public class MessageLockedException extends QueueException
-{
-  public MessageLockedException(String string)
-  {
-    super(string);
-  }
+public class MessageLockedException extends QueueException {
+    public MessageLockedException(String string) {
+        super(string);
+    }
 }

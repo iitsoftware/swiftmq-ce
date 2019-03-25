@@ -17,29 +17,22 @@
 
 package com.swiftmq.filetransfer.protocol.v940;
 
-public class ProtocolVisitorAdapter implements ProtocolVisitor
-{
-  public void visit(FilePublishRequest request)
-  {
-  }
+public class ProtocolVisitorAdapter implements ProtocolVisitor {
+    public void visit(FilePublishRequest request) {
+    }
 
-  public void visit(FileChunkRequest request)
-  {
-  }
+    public void visit(FileChunkRequest request) {
+    }
 
-  public void visit(FileConsumeRequest request)
-  {
-  }
+    public void visit(FileConsumeRequest request) {
+    }
 
-  public void visit(FileDeleteRequest request)
-  {
-  }
+    public void visit(FileDeleteRequest request) {
+    }
 
-  public void visit(FileQueryRequest request)
-  {
-  }
+    public void visit(FileQueryRequest request) {
+    }
 
-  public void visit(SessionCloseRequest request)
-  {
-  }
+    public void visit(SessionCloseRequest request) {
+    }
 }

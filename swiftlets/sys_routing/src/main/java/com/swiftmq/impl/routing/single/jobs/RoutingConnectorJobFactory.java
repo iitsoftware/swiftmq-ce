@@ -17,56 +17,52 @@
 
 package com.swiftmq.impl.routing.single.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
 import com.swiftmq.impl.routing.single.SwiftletContext;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobFactory;
+import com.swiftmq.swiftlet.scheduler.JobParameter;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class RoutingConnectorJobFactory implements JobFactory
-{
-  SwiftletContext ctx = null;
-  Map parameters = new HashMap();
+public class RoutingConnectorJobFactory implements JobFactory {
+    SwiftletContext ctx = null;
+    Map parameters = new HashMap();
 
-  public RoutingConnectorJobFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    JobParameter p = new JobParameter("Connector Name","Name of the Routing Connector",null,true,null);
-    parameters.put(p.getName(),p);
-  }
+    public RoutingConnectorJobFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        JobParameter p = new JobParameter("Connector Name", "Name of the Routing Connector", null, true, null);
+        parameters.put(p.getName(), p);
+    }
 
-  public String getName()
-  {
-    return "Routing Connector";
-  }
+    public String getName() {
+        return "Routing Connector";
+    }
 
-  public String getDescription()
-  {
-    return "Activates a Routing Connector";
-  }
+    public String getDescription() {
+        return "Activates a Routing Connector";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(),toString()+"/getJobInstance");
-    return new RoutingConnectorJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getJobInstance");
+        return new RoutingConnectorJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(),toString()+"/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[RoutingConnectorJobFactory]";
-  }
+    public String toString() {
+        return "[RoutingConnectorJobFactory]";
+    }
 }

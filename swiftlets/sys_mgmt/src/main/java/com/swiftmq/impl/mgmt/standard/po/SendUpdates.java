@@ -17,23 +17,19 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class SendUpdates extends POObject
-{
-  public SendUpdates()
-  {
-    super(null, null);
-  }
+public class SendUpdates extends POObject {
+    public SendUpdates() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SendUpdates]";
-  }
+    public String toString() {
+        return "[SendUpdates]";
+    }
 }

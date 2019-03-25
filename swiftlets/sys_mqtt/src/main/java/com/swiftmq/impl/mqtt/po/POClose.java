@@ -21,20 +21,16 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POClose extends POObject
-{
-  public POClose(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public class POClose extends POObject {
+    public POClose(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((MQTTVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((MQTTVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POClose]";
-  }
+    public String toString() {
+        return "[POClose]";
+    }
 }

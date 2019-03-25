@@ -17,30 +17,27 @@
 
 package com.swiftmq.impl.mqtt.po;
 
+import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
 
-public class POPublish extends POObject
-{
-  MqttPublishMessage message;
-  public POPublish(MqttPublishMessage message)
-  {
-    super(null, null);
-    this.message = message;
-  }
+public class POPublish extends POObject {
+    MqttPublishMessage message;
 
-  public MqttPublishMessage getMessage() {
-    return message;
-  }
+    public POPublish(MqttPublishMessage message) {
+        super(null, null);
+        this.message = message;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((MQTTVisitor) visitor).visit(this);
-  }
+    public MqttPublishMessage getMessage() {
+        return message;
+    }
 
-  public String toString()
-  {
-    return "[POPublish, message="+message+"]";
-  }
+    public void accept(POVisitor visitor) {
+        ((MQTTVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        return "[POPublish, message=" + message + "]";
+    }
 }

@@ -26,87 +26,71 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class MessageDeliveredRequest extends Request
-{
-  int queueConsumerId = -1;
-  MessageIndex messageIndex = null;
+public class MessageDeliveredRequest extends Request {
+    int queueConsumerId = -1;
+    MessageIndex messageIndex = null;
 
-  public MessageDeliveredRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex)
-  {
-    super(dispatchId, false);
-    this.queueConsumerId = queueConsumerId;
-    this.messageIndex = messageIndex;
-  }
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_MESSAGE_DELIVERED_REQ;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueConsumerId);
-    if (messageIndex == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      messageIndex.writeContent(out);
+    public MessageDeliveredRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex) {
+        super(dispatchId, false);
+        this.queueConsumerId = queueConsumerId;
+        this.messageIndex = messageIndex;
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueConsumerId = in.readInt();
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      messageIndex = null;
-    } else
-    {
-      messageIndex = new MessageIndex();
-      messageIndex.readContent(in);
+    public int getDumpId() {
+        return SMQPFactory.DID_MESSAGE_DELIVERED_REQ;
     }
-  }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueConsumerId);
+        if (messageIndex == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            messageIndex.writeContent(out);
+        }
+    }
 
-  public void setMessageIndex(MessageIndex messageIndex)
-  {
-    this.messageIndex = messageIndex;
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueConsumerId = in.readInt();
+        byte set = in.readByte();
 
-  public int getQueueConsumerId()
-  {
-    return queueConsumerId;
-  }
+        if (set == 0) {
+            messageIndex = null;
+        } else {
+            messageIndex = new MessageIndex();
+            messageIndex.readContent(in);
+        }
+    }
 
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public MessageIndex getMessageIndex()
-  {
-    return (messageIndex);
-  }
+    public void setMessageIndex(MessageIndex messageIndex) {
+        this.messageIndex = messageIndex;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitMessageDeliveredRequest(this);
-  }
+    public int getQueueConsumerId() {
+        return queueConsumerId;
+    }
 
-  public String toString()
-  {
-    return "[MessageDeliveredRequest " + super.toString() + " queueConsumerId=" + queueConsumerId + " messageIndex=" + messageIndex + "]";
-  }
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
+
+    public MessageIndex getMessageIndex() {
+        return (messageIndex);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitMessageDeliveredRequest(this);
+    }
+
+    public String toString() {
+        return "[MessageDeliveredRequest " + super.toString() + " queueConsumerId=" + queueConsumerId + " messageIndex=" + messageIndex + "]";
+    }
 
 }
 

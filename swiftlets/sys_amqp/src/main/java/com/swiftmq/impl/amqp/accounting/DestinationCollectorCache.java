@@ -24,81 +24,71 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class DestinationCollectorCache
-{
-  SwiftletContext ctx = null;
-  private String tracePrefix = null;
-  private Map cache = new HashMap();
+public class DestinationCollectorCache {
+    SwiftletContext ctx = null;
+    private String tracePrefix = null;
+    private Map cache = new HashMap();
 
-  public DestinationCollectorCache(SwiftletContext ctx, String tracePrefix)
-  {
-    this.ctx = ctx;
-    this.tracePrefix = tracePrefix;
-  }
-
-  private String createKey(String destinationName, String destinationType, String accountingType)
-  {
-    StringBuffer b = new StringBuffer(destinationName);
-    b.append('&');
-    b.append(destinationType);
-    b.append('&');
-    b.append(accountingType);
-    return b.toString();
-  }
-
-  public DestinationCollector getDestinationCollector(String destinationName, String destinationType, String accountingType)
-  {
-    String key = createKey(destinationName, destinationType, accountingType);
-    DestinationCollector collector = (DestinationCollector) cache.get(key);
-    if (collector == null)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.getDestinationCollector, key=" + key + ", not found, creating new one");
-      collector = new DestinationCollector(key, destinationName, destinationType, accountingType);
-      cache.put(key, collector);
-    } else
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.getDestinationCollector, found, collector=" + collector);
+    public DestinationCollectorCache(SwiftletContext ctx, String tracePrefix) {
+        this.ctx = ctx;
+        this.tracePrefix = tracePrefix;
     }
-    return collector;
-  }
 
-  public void flush(AMQPSource source, String userName, String clientId, String remoteHostName, String smqpVersion)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.flush ...");
-    String timestamp = DestinationCollector.fmt.format(new Date());
-    for (Iterator iter = cache.entrySet().iterator(); iter.hasNext(); )
-    {
-      DestinationCollector collector = (DestinationCollector) ((Map.Entry) iter.next()).getValue();
-      if (collector.isDirty())
-      {
+    private String createKey(String destinationName, String destinationType, String accountingType) {
+        StringBuffer b = new StringBuffer(destinationName);
+        b.append('&');
+        b.append(destinationType);
+        b.append('&');
+        b.append(accountingType);
+        return b.toString();
+    }
+
+    public DestinationCollector getDestinationCollector(String destinationName, String destinationType, String accountingType) {
+        String key = createKey(destinationName, destinationType, accountingType);
+        DestinationCollector collector = (DestinationCollector) cache.get(key);
+        if (collector == null) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.getDestinationCollector, key=" + key + ", not found, creating new one");
+            collector = new DestinationCollector(key, destinationName, destinationType, accountingType);
+            cache.put(key, collector);
+        } else {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.getDestinationCollector, found, collector=" + collector);
+        }
+        return collector;
+    }
+
+    public void flush(AMQPSource source, String userName, String clientId, String remoteHostName, String smqpVersion) {
         if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.flush, collector=" + collector);
-        source.send(timestamp, userName, clientId, remoteHostName, smqpVersion, collector);
-        collector.clear();
-      }
+            ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.flush ...");
+        String timestamp = DestinationCollector.fmt.format(new Date());
+        for (Iterator iter = cache.entrySet().iterator(); iter.hasNext(); ) {
+            DestinationCollector collector = (DestinationCollector) ((Map.Entry) iter.next()).getValue();
+            if (collector.isDirty()) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.flush, collector=" + collector);
+                source.send(timestamp, userName, clientId, remoteHostName, smqpVersion, collector);
+                collector.clear();
+            }
+        }
+
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.flush done");
     }
 
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.flush done");
-  }
+    public void add(DestinationCollector collector) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.add, collector=" + collector);
+        cache.put(collector.getKey(), collector);
+    }
 
-  public void add(DestinationCollector collector)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.add, collector=" + collector);
-    cache.put(collector.getKey(), collector);
-  }
+    public void remove(DestinationCollector collector) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.remove, collector=" + collector);
+        cache.remove(collector.getKey());
+    }
 
-  public void remove(DestinationCollector collector)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$amqp", tracePrefix + "/DestinationCollectorCache.remove, collector=" + collector);
-    cache.remove(collector.getKey());
-  }
-
-  public void clear()
-  {
-    cache.clear();
-  }
+    public void clear() {
+        cache.clear();
+    }
 }

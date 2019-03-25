@@ -19,11 +19,14 @@ package com.swiftmq.impl.routing.single.schedule.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface POSchedulerVisitor extends POVisitor
-{
-  public void visit(PODeliverObject po);
-  public void visit(PODeliveredObject po);
-  public void visit(POConnectionAddedObject po);
-  public void visit(POConnectionRemovedObject po);
-  public void visit(POCloseObject po);
+public interface POSchedulerVisitor extends POVisitor {
+    public void visit(PODeliverObject po);
+
+    public void visit(PODeliveredObject po);
+
+    public void visit(POConnectionAddedObject po);
+
+    public void visit(POConnectionRemovedObject po);
+
+    public void visit(POCloseObject po);
 }

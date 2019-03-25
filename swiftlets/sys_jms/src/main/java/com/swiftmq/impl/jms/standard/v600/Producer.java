@@ -17,56 +17,52 @@
 
 package com.swiftmq.impl.jms.standard.v600;
 
-import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.swiftlet.queue.QueuePushTransaction;
+import com.swiftmq.swiftlet.queue.QueueSender;
+import com.swiftmq.swiftlet.queue.QueueTransaction;
 
-public class Producer implements TransactionFactory
-{
-  protected SessionContext ctx = null;
-  protected QueueSender sender = null;
-  protected QueuePushTransaction transaction = null;
-  protected boolean markedForClose = false;
+public class Producer implements TransactionFactory {
+    protected SessionContext ctx = null;
+    protected QueueSender sender = null;
+    protected QueuePushTransaction transaction = null;
+    protected boolean markedForClose = false;
 
-  protected Producer(SessionContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    protected Producer(SessionContext ctx) {
+        this.ctx = ctx;
+    }
 
-  protected void setQueueSender(QueueSender sender)
-  {
-    this.sender = sender;
-  }
+    protected void setQueueSender(QueueSender sender) {
+        this.sender = sender;
+    }
 
-  /**
-   * @return
-   */
-  public QueueTransaction createTransaction() throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
-    transaction = sender.createTransaction();
-    return transaction;
-  }
+    /**
+     * @return
+     */
+    public QueueTransaction createTransaction() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
+        transaction = sender.createTransaction();
+        return transaction;
+    }
 
-  public QueuePushTransaction getTransaction()
-  {
-    return transaction;
-  }
+    public QueuePushTransaction getTransaction() {
+        return transaction;
+    }
 
-  public void markForClose()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
-    markedForClose = true;
-  }
+    public void markForClose() {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
+        markedForClose = true;
+    }
 
-  public boolean isMarkedForClose()
-  {
-    return markedForClose;
-  }
+    public boolean isMarkedForClose() {
+        return markedForClose;
+    }
 
-  public void close() throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
-    transaction = null;
-    sender.close();
-  }
+    public void close() throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
+        transaction = null;
+        sender.close();
+    }
 }
 

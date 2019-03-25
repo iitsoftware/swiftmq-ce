@@ -21,123 +21,103 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.BitSet;
 
-public class BitSupportDataInputStream implements BitSupportDataInput
-{
-  DataInput in;
-  BitSet bitSet = null;
-  int bitIndex = 0;
+public class BitSupportDataInputStream implements BitSupportDataInput {
+    DataInput in;
+    BitSet bitSet = null;
+    int bitIndex = 0;
 
-  public BitSupportDataInputStream(DataInput in)
-  {
-    this.in = in;
-  }
-
-  public boolean readBit() throws IOException
-  {
-    if (bitSet == null)
-    {
-      bitSet = new BitSet(8);
-      byte b = in.readByte();
-      for (int i = 0; i < 8; i++)
-      {
-        if ((b & (1 << (i % 8))) > 0)
-          bitSet.set(i);
-      }
-      bitIndex = 0;
+    public BitSupportDataInputStream(DataInput in) {
+        this.in = in;
     }
-    boolean rc = bitSet.get(bitIndex++);
-    if (bitIndex == 8)
-      bitSet = null;
-    return rc;
-  }
 
-  public void readFully(byte[] bytes) throws IOException
-  {
-    bitSet = null;
-    in.readFully(bytes);
-  }
+    public boolean readBit() throws IOException {
+        if (bitSet == null) {
+            bitSet = new BitSet(8);
+            byte b = in.readByte();
+            for (int i = 0; i < 8; i++) {
+                if ((b & (1 << (i % 8))) > 0)
+                    bitSet.set(i);
+            }
+            bitIndex = 0;
+        }
+        boolean rc = bitSet.get(bitIndex++);
+        if (bitIndex == 8)
+            bitSet = null;
+        return rc;
+    }
 
-  public void readFully(byte[] bytes, int i, int i1) throws IOException
-  {
-    bitSet = null;
-    in.readFully(bytes, i, i1);
-  }
+    public void readFully(byte[] bytes) throws IOException {
+        bitSet = null;
+        in.readFully(bytes);
+    }
 
-  public int skipBytes(int i) throws IOException
-  {
-    bitSet = null;
-    return in.skipBytes(i);
-  }
+    public void readFully(byte[] bytes, int i, int i1) throws IOException {
+        bitSet = null;
+        in.readFully(bytes, i, i1);
+    }
 
-  public boolean readBoolean() throws IOException
-  {
-    bitSet = null;
-    return in.readBoolean();
-  }
+    public int skipBytes(int i) throws IOException {
+        bitSet = null;
+        return in.skipBytes(i);
+    }
 
-  public byte readByte() throws IOException
-  {
-    bitSet = null;
-    return in.readByte();
-  }
+    public boolean readBoolean() throws IOException {
+        bitSet = null;
+        return in.readBoolean();
+    }
 
-  public int readUnsignedByte() throws IOException
-  {
-    bitSet = null;
-    return in.readUnsignedByte();
-  }
+    public byte readByte() throws IOException {
+        bitSet = null;
+        return in.readByte();
+    }
 
-  public short readShort() throws IOException
-  {
-    bitSet = null;
-    return in.readShort();
-  }
+    public int readUnsignedByte() throws IOException {
+        bitSet = null;
+        return in.readUnsignedByte();
+    }
 
-  public int readUnsignedShort() throws IOException
-  {
-    bitSet = null;
-    return in.readUnsignedShort();
-  }
+    public short readShort() throws IOException {
+        bitSet = null;
+        return in.readShort();
+    }
 
-  public char readChar() throws IOException
-  {
-    bitSet = null;
-    return in.readChar();
-  }
+    public int readUnsignedShort() throws IOException {
+        bitSet = null;
+        return in.readUnsignedShort();
+    }
 
-  public int readInt() throws IOException
-  {
-    bitSet = null;
-    return in.readInt();
-  }
+    public char readChar() throws IOException {
+        bitSet = null;
+        return in.readChar();
+    }
 
-  public long readLong() throws IOException
-  {
-    bitSet = null;
-    return in.readLong();
-  }
+    public int readInt() throws IOException {
+        bitSet = null;
+        return in.readInt();
+    }
 
-  public float readFloat() throws IOException
-  {
-    bitSet = null;
-    return in.readFloat();
-  }
+    public long readLong() throws IOException {
+        bitSet = null;
+        return in.readLong();
+    }
 
-  public double readDouble() throws IOException
-  {
-    bitSet = null;
-    return in.readDouble();
-  }
+    public float readFloat() throws IOException {
+        bitSet = null;
+        return in.readFloat();
+    }
 
-  public String readLine() throws IOException
-  {
-    bitSet = null;
-    return in.readLine();
-  }
+    public double readDouble() throws IOException {
+        bitSet = null;
+        return in.readDouble();
+    }
 
-  public String readUTF() throws IOException
-  {
-    bitSet = null;
-    return in.readUTF();
-  }
+    public String readLine() throws IOException {
+        bitSet = null;
+        return in.readLine();
+    }
+
+    public String readUTF() throws IOException {
+        bitSet = null;
+        return in.readUTF();
+    }
 }

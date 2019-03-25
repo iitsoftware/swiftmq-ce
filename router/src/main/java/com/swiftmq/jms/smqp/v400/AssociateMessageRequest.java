@@ -22,80 +22,66 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class AssociateMessageRequest extends Request
-{
-  MessageIndex messageIndex = null;
+public class AssociateMessageRequest extends Request {
+    MessageIndex messageIndex = null;
 
-  public AssociateMessageRequest(int dispatchId, MessageIndex messageIndex)
-  {
-    super(dispatchId, true);
-    this.messageIndex = messageIndex;
-  }
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ASSOCIATE_MESSAGE_REQ;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (messageIndex == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      messageIndex.writeContent(out);
+    public AssociateMessageRequest(int dispatchId, MessageIndex messageIndex) {
+        super(dispatchId, true);
+        this.messageIndex = messageIndex;
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      messageIndex = null;
-    } else
-    {
-      messageIndex = new MessageIndex();
-      messageIndex.readContent(in);
+    public int getDumpId() {
+        return SMQPFactory.DID_ASSOCIATE_MESSAGE_REQ;
     }
-  }
 
-  protected Reply createReplyInstance()
-  {
-    return new AssociateMessageReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  public void setMessageIndex(MessageIndex messageIndex)
-  {
-    this.messageIndex = messageIndex;
-  }
+        if (messageIndex == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            messageIndex.writeContent(out);
+        }
+    }
 
-  public MessageIndex getMessageIndex()
-  {
-    return (messageIndex);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitAssociateMessageRequest(this);
-  }
+        byte set = in.readByte();
 
-  public String toString()
-  {
-    return "[AssociateMessageRequest " + super.toString() + " messageIndex="
-        + messageIndex + "]";
-  }
+        if (set == 0) {
+            messageIndex = null;
+        } else {
+            messageIndex = new MessageIndex();
+            messageIndex.readContent(in);
+        }
+    }
+
+    protected Reply createReplyInstance() {
+        return new AssociateMessageReply();
+    }
+
+    public void setMessageIndex(MessageIndex messageIndex) {
+        this.messageIndex = messageIndex;
+    }
+
+    public MessageIndex getMessageIndex() {
+        return (messageIndex);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitAssociateMessageRequest(this);
+    }
+
+    public String toString() {
+        return "[AssociateMessageRequest " + super.toString() + " messageIndex="
+                + messageIndex + "]";
+    }
 
 }
 

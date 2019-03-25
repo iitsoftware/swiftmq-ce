@@ -17,99 +17,85 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: GetAuthChallengeReply
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:10 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: GetAuthChallengeReply
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:10 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class GetAuthChallengeReply extends ReplyNE
-{
-  private byte[] challenge;
-  private String factoryClass;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public GetAuthChallengeReply(byte[] challenge, String factoryClass)
-  {
-    this.challenge = challenge;
-    this.factoryClass = factoryClass;
-  }
+public class GetAuthChallengeReply extends ReplyNE {
+    private byte[] challenge;
+    private String factoryClass;
 
-  protected GetAuthChallengeReply()
-  {
-  }
-  
-  public void setChallenge(byte[] challenge)
-  {
-    this.challenge = challenge;
-  }
+    public GetAuthChallengeReply(byte[] challenge, String factoryClass) {
+        this.challenge = challenge;
+        this.factoryClass = factoryClass;
+    }
 
-  public byte[] getChallenge()
-  {
-    return challenge;
-  }
-  
-  public void setFactoryClass(String factoryClass)
-  {
-    this.factoryClass = factoryClass;
-  }
+    protected GetAuthChallengeReply() {
+    }
 
-  public String getFactoryClass()
-  {
-    return factoryClass;
-  }
+    public void setChallenge(byte[] challenge) {
+        this.challenge = challenge;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GETAUTHCHALLENGE_REP;
-  }
+    public byte[] getChallenge() {
+        return challenge;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (challenge != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(challenge,out);
-    } else
-      out.writeBoolean(false);
-    if (factoryClass != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(factoryClass,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void setFactoryClass(String factoryClass) {
+        this.factoryClass = factoryClass;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean challenge_set = in.readBoolean();
-    if (challenge_set)
-      challenge = SMQPUtil.read(challenge,in);
-    boolean factoryClass_set = in.readBoolean();
-    if (factoryClass_set)
-      factoryClass = SMQPUtil.read(factoryClass,in);
-  }
+    public String getFactoryClass() {
+        return factoryClass;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/GetAuthChallengeReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("challenge=");
-    _b.append(challenge);
-    _b.append(", ");
-    _b.append("factoryClass=");
-    _b.append(factoryClass);
-    _b.append("]");
-    return _b.toString();
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_GETAUTHCHALLENGE_REP;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (challenge != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(challenge, out);
+        } else
+            out.writeBoolean(false);
+        if (factoryClass != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(factoryClass, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean challenge_set = in.readBoolean();
+        if (challenge_set)
+            challenge = SMQPUtil.read(challenge, in);
+        boolean factoryClass_set = in.readBoolean();
+        if (factoryClass_set)
+            factoryClass = SMQPUtil.read(factoryClass, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/GetAuthChallengeReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("challenge=");
+        _b.append(challenge);
+        _b.append(", ");
+        _b.append("factoryClass=");
+        _b.append(factoryClass);
+        _b.append("]");
+        return _b.toString();
+    }
 }

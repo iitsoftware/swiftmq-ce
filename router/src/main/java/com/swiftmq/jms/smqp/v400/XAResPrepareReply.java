@@ -20,43 +20,36 @@ package com.swiftmq.jms.smqp.v400;
 import com.swiftmq.tools.requestreply.Reply;
 
 import javax.transaction.xa.XAResource;
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResPrepareReply extends Reply
-{
-  int errorCode = XAResource.XA_OK;
+public class XAResPrepareReply extends Reply {
+    int errorCode = XAResource.XA_OK;
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESPREPARE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESPREPARE_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(errorCode);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(errorCode);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = in.readInt();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = in.readInt();
+    }
 
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public String toString()
-  {
-    return "[XAResPrepareReply " + super.toString() + " errorCode=" + errorCode + "]";
-  }
+    public String toString() {
+        return "[XAResPrepareReply " + super.toString() + " errorCode=" + errorCode + "]";
+    }
 }

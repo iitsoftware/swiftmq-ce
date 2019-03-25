@@ -19,9 +19,8 @@ package com.swiftmq.tools.util;
 
 import java.io.DataInput;
 
-public interface LengthCaptureDataInput extends DataInput
-{
-  public void startCaptureLength();
+public interface LengthCaptureDataInput extends DataInput {
+    public void startCaptureLength();
 
-  public long stopCaptureLength();
+    public long stopCaptureLength();
 }

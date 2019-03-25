@@ -18,109 +18,90 @@
 package com.swiftmq.tools.queue;
 
 
-public class FIFOQueue
-{
-  private Object semEnqueue = new Object();
-  private Object semDequeue = new Object();
-  private Object[] data;
-  private int first = 0;
-  private volatile int size = 0;
-  private int bucketSize = 32;
-  private volatile boolean shouldStop = false;
+public class FIFOQueue {
+    private Object semEnqueue = new Object();
+    private Object semDequeue = new Object();
+    private Object[] data;
+    private int first = 0;
+    private volatile int size = 0;
+    private int bucketSize = 32;
+    private volatile boolean shouldStop = false;
 
-  /**
-   * Erzeugt eine FIFOQueue mit einer definierten BucketSize
-   */
-  public FIFOQueue(int bucketSize)
-  {
-    data = new Object[bucketSize];
-    this.bucketSize = bucketSize;
-  }
-
-  /**
-   * Erzeugt eine FIFOQueue mit einer Default-BucketSize von 32
-   */
-  public FIFOQueue()
-  {
-    this(32);
-  }
-
-  public int getActEntries()
-  {
-    return size;
-  }
-
-  public void setStopped()
-  {
-    shouldStop = true;
-    synchronized (semEnqueue)
-    {
-      semEnqueue.notifyAll();
+    /**
+     * Erzeugt eine FIFOQueue mit einer definierten BucketSize
+     */
+    public FIFOQueue(int bucketSize) {
+        data = new Object[bucketSize];
+        this.bucketSize = bucketSize;
     }
-    synchronized (semDequeue)
-    {
-      semDequeue.notify();
-    }
-  }
 
-  public void enqueue(Object obj)
-  {
-    if (shouldStop)
-      return;
-    synchronized (semEnqueue)
-    {
-      if (!shouldStop)
-      {
-        synchronized (semDequeue)
-        {
-          if (size == data.length)
-          {
-            int newSize = data.length + bucketSize;
-            Object[] newData = new Object[newSize];
-            int n = data.length - first;
-            System.arraycopy(data, first, newData, 0, n);
-            if (first != 0)
-              System.arraycopy(data, 0, newData, n, first);
-            data = newData;
-            first = 0;
-          }
-          data[(first + size) % data.length] = obj;
-          size++;
-          semDequeue.notify();
+    /**
+     * Erzeugt eine FIFOQueue mit einer Default-BucketSize von 32
+     */
+    public FIFOQueue() {
+        this(32);
+    }
+
+    public int getActEntries() {
+        return size;
+    }
+
+    public void setStopped() {
+        shouldStop = true;
+        synchronized (semEnqueue) {
+            semEnqueue.notifyAll();
         }
-      }
-    }
-  }
-
-
-  public Object dequeue()
-  {
-    Object obj = null;
-    synchronized (semDequeue)
-    {
-      while (size == 0 && !shouldStop)
-      {
-        try
-        {
-          semDequeue.wait();
-        } catch (InterruptedException ignored)
-        {
+        synchronized (semDequeue) {
+            semDequeue.notify();
         }
-      }
-      if (!shouldStop)
-      {
-        obj = data[first];
-        data[first] = null;
-        first++;
-        size--;
-        if (first == data.length) first = 0;
-      } else
-        data = null;
     }
-    synchronized (semEnqueue)
-    {
-      semEnqueue.notify();
+
+    public void enqueue(Object obj) {
+        if (shouldStop)
+            return;
+        synchronized (semEnqueue) {
+            if (!shouldStop) {
+                synchronized (semDequeue) {
+                    if (size == data.length) {
+                        int newSize = data.length + bucketSize;
+                        Object[] newData = new Object[newSize];
+                        int n = data.length - first;
+                        System.arraycopy(data, first, newData, 0, n);
+                        if (first != 0)
+                            System.arraycopy(data, 0, newData, n, first);
+                        data = newData;
+                        first = 0;
+                    }
+                    data[(first + size) % data.length] = obj;
+                    size++;
+                    semDequeue.notify();
+                }
+            }
+        }
     }
-    return obj;
-  }
+
+
+    public Object dequeue() {
+        Object obj = null;
+        synchronized (semDequeue) {
+            while (size == 0 && !shouldStop) {
+                try {
+                    semDequeue.wait();
+                } catch (InterruptedException ignored) {
+                }
+            }
+            if (!shouldStop) {
+                obj = data[first];
+                data[first] = null;
+                first++;
+                size--;
+                if (first == data.length) first = 0;
+            } else
+                data = null;
+        }
+        synchronized (semEnqueue) {
+            semEnqueue.notify();
+        }
+        return obj;
+    }
 }

@@ -17,48 +17,41 @@
 
 package com.swiftmq.impl.net.standard;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
-public class CountableWrappedOutputStream  extends OutputStream
-  implements Countable
-{
-  OutputStream out = null;
-  volatile long byteCount = 0;
+public class CountableWrappedOutputStream extends OutputStream
+        implements Countable {
+    OutputStream out = null;
+    volatile long byteCount = 0;
 
-  public CountableWrappedOutputStream(OutputStream out)
-  {
-    this.out = out;
-  }
+    public CountableWrappedOutputStream(OutputStream out) {
+        this.out = out;
+    }
 
-  public void write(byte[] b, int offset, int len) throws IOException
-  {
-    byteCount += len;
-    out.write(b, offset, len);
-  }
+    public void write(byte[] b, int offset, int len) throws IOException {
+        byteCount += len;
+        out.write(b, offset, len);
+    }
 
-  public void write(int b) throws IOException
-  {
-    byteCount++;
-    out.write(b);
-  }
+    public void write(int b) throws IOException {
+        byteCount++;
+        out.write(b);
+    }
 
-  public void flush() throws IOException
-  {
-    out.flush();
-  }
+    public void flush() throws IOException {
+        out.flush();
+    }
 
-  public void addByteCount(long cnt)
-  {
-    byteCount += cnt;
-  }
+    public void addByteCount(long cnt) {
+        byteCount += cnt;
+    }
 
-  public long getByteCount()
-  {
-    return byteCount;
-  }
+    public long getByteCount() {
+        return byteCount;
+    }
 
-  public void resetByteCount()
-  {
-    byteCount = 0;
-  }
+    public void resetByteCount() {
+        byteCount = 0;
+    }
 }

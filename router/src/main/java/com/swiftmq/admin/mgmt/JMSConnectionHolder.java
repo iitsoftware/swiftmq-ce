@@ -26,54 +26,54 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 
 public class JMSConnectionHolder implements ConnectionHolder {
-  QueueConnectionFactory connectionFactory = null;
-  QueueConnection connection = null;
+    QueueConnectionFactory connectionFactory = null;
+    QueueConnection connection = null;
 
-  public JMSConnectionHolder(QueueConnectionFactory connectionFactory) {
-    this.connectionFactory = connectionFactory;
-  }
-
-  public JMSConnectionHolder(QueueConnection connection) {
-    this.connection = connection;
-  }
-
-  public Connection getConnection() {
-    return connection;
-  }
-
-  public void connect(String username, String password) throws Exception {
-    if (connectionFactory != null)
-      connection = connectionFactory.createQueueConnection(username, password);
-  }
-
-  public void start() throws Exception {
-    connection.start();
-  }
-
-  public void setExceptionListener(final ExceptionListener listener) throws Exception {
-    connection.setExceptionListener(new javax.jms.ExceptionListener() {
-      public void onException(JMSException e) {
-        listener.onException(e);
-      }
-    });
-  }
-
-  public void addReconnectListener(ReconnectListener listener) {
-    ((SwiftMQConnection) connection).addReconnectListener(listener);
-  }
-
-  public void removeReconnectListener(ReconnectListener listener) {
-    ((SwiftMQConnection) connection).removeReconnectListener(listener);
-  }
-
-  public Endpoint createEndpoint(String routerName, RequestServiceFactory rsf, boolean createInternalCommands) throws Exception {
-    return EndpointFactory.createEndpoint(routerName, connection, rsf, createInternalCommands);
-  }
-
-  public void close() {
-    try {
-      connection.close();
-    } catch (JMSException e) {
+    public JMSConnectionHolder(QueueConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
     }
-  }
+
+    public JMSConnectionHolder(QueueConnection connection) {
+        this.connection = connection;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void connect(String username, String password) throws Exception {
+        if (connectionFactory != null)
+            connection = connectionFactory.createQueueConnection(username, password);
+    }
+
+    public void start() throws Exception {
+        connection.start();
+    }
+
+    public void setExceptionListener(final ExceptionListener listener) throws Exception {
+        connection.setExceptionListener(new javax.jms.ExceptionListener() {
+            public void onException(JMSException e) {
+                listener.onException(e);
+            }
+        });
+    }
+
+    public void addReconnectListener(ReconnectListener listener) {
+        ((SwiftMQConnection) connection).addReconnectListener(listener);
+    }
+
+    public void removeReconnectListener(ReconnectListener listener) {
+        ((SwiftMQConnection) connection).removeReconnectListener(listener);
+    }
+
+    public Endpoint createEndpoint(String routerName, RequestServiceFactory rsf, boolean createInternalCommands) throws Exception {
+        return EndpointFactory.createEndpoint(routerName, connection, rsf, createInternalCommands);
+    }
+
+    public void close() {
+        try {
+            connection.close();
+        } catch (JMSException e) {
+        }
+    }
 }

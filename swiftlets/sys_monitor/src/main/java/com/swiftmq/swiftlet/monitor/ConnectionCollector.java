@@ -25,39 +25,32 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ConnectionCollector implements Collector
-{
-  SwiftletContext ctx = null;
-  EntityList networkUsage = null;
+public class ConnectionCollector implements Collector {
+    SwiftletContext ctx = null;
+    EntityList networkUsage = null;
 
-  public ConnectionCollector(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    networkUsage = (EntityList) SwiftletManager.getInstance().getConfiguration("sys$net").getEntity("usage");
-  }
-
-  public String getDescription()
-  {
-    return "CONNECTION COLLECTOR";
-  }
-
-  public String[] getColumnNames()
-  {
-    return new String[]{"Connection Name", "Connect Time"};
-  }
-
-  public Map collect()
-  {
-    Map map = new TreeMap();
-    Map entities = networkUsage.getEntities();
-    if (entities != null)
-    {
-      for (Iterator iter = entities.entrySet().iterator(); iter.hasNext();)
-      {
-        Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
-        map.put(entity.getName(), entity.getProperty("connect-time").getValue());
-      }
+    public ConnectionCollector(SwiftletContext ctx) {
+        this.ctx = ctx;
+        networkUsage = (EntityList) SwiftletManager.getInstance().getConfiguration("sys$net").getEntity("usage");
     }
-    return map;
-  }
+
+    public String getDescription() {
+        return "CONNECTION COLLECTOR";
+    }
+
+    public String[] getColumnNames() {
+        return new String[]{"Connection Name", "Connect Time"};
+    }
+
+    public Map collect() {
+        Map map = new TreeMap();
+        Map entities = networkUsage.getEntities();
+        if (entities != null) {
+            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
+                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+                map.put(entity.getName(), entity.getProperty("connect-time").getValue());
+            }
+        }
+        return map;
+    }
 }

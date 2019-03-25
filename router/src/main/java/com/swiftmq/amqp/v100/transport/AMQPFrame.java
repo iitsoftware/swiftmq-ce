@@ -35,177 +35,156 @@ import java.util.List;
 /**
  * Abstract base class for all AMQP and SASL frames.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public abstract class AMQPFrame implements Writable, FrameIF, SaslFrameIF
-{
-  public static byte TYPE_CODE_AMQP_FRAME = 0x00;
-  public static byte TYPE_CODE_SASL_FRAME = 0x01;
-  protected static int HEADER_SIZE = 8;
+public abstract class AMQPFrame implements Writable, FrameIF, SaslFrameIF {
+    public static byte TYPE_CODE_AMQP_FRAME = 0x00;
+    public static byte TYPE_CODE_SASL_FRAME = 0x01;
+    protected static int HEADER_SIZE = 8;
 
-  long frameSize = HEADER_SIZE;
-  byte dataOffset = 2;
-  byte typeCode = TYPE_CODE_AMQP_FRAME;
-  int channel = 0;
-  byte[] header = new byte[HEADER_SIZE];
-  byte[] payload = null;
-  List morePayloads = null;
+    long frameSize = HEADER_SIZE;
+    byte dataOffset = 2;
+    byte typeCode = TYPE_CODE_AMQP_FRAME;
+    int channel = 0;
+    byte[] header = new byte[HEADER_SIZE];
+    byte[] payload = null;
+    List morePayloads = null;
 
-  DataByteArrayOutputStream dos = null;
-  volatile Semaphore semaphore = null;
-  volatile AsyncCompletionCallback callback = null;
+    DataByteArrayOutputStream dos = null;
+    volatile Semaphore semaphore = null;
+    volatile AsyncCompletionCallback callback = null;
 
-  protected AMQPFrame(int channel)
-  {
-    this.channel = channel;
-  }
-
-  /**
-   * Return the channel.
-   *
-   * @return channel
-   */
-  public int getChannel()
-  {
-    return channel;
-  }
-
-  /**
-   * Sets the channel.
-   *
-   * @param channel chanmel
-   */
-  public void setChannel(int channel)
-  {
-    this.channel = channel;
-  }
-
-  protected void setTypeCode(byte typeCode)
-  {
-    this.typeCode = typeCode;
-  }
-
-  public void setSemaphore(Semaphore semaphore)
-  {
-    this.semaphore = semaphore;
-  }
-
-  public Semaphore getSemaphore()
-  {
-    return semaphore;
-  }
-
-  public AsyncCompletionCallback getCallback()
-  {
-    return callback;
-  }
-
-  public void setCallback(AsyncCompletionCallback callback)
-  {
-    this.callback = callback;
-  }
-
-  public int getPredictedSize()
-  {
-    int size = HEADER_SIZE;
-    if (payload != null)
-      size += payload.length;
-    return size;
-  }
-
-  /**
-   * Returns the payload
-   *
-   * @return payload
-   */
-  public byte[] getPayload()
-  {
-    return payload;
-  }
-
-  /**
-   * Sets the payload
-   *
-   * @param payload payload
-   */
-  public void setPayload(byte[] payload)
-  {
-    this.payload = payload;
-  }
-
-  /**
-   * Adds more payload. This is used at the first frame on receive if a message is split over multiple transfer frames.
-   *
-   * @param payload payload
-   */
-  public void addMorePayload(byte[] payload)
-  {
-    if (morePayloads == null)
-      morePayloads = new ArrayList();
-    morePayloads.add(payload);
-  }
-
-  /**
-   * Returns the list of additional payload (excluding the "main" payload).
-   *
-   * @return additional payload
-   */
-  public List getMorePayloads()
-  {
-    return morePayloads;
-  }
-
-  /**
-   * Returns the length of the complete payload (main plus additional payload)
-   *
-   * @return payload length
-   */
-  public int getPayloadLength()
-  {
-    int n = payload.length;
-    if (morePayloads != null)
-    {
-      for (int i=0;i<morePayloads.size(); i++)
-        n += ((byte[])morePayloads.get(i)).length;
+    protected AMQPFrame(int channel) {
+        this.channel = channel;
     }
-    return n;
-  }
 
-  public void accept(FrameVisitor visitor)
-  {
-  }
+    /**
+     * Return the channel.
+     *
+     * @return channel
+     */
+    public int getChannel() {
+        return channel;
+    }
 
-  public void accept(SaslFrameVisitor visitor)
-  {
-  }
+    /**
+     * Sets the channel.
+     *
+     * @param channel chanmel
+     */
+    public void setChannel(int channel) {
+        this.channel = channel;
+    }
 
-  protected abstract void writeBody(DataOutput out) throws IOException;
+    protected void setTypeCode(byte typeCode) {
+        this.typeCode = typeCode;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    if (dos == null)
-      dos = new DataByteArrayOutputStream();
-    dos.rewind();
-    writeBody(dos);
-    frameSize = HEADER_SIZE + dos.getCount() + (payload != null ? payload.length : 0);
-    Util.writeInt((int) frameSize, header, 0);
-    header[4] = dataOffset;
-    header[5] = typeCode;
-    Util.writeShort(channel, header, 6);
-    out.write(header);
-    if (dos.getCount() > 0)
-      out.write(dos.getBuffer(), 0, dos.getCount());
-    if (payload != null)
-      out.write(payload, 0, payload.length);
-  }
+    public void setSemaphore(Semaphore semaphore) {
+        this.semaphore = semaphore;
+    }
 
-  public String getValueString()
-  {
-    return null;
-  }
+    public Semaphore getSemaphore() {
+        return semaphore;
+    }
 
-  public String toString()
-  {
-    return "[AMQPFrame, frameSize=" + frameSize + ", dataOffset=" + dataOffset + ", typeCode=" + typeCode + ", channel=" + channel + ", payload=" + (payload != null ? (payload.length + " bytes") : "null") + "]";
-  }
+    public AsyncCompletionCallback getCallback() {
+        return callback;
+    }
+
+    public void setCallback(AsyncCompletionCallback callback) {
+        this.callback = callback;
+    }
+
+    public int getPredictedSize() {
+        int size = HEADER_SIZE;
+        if (payload != null)
+            size += payload.length;
+        return size;
+    }
+
+    /**
+     * Returns the payload
+     *
+     * @return payload
+     */
+    public byte[] getPayload() {
+        return payload;
+    }
+
+    /**
+     * Sets the payload
+     *
+     * @param payload payload
+     */
+    public void setPayload(byte[] payload) {
+        this.payload = payload;
+    }
+
+    /**
+     * Adds more payload. This is used at the first frame on receive if a message is split over multiple transfer frames.
+     *
+     * @param payload payload
+     */
+    public void addMorePayload(byte[] payload) {
+        if (morePayloads == null)
+            morePayloads = new ArrayList();
+        morePayloads.add(payload);
+    }
+
+    /**
+     * Returns the list of additional payload (excluding the "main" payload).
+     *
+     * @return additional payload
+     */
+    public List getMorePayloads() {
+        return morePayloads;
+    }
+
+    /**
+     * Returns the length of the complete payload (main plus additional payload)
+     *
+     * @return payload length
+     */
+    public int getPayloadLength() {
+        int n = payload.length;
+        if (morePayloads != null) {
+            for (int i = 0; i < morePayloads.size(); i++)
+                n += ((byte[]) morePayloads.get(i)).length;
+        }
+        return n;
+    }
+
+    public void accept(FrameVisitor visitor) {
+    }
+
+    public void accept(SaslFrameVisitor visitor) {
+    }
+
+    protected abstract void writeBody(DataOutput out) throws IOException;
+
+    public void writeContent(DataOutput out) throws IOException {
+        if (dos == null)
+            dos = new DataByteArrayOutputStream();
+        dos.rewind();
+        writeBody(dos);
+        frameSize = HEADER_SIZE + dos.getCount() + (payload != null ? payload.length : 0);
+        Util.writeInt((int) frameSize, header, 0);
+        header[4] = dataOffset;
+        header[5] = typeCode;
+        Util.writeShort(channel, header, 6);
+        out.write(header);
+        if (dos.getCount() > 0)
+            out.write(dos.getBuffer(), 0, dos.getCount());
+        if (payload != null)
+            out.write(payload, 0, payload.length);
+    }
+
+    public String getValueString() {
+        return null;
+    }
+
+    public String toString() {
+        return "[AMQPFrame, frameSize=" + frameSize + ", dataOffset=" + dataOffset + ", typeCode=" + typeCode + ", channel=" + channel + ", payload=" + (payload != null ? (payload.length + " bytes") : "null") + "]";
+    }
 }

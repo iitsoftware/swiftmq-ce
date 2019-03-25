@@ -22,102 +22,92 @@ package com.swiftmq.jms.smqp.v500;
 import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class FetchBrowserMessageReply extends Reply
-{
-  MessageEntry messageEntry = null;
+public class FetchBrowserMessageReply extends Reply {
+    MessageEntry messageEntry = null;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_FETCH_BROWSER_MESSAGE_REP;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (messageEntry == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      messageEntry.writeContent(out);
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_FETCH_BROWSER_MESSAGE_REP;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      messageEntry = null;
-    } else
-    {
-      messageEntry = new MessageEntry();
-      messageEntry.readContent(in);
+        if (messageEntry == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            messageEntry.writeContent(out);
+        }
     }
-  }
 
-  /**
-   * @param messageEntry
-   * @SBGen Method set messageEntry
-   */
-  public void setMessageEntry(MessageEntry messageEntry)
-  {
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    // SBgen: Assign variable
-    this.messageEntry = messageEntry;
-  }
+        byte set = in.readByte();
 
-  /**
-   * @return
-   * @SBGen Method get messageEntry
-   */
-  public MessageEntry getMessageEntry()
-  {
+        if (set == 0) {
+            messageEntry = null;
+        } else {
+            messageEntry = new MessageEntry();
+            messageEntry.readContent(in);
+        }
+    }
 
-    // SBgen: Get variable
-    return (messageEntry);
-  }
+    /**
+     * @param messageEntry
+     * @SBGen Method set messageEntry
+     */
+    public void setMessageEntry(MessageEntry messageEntry) {
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[FetchBrowserMessageReply " + super.toString() + " messageEntry="
-        + messageEntry + "]";
-  }
+        // SBgen: Assign variable
+        this.messageEntry = messageEntry;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get messageEntry
+     */
+    public MessageEntry getMessageEntry() {
+
+        // SBgen: Get variable
+        return (messageEntry);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[FetchBrowserMessageReply " + super.toString() + " messageEntry="
+                + messageEntry + "]";
+    }
 
 }
 

@@ -17,56 +17,47 @@
 
 package com.swiftmq.impl.store.standard.index;
 
-public abstract class IndexEntry
-{
-  Comparable key = null;
-  int rootPageNo = -1;
-  boolean valid = true;
+public abstract class IndexEntry {
+    Comparable key = null;
+    int rootPageNo = -1;
+    boolean valid = true;
 
-  public void setKey(Comparable c)
-  {
-    key = c;
-  }
+    public void setKey(Comparable c) {
+        key = c;
+    }
 
-  public Comparable getKey()
-  {
-    return key;
-  }
+    public Comparable getKey() {
+        return key;
+    }
 
-  public void setRootPageNo(int rootPageNo)
-  {
-    this.rootPageNo = rootPageNo;
-  }
+    public void setRootPageNo(int rootPageNo) {
+        this.rootPageNo = rootPageNo;
+    }
 
-  public int getRootPageNo()
-  {
-    return rootPageNo;
-  }
+    public int getRootPageNo() {
+        return rootPageNo;
+    }
 
-  public void setValid(boolean valid)
-  {
-    this.valid = valid;
-  }
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
 
-  public boolean isValid()
-  {
-    return valid;
-  }
+    public boolean isValid() {
+        return valid;
+    }
 
-  public abstract int getLength();
+    public abstract int getLength();
 
-  public abstract void writeContent(byte[] b, int offset);
+    public abstract void writeContent(byte[] b, int offset);
 
-  public abstract void readContent(byte[] b, int offset);
+    public abstract void readContent(byte[] b, int offset);
 
-  public boolean equals(Object that)
-  {
-    return ((IndexEntry) that).key.equals(key);
-  }
+    public boolean equals(Object that) {
+        return ((IndexEntry) that).key.equals(key);
+    }
 
-  public String toString()
-  {
-    return "key=" + key + ", rootPageNo=" + rootPageNo + ", valid=" + valid;
-  }
+    public String toString() {
+        return "key=" + key + ", rootPageNo=" + rootPageNo + ", valid=" + valid;
+    }
 }
 

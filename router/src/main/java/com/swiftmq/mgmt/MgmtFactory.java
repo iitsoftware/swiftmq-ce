@@ -17,53 +17,48 @@
 
 package com.swiftmq.mgmt;
 
-import com.swiftmq.tools.dump.*;
-import com.swiftmq.mgmt.protocol.v400.CommandRequest;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
 
-import java.rmi.dgc.Lease;
+public class MgmtFactory extends DumpableFactory {
+    public static final int ENTITY = 0;
+    public static final int ENTITYLIST = 1;
+    public static final int PROPERTY = 2;
+    public static final int CONFIGURATION = 3;
+    public static final int CONFIGINSTANCE = 4;
+    public static final int META = 5;
+    public static final int COMMANDREGISTRY = 6;
+    public static final int COMMAND = 7;
 
-public class MgmtFactory extends DumpableFactory
-{
-  public static final int ENTITY = 0;
-  public static final int ENTITYLIST = 1;
-  public static final int PROPERTY = 2;
-  public static final int CONFIGURATION = 3;
-  public static final int CONFIGINSTANCE = 4;
-  public static final int META = 5;
-  public static final int COMMANDREGISTRY = 6;
-  public static final int COMMAND = 7;
+    public Dumpable createDumpable(int dumpId) {
+        Dumpable d = null;
 
-  public Dumpable createDumpable(int dumpId)
-  {
-    Dumpable d = null;
-
-    switch(dumpId)
-    {
-      case ENTITY:
-        d = new Entity();
-        break;
-      case ENTITYLIST:
-        d = new EntityList();
-        break;
-      case PROPERTY:
-        d = new Property();
-        break;
-      case CONFIGURATION:
-        d = new Configuration();
-        break;
-      case CONFIGINSTANCE:
-        d = new RouterConfigInstance();
-        break;
-      case META:
-        d = new MetaData();
-        break;
-      case COMMANDREGISTRY:
-        d = new CommandRegistry();
-        break;
-      case COMMAND:
-        d = new Command();
-        break;
+        switch (dumpId) {
+            case ENTITY:
+                d = new Entity();
+                break;
+            case ENTITYLIST:
+                d = new EntityList();
+                break;
+            case PROPERTY:
+                d = new Property();
+                break;
+            case CONFIGURATION:
+                d = new Configuration();
+                break;
+            case CONFIGINSTANCE:
+                d = new RouterConfigInstance();
+                break;
+            case META:
+                d = new MetaData();
+                break;
+            case COMMANDREGISTRY:
+                d = new CommandRegistry();
+                break;
+            case COMMAND:
+                d = new Command();
+                break;
+        }
+        return d;
     }
-    return d;
-  }
 }

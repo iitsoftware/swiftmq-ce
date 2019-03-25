@@ -18,45 +18,37 @@
 package com.swiftmq.jms;
 
 import com.swiftmq.jms.v750.SessionImpl;
-import com.swiftmq.tools.requestreply.Reply;
-import com.swiftmq.tools.requestreply.RequestRegistry;
 
 import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;
 
-public class TemporaryQueueImpl extends QueueImpl implements TemporaryQueue
-{
-  transient SwiftMQConnection connection = null;
-  transient SessionImpl creatingSession = null;
+public class TemporaryQueueImpl extends QueueImpl implements TemporaryQueue {
+    transient SwiftMQConnection connection = null;
+    transient SessionImpl creatingSession = null;
 
-  public TemporaryQueueImpl(String queueName, SwiftMQConnection connection)
-  {
-    super(queueName);
+    public TemporaryQueueImpl(String queueName, SwiftMQConnection connection) {
+        super(queueName);
 
-    this.connection = connection;
-  }
+        this.connection = connection;
+    }
 
-  public int getType()
-  {
-    return DestinationFactory.TYPE_TEMPQUEUE;
-  }
+    public int getType() {
+        return DestinationFactory.TYPE_TEMPQUEUE;
+    }
 
-  public void setCreatingSession(SessionImpl creatingSession)
-  {
-    this.creatingSession = creatingSession;
-  }
+    public void setCreatingSession(SessionImpl creatingSession) {
+        this.creatingSession = creatingSession;
+    }
 
-  public boolean isCreatungSession(SessionImpl session)
-  {
-    return creatingSession == null || creatingSession == session;
-  }
+    public boolean isCreatungSession(SessionImpl session) {
+        return creatingSession == null || creatingSession == session;
+    }
 
-  public void delete() throws JMSException
-  {
-    if (connection == null)
-      throw new JMSException("Cannot delete; you are not the creator of this TemporaryQueue!");
-    connection.deleteTempQueue(getQueueName());
-  }
+    public void delete() throws JMSException {
+        if (connection == null)
+            throw new JMSException("Cannot delete; you are not the creator of this TemporaryQueue!");
+        connection.deleteTempQueue(getQueueName());
+    }
 
 }
 

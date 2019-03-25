@@ -26,53 +26,45 @@ import com.swiftmq.swiftlet.scheduler.JobParameter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class QueuePurgerJobFactory implements JobFactory
-{
-  SwiftletContext ctx = null;
-  Map parameters = new HashMap();
+public class QueuePurgerJobFactory implements JobFactory {
+    SwiftletContext ctx = null;
+    Map parameters = new HashMap();
 
-  public QueuePurgerJobFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    JobParameter p = new JobParameter("Queue Name","Queue Name",null,true,new QueueNameVerifier(ctx));
-    parameters.put(p.getName(),p);
-    p = new JobParameter("Message Selector","Message Selector to use (optional)",null,false,new SelectorVerifier());
-    parameters.put(p.getName(),p);
-  }
+    public QueuePurgerJobFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        JobParameter p = new JobParameter("Queue Name", "Queue Name", null, true, new QueueNameVerifier(ctx));
+        parameters.put(p.getName(), p);
+        p = new JobParameter("Message Selector", "Message Selector to use (optional)", null, false, new SelectorVerifier());
+        parameters.put(p.getName(), p);
+    }
 
-  public String getName()
-  {
-    return "Queue Purger";
-  }
+    public String getName() {
+        return "Queue Purger";
+    }
 
-  public String getDescription()
-  {
-    return "Purges a Queue";
-  }
+    public String getDescription() {
+        return "Purges a Queue";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/getJobInstance");
-    return new QueuePurgerJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/getJobInstance");
+        return new QueuePurgerJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[QueuePurgerJobFactory]";
-  }
+    public String toString() {
+        return "[QueuePurgerJobFactory]";
+    }
 }

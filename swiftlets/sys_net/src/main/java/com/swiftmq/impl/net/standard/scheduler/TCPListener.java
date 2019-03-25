@@ -18,53 +18,46 @@
 
 package com.swiftmq.impl.net.standard.scheduler;
 
-import com.swiftmq.swiftlet.net.event.*;
-import com.swiftmq.net.*;
-import java.util.*;
-import java.io.*;
-import com.swiftmq.swiftlet.Swiftlet;
 import com.swiftmq.swiftlet.net.ListenerMetaData;
 
-public abstract class TCPListener
-{
-  ListenerMetaData metaData;
+import java.io.IOException;
 
-  /**
-   * @param metaData 
-   * @SBGen Constructor assigns metaData
-   */
-  public TCPListener(ListenerMetaData metaData)
-  {
-    // SBgen: Assign variable
-    this.metaData = metaData;
-  }
+public abstract class TCPListener {
+    ListenerMetaData metaData;
 
-  /**
-   * @return 
-   * @SBGen Method get metaData
-   */
-  public ListenerMetaData getMetaData()
-  {
-    // SBgen: Get variable
-    return(metaData);
-  }
+    /**
+     * @param metaData
+     * @SBGen Constructor assigns metaData
+     */
+    public TCPListener(ListenerMetaData metaData) {
+        // SBgen: Assign variable
+        this.metaData = metaData;
+    }
 
-  /**
-   * @exception IOException 
-   */
-  public abstract void start()
-    throws IOException;
+    /**
+     * @return
+     * @SBGen Method get metaData
+     */
+    public ListenerMetaData getMetaData() {
+        // SBgen: Get variable
+        return (metaData);
+    }
 
-  public abstract void close();
-	
-	public String toString()
-	{
-		StringBuffer b = new StringBuffer();
-		b.append("swiftlet=");
-		b.append(metaData.getSwiftlet().getName());
-		b.append(", port=");
-		b.append(metaData.getPort());
-		return b.toString();
-	}
+    /**
+     * @throws IOException
+     */
+    public abstract void start()
+            throws IOException;
+
+    public abstract void close();
+
+    public String toString() {
+        StringBuffer b = new StringBuffer();
+        b.append("swiftlet=");
+        b.append(metaData.getSwiftlet().getName());
+        b.append(", port=");
+        b.append(metaData.getPort());
+        return b.toString();
+    }
 }
 

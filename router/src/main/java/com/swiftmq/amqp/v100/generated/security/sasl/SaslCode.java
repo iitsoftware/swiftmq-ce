@@ -17,58 +17,45 @@
 
 package com.swiftmq.amqp.v100.generated.security.sasl;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPUnsignedByte;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class SaslCode extends AMQPUnsignedByte
-{
+public class SaslCode extends AMQPUnsignedByte {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add(0);
-    POSSIBLE_VALUES.add(1);
-    POSSIBLE_VALUES.add(2);
-    POSSIBLE_VALUES.add(3);
-    POSSIBLE_VALUES.add(4);
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final SaslCode OK = new SaslCode(0);
-  public static final SaslCode AUTH = new SaslCode(1);
-  public static final SaslCode SYS = new SaslCode(2);
-  public static final SaslCode SYS_PERM = new SaslCode(3);
-  public static final SaslCode SYS_TEMP = new SaslCode(4);
+    static {
+        POSSIBLE_VALUES.add(0);
+        POSSIBLE_VALUES.add(1);
+        POSSIBLE_VALUES.add(2);
+        POSSIBLE_VALUES.add(3);
+        POSSIBLE_VALUES.add(4);
+    }
 
-  /**
-   * Constructs a SaslCode.
-   *
-   * @param initValue initial value
-   */
-  public SaslCode(int initValue) 
-  {
-    super(initValue);
-  }
+    public static final SaslCode OK = new SaslCode(0);
+    public static final SaslCode AUTH = new SaslCode(1);
+    public static final SaslCode SYS = new SaslCode(2);
+    public static final SaslCode SYS_PERM = new SaslCode(3);
+    public static final SaslCode SYS_TEMP = new SaslCode(4);
+
+    /**
+     * Constructs a SaslCode.
+     *
+     * @param initValue initial value
+     */
+    public SaslCode(int initValue) {
+        super(initValue);
+    }
 
 
-  public String toString()
-  {
-    return "[SaslCode " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[SaslCode " + super.toString() + "]";
+    }
 }

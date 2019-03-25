@@ -22,102 +22,84 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class AcknowledgeMessageRequest extends Request
-{
-  int queueConsumerId = -1;
-  MessageIndex messageIndex = null;
+public class AcknowledgeMessageRequest extends Request {
+    int queueConsumerId = -1;
+    MessageIndex messageIndex = null;
 
-  public AcknowledgeMessageRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex, boolean replyRequired)
-  {
-    super(dispatchId, replyRequired);
-    this.queueConsumerId = queueConsumerId;
-    this.messageIndex = messageIndex;
-  }
-
-  public AcknowledgeMessageRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex)
-  {
-    this(dispatchId,queueConsumerId,messageIndex,true);
-  }
-
-  public AcknowledgeMessageRequest(int dispatchId, MessageIndex messageIndex)
-  {
-    this(dispatchId,-1,messageIndex,true);
-  }
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ACKNOWLEDGE_MESSAGE_REQ;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueConsumerId);
-    if (messageIndex == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      messageIndex.writeContent(out);
+    public AcknowledgeMessageRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex, boolean replyRequired) {
+        super(dispatchId, replyRequired);
+        this.queueConsumerId = queueConsumerId;
+        this.messageIndex = messageIndex;
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueConsumerId = in.readInt();
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      messageIndex = null;
-    } else
-    {
-      messageIndex = new MessageIndex();
-      messageIndex.readContent(in);
+    public AcknowledgeMessageRequest(int dispatchId, int queueConsumerId, MessageIndex messageIndex) {
+        this(dispatchId, queueConsumerId, messageIndex, true);
     }
-  }
 
-  protected Reply createReplyInstance()
-  {
-    return new AcknowledgeMessageReply();
-  }
+    public AcknowledgeMessageRequest(int dispatchId, MessageIndex messageIndex) {
+        this(dispatchId, -1, messageIndex, true);
+    }
 
-  public void setMessageIndex(MessageIndex messageIndex)
-  {
-    this.messageIndex = messageIndex;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_ACKNOWLEDGE_MESSAGE_REQ;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return queueConsumerId;
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueConsumerId);
+        if (messageIndex == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            messageIndex.writeContent(out);
+        }
+    }
 
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueConsumerId = in.readInt();
+        byte set = in.readByte();
 
-  public MessageIndex getMessageIndex()
-  {
-    return (messageIndex);
-  }
+        if (set == 0) {
+            messageIndex = null;
+        } else {
+            messageIndex = new MessageIndex();
+            messageIndex.readContent(in);
+        }
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitAcknowledgeMessageRequest(this);
-  }
+    protected Reply createReplyInstance() {
+        return new AcknowledgeMessageReply();
+    }
 
-  public String toString()
-  {
-    return "[AcknowledgeMessageRequest " + super.toString() + " queueConsumerId=" + queueConsumerId +
-            " messageIndex=" + messageIndex + "]";
-  }
+    public void setMessageIndex(MessageIndex messageIndex) {
+        this.messageIndex = messageIndex;
+    }
+
+    public int getQueueConsumerId() {
+        return queueConsumerId;
+    }
+
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
+
+    public MessageIndex getMessageIndex() {
+        return (messageIndex);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitAcknowledgeMessageRequest(this);
+    }
+
+    public String toString() {
+        return "[AcknowledgeMessageRequest " + super.toString() + " queueConsumerId=" + queueConsumerId +
+                " messageIndex=" + messageIndex + "]";
+    }
 
 }
 

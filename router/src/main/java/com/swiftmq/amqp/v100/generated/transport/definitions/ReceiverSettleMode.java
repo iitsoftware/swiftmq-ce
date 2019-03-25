@@ -17,52 +17,39 @@
 
 package com.swiftmq.amqp.v100.generated.transport.definitions;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPUnsignedByte;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class ReceiverSettleMode extends AMQPUnsignedByte
-{
+public class ReceiverSettleMode extends AMQPUnsignedByte {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add(0);
-    POSSIBLE_VALUES.add(1);
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final ReceiverSettleMode FIRST = new ReceiverSettleMode(0);
-  public static final ReceiverSettleMode SECOND = new ReceiverSettleMode(1);
+    static {
+        POSSIBLE_VALUES.add(0);
+        POSSIBLE_VALUES.add(1);
+    }
 
-  /**
-   * Constructs a ReceiverSettleMode.
-   *
-   * @param initValue initial value
-   */
-  public ReceiverSettleMode(int initValue) 
-  {
-    super(initValue);
-  }
+    public static final ReceiverSettleMode FIRST = new ReceiverSettleMode(0);
+    public static final ReceiverSettleMode SECOND = new ReceiverSettleMode(1);
+
+    /**
+     * Constructs a ReceiverSettleMode.
+     *
+     * @param initValue initial value
+     */
+    public ReceiverSettleMode(int initValue) {
+        super(initValue);
+    }
 
 
-  public String toString()
-  {
-    return "[ReceiverSettleMode " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[ReceiverSettleMode " + super.toString() + "]";
+    }
 }

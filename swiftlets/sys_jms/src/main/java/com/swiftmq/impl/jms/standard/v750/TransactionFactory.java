@@ -20,14 +20,13 @@ package com.swiftmq.impl.jms.standard.v750;
 import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 
-public interface TransactionFactory
-{
-  DestinationCollector getCollector();
+public interface TransactionFactory {
+    DestinationCollector getCollector();
 
-  QueueTransaction createTransaction() throws Exception;
+    QueueTransaction createTransaction() throws Exception;
 
-  void markForClose();
+    void markForClose();
 
-  boolean isMarkedForClose();
+    boolean isMarkedForClose();
 }
 

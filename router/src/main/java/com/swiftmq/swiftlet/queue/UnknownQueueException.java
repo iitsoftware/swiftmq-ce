@@ -22,15 +22,14 @@ package com.swiftmq.swiftlet.queue;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class UnknownQueueException extends QueueException
-{
-  /**
-   * Constructs a new UnknownQueueException
-   * @param message the message
-   */
-  public UnknownQueueException(String message)
-  {
-    super(message);
-  }
+public class UnknownQueueException extends QueueException {
+    /**
+     * Constructs a new UnknownQueueException
+     *
+     * @param message the message
+     */
+    public UnknownQueueException(String message) {
+        super(message);
+    }
 }
 

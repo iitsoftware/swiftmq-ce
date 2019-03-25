@@ -25,46 +25,39 @@ import com.swiftmq.tools.requestreply.RequestVisitor;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class KeepAliveRequest extends Request
-{
-  public KeepAliveRequest()
-  {
-    super(0, false);
-  }
+public class KeepAliveRequest extends Request {
+    public KeepAliveRequest() {
+        super(0, false);
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_KEEP_ALIVE_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_KEEP_ALIVE_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-  }
+    public void accept(RequestVisitor visitor) {
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[KeepAliveRequest " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[KeepAliveRequest " + super.toString() + "]";
+    }
 
 }
 

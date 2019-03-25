@@ -34,103 +34,88 @@ import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import java.net.Socket;
 import java.net.SocketException;
 
-public class BlockingTCPConnector extends TCPConnector
-{
-  SocketFactory socketFactory = null;
-  NetworkSwiftletImpl networkSwiftlet = null;
-  ThreadpoolSwiftlet threadpoolSwiftlet = null;
-  LogSwiftlet logSwiftlet = null;
-  TraceSwiftlet traceSwiftlet = null;
-  TraceSpace traceSpace = null;
-  ConnectionManager connectionManager = null;
-  BlockingHandler blockingHandler = null;
+public class BlockingTCPConnector extends TCPConnector {
+    SocketFactory socketFactory = null;
+    NetworkSwiftletImpl networkSwiftlet = null;
+    ThreadpoolSwiftlet threadpoolSwiftlet = null;
+    LogSwiftlet logSwiftlet = null;
+    TraceSwiftlet traceSwiftlet = null;
+    TraceSpace traceSpace = null;
+    ConnectionManager connectionManager = null;
+    BlockingHandler blockingHandler = null;
 
-  public BlockingTCPConnector(ConnectorMetaData metaData, SocketFactory socketFactory)
-  {
-    super(metaData);
-    this.socketFactory = socketFactory;
-    networkSwiftlet = (NetworkSwiftletImpl) SwiftletManager.getInstance().getSwiftlet("sys$net");
-    threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    connectionManager = networkSwiftlet.getConnectionManager();
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    if (networkSwiftlet.isSetSocketOptions() && socketFactory instanceof SocketFactory2)
-      ((SocketFactory2) socketFactory).setReceiveBufferSize(metaData.getInputBufferSize());
-    if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/created");
-  }
-
-  public synchronized void connect()
-  {
-    if (blockingHandler != null && blockingHandler.isValid())
-      return;
-    if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/try to connect ...");
-    try
-    {
-      Socket socket = socketFactory.createSocket(getMetaData().getHostname(), getMetaData().getPort(), getMetaData().isUseTcpNoDelay());
-      if (networkSwiftlet.isSetSocketOptions())
-      {
-        try
-        {
-          socket.setSendBufferSize(getMetaData().getOutputBufferSize());
-        } catch (SocketException e)
-        {
-          if (traceSpace.enabled)
-            traceSpace.trace("sys$net", toString() + "/unable to perform 'socket.setSendBufferSize(" + getMetaData().getOutputBufferSize() + ")', exception: " + e);
-          logSwiftlet.logWarning(toString(), "/unable to perform 'socket.setSendBufferSize(" + getMetaData().getOutputBufferSize() + ")', exception: " + e);
-        }
-        if (socket.getReceiveBufferSize() != getMetaData().getInputBufferSize())
-        {
-          try
-          {
-            socket.setReceiveBufferSize(getMetaData().getInputBufferSize());
-          } catch (SocketException e)
-          {
-            if (traceSpace.enabled)
-              traceSpace.trace("sys$net", toString() + "/unable to perform 'socket.setReceiveBufferSize(" + getMetaData().getInputBufferSize() + ")', exception: " + e);
-            logSwiftlet.logWarning(toString(), "/unable to perform 'socket.setReceiveBufferSize(" + getMetaData().getInputBufferSize() + ")', exception: " + e);
-          }
-        }
-      }
-      logSwiftlet.logInformation(toString(), "connected to: " + socket.getInetAddress().getHostAddress());
-      TCPConnection connection = new TCPConnection(networkSwiftlet.isDnsResolve(), getMetaData().isUseTcpNoDelay(), socket);
-      try
-      {
-        ConnectionListener connectionListener = getMetaData().getConnectionListener();
-        connection.setConnectionListener(connectionListener);
-        connection.setMetaData(getMetaData());
-        connectionListener.connected(connection);
-        connectionManager.addConnection(connection);
-        blockingHandler = new BlockingHandler(connection);
-        threadpoolSwiftlet.dispatchTask(blockingHandler);
-      } catch (ConnectionVetoException cve)
-      {
-        connection.close();
-        if (traceSpace.enabled)
-          traceSpace.trace("sys$net", toString() + "/ConnectionVetoException: " + cve.getMessage());
-        logSwiftlet.logError(toString(), "ConnectionVetoException: " + cve.getMessage());
-      }
-    } catch (Exception e)
-    {
-      blockingHandler = null;
-      if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/unable to connect, exception: " + e);
+    public BlockingTCPConnector(ConnectorMetaData metaData, SocketFactory socketFactory) {
+        super(metaData);
+        this.socketFactory = socketFactory;
+        networkSwiftlet = (NetworkSwiftletImpl) SwiftletManager.getInstance().getSwiftlet("sys$net");
+        threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        connectionManager = networkSwiftlet.getConnectionManager();
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        if (networkSwiftlet.isSetSocketOptions() && socketFactory instanceof SocketFactory2)
+            ((SocketFactory2) socketFactory).setReceiveBufferSize(metaData.getInputBufferSize());
+        if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/created");
     }
-  }
 
-  public void close()
-  {
-    super.close();
-    if (blockingHandler != null)
-      blockingHandler.stop();
-  }
+    public synchronized void connect() {
+        if (blockingHandler != null && blockingHandler.isValid())
+            return;
+        if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/try to connect ...");
+        try {
+            Socket socket = socketFactory.createSocket(getMetaData().getHostname(), getMetaData().getPort(), getMetaData().isUseTcpNoDelay());
+            if (networkSwiftlet.isSetSocketOptions()) {
+                try {
+                    socket.setSendBufferSize(getMetaData().getOutputBufferSize());
+                } catch (SocketException e) {
+                    if (traceSpace.enabled)
+                        traceSpace.trace("sys$net", toString() + "/unable to perform 'socket.setSendBufferSize(" + getMetaData().getOutputBufferSize() + ")', exception: " + e);
+                    logSwiftlet.logWarning(toString(), "/unable to perform 'socket.setSendBufferSize(" + getMetaData().getOutputBufferSize() + ")', exception: " + e);
+                }
+                if (socket.getReceiveBufferSize() != getMetaData().getInputBufferSize()) {
+                    try {
+                        socket.setReceiveBufferSize(getMetaData().getInputBufferSize());
+                    } catch (SocketException e) {
+                        if (traceSpace.enabled)
+                            traceSpace.trace("sys$net", toString() + "/unable to perform 'socket.setReceiveBufferSize(" + getMetaData().getInputBufferSize() + ")', exception: " + e);
+                        logSwiftlet.logWarning(toString(), "/unable to perform 'socket.setReceiveBufferSize(" + getMetaData().getInputBufferSize() + ")', exception: " + e);
+                    }
+                }
+            }
+            logSwiftlet.logInformation(toString(), "connected to: " + socket.getInetAddress().getHostAddress());
+            TCPConnection connection = new TCPConnection(networkSwiftlet.isDnsResolve(), getMetaData().isUseTcpNoDelay(), socket);
+            try {
+                ConnectionListener connectionListener = getMetaData().getConnectionListener();
+                connection.setConnectionListener(connectionListener);
+                connection.setMetaData(getMetaData());
+                connectionListener.connected(connection);
+                connectionManager.addConnection(connection);
+                blockingHandler = new BlockingHandler(connection);
+                threadpoolSwiftlet.dispatchTask(blockingHandler);
+            } catch (ConnectionVetoException cve) {
+                connection.close();
+                if (traceSpace.enabled)
+                    traceSpace.trace("sys$net", toString() + "/ConnectionVetoException: " + cve.getMessage());
+                logSwiftlet.logError(toString(), "ConnectionVetoException: " + cve.getMessage());
+            }
+        } catch (Exception e) {
+            blockingHandler = null;
+            if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/unable to connect, exception: " + e);
+        }
+    }
 
-  public String toString()
-  {
-    StringBuffer b = new StringBuffer();
-    b.append("[BlockingTCPConnector, ");
-    b.append(super.toString());
-    b.append(']');
-    return b.toString();
-  }
+    public void close() {
+        super.close();
+        if (blockingHandler != null)
+            blockingHandler.stop();
+    }
+
+    public String toString() {
+        StringBuffer b = new StringBuffer();
+        b.append("[BlockingTCPConnector, ");
+        b.append(super.toString());
+        b.append(']');
+        return b.toString();
+    }
 }
 

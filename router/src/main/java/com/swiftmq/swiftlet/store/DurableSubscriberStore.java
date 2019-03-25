@@ -24,53 +24,57 @@ import java.util.Iterator;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface DurableSubscriberStore
-{
+public interface DurableSubscriberStore {
 
-  /**
-   * Returns an iterator for all DurableStoreEntries.
-   * @return iterator.
-   * @exception StoreException on error.
-   */
-  public Iterator iterator()
-      throws StoreException;
-
-
-  /**
-   * Returns a DurableStoreEntry.
-   * @param clientId client id.
-   * @param durableName durable name.
-   * @return entry or null.
-   * @exception StoreException on error.
-   */
-  public DurableStoreEntry getDurableStoreEntry(String clientId, String durableName)
-      throws StoreException;
+    /**
+     * Returns an iterator for all DurableStoreEntries.
+     *
+     * @return iterator.
+     * @throws StoreException on error.
+     */
+    public Iterator iterator()
+            throws StoreException;
 
 
-  /**
-   * Insert a new DurableStoreEntry.
-   * @param durableStoreEntry entry.
-   * @exception StoreException on error.
-   */
-  public void insertDurableStoreEntry(DurableStoreEntry durableStoreEntry)
-      throws StoreException;
+    /**
+     * Returns a DurableStoreEntry.
+     *
+     * @param clientId    client id.
+     * @param durableName durable name.
+     * @return entry or null.
+     * @throws StoreException on error.
+     */
+    public DurableStoreEntry getDurableStoreEntry(String clientId, String durableName)
+            throws StoreException;
 
 
-  /**
-   * Deletes a DurableStoreEntry.
-   * @param clientId client id.
-   * @param durableName durable name.
-   * @exception StoreException on error.
-   */
-  public void deleteDurableStoreEntry(String clientId, String durableName)
-      throws StoreException;
+    /**
+     * Insert a new DurableStoreEntry.
+     *
+     * @param durableStoreEntry entry.
+     * @throws StoreException on error.
+     */
+    public void insertDurableStoreEntry(DurableStoreEntry durableStoreEntry)
+            throws StoreException;
 
 
-  /**
-   * Closes the store.
-   * @exception StoreException on error.
-   */
-  public void close()
-      throws StoreException;
+    /**
+     * Deletes a DurableStoreEntry.
+     *
+     * @param clientId    client id.
+     * @param durableName durable name.
+     * @throws StoreException on error.
+     */
+    public void deleteDurableStoreEntry(String clientId, String durableName)
+            throws StoreException;
+
+
+    /**
+     * Closes the store.
+     *
+     * @throws StoreException on error.
+     */
+    public void close()
+            throws StoreException;
 }
 

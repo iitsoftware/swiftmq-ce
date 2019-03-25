@@ -27,51 +27,44 @@ import com.swiftmq.tools.requestreply.RequestVisitor;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class GetMetaDataRequest extends Request
-{
+public class GetMetaDataRequest extends Request {
 
-  /**
-   * @SBGen Constructor
-   */
-  public GetMetaDataRequest()
-  {
-    super(0, true);
-  }
+    /**
+     * @SBGen Constructor
+     */
+    public GetMetaDataRequest() {
+        super(0, true);
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GET_META_DATA_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_GET_META_DATA_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new GetMetaDataReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new GetMetaDataReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitGetMetaDataRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitGetMetaDataRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[GetMetaDataRequest " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[GetMetaDataRequest " + super.toString() + "]";
+    }
 
 }
 

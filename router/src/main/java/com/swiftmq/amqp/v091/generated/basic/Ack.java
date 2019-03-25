@@ -17,89 +17,79 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Ack extends BasicMethod
-{
-  long deliveryTag;
-  boolean multiple;
+import java.io.IOException;
 
-  public Ack()
-  {
-    _classId = 60;
-    _methodId = 80;
-  }
+public class Ack extends BasicMethod {
+    long deliveryTag;
+    boolean multiple;
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Ack() {
+        _classId = 60;
+        _methodId = 80;
+    }
 
-  public long getDeliveryTag()
-  {
-    return deliveryTag;
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setDeliveryTag(long deliveryTag)
-  {
-    this.deliveryTag = deliveryTag;
-  }
+    public long getDeliveryTag() {
+        return deliveryTag;
+    }
 
-  public boolean getMultiple()
-  {
-    return multiple;
-  }
+    public void setDeliveryTag(long deliveryTag) {
+        this.deliveryTag = deliveryTag;
+    }
 
-  public void setMultiple(boolean multiple)
-  {
-    this.multiple = multiple;
-  }
+    public boolean getMultiple() {
+        return multiple;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    deliveryTag = Coder.readLong(in);
-    multiple = Coder.readBit(in);
-  }
+    public void setMultiple(boolean multiple) {
+        this.multiple = multiple;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeLong(deliveryTag, out);
-    Coder.writeBit(multiple, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        deliveryTag = Coder.readLong(in);
+        multiple = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("deliveryTag=");
-    b.append(deliveryTag);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("multiple=");
-    b.append(multiple);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeLong(deliveryTag, out);
+        Coder.writeBit(multiple, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Ack " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("deliveryTag=");
+        b.append(deliveryTag);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("multiple=");
+        b.append(multiple);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Ack " + super.toString() + getDisplayString() + "]";
+    }
 }

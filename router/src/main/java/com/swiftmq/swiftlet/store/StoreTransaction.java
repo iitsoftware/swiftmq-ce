@@ -25,56 +25,62 @@ import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2004, All Rights Reserved
  */
-public interface StoreTransaction
-{
-  /**
-   * Prepares a 2PC transaction.
-   * @param globalTxId global tx id.
-   * @exception StoreException on error.
-   */
-  public void prepare(XidImpl globalTxId)
-      throws StoreException;
+public interface StoreTransaction {
+    /**
+     * Prepares a 2PC transaction.
+     *
+     * @param globalTxId global tx id.
+     * @throws StoreException on error.
+     */
+    public void prepare(XidImpl globalTxId)
+            throws StoreException;
 
-  /**
-   * Commits a 2PC transaction.
-   * @param globalTxId global tx id.
-   * @exception StoreException on error.
-   */
-  public void commit(XidImpl globalTxId)
-      throws StoreException;
+    /**
+     * Commits a 2PC transaction.
+     *
+     * @param globalTxId global tx id.
+     * @throws StoreException on error.
+     */
+    public void commit(XidImpl globalTxId)
+            throws StoreException;
 
-  /**
-   * Commits a local transaction.
-   * @exception StoreException on error.
-   */
-  public void commit()
-      throws StoreException;
+    /**
+     * Commits a local transaction.
+     *
+     * @throws StoreException on error.
+     */
+    public void commit()
+            throws StoreException;
 
-  /**
-   * Asynchronously commits a local transaction.
-   * @param callback async completion callback (may be null)
-   */
-  public void commit(AsyncCompletionCallback callback);
+    /**
+     * Asynchronously commits a local transaction.
+     *
+     * @param callback async completion callback (may be null)
+     */
+    public void commit(AsyncCompletionCallback callback);
 
-  /**
-   * Aborts a 2PC transaction.
-   * @param globalTxId global tx id.
-   * @exception StoreException on error.
-   */
-  public void abort(XidImpl globalTxId)
-      throws StoreException;
+    /**
+     * Aborts a 2PC transaction.
+     *
+     * @param globalTxId global tx id.
+     * @throws StoreException on error.
+     */
+    public void abort(XidImpl globalTxId)
+            throws StoreException;
 
-  /**
-   * Aborts a local transaction.
-   * @exception StoreException on error.
-   */
-  public void abort()
-      throws StoreException;
+    /**
+     * Aborts a local transaction.
+     *
+     * @throws StoreException on error.
+     */
+    public void abort()
+            throws StoreException;
 
-  /**
-   * Asynchronously aborts a local transaction.
-   * @param callback async completion callback (may be null)
-   */
-  public void abort(AsyncCompletionCallback callback);
+    /**
+     * Asynchronously aborts a local transaction.
+     *
+     * @param callback async completion callback (may be null)
+     */
+    public void abort(AsyncCompletionCallback callback);
 }
 

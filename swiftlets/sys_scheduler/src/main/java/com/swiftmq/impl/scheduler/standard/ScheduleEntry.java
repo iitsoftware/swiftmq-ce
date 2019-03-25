@@ -18,89 +18,74 @@
 package com.swiftmq.impl.scheduler.standard;
 
 import java.io.Serializable;
-import java.text.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
-public class ScheduleEntry implements Serializable
-{
-  static final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-  static final String NOW = "now";
-  static final String FOREVER = "forever";
-  String name = null;
-  String calendar = null;
-  String dateFrom = null;
-  String dateTo = null;
+public class ScheduleEntry implements Serializable {
+    static final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+    static final String NOW = "now";
+    static final String FOREVER = "forever";
+    String name = null;
+    String calendar = null;
+    String dateFrom = null;
+    String dateTo = null;
 
-  public ScheduleEntry(String name, String calendar, String dateFrom, String dateTo)
-  {
-    this.name = name;
-    this.calendar = calendar;
-    this.dateFrom = dateFrom;
-    this.dateTo = dateTo;
-  }
-
-  public String getName()
-  {
-    return name;
-  }
-
-  public String getCalendar()
-  {
-    return calendar;
-  }
-
-  public void setCalendar(String calendar)
-  {
-    this.calendar = calendar;
-  }
-
-  public String getDateFrom()
-  {
-    return dateFrom;
-  }
-
-  public void setDateFrom(String dateFrom)
-  {
-    this.dateFrom = dateFrom;
-  }
-
-  public String getDateTo()
-  {
-    return dateTo;
-  }
-
-  public void setDateTo(String dateTo)
-  {
-    this.dateTo = dateTo;
-  }
-
-  public boolean isInDateRange(long time)
-  {
-    boolean from = false;
-    boolean to = false;
-    if (dateFrom.equals(NOW))
-      from = true;
-    else
-    {
-      try
-      {
-        from = fmt.parse(dateFrom).getTime() <= time;
-      } catch (ParseException e)
-      {
-        e.printStackTrace();
-      }
+    public ScheduleEntry(String name, String calendar, String dateFrom, String dateTo) {
+        this.name = name;
+        this.calendar = calendar;
+        this.dateFrom = dateFrom;
+        this.dateTo = dateTo;
     }
-    if (dateTo.equals(FOREVER))
-      to = true;
-    else
-    {
-      try
-      {
-        to = fmt.parse(dateTo).getTime() >= time;
-      } catch (ParseException e)
-      {
-        e.printStackTrace();
-      }
+
+    public String getName() {
+        return name;
     }
-    return from && to;
-  }
+
+    public String getCalendar() {
+        return calendar;
+    }
+
+    public void setCalendar(String calendar) {
+        this.calendar = calendar;
+    }
+
+    public String getDateFrom() {
+        return dateFrom;
+    }
+
+    public void setDateFrom(String dateFrom) {
+        this.dateFrom = dateFrom;
+    }
+
+    public String getDateTo() {
+        return dateTo;
+    }
+
+    public void setDateTo(String dateTo) {
+        this.dateTo = dateTo;
+    }
+
+    public boolean isInDateRange(long time) {
+        boolean from = false;
+        boolean to = false;
+        if (dateFrom.equals(NOW))
+            from = true;
+        else {
+            try {
+                from = fmt.parse(dateFrom).getTime() <= time;
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        if (dateTo.equals(FOREVER))
+            to = true;
+        else {
+            try {
+                to = fmt.parse(dateTo).getTime() >= time;
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return from && to;
+    }
 }

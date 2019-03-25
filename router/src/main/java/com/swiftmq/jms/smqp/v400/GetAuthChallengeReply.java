@@ -23,123 +23,107 @@ import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import java.io.*;
 
-public class GetAuthChallengeReply extends Reply
-{
-  Serializable challenge = null;
-  String challengeResponseFactoryClass = null;
+public class GetAuthChallengeReply extends Reply {
+    Serializable challenge = null;
+    String challengeResponseFactoryClass = null;
 
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GET_AUTH_CHALLENGE_REP;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (challenge == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
-      (new ObjectOutputStream(dos)).writeObject(challenge);
-      out.writeInt(dos.getCount());
-      out.write(dos.getBuffer(),0,dos.getCount());
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_GET_AUTH_CHALLENGE_REP;
     }
 
-    if (challengeResponseFactoryClass == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(challengeResponseFactoryClass);
-    }
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+        if (challenge == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
+            (new ObjectOutputStream(dos)).writeObject(challenge);
+            out.writeInt(dos.getCount());
+            out.write(dos.getBuffer(), 0, dos.getCount());
+        }
 
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      challenge = null;
-    } else
-    {
-      try
-      {
-        byte[] b = new byte[in.readInt()];
-        in.readFully(b);
-        challenge = (Serializable) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
-      } catch (ClassNotFoundException ignored)
-      {
-      }
+        if (challengeResponseFactoryClass == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(challengeResponseFactoryClass);
+        }
     }
 
-    set = in.readByte();
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    if (set == 0)
-    {
-      challengeResponseFactoryClass = null;
-    } else
-    {
-      challengeResponseFactoryClass = in.readUTF();
+        byte set = in.readByte();
+
+        if (set == 0) {
+            challenge = null;
+        } else {
+            try {
+                byte[] b = new byte[in.readInt()];
+                in.readFully(b);
+                challenge = (Serializable) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+
+        set = in.readByte();
+
+        if (set == 0) {
+            challengeResponseFactoryClass = null;
+        } else {
+            challengeResponseFactoryClass = in.readUTF();
+        }
     }
-  }
 
-  /**
-   * @return
-   * @SBGen Method get challenge
-   */
-  public Serializable getChallenge()
-  {
-    // SBgen: Get variable
-    return (challenge);
-  }
+    /**
+     * @return
+     * @SBGen Method get challenge
+     */
+    public Serializable getChallenge() {
+        // SBgen: Get variable
+        return (challenge);
+    }
 
-  public void setChallenge(Serializable challenge)
-  {
-    this.challenge = challenge;
-  }
+    public void setChallenge(Serializable challenge) {
+        this.challenge = challenge;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get challengeResponseFactoryClass
-   */
-  public String getChallengeResponseFactoryClass()
-  {
-    // SBgen: Get variable
-    return (challengeResponseFactoryClass);
-  }
+    /**
+     * @return
+     * @SBGen Method get challengeResponseFactoryClass
+     */
+    public String getChallengeResponseFactoryClass() {
+        // SBgen: Get variable
+        return (challengeResponseFactoryClass);
+    }
 
-  public void setChallengeResponseFactoryClass(String challengeResponseFactoryClass)
-  {
-    this.challengeResponseFactoryClass = challengeResponseFactoryClass;
-  }
+    public void setChallengeResponseFactoryClass(String challengeResponseFactoryClass) {
+        this.challengeResponseFactoryClass = challengeResponseFactoryClass;
+    }
 
-  public String toString()
-  {
-    return "[GetAuthChallengeReply " + super.toString() + " challenge="
-        + challenge + " challengeResponseFactoryClass=" + challengeResponseFactoryClass + "]";
-  }
+    public String toString() {
+        return "[GetAuthChallengeReply " + super.toString() + " challenge="
+                + challenge + " challengeResponseFactoryClass=" + challengeResponseFactoryClass + "]";
+    }
 }
 

@@ -22,28 +22,23 @@ import com.swiftmq.swiftlet.store.CompositeStoreTransaction;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompositeTransactionId
-{
-  List entries = new ArrayList();
-  CompositeStoreTransaction compositeStoreTransaction = null;
+public class CompositeTransactionId {
+    List entries = new ArrayList();
+    CompositeStoreTransaction compositeStoreTransaction = null;
 
-  void add(CompositeTransactionIdEntry entry)
-  {
-    entries.add(entry);
-  }
+    void add(CompositeTransactionIdEntry entry) {
+        entries.add(entry);
+    }
 
-  List getEntries()
-  {
-    return entries;
-  }
+    List getEntries() {
+        return entries;
+    }
 
-  public CompositeStoreTransaction getCompositeStoreTransaction()
-  {
-    return compositeStoreTransaction;
-  }
+    public CompositeStoreTransaction getCompositeStoreTransaction() {
+        return compositeStoreTransaction;
+    }
 
-  public void setCompositeStoreTransaction(CompositeStoreTransaction compositeStoreTransaction)
-  {
-    this.compositeStoreTransaction = compositeStoreTransaction;
-  }
+    public void setCompositeStoreTransaction(CompositeStoreTransaction compositeStoreTransaction) {
+        this.compositeStoreTransaction = compositeStoreTransaction;
+    }
 }

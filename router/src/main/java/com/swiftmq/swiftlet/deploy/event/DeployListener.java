@@ -19,8 +19,8 @@ package com.swiftmq.swiftlet.deploy.event;
 
 import com.swiftmq.tools.deploy.Bundle;
 
-public interface DeployListener
-{
-  public void bundleAdded(Bundle bundle) throws Exception;
-  public void bundleRemoved(Bundle bundle, boolean isRedeploy) throws Exception;
+public interface DeployListener {
+    public void bundleAdded(Bundle bundle) throws Exception;
+
+    public void bundleRemoved(Bundle bundle, boolean isRedeploy) throws Exception;
 }

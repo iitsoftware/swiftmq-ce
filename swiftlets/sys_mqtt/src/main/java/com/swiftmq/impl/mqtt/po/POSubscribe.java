@@ -17,30 +17,27 @@
 
 package com.swiftmq.impl.mqtt.po;
 
+import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttSubscribeMessage;
 
-public class POSubscribe extends POObject
-{
-  MqttSubscribeMessage message;
-  public POSubscribe(MqttSubscribeMessage message)
-  {
-    super(null, null);
-    this.message = message;
-  }
+public class POSubscribe extends POObject {
+    MqttSubscribeMessage message;
 
-  public MqttSubscribeMessage getMessage() {
-    return message;
-  }
+    public POSubscribe(MqttSubscribeMessage message) {
+        super(null, null);
+        this.message = message;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((MQTTVisitor) visitor).visit(this);
-  }
+    public MqttSubscribeMessage getMessage() {
+        return message;
+    }
 
-  public String toString()
-  {
-    return "[POSubscribe, message="+message+"]";
-  }
+    public void accept(POVisitor visitor) {
+        ((MQTTVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        return "[POSubscribe, message=" + message + "]";
+    }
 }

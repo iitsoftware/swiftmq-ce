@@ -22,22 +22,17 @@ package com.swiftmq.swiftlet.queue.event;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class QueueManagerAdapter implements QueueManagerListener
-{
-  public void queueStartInitiated(QueueManagerEvent evt)
-  {
-  }
+public class QueueManagerAdapter implements QueueManagerListener {
+    public void queueStartInitiated(QueueManagerEvent evt) {
+    }
 
-  public void queueStarted(QueueManagerEvent evt)
-  {
-  }
+    public void queueStarted(QueueManagerEvent evt) {
+    }
 
-  public void queueStopInitiated(QueueManagerEvent evt)
-  {
-  }
+    public void queueStopInitiated(QueueManagerEvent evt) {
+    }
 
-  public void queueStopped(QueueManagerEvent evt)
-  {
-  }
+    public void queueStopped(QueueManagerEvent evt) {
+    }
 }
 

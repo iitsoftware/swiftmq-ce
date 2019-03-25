@@ -17,11 +17,10 @@
 
 package com.swiftmq.tools.versioning.event;
 
-import com.swiftmq.tools.dump.Dumpable;
-import com.swiftmq.tools.versioning.*;
+import com.swiftmq.tools.versioning.VersionedDumpable;
 
-public interface VersionedListener
-{
-  public void onAccept(VersionedDumpable vd);
-  public void onException(Exception exception);
+public interface VersionedListener {
+    public void onAccept(VersionedDumpable vd);
+
+    public void onException(Exception exception);
 }

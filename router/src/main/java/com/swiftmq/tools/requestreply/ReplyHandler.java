@@ -19,11 +19,11 @@ package com.swiftmq.tools.requestreply;
 
 /**
  * A ReplyHandler performs a Reply back to the Request via a communication link.
+ *
  * @Author Andreas Mueller, IIT GmbH
  * @Version 1.0
  */
-public interface ReplyHandler
-{
-  public void performReply(Reply reply);
+public interface ReplyHandler {
+    public void performReply(Reply reply);
 }
 

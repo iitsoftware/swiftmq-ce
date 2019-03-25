@@ -17,183 +17,163 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: XAResEndRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: XAResEndRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.XidImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResEndRequest extends Request 
-{
-  private XidImpl xid;
-  private int flags;
-  private boolean retry;
-  private List messages;
-  private List recoverRequestList;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
-  public XAResEndRequest()
-  {
-    super(0,true);
-  }
+public class XAResEndRequest extends Request {
+    private XidImpl xid;
+    private int flags;
+    private boolean retry;
+    private List messages;
+    private List recoverRequestList;
 
-  public XAResEndRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public XAResEndRequest() {
+        super(0, true);
+    }
 
-  public XAResEndRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public XAResEndRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XAResEndRequest(int dispatchId, XidImpl xid, int flags, boolean retry, List messages, List recoverRequestList)
-  {
-    super(dispatchId,true);
-    this.xid = xid;
-    this.flags = flags;
-    this.retry = retry;
-    this.messages = messages;
-    this.recoverRequestList = recoverRequestList;
-  }
+    public XAResEndRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public XAResEndRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, int flags, boolean retry, List messages, List recoverRequestList)
-  {
-    super(dispatchId,true,validator);
-    this.xid = xid;
-    this.flags = flags;
-    this.retry = retry;
-    this.messages = messages;
-    this.recoverRequestList = recoverRequestList;
-  }
-  
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public XAResEndRequest(int dispatchId, XidImpl xid, int flags, boolean retry, List messages, List recoverRequestList) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.flags = flags;
+        this.retry = retry;
+        this.messages = messages;
+        this.recoverRequestList = recoverRequestList;
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
-  
-  public void setFlags(int flags)
-  {
-    this.flags = flags;
-  }
+    public XAResEndRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, int flags, boolean retry, List messages, List recoverRequestList) {
+        super(dispatchId, true, validator);
+        this.xid = xid;
+        this.flags = flags;
+        this.retry = retry;
+        this.messages = messages;
+        this.recoverRequestList = recoverRequestList;
+    }
 
-  public int getFlags()
-  {
-    return flags;
-  }
-  
-  public void setRetry(boolean retry)
-  {
-    this.retry = retry;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public boolean isRetry()
-  {
-    return retry;
-  }
-  
-  public void setMessages(List messages)
-  {
-    this.messages = messages;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public List getMessages()
-  {
-    return messages;
-  }
-  
-  public void setRecoverRequestList(List recoverRequestList)
-  {
-    this.recoverRequestList = recoverRequestList;
-  }
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
 
-  public List getRecoverRequestList()
-  {
-    return recoverRequestList;
-  }
+    public int getFlags() {
+        return flags;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESEND_REQ;
-  }
+    public void setRetry(boolean retry) {
+        this.retry = retry;
+    }
+
+    public boolean isRetry() {
+        return retry;
+    }
+
+    public void setMessages(List messages) {
+        this.messages = messages;
+    }
+
+    public List getMessages() {
+        return messages;
+    }
+
+    public void setRecoverRequestList(List recoverRequestList) {
+        this.recoverRequestList = recoverRequestList;
+    }
+
+    public List getRecoverRequestList() {
+        return recoverRequestList;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESEND_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(xid,out);
-    SMQPUtil.write(flags,out);
-    SMQPUtil.write(retry,out);
-    if (messages != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writeMessageList(messages,out);
-    } else
-      out.writeBoolean(false);
-    if (recoverRequestList != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writeRequest(recoverRequestList,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(xid, out);
+        SMQPUtil.write(flags, out);
+        SMQPUtil.write(retry, out);
+        if (messages != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writeMessageList(messages, out);
+        } else
+            out.writeBoolean(false);
+        if (recoverRequestList != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writeRequest(recoverRequestList, out);
+        } else
+            out.writeBoolean(false);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = SMQPUtil.read(xid,in);
-    flags = SMQPUtil.read(flags,in);
-    retry = SMQPUtil.read(retry,in);
-    boolean messages_set = in.readBoolean();
-    if (messages_set)
-      messages = SMQPUtil.readMessageList(messages,in);
-    boolean recoverRequestList_set = in.readBoolean();
-    if (recoverRequestList_set)
-      recoverRequestList = SMQPUtil.readRequest(recoverRequestList,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = SMQPUtil.read(xid, in);
+        flags = SMQPUtil.read(flags, in);
+        retry = SMQPUtil.read(retry, in);
+        boolean messages_set = in.readBoolean();
+        if (messages_set)
+            messages = SMQPUtil.readMessageList(messages, in);
+        boolean recoverRequestList_set = in.readBoolean();
+        if (recoverRequestList_set)
+            recoverRequestList = SMQPUtil.readRequest(recoverRequestList, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResEndReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResEndReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/XAResEndRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("xid=");
-    _b.append(xid);
-    _b.append(", ");
-    _b.append("flags=");
-    _b.append(flags);
-    _b.append(", ");
-    _b.append("retry=");
-    _b.append(retry);
-    _b.append(", ");
-    _b.append("messages=");
-    _b.append(messages);
-    _b.append(", ");
-    _b.append("recoverRequestList=");
-    _b.append(recoverRequestList);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/XAResEndRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("xid=");
+        _b.append(xid);
+        _b.append(", ");
+        _b.append("flags=");
+        _b.append(flags);
+        _b.append(", ");
+        _b.append("retry=");
+        _b.append(retry);
+        _b.append(", ");
+        _b.append("messages=");
+        _b.append(messages);
+        _b.append(", ");
+        _b.append("recoverRequestList=");
+        _b.append(recoverRequestList);
+        _b.append("]");
+        return _b.toString();
+    }
 }

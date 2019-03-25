@@ -36,47 +36,50 @@ import java.util.Map;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2003, All Rights Reserved
  */
-public interface JobFactory
-{
-  /**
-   * Returns the name of the JobFactory, e.g. 'Queue Mover'
-   * @return Name
-   */
-  public String getName();
+public interface JobFactory {
+    /**
+     * Returns the name of the JobFactory, e.g. 'Queue Mover'
+     *
+     * @return Name
+     */
+    public String getName();
 
-  /**
-   * Returns a short description of the JobFactory, e.g. 'Moves the content of a Queue'
-   * @return description
-   */
-  public String getDescription();
+    /**
+     * Returns a short description of the JobFactory, e.g. 'Moves the content of a Queue'
+     *
+     * @return description
+     */
+    public String getDescription();
 
-  /**
-   * Returns a Map of JobParameters, keyed by the parameter name or null if no parameter
-   * is defined.
-   * @return Map of JobParameters
-   */
-  public Map getJobParameters();
+    /**
+     * Returns a Map of JobParameters, keyed by the parameter name or null if no parameter
+     * is defined.
+     *
+     * @return Map of JobParameters
+     */
+    public Map getJobParameters();
 
-  /**
-   * Returns a JobParameter with the given parameter name.
-   *
-   * @param name Parameter name
-   * @return JobParameter or null
-   */
-  public JobParameter getJobParameter(String name);
+    /**
+     * Returns a JobParameter with the given parameter name.
+     *
+     * @param name Parameter name
+     * @return JobParameter or null
+     */
+    public JobParameter getJobParameter(String name);
 
-  /**
-   * Returns a Job instance. This is equal to a check-out of a pool.
-   *
-   * @return Job
-   */
-  public Job getJobInstance();
+    /**
+     * Returns a Job instance. This is equal to a check-out of a pool.
+     *
+     * @return Job
+     */
+    public Job getJobInstance();
 
-  /**
-   * Marks a Job instance as finished. Called after the Job has been terminated. This is
-   * equal to a check-in into a pool.
-   * @param job Job instance
-   * @param exception JobException thrown by the Job instance
-   */
-  public void finished(Job job, JobException exception);
+    /**
+     * Marks a Job instance as finished. Called after the Job has been terminated. This is
+     * equal to a check-in into a pool.
+     *
+     * @param job       Job instance
+     * @param exception JobException thrown by the Job instance
+     */
+    public void finished(Job job, JobException exception);
 }

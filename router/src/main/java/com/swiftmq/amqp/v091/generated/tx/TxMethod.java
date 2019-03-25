@@ -17,18 +17,16 @@
 
 package com.swiftmq.amqp.v091.generated.tx;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
+import com.swiftmq.amqp.v091.types.Method;
 
-public abstract class TxMethod extends Method
-{
-  public abstract void accept(TxMethodVisitor visitor);
+public abstract class TxMethod extends Method {
+    public abstract void accept(TxMethodVisitor visitor);
 }

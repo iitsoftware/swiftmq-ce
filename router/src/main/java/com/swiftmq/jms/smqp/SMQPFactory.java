@@ -17,46 +17,41 @@
 
 package com.swiftmq.jms.smqp;
 
-import com.swiftmq.tools.dump.*;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
 
-public class SMQPFactory extends DumpableFactory
-{
-  public static final int DID_SMQP_VERSION_REQ = 0;
-  public static final int DID_SMQP_VERSION_REP = 1;
+public class SMQPFactory extends DumpableFactory {
+    public static final int DID_SMQP_VERSION_REQ = 0;
+    public static final int DID_SMQP_VERSION_REP = 1;
 
-  DumpableFactory protocolFactory = null;
+    DumpableFactory protocolFactory = null;
 
-  public SMQPFactory(DumpableFactory protocolFactory)
-  {
-    this.protocolFactory = protocolFactory;
-  }
-
-  public SMQPFactory()
-  {
-    this(null);
-  }
-
-  public void setProtocolFactory(DumpableFactory protocolFactory)
-  {
-    this.protocolFactory = protocolFactory;
-  }
-
-  public Dumpable createDumpable(int dumpId)
-  {
-    Dumpable d = null;
-    switch (dumpId)
-    {
-      case DID_SMQP_VERSION_REQ:
-        d = new SMQPVersionRequest();
-        break;
-      case DID_SMQP_VERSION_REP:
-        d = new SMQPVersionReply();
-        break;
-      default:
-        if (protocolFactory != null)
-          d = protocolFactory.createDumpable(dumpId);
-        break;
+    public SMQPFactory(DumpableFactory protocolFactory) {
+        this.protocolFactory = protocolFactory;
     }
-    return d;
-  }
+
+    public SMQPFactory() {
+        this(null);
+    }
+
+    public void setProtocolFactory(DumpableFactory protocolFactory) {
+        this.protocolFactory = protocolFactory;
+    }
+
+    public Dumpable createDumpable(int dumpId) {
+        Dumpable d = null;
+        switch (dumpId) {
+            case DID_SMQP_VERSION_REQ:
+                d = new SMQPVersionRequest();
+                break;
+            case DID_SMQP_VERSION_REP:
+                d = new SMQPVersionReply();
+                break;
+            default:
+                if (protocolFactory != null)
+                    d = protocolFactory.createDumpable(dumpId);
+                break;
+        }
+        return d;
+    }
 }

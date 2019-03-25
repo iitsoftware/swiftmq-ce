@@ -19,19 +19,19 @@ package com.swiftmq.swiftlet;
 
 /**
  * An exception thrown by the SwiftletManager if the Swiftlet is unknown
- * @see SwiftletManager
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
+ * @see SwiftletManager
  */
-public class UnknownSwiftletException extends Exception
-{
-  /**
-   * Constructs a new UnknownSwiftletException
-   * @param message the message
-   * @SBGen Constructor
-   */
-  public UnknownSwiftletException(String message)
-  {
-    super(message);
-  }
+public class UnknownSwiftletException extends Exception {
+    /**
+     * Constructs a new UnknownSwiftletException
+     *
+     * @param message the message
+     * @SBGen Constructor
+     */
+    public UnknownSwiftletException(String message) {
+        super(message);
+    }
 }
 

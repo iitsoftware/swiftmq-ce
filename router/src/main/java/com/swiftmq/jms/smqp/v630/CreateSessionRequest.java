@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: CreateSessionRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: CreateSessionRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,139 +33,119 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreateSessionRequest extends Request
-{
-  public static final int QUEUE_SESSION = 0;
-  public static final int TOPIC_SESSION = 1;
-  public static final int UNIFIED = 2;
-  private boolean transacted;
-  private int acknowledgeMode;
-  private int type;
-  private int recoveryEpoche;
+public class CreateSessionRequest extends Request {
+    public static final int QUEUE_SESSION = 0;
+    public static final int TOPIC_SESSION = 1;
+    public static final int UNIFIED = 2;
+    private boolean transacted;
+    private int acknowledgeMode;
+    private int type;
+    private int recoveryEpoche;
 
-  public CreateSessionRequest()
-  {
-    super(0, true);
-  }
+    public CreateSessionRequest() {
+        super(0, true);
+    }
 
-  public CreateSessionRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public CreateSessionRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CreateSessionRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public CreateSessionRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public CreateSessionRequest(int dispatchId, boolean transacted, int acknowledgeMode, int type, int recoveryEpoche)
-  {
-    super(dispatchId, true);
-    this.transacted = transacted;
-    this.acknowledgeMode = acknowledgeMode;
-    this.type = type;
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public CreateSessionRequest(int dispatchId, boolean transacted, int acknowledgeMode, int type, int recoveryEpoche) {
+        super(dispatchId, true);
+        this.transacted = transacted;
+        this.acknowledgeMode = acknowledgeMode;
+        this.type = type;
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public CreateSessionRequest(RequestRetryValidator validator, int dispatchId, boolean transacted, int acknowledgeMode, int type, int recoveryEpoche)
-  {
-    super(dispatchId, true, validator);
-    this.transacted = transacted;
-    this.acknowledgeMode = acknowledgeMode;
-    this.type = type;
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public CreateSessionRequest(RequestRetryValidator validator, int dispatchId, boolean transacted, int acknowledgeMode, int type, int recoveryEpoche) {
+        super(dispatchId, true, validator);
+        this.transacted = transacted;
+        this.acknowledgeMode = acknowledgeMode;
+        this.type = type;
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public void setTransacted(boolean transacted)
-  {
-    this.transacted = transacted;
-  }
+    public void setTransacted(boolean transacted) {
+        this.transacted = transacted;
+    }
 
-  public boolean isTransacted()
-  {
-    return transacted;
-  }
+    public boolean isTransacted() {
+        return transacted;
+    }
 
-  public void setAcknowledgeMode(int acknowledgeMode)
-  {
-    this.acknowledgeMode = acknowledgeMode;
-  }
+    public void setAcknowledgeMode(int acknowledgeMode) {
+        this.acknowledgeMode = acknowledgeMode;
+    }
 
-  public int getAcknowledgeMode()
-  {
-    return acknowledgeMode;
-  }
+    public int getAcknowledgeMode() {
+        return acknowledgeMode;
+    }
 
-  public void setType(int type)
-  {
-    this.type = type;
-  }
+    public void setType(int type) {
+        this.type = type;
+    }
 
-  public int getType()
-  {
-    return type;
-  }
+    public int getType() {
+        return type;
+    }
 
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATESESSION_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATESESSION_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(transacted, out);
-    SMQPUtil.write(acknowledgeMode, out);
-    SMQPUtil.write(type, out);
-    SMQPUtil.write(recoveryEpoche, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(transacted, out);
+        SMQPUtil.write(acknowledgeMode, out);
+        SMQPUtil.write(type, out);
+        SMQPUtil.write(recoveryEpoche, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    transacted = SMQPUtil.read(transacted, in);
-    acknowledgeMode = SMQPUtil.read(acknowledgeMode, in);
-    type = SMQPUtil.read(type, in);
-    recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        transacted = SMQPUtil.read(transacted, in);
+        acknowledgeMode = SMQPUtil.read(acknowledgeMode, in);
+        type = SMQPUtil.read(type, in);
+        recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreateSessionReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CreateSessionReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/CreateSessionRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("transacted=");
-    _b.append(transacted);
-    _b.append(", ");
-    _b.append("acknowledgeMode=");
-    _b.append(acknowledgeMode);
-    _b.append(", ");
-    _b.append("type=");
-    _b.append(type);
-    _b.append(", ");
-    _b.append("recoveryEpoche=");
-    _b.append(recoveryEpoche);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/CreateSessionRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("transacted=");
+        _b.append(transacted);
+        _b.append(", ");
+        _b.append("acknowledgeMode=");
+        _b.append(acknowledgeMode);
+        _b.append(", ");
+        _b.append("type=");
+        _b.append(type);
+        _b.append(", ");
+        _b.append("recoveryEpoche=");
+        _b.append(recoveryEpoche);
+        _b.append("]");
+        return _b.toString();
+    }
 }

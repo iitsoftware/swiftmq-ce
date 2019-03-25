@@ -19,7 +19,6 @@ package com.swiftmq.jms;
 
 import java.io.DataOutput;
 
-public interface ToClientSerializer
-{
-  public DataOutput getDataOutput();
+public interface ToClientSerializer {
+    public DataOutput getDataOutput();
 }

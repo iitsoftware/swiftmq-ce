@@ -21,33 +21,27 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class RunMessageProcessor extends Request
-{
-  AsyncMessageProcessor messageProcessor = null;
+public class RunMessageProcessor extends Request {
+    AsyncMessageProcessor messageProcessor = null;
 
-  public RunMessageProcessor(AsyncMessageProcessor messageProcessor)
-  {
-    super(0, false);
-    this.messageProcessor = messageProcessor;
-  }
+    public RunMessageProcessor(AsyncMessageProcessor messageProcessor) {
+        super(0, false);
+        this.messageProcessor = messageProcessor;
+    }
 
-  public AsyncMessageProcessor getMessageProcessor()
-  {
-    return messageProcessor;
-  }
+    public AsyncMessageProcessor getMessageProcessor() {
+        return messageProcessor;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[RunMessageProcessor, messageProcessor=" + messageProcessor + "]";
-  }
+    public String toString() {
+        return "[RunMessageProcessor, messageProcessor=" + messageProcessor + "]";
+    }
 }

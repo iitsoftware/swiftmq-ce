@@ -26,121 +26,104 @@ import com.swiftmq.swiftlet.accounting.StopListener;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
-public class QueueSource extends MessageProcessor implements AccountingSource
-{
-  static final String TP_RUNNER = "sys$accounting.sourcerunner";
+public class QueueSource extends MessageProcessor implements AccountingSource {
+    static final String TP_RUNNER = "sys$accounting.sourcerunner";
 
-  SwiftletContext ctx = null;
-  String queueName = null;
-  volatile ThreadPool myTP = null;
-  volatile QueueReceiver receiver = null;
-  volatile QueuePullTransaction tx = null;
-  volatile StopListener stopListener = null;
-  volatile AccountingSink sink = null;
-  volatile MessageEntry entry = null;
-  volatile boolean stopped = false;
+    SwiftletContext ctx = null;
+    String queueName = null;
+    volatile ThreadPool myTP = null;
+    volatile QueueReceiver receiver = null;
+    volatile QueuePullTransaction tx = null;
+    volatile StopListener stopListener = null;
+    volatile AccountingSink sink = null;
+    volatile MessageEntry entry = null;
+    volatile boolean stopped = false;
 
-  public QueueSource(SwiftletContext ctx, String queueName, Selector selector) throws Exception
-  {
-    super(selector);
-    this.ctx = ctx;
-    this.queueName = queueName;
-    myTP = ctx.threadpoolSwiftlet.getPool(TP_RUNNER);
-    receiver = ctx.queueManager.createQueueReceiver(queueName, null, selector);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/created");
-  }
-
-  private void terminate(Exception e)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/terminate, exception=" + e);
-    stopped = true;
-    try
-    {
-      receiver.close();
-      receiver = null;
-    } catch (Exception e1)
-    {
+    public QueueSource(SwiftletContext ctx, String queueName, Selector selector) throws Exception {
+        super(selector);
+        this.ctx = ctx;
+        this.queueName = queueName;
+        myTP = ctx.threadpoolSwiftlet.getPool(TP_RUNNER);
+        receiver = ctx.queueManager.createQueueReceiver(queueName, null, selector);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/created");
     }
-    if (stopListener != null)
-      stopListener.sourceStopped(this, e);
-  }
 
-  public void setStopListener(StopListener stopListener)
-  {
-    this.stopListener = stopListener;
-  }
+    private void terminate(Exception e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/terminate, exception=" + e);
+        stopped = true;
+        try {
+            receiver.close();
+            receiver = null;
+        } catch (Exception e1) {
+        }
+        if (stopListener != null)
+            stopListener.sourceStopped(this, e);
+    }
 
-  public void startAccounting(AccountingSink sink) throws Exception
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/startAccounting, sink=" + sink);
-    this.sink = sink;
-    tx = receiver.createTransaction(false);
-    tx.registerMessageProcessor(this);
-  }
+    public void setStopListener(StopListener stopListener) {
+        this.stopListener = stopListener;
+    }
 
-  public void stopAccounting() throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/stopAccounting");
-    stopListener = null;
-    terminate(null);
-  }
-
-  public boolean isValid()
-  {
-    return !stopped;
-  }
-
-  public void processMessage(MessageEntry entry)
-  {
-    this.entry = entry;
-    myTP.dispatchTask(this);
-  }
-
-  public void processException(Exception e)
-  {
-    terminate(e);
-  }
-
-  public String getDispatchToken()
-  {
-    return TP_RUNNER;
-  }
-
-  public String getDescription()
-  {
-    return ctx.accountingSwiftlet.getName() + "/" + toString();
-  }
-
-  public void stop()
-  {
-    terminate(null);
-  }
-
-  public void run()
-  {
-    MessageImpl msg = entry.getMessage();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/run, msg=" + msg);
-    if (msg instanceof MapMessageImpl)
-    {
-      try
-      {
-        sink.add((MapMessageImpl) msg);
-        tx.commit();
+    public void startAccounting(AccountingSink sink) throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/startAccounting, sink=" + sink);
+        this.sink = sink;
         tx = receiver.createTransaction(false);
         tx.registerMessageProcessor(this);
-      } catch (Exception e)
-      {
+    }
+
+    public void stopAccounting() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/stopAccounting");
+        stopListener = null;
+        terminate(null);
+    }
+
+    public boolean isValid() {
+        return !stopped;
+    }
+
+    public void processMessage(MessageEntry entry) {
+        this.entry = entry;
+        myTP.dispatchTask(this);
+    }
+
+    public void processException(Exception e) {
         terminate(e);
-      }
-    } else
-      terminate(new Exception("Message is not instanceof MapMessageImpl!"));
+    }
 
-  }
+    public String getDispatchToken() {
+        return TP_RUNNER;
+    }
 
-  public String toString()
-  {
-    return "QueueSource, queue=" + queueName;
-  }
+    public String getDescription() {
+        return ctx.accountingSwiftlet.getName() + "/" + toString();
+    }
+
+    public void stop() {
+        terminate(null);
+    }
+
+    public void run() {
+        MessageImpl msg = entry.getMessage();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/run, msg=" + msg);
+        if (msg instanceof MapMessageImpl) {
+            try {
+                sink.add((MapMessageImpl) msg);
+                tx.commit();
+                tx = receiver.createTransaction(false);
+                tx.registerMessageProcessor(this);
+            } catch (Exception e) {
+                terminate(e);
+            }
+        } else
+            terminate(new Exception("Message is not instanceof MapMessageImpl!"));
+
+    }
+
+    public String toString() {
+        return "QueueSource, queue=" + queueName;
+    }
 }

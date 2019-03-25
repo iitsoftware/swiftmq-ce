@@ -17,146 +17,131 @@
 
 package com.swiftmq.amqp.v091.generated.queue;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Unbind extends QueueMethod
-{
-  int reserved1;
-  String queue;
-  String exchange;
-  String routingKey;
-  Map<String, Object> arguments;
+import java.io.IOException;
+import java.util.Map;
 
-  public Unbind()
-  {
-    _classId = 50;
-    _methodId = 50;
-  }
+public class Unbind extends QueueMethod {
+    int reserved1;
+    String queue;
+    String exchange;
+    String routingKey;
+    Map<String, Object> arguments;
 
-  public void accept(QueueMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Unbind() {
+        _classId = 50;
+        _methodId = 50;
+    }
 
-  public int getReserved1()
-  {
-    return reserved1;
-  }
+    public void accept(QueueMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReserved1(int reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public int getReserved1() {
+        return reserved1;
+    }
 
-  public String getQueue()
-  {
-    return queue;
-  }
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  public void setQueue(String queue)
-  {
-    this.queue = queue;
-  }
+    public String getQueue() {
+        return queue;
+    }
 
-  public String getExchange()
-  {
-    return exchange;
-  }
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-  public void setExchange(String exchange)
-  {
-    this.exchange = exchange;
-  }
+    public String getExchange() {
+        return exchange;
+    }
 
-  public String getRoutingKey()
-  {
-    return routingKey;
-  }
+    public void setExchange(String exchange) {
+        this.exchange = exchange;
+    }
 
-  public void setRoutingKey(String routingKey)
-  {
-    this.routingKey = routingKey;
-  }
+    public String getRoutingKey() {
+        return routingKey;
+    }
 
-  public Map<String, Object> getArguments()
-  {
-    return arguments;
-  }
+    public void setRoutingKey(String routingKey) {
+        this.routingKey = routingKey;
+    }
 
-  public void setArguments(Map<String, Object> arguments)
-  {
-    this.arguments = arguments;
-  }
+    public Map<String, Object> getArguments() {
+        return arguments;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    reserved1 = Coder.readShort(in);
-    queue = Coder.readShortString(in);
-    exchange = Coder.readShortString(in);
-    routingKey = Coder.readShortString(in);
-    arguments = Coder.readTable(in);
-  }
+    public void setArguments(Map<String, Object> arguments) {
+        this.arguments = arguments;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShort(reserved1, out);
-    Coder.writeShortString(queue, out);
-    Coder.writeShortString(exchange, out);
-    Coder.writeShortString(routingKey, out);
-    Coder.writeTable(arguments, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        reserved1 = Coder.readShort(in);
+        queue = Coder.readShortString(in);
+        exchange = Coder.readShortString(in);
+        routingKey = Coder.readShortString(in);
+        arguments = Coder.readTable(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("queue=");
-    b.append(queue);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("exchange=");
-    b.append(exchange);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("routingKey=");
-    b.append(routingKey);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("arguments=");
-    b.append(arguments);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShort(reserved1, out);
+        Coder.writeShortString(queue, out);
+        Coder.writeShortString(exchange, out);
+        Coder.writeShortString(routingKey, out);
+        Coder.writeTable(arguments, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Unbind " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("queue=");
+        b.append(queue);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("exchange=");
+        b.append(exchange);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("routingKey=");
+        b.append(routingKey);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("arguments=");
+        b.append(arguments);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Unbind " + super.toString() + getDisplayString() + "]";
+    }
 }

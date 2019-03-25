@@ -26,106 +26,88 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IntraVMConnection implements Connection, ChunkListener
-{
-  static int connectionId = 0;
+public class IntraVMConnection implements Connection, ChunkListener {
+    static int connectionId = 0;
 
-  IntraVMServerEndpoint endpoint = null;
-  InboundHandler inboundHandler = null;
-  ExceptionHandler exceptionHandler = null;
-  DataByteArrayInputStream dis = null;
-  OutputStream out = null;
-  String myHostname = null;
-  boolean closed = false;
-  AtomicBoolean inputActiveIndicator = null;
+    IntraVMServerEndpoint endpoint = null;
+    InboundHandler inboundHandler = null;
+    ExceptionHandler exceptionHandler = null;
+    DataByteArrayInputStream dis = null;
+    OutputStream out = null;
+    String myHostname = null;
+    boolean closed = false;
+    AtomicBoolean inputActiveIndicator = null;
 
-  public IntraVMConnection()
-  {
-    dis = new DataByteArrayInputStream();
-    out = new DataByteArrayOutputStream()
-    {
-      public void flush() throws IOException
-      {
-        if (closed || endpoint.isClosed())
-          throw new IOException("Connection is closed");
-        super.flush();
-        endpoint.chunkCompleted(getBuffer(), 0, getCount());
-        rewind();
-      }
-    };
-    myHostname = "INTRAVM-" + getConnectionId();
-  }
+    public IntraVMConnection() {
+        dis = new DataByteArrayInputStream();
+        out = new DataByteArrayOutputStream() {
+            public void flush() throws IOException {
+                if (closed || endpoint.isClosed())
+                    throw new IOException("Connection is closed");
+                super.flush();
+                endpoint.chunkCompleted(getBuffer(), 0, getCount());
+                rewind();
+            }
+        };
+        myHostname = "INTRAVM-" + getConnectionId();
+    }
 
-  public void setEndpoint(IntraVMServerEndpoint endpoint)
-  {
-    this.endpoint = endpoint;
-  }
+    public void setEndpoint(IntraVMServerEndpoint endpoint) {
+        this.endpoint = endpoint;
+    }
 
-  public void setInputActiveIndicator(AtomicBoolean inputActiveIndicator)
-  {
-    this.inputActiveIndicator = inputActiveIndicator;
-  }
+    public void setInputActiveIndicator(AtomicBoolean inputActiveIndicator) {
+        this.inputActiveIndicator = inputActiveIndicator;
+    }
 
-  private static synchronized int getConnectionId()
-  {
-    return connectionId++;
-  }
+    private static synchronized int getConnectionId() {
+        return connectionId++;
+    }
 
-  public void chunkCompleted(byte[] b, int offset, int len)
-  {
-    dis.setBuffer(b, offset, len);
-    inboundHandler.dataAvailable(dis);
-  }
+    public void chunkCompleted(byte[] b, int offset, int len) {
+        dis.setBuffer(b, offset, len);
+        inboundHandler.dataAvailable(dis);
+    }
 
-  public void setInboundHandler(InboundHandler inboundHandler)
-  {
-    this.inboundHandler = inboundHandler;
-  }
+    public void setInboundHandler(InboundHandler inboundHandler) {
+        this.inboundHandler = inboundHandler;
+    }
 
-  public void setExceptionHandler(ExceptionHandler exceptionHandler)
-  {
-    this.exceptionHandler = exceptionHandler;
-  }
+    public void setExceptionHandler(ExceptionHandler exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
+    }
 
-  public OutputStream getOutputStream()
-  {
-    return out;
-  }
+    public OutputStream getOutputStream() {
+        return out;
+    }
 
-  public String getLocalHostname()
-  {
-    return myHostname;
-  }
+    public String getLocalHostname() {
+        return myHostname;
+    }
 
-  public String getHostname()
-  {
-    return "INTRAVM";
-  }
+    public String getHostname() {
+        return "INTRAVM";
+    }
 
-  public int getPort()
-  {
-    return 0;
-  }
+    public int getPort() {
+        return 0;
+    }
 
-  public void start()
-  {
-  }
+    public void start() {
+    }
 
-  public boolean isClosed()
-  {
-    return closed;
-  }
+    public boolean isClosed() {
+        return closed;
+    }
 
-  public void serverClose()
-  {
-    if (exceptionHandler != null)
-      exceptionHandler.onException(new IOException("Server closed connection!"));
-    closed = true;
-  }
+    public void serverClose() {
+        if (exceptionHandler != null)
+            exceptionHandler.onException(new IOException("Server closed connection!"));
+        closed = true;
+    }
 
-  public void close()
-  {
-    endpoint.clientClose();
-    closed = true;
-  }
+    public void close() {
+        endpoint.clientClose();
+        closed = true;
+    }
 }

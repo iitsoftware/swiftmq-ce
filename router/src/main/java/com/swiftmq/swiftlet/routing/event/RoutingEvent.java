@@ -24,34 +24,34 @@ import java.util.EventObject;
 
 /**
  * A routing event.
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class RoutingEvent extends EventObject
-{
-  String destination;
+public class RoutingEvent extends EventObject {
+    String destination;
 
 
-  /**
-   * Creates a routing event.
-   * Use from the RoutingSwiftlet.
-   * @param source routing swiftlet.
-   * @param destination router name.
-   */
-  public RoutingEvent(RoutingSwiftlet source, String destination)
-  {
-    super(source);
-    this.destination = destination;
-  }
+    /**
+     * Creates a routing event.
+     * Use from the RoutingSwiftlet.
+     *
+     * @param source      routing swiftlet.
+     * @param destination router name.
+     */
+    public RoutingEvent(RoutingSwiftlet source, String destination) {
+        super(source);
+        this.destination = destination;
+    }
 
 
-  /**
-   * Returns the remote router name.
-   * @return router name.
-   */
-  public String getDestination()
-  {
-    // SBgen: Get variable
-    return (destination);
-  }
+    /**
+     * Returns the remote router name.
+     *
+     * @return router name.
+     */
+    public String getDestination() {
+        // SBgen: Get variable
+        return (destination);
+    }
 }
 

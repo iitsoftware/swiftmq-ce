@@ -24,19 +24,19 @@ package com.swiftmq.mgmt;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface PropertyChangeListener
-{
+public interface PropertyChangeListener {
 
-  /**
-   * Called before the Property value is changed.
-   * It is expected that this method throws a PropertyChangeException if any error occurs.
-   * If no exception is thrown, the new value will be set for this Property.
-   * @param property the Property.
-   * @param oldValue the old value.
-   * @param newValue the new value.
-   * @exception PropertyChangeException on error.
-   */
-  public void propertyChanged(Property property, Object oldValue, Object newValue)
-    throws PropertyChangeException;
+    /**
+     * Called before the Property value is changed.
+     * It is expected that this method throws a PropertyChangeException if any error occurs.
+     * If no exception is thrown, the new value will be set for this Property.
+     *
+     * @param property the Property.
+     * @param oldValue the old value.
+     * @param newValue the new value.
+     * @throws PropertyChangeException on error.
+     */
+    public void propertyChanged(Property property, Object oldValue, Object newValue)
+            throws PropertyChangeException;
 }
 

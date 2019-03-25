@@ -17,32 +17,27 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class Disconnect extends POObject
-{
-  String name = null;
+public class Disconnect extends POObject {
+    String name = null;
 
-  public Disconnect(String name)
-  {
-    super(null, null);
-    this.name = name;
-  }
+    public Disconnect(String name) {
+        super(null, null);
+        this.name = name;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[Disconnect, name="+name+"]";
-  }
+    public String toString() {
+        return "[Disconnect, name=" + name + "]";
+    }
 }
 

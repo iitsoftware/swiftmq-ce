@@ -23,50 +23,41 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.SourceMessageProcessor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendMessages extends POObject
-{
-  SourceMessageProcessor sourceMessageProcessor;
-  int deliveryStart = 0;
-  Delivery[] deliveries = null;
+public class POSendMessages extends POObject {
+    SourceMessageProcessor sourceMessageProcessor;
+    int deliveryStart = 0;
+    Delivery[] deliveries = null;
 
-  public POSendMessages(SourceMessageProcessor sourceMessageProcessor)
-  {
-    super(null, null);
-    this.sourceMessageProcessor = sourceMessageProcessor;
-  }
+    public POSendMessages(SourceMessageProcessor sourceMessageProcessor) {
+        super(null, null);
+        this.sourceMessageProcessor = sourceMessageProcessor;
+    }
 
-  public int getDeliveryStart()
-  {
-    return deliveryStart;
-  }
+    public int getDeliveryStart() {
+        return deliveryStart;
+    }
 
-  public void setDeliveryStart(int deliveryStart)
-  {
-    this.deliveryStart = deliveryStart;
-  }
+    public void setDeliveryStart(int deliveryStart) {
+        this.deliveryStart = deliveryStart;
+    }
 
-  public Delivery[] getDeliveries()
-  {
-    return deliveries;
-  }
+    public Delivery[] getDeliveries() {
+        return deliveries;
+    }
 
-  public void setDeliveries(Delivery[] deliveries)
-  {
-    this.deliveries = deliveries;
-  }
+    public void setDeliveries(Delivery[] deliveries) {
+        this.deliveries = deliveries;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPChannelVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPChannelVisitor) visitor).visit(this);
+    }
 
-  public SourceMessageProcessor getSourceMessageProcessor()
-  {
-    return sourceMessageProcessor;
-  }
+    public SourceMessageProcessor getSourceMessageProcessor() {
+        return sourceMessageProcessor;
+    }
 
-  public String toString()
-  {
-    return "[POSendMessages, deliveryStart=" + deliveryStart + ", sourceMessageProcessor=" + sourceMessageProcessor + "]";
-  }
+    public String toString() {
+        return "[POSendMessages, deliveryStart=" + deliveryStart + ", sourceMessageProcessor=" + sourceMessageProcessor + "]";
+    }
 }

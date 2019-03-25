@@ -23,93 +23,79 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class CloseConsumerRequest extends Request
-{
-  int sessionDispatchId = 0;
-  int queueConsumerId = 0;
-  String exception = null;
+public class CloseConsumerRequest extends Request {
+    int sessionDispatchId = 0;
+    int queueConsumerId = 0;
+    String exception = null;
 
-  public CloseConsumerRequest(int dispatchId, int sessionDispatchId, int queueConsumerId)
-   {
-     this(dispatchId,sessionDispatchId,queueConsumerId,null);
-   }
-
-  public CloseConsumerRequest(int dispatchId, int sessionDispatchId, int queueConsumerId, String exception)
-   {
-     super(dispatchId, true);
-     this.sessionDispatchId = sessionDispatchId;
-     this.queueConsumerId = queueConsumerId;
-     this.exception = exception;
-   }
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSE_CONSUMER_REQ;
-  }
-
-  public int getSessionDispatchId()
-  {
-    return sessionDispatchId;
-  }
-
-  public String getException()
-  {
-    return exception;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(sessionDispatchId);
-    out.writeInt(queueConsumerId);
-    if (exception == null)
-      out.writeByte(0);
-    else
-    {
-      out.writeByte(1);
-      out.writeUTF(exception);
+    public CloseConsumerRequest(int dispatchId, int sessionDispatchId, int queueConsumerId) {
+        this(dispatchId, sessionDispatchId, queueConsumerId, null);
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    sessionDispatchId = in.readInt();
-    queueConsumerId = in.readInt();
-    byte set = in.readByte();
-    if (set == 1)
-      exception = in.readUTF();
-  }
+    public CloseConsumerRequest(int dispatchId, int sessionDispatchId, int queueConsumerId, String exception) {
+        super(dispatchId, true);
+        this.sessionDispatchId = sessionDispatchId;
+        this.queueConsumerId = queueConsumerId;
+        this.exception = exception;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CloseConsumerReply();
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSE_CONSUMER_REQ;
+    }
 
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public int getSessionDispatchId() {
+        return sessionDispatchId;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return (queueConsumerId);
-  }
+    public String getException() {
+        return exception;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCloseConsumerRequest(this);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(sessionDispatchId);
+        out.writeInt(queueConsumerId);
+        if (exception == null)
+            out.writeByte(0);
+        else {
+            out.writeByte(1);
+            out.writeUTF(exception);
+        }
+    }
 
-  public String toString()
-  {
-    return "[CloseConsumerRequest " + super.toString() + " sessionDispatchId=" + sessionDispatchId +
-        " queueConsumerId=" + queueConsumerId+" exception=" + exception + "]";
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        sessionDispatchId = in.readInt();
+        queueConsumerId = in.readInt();
+        byte set = in.readByte();
+        if (set == 1)
+            exception = in.readUTF();
+    }
+
+    protected Reply createReplyInstance() {
+        return new CloseConsumerReply();
+    }
+
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
+
+    public int getQueueConsumerId() {
+        return (queueConsumerId);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCloseConsumerRequest(this);
+    }
+
+    public String toString() {
+        return "[CloseConsumerRequest " + super.toString() + " sessionDispatchId=" + sessionDispatchId +
+                " queueConsumerId=" + queueConsumerId + " exception=" + exception + "]";
+    }
 
 }
 

@@ -17,22 +17,17 @@
 
 package com.swiftmq.tools.prop;
 
-public class SystemProperties
-{
-  public static String get(String name, String defaultValue)
-  {
-    String value = defaultValue;
-    try
-    {
-      value = System.getProperty(name,defaultValue);
-    } catch (Exception e)
-    {
+public class SystemProperties {
+    public static String get(String name, String defaultValue) {
+        String value = defaultValue;
+        try {
+            value = System.getProperty(name, defaultValue);
+        } catch (Exception e) {
+        }
+        return value;
     }
-    return value;
-  }
 
-  public static String get(String name)
-  {
-    return get(name,null);
-  }
+    public static String get(String name) {
+        return get(name, null);
+    }
 }

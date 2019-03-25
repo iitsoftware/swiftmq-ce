@@ -21,56 +21,47 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResRecoverRequest extends Request
-{
-  int flag;
+public class XAResRecoverRequest extends Request {
+    int flag;
 
-  public XAResRecoverRequest(int dispatchId, int flag)
-  {
-    super(dispatchId, true);
-    this.flag = flag;
-  }
+    public XAResRecoverRequest(int dispatchId, int flag) {
+        super(dispatchId, true);
+        this.flag = flag;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESRECOVER_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESRECOVER_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResRecoverReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResRecoverReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResRecoverRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResRecoverRequest(this);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(flag);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(flag);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    flag = in.readInt();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        flag = in.readInt();
+    }
 
-  public int getFlag()
-  {
-    return flag;
-  }
+    public int getFlag() {
+        return flag;
+    }
 
-  public String toString()
-  {
-    return "[XAResRecoverRequest " + super.toString() + " flag=" + flag + "]";
-  }
+    public String toString() {
+        return "[XAResRecoverRequest " + super.toString() + " flag=" + flag + "]";
+    }
 
 }
 

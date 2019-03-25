@@ -22,45 +22,38 @@ import com.swiftmq.jms.MessageImpl;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public class ProtocolReply extends MessageBasedReply
-{
-  public static final String QUEUENAME_PROP = "JMS_SWIFTMQ_FT_QUEUENAME";
-  String queueName = null;
+public class ProtocolReply extends MessageBasedReply {
+    public static final String QUEUENAME_PROP = "JMS_SWIFTMQ_FT_QUEUENAME";
+    String queueName = null;
 
-  public ProtocolReply(Message message) throws JMSException
-  {
-    super(message);
-    queueName = message.getStringProperty(QUEUENAME_PROP);
-  }
+    public ProtocolReply(Message message) throws JMSException {
+        super(message);
+        queueName = message.getStringProperty(QUEUENAME_PROP);
+    }
 
-  public ProtocolReply()
-  {
-  }
+    public ProtocolReply() {
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public void setQueueName(String queueName)
-  {
-    this.queueName = queueName;
-  }
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    Message message = new MessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.PROTOCOL_REP);
-    message.setStringProperty(QUEUENAME_PROP, queueName);
-    return fillMessage(message);
-  }
+    public Message toMessage() throws JMSException {
+        Message message = new MessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.PROTOCOL_REP);
+        message.setStringProperty(QUEUENAME_PROP, queueName);
+        return fillMessage(message);
+    }
 
-  public String toString()
-  {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("[ProtocolReply");
-    sb.append(" queueName='").append(queueName).append('\'');
-    sb.append(']');
-    return sb.toString();
-  }
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("[ProtocolReply");
+        sb.append(" queueName='").append(queueName).append('\'');
+        sb.append(']');
+        return sb.toString();
+    }
 }

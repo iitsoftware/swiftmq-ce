@@ -17,11 +17,12 @@
 
 package com.swiftmq.impl.routing.single.manager.po;
 
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface POCMVisitor extends POVisitor
-{
-  public void visit(POAddObject po);
-  public void visit(PORemoveObject po);
-  public void visit(PORemoveAllObject po);
+public interface POCMVisitor extends POVisitor {
+    public void visit(POAddObject po);
+
+    public void visit(PORemoveObject po);
+
+    public void visit(PORemoveAllObject po);
 }

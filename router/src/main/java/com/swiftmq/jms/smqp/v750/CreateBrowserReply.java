@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: CreateBrowserReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: CreateBrowserReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CreateBrowserReply extends ReplyNE
-{
-  private int queueBrowserId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateBrowserReply(int queueBrowserId)
-  {
-    this.queueBrowserId = queueBrowserId;
-  }
+public class CreateBrowserReply extends ReplyNE {
+    private int queueBrowserId;
 
-  protected CreateBrowserReply()
-  {
-  }
-  
-  public void setQueueBrowserId(int queueBrowserId)
-  {
-    this.queueBrowserId = queueBrowserId;
-  }
+    public CreateBrowserReply(int queueBrowserId) {
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  public int getQueueBrowserId()
-  {
-    return queueBrowserId;
-  }
+    protected CreateBrowserReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEBROWSER_REP;
-  }
+    public void setQueueBrowserId(int queueBrowserId) {
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueBrowserId,out);
-  }
+    public int getQueueBrowserId() {
+        return queueBrowserId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueBrowserId = SMQPUtil.read(queueBrowserId,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEBROWSER_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/CreateBrowserReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueBrowserId=");
-    _b.append(queueBrowserId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueBrowserId, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueBrowserId = SMQPUtil.read(queueBrowserId, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/CreateBrowserReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueBrowserId=");
+        _b.append(queueBrowserId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

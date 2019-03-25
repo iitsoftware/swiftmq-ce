@@ -18,19 +18,10 @@
 package com.swiftmq.amqp.v100.generated.messaging.message_format;
 
 import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * <p>
@@ -40,100 +31,90 @@ import java.util.*;
  * </p><p>
  * </p>
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
 public class AmqpValue extends AMQPType
-       implements SectionIF
-{
-  public static String DESCRIPTOR_NAME = "amqp:amqp-value:*";
-  public static long DESCRIPTOR_CODE = 0x00000000L<<32 | 0x00000077L;
+        implements SectionIF {
+    public static String DESCRIPTOR_NAME = "amqp:amqp-value:*";
+    public static long DESCRIPTOR_CODE = 0x00000000L << 32 | 0x00000077L;
 
-  public AMQPDescribedConstructor codeConstructor = new AMQPDescribedConstructor(new AMQPUnsignedLong(DESCRIPTOR_CODE), AMQPTypeDecoder.UNKNOWN);
-  public AMQPDescribedConstructor nameConstructor = new AMQPDescribedConstructor(new AMQPSymbol(DESCRIPTOR_NAME), AMQPTypeDecoder.UNKNOWN);
+    public AMQPDescribedConstructor codeConstructor = new AMQPDescribedConstructor(new AMQPUnsignedLong(DESCRIPTOR_CODE), AMQPTypeDecoder.UNKNOWN);
+    public AMQPDescribedConstructor nameConstructor = new AMQPDescribedConstructor(new AMQPSymbol(DESCRIPTOR_NAME), AMQPTypeDecoder.UNKNOWN);
 
-  AMQPType value = null;
+    AMQPType value = null;
 
 
-  /**
-   * Constructs a AmqpValue.
-   *
-   * @param initValue initial value
-   */
-  public AmqpValue(AMQPType initValue)
-  {
-    super("*", AMQPTypeDecoder.UNKNOWN); 
-    value = initValue;
-  }
+    /**
+     * Constructs a AmqpValue.
+     *
+     * @param initValue initial value
+     */
+    public AmqpValue(AMQPType initValue) {
+        super("*", AMQPTypeDecoder.UNKNOWN);
+        value = initValue;
+    }
 
-  /**
-   * Returns the value of this AmqpValue.
-   *
-   * @return value
-   */
-  public AMQPType getValue()
-  {
-    return value;
-  }
+    /**
+     * Returns the value of this AmqpValue.
+     *
+     * @return value
+     */
+    public AMQPType getValue() {
+        return value;
+    }
 
-  /**
-   * Accept method for a Section visitor.
-   *
-   * @param visitor Section visitor
-   */
-   public void accept(SectionVisitor visitor)
-   {
-     visitor.visit(this);
-   }
+    /**
+     * Accept method for a Section visitor.
+     *
+     * @param visitor Section visitor
+     */
+    public void accept(SectionVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  /**
-   * Return whether this AmqpValue has a descriptor
-   *
-   * @return true/false
-   */
-  public boolean hasDescriptor()
-  {
-    return true;
-  }
+    /**
+     * Return whether this AmqpValue has a descriptor
+     *
+     * @return true/false
+     */
+    public boolean hasDescriptor() {
+        return true;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    codeConstructor.setFormatCode(AMQPTypeDecoder.UNKNOWN);
-    codeConstructor.writeContent(out);
-    value.writeContent(out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        codeConstructor.setFormatCode(AMQPTypeDecoder.UNKNOWN);
+        codeConstructor.writeContent(out);
+        value.writeContent(out);
+    }
 
-  /**
-   * Returns the predicted size of this AmqpValue. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize()
-  {
-    int n = value.getPredictedSize(); 
-    if (getConstructor() == null)
-      n += codeConstructor.getPredictedSize();
-    return n;
-  }
+    /**
+     * Returns the predicted size of this AmqpValue. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize() {
+        int n = value.getPredictedSize();
+        if (getConstructor() == null)
+            n += codeConstructor.getPredictedSize();
+        return n;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    // do nothing
-    throw new IOException("Invalid operation, readContent not implemented!");
-  }
+    public void readContent(DataInput in) throws IOException {
+        // do nothing
+        throw new IOException("Invalid operation, readContent not implemented!");
+    }
 
-  public String getValueString()
-  {
-    StringBuffer b = new StringBuffer("[AmqpValue ");
-    b.append(value.getValueString());
-    b.append("]");
-    return b.toString();
-  }
+    public String getValueString() {
+        StringBuffer b = new StringBuffer("[AmqpValue ");
+        b.append(value.getValueString());
+        b.append("]");
+        return b.toString();
+    }
 
-  public String toString()
-  {
-    return "[AmqpValue " + value.toString() + "]";
-  }
+    public String toString() {
+        return "[AmqpValue " + value.toString() + "]";
+    }
 }

@@ -20,28 +20,29 @@ package com.swiftmq.tools.log;
 /**
  * Abstrakte Klasse, die Log implementiert und ein Prefix speichert, das dann als
  * Prefix fuer logMessages genommen werden kann.
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public abstract class Logger implements Log
-{
-  String prefix = null;
+public abstract class Logger implements Log {
+    String prefix = null;
 
-  /**
-   * Erzeugt einen neuen Logger mit einem Prefix
-   * @param prefix
-   * @SBGen Constructor assigns prefix
-   */
-  public Logger(String prefix)
-  {
-    // SBgen: Assign variable
-    this.prefix = prefix;
-  }
+    /**
+     * Erzeugt einen neuen Logger mit einem Prefix
+     *
+     * @param prefix
+     * @SBGen Constructor assigns prefix
+     */
+    public Logger(String prefix) {
+        // SBgen: Assign variable
+        this.prefix = prefix;
+    }
 
-  /**
-   * Loggen eines LogValues
-   * @param logValue The log value
-   */
-  public abstract void logMessage(LogValue logValue);
+    /**
+     * Loggen eines LogValues
+     *
+     * @param logValue The log value
+     */
+    public abstract void logMessage(LogValue logValue);
 }
 

@@ -23,70 +23,59 @@ import com.swiftmq.amqp.v100.generated.messaging.addressing.TerminusExpiryPolicy
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POAttachDurableConsumer extends POAttach
-{
-  String linkName;
-  String source;
-  int linkCredit;
-  int qoS;
-  boolean noLocal;
-  String selector;
-  TerminusExpiryPolicy expiryPolicy = null;
+public class POAttachDurableConsumer extends POAttach {
+    String linkName;
+    String source;
+    int linkCredit;
+    int qoS;
+    boolean noLocal;
+    String selector;
+    TerminusExpiryPolicy expiryPolicy = null;
 
-  public POAttachDurableConsumer(Semaphore semaphore, String linkName, String source, int linkCredit, int qoS, boolean noLocal, String selector, TerminusExpiryPolicy expiryPolicy, DeliveryMemory deliveryMemory)
-  {
-    super(null, semaphore, deliveryMemory);
-    this.linkName = linkName;
-    this.source = source;
-    this.linkCredit = linkCredit;
-    this.qoS = qoS;
-    this.noLocal = noLocal;
-    this.selector = selector;
-    this.expiryPolicy = expiryPolicy;
-  }
+    public POAttachDurableConsumer(Semaphore semaphore, String linkName, String source, int linkCredit, int qoS, boolean noLocal, String selector, TerminusExpiryPolicy expiryPolicy, DeliveryMemory deliveryMemory) {
+        super(null, semaphore, deliveryMemory);
+        this.linkName = linkName;
+        this.source = source;
+        this.linkCredit = linkCredit;
+        this.qoS = qoS;
+        this.noLocal = noLocal;
+        this.selector = selector;
+        this.expiryPolicy = expiryPolicy;
+    }
 
-  public String getLinkName()
-  {
-    return linkName;
-  }
+    public String getLinkName() {
+        return linkName;
+    }
 
-  public String getSource()
-  {
-    return source;
-  }
+    public String getSource() {
+        return source;
+    }
 
-  public int getLinkCredit()
-  {
-    return linkCredit;
-  }
+    public int getLinkCredit() {
+        return linkCredit;
+    }
 
-  public int getQoS()
-  {
-    return qoS;
-  }
+    public int getQoS() {
+        return qoS;
+    }
 
-  public boolean isNoLocal()
-  {
-    return noLocal;
-  }
+    public boolean isNoLocal() {
+        return noLocal;
+    }
 
-  public String getSelector()
-  {
-    return selector;
-  }
+    public String getSelector() {
+        return selector;
+    }
 
-  public TerminusExpiryPolicy getExpiryPolicy()
-  {
-    return expiryPolicy;
-  }
+    public TerminusExpiryPolicy getExpiryPolicy() {
+        return expiryPolicy;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POAttachDurableConsumer, linkName=" + linkName + ", source=" + source + ", link=" + link + ", linkCredit=" + linkCredit + ", qoS=" + qoS + ", nolocal=" + noLocal + ", selector=" + selector + ", expiryPolicy=" + expiryPolicy + ", deliveryMemory="+deliveryMemory+"]";
-  }
+    public String toString() {
+        return "[POAttachDurableConsumer, linkName=" + linkName + ", source=" + source + ", link=" + link + ", linkCredit=" + linkCredit + ", qoS=" + qoS + ", nolocal=" + noLocal + ", selector=" + selector + ", expiryPolicy=" + expiryPolicy + ", deliveryMemory=" + deliveryMemory + "]";
+    }
 }

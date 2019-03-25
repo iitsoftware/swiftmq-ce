@@ -17,25 +17,22 @@
 
 package com.swiftmq.impl.queue.standard.composite;
 
-import com.swiftmq.swiftlet.queue.QueueFactory;
-import com.swiftmq.swiftlet.queue.AbstractQueue;
-import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.mgmt.Entity;
+import com.swiftmq.swiftlet.queue.AbstractQueue;
+import com.swiftmq.swiftlet.queue.QueueException;
+import com.swiftmq.swiftlet.queue.QueueFactory;
 
-public class CompositeQueueFactory implements QueueFactory
-{
-  SwiftletContext ctx;
+public class CompositeQueueFactory implements QueueFactory {
+    SwiftletContext ctx;
 
-  public CompositeQueueFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public CompositeQueueFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public AbstractQueue createQueue(String queueName, Entity compositeQueueEntity) throws QueueException
-  {
-    CompositeQueue queue = new CompositeQueue(ctx, compositeQueueEntity);
-    queue.setFlowController(new CompositeQueueFlowController());
-    return queue;
-  }
+    public AbstractQueue createQueue(String queueName, Entity compositeQueueEntity) throws QueueException {
+        CompositeQueue queue = new CompositeQueue(ctx, compositeQueueEntity);
+        queue.setFlowController(new CompositeQueueFlowController());
+        return queue;
+    }
 }

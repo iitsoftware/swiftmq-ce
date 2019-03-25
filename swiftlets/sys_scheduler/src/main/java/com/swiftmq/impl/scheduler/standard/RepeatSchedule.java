@@ -17,75 +17,68 @@
 
 package com.swiftmq.impl.scheduler.standard;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class RepeatSchedule extends AtSchedule
-{
-  int startTime = 0;
-  int endTime = 0;
-  int delay = 0;
-  int repeats = 0;
+public class RepeatSchedule extends AtSchedule {
+    int startTime = 0;
+    int endTime = 0;
+    int delay = 0;
+    int repeats = 0;
 
-  public RepeatSchedule(String name, boolean enabled, boolean loggingEnabled, String jobGroup, String jobName, String calendar,
-                        String dateFrom, String dateTo, long maxRuntime, String timeExpression, int startTime, int endTime, int delay, int repeats)
-  {
-    super(name, enabled, loggingEnabled, jobGroup, jobName, calendar, dateFrom, dateTo, maxRuntime, timeExpression, null);
-    this.startTime = startTime;
-    this.endTime = endTime;
-    this.delay = delay;
-    this.repeats = repeats;
-    computeStartTimes();
-  }
+    public RepeatSchedule(String name, boolean enabled, boolean loggingEnabled, String jobGroup, String jobName, String calendar,
+                          String dateFrom, String dateTo, long maxRuntime, String timeExpression, int startTime, int endTime, int delay, int repeats) {
+        super(name, enabled, loggingEnabled, jobGroup, jobName, calendar, dateFrom, dateTo, maxRuntime, timeExpression, null);
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.delay = delay;
+        this.repeats = repeats;
+        computeStartTimes();
+    }
 
-  private void computeStartTimes()
-  {
-    List list = new ArrayList();
-    int fullDay = 24*3600;
-    int actTime = startTime;
-    int actEnd = endTime < actTime? endTime+fullDay:endTime;
-    int repeatCount = 0;
-    do {
-      list.add(new Integer(actTime>=fullDay?actTime-fullDay:actTime));
-      actTime += delay;
-      repeatCount++;
-    } while ((actTime <= actEnd) && (repeats == -1 || repeatCount < repeats));
-    Collections.sort(list);
-    int st[] = new int[list.size()];
-    for (int i=0;i<st.length;i++)
-      st[i] = ((Integer)list.get(i)).intValue();
-    setStartTimes(st);
-  }
+    private void computeStartTimes() {
+        List list = new ArrayList();
+        int fullDay = 24 * 3600;
+        int actTime = startTime;
+        int actEnd = endTime < actTime ? endTime + fullDay : endTime;
+        int repeatCount = 0;
+        do {
+            list.add(new Integer(actTime >= fullDay ? actTime - fullDay : actTime));
+            actTime += delay;
+            repeatCount++;
+        } while ((actTime <= actEnd) && (repeats == -1 || repeatCount < repeats));
+        Collections.sort(list);
+        int st[] = new int[list.size()];
+        for (int i = 0; i < st.length; i++)
+            st[i] = ((Integer) list.get(i)).intValue();
+        setStartTimes(st);
+    }
 
-  protected boolean isApplySystemTimeChange()
-  {
-    return true;
-  }
+    protected boolean isApplySystemTimeChange() {
+        return true;
+    }
 
-  public void setStartTime(int startTime)
-  {
-    this.startTime = startTime;
-    computeStartTimes();
-  }
+    public void setStartTime(int startTime) {
+        this.startTime = startTime;
+        computeStartTimes();
+    }
 
-  public void setEndTime(int endTime)
-  {
-    this.endTime = endTime;
-  }
+    public void setEndTime(int endTime) {
+        this.endTime = endTime;
+    }
 
-  public void setDelay(int delay)
-  {
-    this.delay = delay;
-    computeStartTimes();
-  }
+    public void setDelay(int delay) {
+        this.delay = delay;
+        computeStartTimes();
+    }
 
-  public void setRepeats(int repeats)
-  {
-    this.repeats = repeats;
-    computeStartTimes();
-  }
+    public void setRepeats(int repeats) {
+        this.repeats = repeats;
+        computeStartTimes();
+    }
 
-  public String toString()
-  {
-    return "[RepeatSchedule startTime="+startTime+", endTime="+endTime+", delay="+delay+", repeats="+repeats+" "+super.toString()+"]";
-  }
+    public String toString() {
+        return "[RepeatSchedule startTime=" + startTime + ", endTime=" + endTime + ", delay=" + delay + ", repeats=" + repeats + " " + super.toString() + "]";
+    }
 }

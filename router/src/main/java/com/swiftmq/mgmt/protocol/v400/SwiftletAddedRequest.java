@@ -17,97 +17,86 @@
 
 package com.swiftmq.mgmt.protocol.v400;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class SwiftletAddedRequest extends Request
-{
-  String name = null;
-  byte[] buffer = null;
-  int length = 0;
+public class SwiftletAddedRequest extends Request {
+    String name = null;
+    byte[] buffer = null;
+    int length = 0;
 
-  public SwiftletAddedRequest(String name, byte[] buffer, int length)
-  {
-    super(0, false);
-    this.name = name;
-    this.buffer = new byte[length];
-    this.length = length;
-    System.arraycopy(buffer,0,this.buffer,0,length);
-  }
+    public SwiftletAddedRequest(String name, byte[] buffer, int length) {
+        super(0, false);
+        this.name = name;
+        this.buffer = new byte[length];
+        this.length = length;
+        System.arraycopy(buffer, 0, this.buffer, 0, length);
+    }
 
-  public SwiftletAddedRequest()
-  {
-    super(0,false);
-  }
+    public SwiftletAddedRequest() {
+        super(0, false);
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name)
-  {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public byte[] getBuffer()
-  {
-    return buffer;
-  }
+    public byte[] getBuffer() {
+        return buffer;
+    }
 
-  public void setBuffer(byte[] buffer)
-  {
-    this.buffer = new byte[buffer.length];
-    System.arraycopy(buffer,0,this.buffer,0,buffer.length);
-  }
+    public void setBuffer(byte[] buffer) {
+        this.buffer = new byte[buffer.length];
+        System.arraycopy(buffer, 0, this.buffer, 0, buffer.length);
+    }
 
-  public int getLength()
-  {
-    return length;
-  }
+    public int getLength() {
+        return length;
+    }
 
-  public void setLength(int length)
-  {
-    this.length = length;
-  }
+    public void setLength(int length) {
+        this.length = length;
+    }
 
-  public int getDumpId()
-  {
-    return ProtocolFactory.SWIFTLETADDED_REQ;
-  }
+    public int getDumpId() {
+        return ProtocolFactory.SWIFTLETADDED_REQ;
+    }
 
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    super.writeContent(out);
-    out.writeUTF(name);
-    out.writeInt(length);
-    out.write(buffer,0,length);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        out.writeUTF(name);
+        out.writeInt(length);
+        out.write(buffer, 0, length);
+    }
 
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    super.readContent(in);
-    name = in.readUTF();
-    length = in.readInt();
-    buffer = new byte[length];
-    in.readFully(buffer);
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        name = in.readUTF();
+        length = in.readInt();
+        buffer = new byte[length];
+        in.readFully(buffer);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SwiftletAddedRequest "+super.toString()+", name="+name+", length="+length+"]";
-  }
+    public String toString() {
+        return "[SwiftletAddedRequest " + super.toString() + ", name=" + name + ", length=" + length + "]";
+    }
 }

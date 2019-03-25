@@ -19,47 +19,40 @@ package com.swiftmq.jms.smqp.v400;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class CreateShadowConsumerReply extends Reply
-{
-  int queueConsumerId = 0;
+public class CreateShadowConsumerReply extends Reply {
+    int queueConsumerId = 0;
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_SHADOW_CONSUMER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_SHADOW_CONSUMER_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueConsumerId);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueConsumerId);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    queueConsumerId = in.readInt();
-  }
+        queueConsumerId = in.readInt();
+    }
 
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return (queueConsumerId);
-  }
+    public int getQueueConsumerId() {
+        return (queueConsumerId);
+    }
 
-  public String toString()
-  {
-    return "[CreateShadowConsumerReply " + super.toString() + " queueConsumerId="
-        + queueConsumerId + "]";
-  }
+    public String toString() {
+        return "[CreateShadowConsumerReply " + super.toString() + " queueConsumerId="
+                + queueConsumerId + "]";
+    }
 
 }
 

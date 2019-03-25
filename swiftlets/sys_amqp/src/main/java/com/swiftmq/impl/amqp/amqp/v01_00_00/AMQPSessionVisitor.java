@@ -20,25 +20,24 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.po.*;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface AMQPSessionVisitor extends POVisitor
-{
-  public void visit(POSendBegin po);
+public interface AMQPSessionVisitor extends POVisitor {
+    public void visit(POSendBegin po);
 
-  public void visit(POSessionFrameReceived po);
+    public void visit(POSessionFrameReceived po);
 
-  public void visit(POSendMessages po);
+    public void visit(POSendMessages po);
 
-  public void visit(POSendFlow po);
+    public void visit(POSendFlow po);
 
-  public void visit(POSessionCollect po);
+    public void visit(POSessionCollect po);
 
-  public void visit(POSessionStartAccounting po);
+    public void visit(POSessionStartAccounting po);
 
-  public void visit(POSessionStopAccounting po);
+    public void visit(POSessionStopAccounting po);
 
-  public void visit(POSessionFlushAccounting po);
+    public void visit(POSessionFlushAccounting po);
 
-  public void visit(POSendEnd po);
+    public void visit(POSendEnd po);
 
-  public void visit(POCloseSession po);
+    public void visit(POCloseSession po);
 }

@@ -41,7 +41,7 @@ public class StreamsJobFactory implements JobFactory {
     }
 
     public String getName() {
-      return "Stream Activator";
+        return "Stream Activator";
     }
 
     public String getDescription() {

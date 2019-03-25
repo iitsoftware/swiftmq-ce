@@ -22,14 +22,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public interface DestinationImpl extends Destination
-{
-  int getType();
+public interface DestinationImpl extends Destination {
+    int getType();
 
-  void unfoldBuffers();
+    void unfoldBuffers();
 
-  void writeContent(DataOutput out) throws IOException;
+    void writeContent(DataOutput out) throws IOException;
 
-  void readContent(DataInput in) throws IOException;
+    void readContent(DataInput in) throws IOException;
 }
 

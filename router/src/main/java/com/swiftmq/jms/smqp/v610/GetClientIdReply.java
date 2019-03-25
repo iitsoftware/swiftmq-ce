@@ -17,75 +17,64 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: GetClientIdReply
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:10 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: GetClientIdReply
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:10 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class GetClientIdReply extends ReplyNE
-{
-  private String clientId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public GetClientIdReply(String clientId)
-  {
-    this.clientId = clientId;
-  }
+public class GetClientIdReply extends ReplyNE {
+    private String clientId;
 
-  protected GetClientIdReply()
-  {
-  }
-  
-  public void setClientId(String clientId)
-  {
-    this.clientId = clientId;
-  }
+    public GetClientIdReply(String clientId) {
+        this.clientId = clientId;
+    }
 
-  public String getClientId()
-  {
-    return clientId;
-  }
+    protected GetClientIdReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GETCLIENTID_REP;
-  }
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (clientId != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(clientId,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public String getClientId() {
+        return clientId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean clientId_set = in.readBoolean();
-    if (clientId_set)
-      clientId = SMQPUtil.read(clientId,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_GETCLIENTID_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/GetClientIdReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("clientId=");
-    _b.append(clientId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (clientId != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(clientId, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean clientId_set = in.readBoolean();
+        if (clientId_set)
+            clientId = SMQPUtil.read(clientId, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/GetClientIdReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("clientId=");
+        _b.append(clientId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

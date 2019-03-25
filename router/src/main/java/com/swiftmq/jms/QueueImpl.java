@@ -36,90 +36,79 @@ import java.io.Serializable;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class QueueImpl implements Queue, Referenceable, Serializable, DestinationImpl
-{
-  LazyUTF8String queueName = null;
+public class QueueImpl implements Queue, Referenceable, Serializable, DestinationImpl {
+    LazyUTF8String queueName = null;
 
-  /**
-   * Creates a new QueueImpl.
-   *
-   * @param queueName queue name.
-   */
-  public QueueImpl(String queueName)
-  {
-    setQueueName(queueName);
-  }
+    /**
+     * Creates a new QueueImpl.
+     *
+     * @param queueName queue name.
+     */
+    public QueueImpl(String queueName) {
+        setQueueName(queueName);
+    }
 
-  /**
-   * Creates a new QueueImpl.
-   */
-  public QueueImpl()
-  {
-  }
+    /**
+     * Creates a new QueueImpl.
+     */
+    public QueueImpl() {
+    }
 
-  public Reference getReference() throws NamingException
-  {
-    return new Reference(QueueImpl.class.getName(),
-        new StringRefAddr("queueName", queueName != null ? queueName.getString() : null),
-        SwiftMQObjectFactory.class.getName(),
-        null);
-  }
+    public Reference getReference() throws NamingException {
+        return new Reference(QueueImpl.class.getName(),
+                new StringRefAddr("queueName", queueName != null ? queueName.getString() : null),
+                SwiftMQObjectFactory.class.getName(),
+                null);
+    }
 
-  public void unfoldBuffers()
-  {
-    if (queueName != null)
-      queueName.getString(true);
-  }
+    public void unfoldBuffers() {
+        if (queueName != null)
+            queueName.getString(true);
+    }
 
-  public int getType()
-  {
-    return DestinationFactory.TYPE_QUEUE;
-  }
+    public int getType() {
+        return DestinationFactory.TYPE_QUEUE;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    queueName.writeContent(out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        queueName.writeContent(out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    queueName = new LazyUTF8String(in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        queueName = new LazyUTF8String(in);
+    }
 
-  /**
-   * Set the queue name.
-   *
-   * @param queueName queue name.
-   */
-  public void setQueueName(String queueName)
-  {
-    this.queueName = queueName != null ? new LazyUTF8String(queueName) : null;
-  }
+    /**
+     * Set the queue name.
+     *
+     * @param queueName queue name.
+     */
+    public void setQueueName(String queueName) {
+        this.queueName = queueName != null ? new LazyUTF8String(queueName) : null;
+    }
 
-  /**
-   * Get the name of this queue.
-   * <p/>
-   * <P>Clients that depend upon the name, are not portable.
-   *
-   * @return the queue name
-   * @throws JMSException if JMS implementation for Queue fails to
-   *                      to return queue name due to some internal
-   *                      error.
-   */
-  public String getQueueName() throws JMSException
-  {
-    return queueName != null ? queueName.getString() : null;
-  }
+    /**
+     * Get the name of this queue.
+     * <p/>
+     * <P>Clients that depend upon the name, are not portable.
+     *
+     * @return the queue name
+     * @throws JMSException if JMS implementation for Queue fails to
+     *                      to return queue name due to some internal
+     *                      error.
+     */
+    public String getQueueName() throws JMSException {
+        return queueName != null ? queueName.getString() : null;
+    }
 
-  /**
-   * Return a pretty printed version of the queue name
-   *
-   * @return the provider specific identity values for this queue.
-   */
-  public String toString()
-  {
-    return queueName != null ? queueName.getString() : null;
-  }
+    /**
+     * Return a pretty printed version of the queue name
+     *
+     * @return the provider specific identity values for this queue.
+     */
+    public String toString() {
+        return queueName != null ? queueName.getString() : null;
+    }
 }
 
 

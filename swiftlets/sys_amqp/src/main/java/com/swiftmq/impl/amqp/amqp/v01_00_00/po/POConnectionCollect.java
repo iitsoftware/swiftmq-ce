@@ -21,28 +21,23 @@ import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPConnectionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POConnectionCollect extends POObject
-{
-  long lastCollect;
+public class POConnectionCollect extends POObject {
+    long lastCollect;
 
-  public POConnectionCollect(long lastCollect)
-  {
-    super(null, null);
-    this.lastCollect = lastCollect;
-  }
+    public POConnectionCollect(long lastCollect) {
+        super(null, null);
+        this.lastCollect = lastCollect;
+    }
 
-  public long getLastCollect()
-  {
-    return lastCollect;
-  }
+    public long getLastCollect() {
+        return lastCollect;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POConnectionCollect, lastCollect=" + lastCollect + "]";
-  }
+    public String toString() {
+        return "[POConnectionCollect, lastCollect=" + lastCollect + "]";
+    }
 }

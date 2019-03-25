@@ -24,42 +24,36 @@ import com.swiftmq.mgmt.TreeCommands;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 
 public class Resetter
-    implements CommandExecutor
-{
-  static String COMMAND = "reset";
-  static String PATTERN = "reset <queue>";
-  static String DESCRIPTION = "Resets the consumed/produced counter to zero";
-  SwiftletContext ctx = null;
+        implements CommandExecutor {
+    static String COMMAND = "reset";
+    static String PATTERN = "reset <queue>";
+    static String DESCRIPTION = "Resets the consumed/produced counter to zero";
+    SwiftletContext ctx = null;
 
-  public Resetter(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  public Command createCommand()
-  {
-    return new Command(COMMAND, PATTERN, DESCRIPTION, true, this, true, true);
-  }
-
-  public String[] execute(String[] context, Entity entity, String[] cmd)
-  {
-    if (cmd.length < 2)
-      return new String[]{TreeCommands.ERROR, "Invalid command, please try 'reset <queue>"};
-    String[] result = null;
-    try
-    {
-      String queueName = cmd[1];
-      if (!ctx.queueManager.isQueueDefined(queueName))
-        throw new Exception("Queue '" + queueName + "' is undefined!");
-      AbstractQueue ac = ctx.queueManager.getQueueForInternalUse(queueName);
-      if (ac != null)
-        ac.resetCounters();
-      else
-        throw new Exception("Queue '" + queueName + "' not found!");
-    } catch (Exception e)
-    {
-      result = new String[]{TreeCommands.ERROR, e.getMessage()};
+    public Resetter(SwiftletContext ctx) {
+        this.ctx = ctx;
     }
-    return result;
-  }
+
+    public Command createCommand() {
+        return new Command(COMMAND, PATTERN, DESCRIPTION, true, this, true, true);
+    }
+
+    public String[] execute(String[] context, Entity entity, String[] cmd) {
+        if (cmd.length < 2)
+            return new String[]{TreeCommands.ERROR, "Invalid command, please try 'reset <queue>"};
+        String[] result = null;
+        try {
+            String queueName = cmd[1];
+            if (!ctx.queueManager.isQueueDefined(queueName))
+                throw new Exception("Queue '" + queueName + "' is undefined!");
+            AbstractQueue ac = ctx.queueManager.getQueueForInternalUse(queueName);
+            if (ac != null)
+                ac.resetCounters();
+            else
+                throw new Exception("Queue '" + queueName + "' not found!");
+        } catch (Exception e) {
+            result = new String[]{TreeCommands.ERROR, e.getMessage()};
+        }
+        return result;
+    }
 }

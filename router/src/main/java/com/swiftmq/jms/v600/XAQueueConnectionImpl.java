@@ -19,26 +19,24 @@ package com.swiftmq.jms.v600;
 
 import com.swiftmq.net.client.Reconnector;
 
-import javax.jms.*;
-import java.net.Socket;
+import javax.jms.JMSException;
+import javax.jms.XAQueueConnection;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
 
 public class XAQueueConnectionImpl extends QueueConnectionImpl
-    implements XAQueueConnection
-{
+        implements XAQueueConnection {
 
-  protected XAQueueConnectionImpl(String userName, String password, Reconnector reconnector)
-      throws JMSException
-  {
-    super(userName, password, reconnector);
-  }
+    protected XAQueueConnectionImpl(String userName, String password, Reconnector reconnector)
+            throws JMSException {
+        super(userName, password, reconnector);
+    }
 
-  public XAQueueSession createXAQueueSession() throws JMSException
-  {
-    return new XAQueueSessionImpl((SessionImpl) createQueueSession(true, 0));
-  }
+    public XAQueueSession createXAQueueSession() throws JMSException {
+        return new XAQueueSessionImpl((SessionImpl) createQueueSession(true, 0));
+    }
 
-  public XASession createXASession() throws JMSException
-  {
-    return new XASessionImpl((SessionImpl) createSession(true, 0));
-  }
+    public XASession createXASession() throws JMSException {
+        return new XASessionImpl((SessionImpl) createSession(true, 0));
+    }
 }

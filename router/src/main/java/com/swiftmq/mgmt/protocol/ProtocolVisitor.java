@@ -19,7 +19,6 @@ package com.swiftmq.mgmt.protocol;
 
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public interface ProtocolVisitor extends RequestVisitor
-{
-  public void visit(ProtocolRequest request);
+public interface ProtocolVisitor extends RequestVisitor {
+    public void visit(ProtocolRequest request);
 }

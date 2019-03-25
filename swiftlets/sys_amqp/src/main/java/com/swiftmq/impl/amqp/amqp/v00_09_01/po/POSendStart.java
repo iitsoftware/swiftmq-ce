@@ -21,20 +21,16 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.AMQPConnectionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendStart extends POObject
-{
-  public POSendStart()
-  {
-    super(null, null);
-  }
+public class POSendStart extends POObject {
+    public POSendStart() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendStart]";
-  }
+    public String toString() {
+        return "[POSendStart]";
+    }
 }

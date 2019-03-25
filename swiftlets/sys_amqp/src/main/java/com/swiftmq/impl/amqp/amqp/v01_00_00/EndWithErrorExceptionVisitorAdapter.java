@@ -17,17 +17,13 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00;
 
-public class EndWithErrorExceptionVisitorAdapter implements EndWithErrorExceptionVisitor
-{
-  public void visit(LinkEndException exception)
-  {
-  }
+public class EndWithErrorExceptionVisitorAdapter implements EndWithErrorExceptionVisitor {
+    public void visit(LinkEndException exception) {
+    }
 
-  public void visit(SessionEndException exception)
-  {
-  }
+    public void visit(SessionEndException exception) {
+    }
 
-  public void visit(ConnectionEndException exception)
-  {
-  }
+    public void visit(ConnectionEndException exception) {
+    }
 }

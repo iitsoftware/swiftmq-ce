@@ -23,16 +23,15 @@ package com.swiftmq.mgmt;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class InvalidTypeException extends Exception
-{
+public class InvalidTypeException extends Exception {
 
-  /**
-   * Creates a new InvalidTypeException.
-   * @param msg the message.
-   */
-  public InvalidTypeException(String msg)
-  {
-    super(msg);
-  }
+    /**
+     * Creates a new InvalidTypeException.
+     *
+     * @param msg the message.
+     */
+    public InvalidTypeException(String msg) {
+        super(msg);
+    }
 }
 

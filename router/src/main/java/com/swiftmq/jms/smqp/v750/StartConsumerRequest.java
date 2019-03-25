@@ -17,169 +17,149 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: StartConsumerRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: StartConsumerRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class StartConsumerRequest extends Request 
-{
-  private int queueConsumerId;
-  private int clientDispatchId;
-  private int clientListenerId;
-  private int consumerCacheSize;
-  private int consumerCacheSizeKB;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public StartConsumerRequest()
-  {
-    super(0,false);
-  }
+public class StartConsumerRequest extends Request {
+    private int queueConsumerId;
+    private int clientDispatchId;
+    private int clientListenerId;
+    private int consumerCacheSize;
+    private int consumerCacheSizeKB;
 
-  public StartConsumerRequest(int dispatchId)
-  {
-    super(dispatchId,false);
-  }
+    public StartConsumerRequest() {
+        super(0, false);
+    }
 
-  public StartConsumerRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,false,validator);
-  }
+    public StartConsumerRequest(int dispatchId) {
+        super(dispatchId, false);
+    }
 
-  public StartConsumerRequest(int dispatchId, int queueConsumerId, int clientDispatchId, int clientListenerId, int consumerCacheSize, int consumerCacheSizeKB)
-  {
-    super(dispatchId,false);
-    this.queueConsumerId = queueConsumerId;
-    this.clientDispatchId = clientDispatchId;
-    this.clientListenerId = clientListenerId;
-    this.consumerCacheSize = consumerCacheSize;
-    this.consumerCacheSizeKB = consumerCacheSizeKB;
-  }
+    public StartConsumerRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, false, validator);
+    }
 
-  public StartConsumerRequest(RequestRetryValidator validator, int dispatchId, int queueConsumerId, int clientDispatchId, int clientListenerId, int consumerCacheSize, int consumerCacheSizeKB)
-  {
-    super(dispatchId,false,validator);
-    this.queueConsumerId = queueConsumerId;
-    this.clientDispatchId = clientDispatchId;
-    this.clientListenerId = clientListenerId;
-    this.consumerCacheSize = consumerCacheSize;
-    this.consumerCacheSizeKB = consumerCacheSizeKB;
-  }
-  
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public StartConsumerRequest(int dispatchId, int queueConsumerId, int clientDispatchId, int clientListenerId, int consumerCacheSize, int consumerCacheSizeKB) {
+        super(dispatchId, false);
+        this.queueConsumerId = queueConsumerId;
+        this.clientDispatchId = clientDispatchId;
+        this.clientListenerId = clientListenerId;
+        this.consumerCacheSize = consumerCacheSize;
+        this.consumerCacheSizeKB = consumerCacheSizeKB;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return queueConsumerId;
-  }
-  
-  public void setClientDispatchId(int clientDispatchId)
-  {
-    this.clientDispatchId = clientDispatchId;
-  }
+    public StartConsumerRequest(RequestRetryValidator validator, int dispatchId, int queueConsumerId, int clientDispatchId, int clientListenerId, int consumerCacheSize, int consumerCacheSizeKB) {
+        super(dispatchId, false, validator);
+        this.queueConsumerId = queueConsumerId;
+        this.clientDispatchId = clientDispatchId;
+        this.clientListenerId = clientListenerId;
+        this.consumerCacheSize = consumerCacheSize;
+        this.consumerCacheSizeKB = consumerCacheSizeKB;
+    }
 
-  public int getClientDispatchId()
-  {
-    return clientDispatchId;
-  }
-  
-  public void setClientListenerId(int clientListenerId)
-  {
-    this.clientListenerId = clientListenerId;
-  }
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
 
-  public int getClientListenerId()
-  {
-    return clientListenerId;
-  }
-  
-  public void setConsumerCacheSize(int consumerCacheSize)
-  {
-    this.consumerCacheSize = consumerCacheSize;
-  }
+    public int getQueueConsumerId() {
+        return queueConsumerId;
+    }
 
-  public int getConsumerCacheSize()
-  {
-    return consumerCacheSize;
-  }
-  
-  public void setConsumerCacheSizeKB(int consumerCacheSizeKB)
-  {
-    this.consumerCacheSizeKB = consumerCacheSizeKB;
-  }
+    public void setClientDispatchId(int clientDispatchId) {
+        this.clientDispatchId = clientDispatchId;
+    }
 
-  public int getConsumerCacheSizeKB()
-  {
-    return consumerCacheSizeKB;
-  }
+    public int getClientDispatchId() {
+        return clientDispatchId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_STARTCONSUMER_REQ;
-  }
+    public void setClientListenerId(int clientListenerId) {
+        this.clientListenerId = clientListenerId;
+    }
+
+    public int getClientListenerId() {
+        return clientListenerId;
+    }
+
+    public void setConsumerCacheSize(int consumerCacheSize) {
+        this.consumerCacheSize = consumerCacheSize;
+    }
+
+    public int getConsumerCacheSize() {
+        return consumerCacheSize;
+    }
+
+    public void setConsumerCacheSizeKB(int consumerCacheSizeKB) {
+        this.consumerCacheSizeKB = consumerCacheSizeKB;
+    }
+
+    public int getConsumerCacheSizeKB() {
+        return consumerCacheSizeKB;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_STARTCONSUMER_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueConsumerId,out);
-    SMQPUtil.write(clientDispatchId,out);
-    SMQPUtil.write(clientListenerId,out);
-    SMQPUtil.write(consumerCacheSize,out);
-    SMQPUtil.write(consumerCacheSizeKB,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueConsumerId, out);
+        SMQPUtil.write(clientDispatchId, out);
+        SMQPUtil.write(clientListenerId, out);
+        SMQPUtil.write(consumerCacheSize, out);
+        SMQPUtil.write(consumerCacheSizeKB, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueConsumerId = SMQPUtil.read(queueConsumerId,in);
-    clientDispatchId = SMQPUtil.read(clientDispatchId,in);
-    clientListenerId = SMQPUtil.read(clientListenerId,in);
-    consumerCacheSize = SMQPUtil.read(consumerCacheSize,in);
-    consumerCacheSizeKB = SMQPUtil.read(consumerCacheSizeKB,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueConsumerId = SMQPUtil.read(queueConsumerId, in);
+        clientDispatchId = SMQPUtil.read(clientDispatchId, in);
+        clientListenerId = SMQPUtil.read(clientListenerId, in);
+        consumerCacheSize = SMQPUtil.read(consumerCacheSize, in);
+        consumerCacheSizeKB = SMQPUtil.read(consumerCacheSizeKB, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/StartConsumerRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueConsumerId=");
-    _b.append(queueConsumerId);
-    _b.append(", ");
-    _b.append("clientDispatchId=");
-    _b.append(clientDispatchId);
-    _b.append(", ");
-    _b.append("clientListenerId=");
-    _b.append(clientListenerId);
-    _b.append(", ");
-    _b.append("consumerCacheSize=");
-    _b.append(consumerCacheSize);
-    _b.append(", ");
-    _b.append("consumerCacheSizeKB=");
-    _b.append(consumerCacheSizeKB);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/StartConsumerRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueConsumerId=");
+        _b.append(queueConsumerId);
+        _b.append(", ");
+        _b.append("clientDispatchId=");
+        _b.append(clientDispatchId);
+        _b.append(", ");
+        _b.append("clientListenerId=");
+        _b.append(clientListenerId);
+        _b.append(", ");
+        _b.append("consumerCacheSize=");
+        _b.append(consumerCacheSize);
+        _b.append(", ");
+        _b.append("consumerCacheSizeKB=");
+        _b.append(consumerCacheSizeKB);
+        _b.append("]");
+        return _b.toString();
+    }
 }

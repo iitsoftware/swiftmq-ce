@@ -22,35 +22,29 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ConnectionStopped extends POObject
-{
-  Entity activeConnection = null;
-  String reason = null;
+public class ConnectionStopped extends POObject {
+    Entity activeConnection = null;
+    String reason = null;
 
-  public ConnectionStopped(Semaphore semaphore, Entity activeConnection, String reason)
-  {
-    super(null, semaphore);
-    this.activeConnection = activeConnection;
-    this.reason = reason;
-  }
+    public ConnectionStopped(Semaphore semaphore, Entity activeConnection, String reason) {
+        super(null, semaphore);
+        this.activeConnection = activeConnection;
+        this.reason = reason;
+    }
 
-  public Entity getActiveConnection()
-  {
-    return activeConnection;
-  }
+    public Entity getActiveConnection() {
+        return activeConnection;
+    }
 
-  public String getReason()
-  {
-    return reason;
-  }
+    public String getReason() {
+        return reason;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor) poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ConnectionStopped, activeConnection=" + activeConnection.getName() + ", reason=" + reason + "]";
-  }
+    public String toString() {
+        return "[ConnectionStopped, activeConnection=" + activeConnection.getName() + ", reason=" + reason + "]";
+    }
 }

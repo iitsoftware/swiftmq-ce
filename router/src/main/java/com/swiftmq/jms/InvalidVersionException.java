@@ -19,16 +19,13 @@ package com.swiftmq.jms;
 
 import javax.jms.JMSException;
 
-public class InvalidVersionException extends JMSException
-{
-  public InvalidVersionException(String reason)
-  {
-    super(reason);
-  }
+public class InvalidVersionException extends JMSException {
+    public InvalidVersionException(String reason) {
+        super(reason);
+    }
 
-  public InvalidVersionException(String reason, Exception linkedException)
-  {
-    super(reason);
-    setLinkedException(linkedException);
-  }
+    public InvalidVersionException(String reason, Exception linkedException) {
+        super(reason);
+        setLinkedException(linkedException);
+    }
 }

@@ -19,65 +19,55 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class CreateSubscriberReply extends Reply
-{
-  String tmpQueueName = null;
-  int topicSubscriberId = 0;
+public class CreateSubscriberReply extends Reply {
+    String tmpQueueName = null;
+    int topicSubscriberId = 0;
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_SUBSCRIBER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_SUBSCRIBER_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(topicSubscriberId);
-    if (tmpQueueName != null)
-    {
-      out.writeByte(1);
-      out.writeUTF(tmpQueueName);
-    } else
-      out.write(0);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(topicSubscriberId);
+        if (tmpQueueName != null) {
+            out.writeByte(1);
+            out.writeUTF(tmpQueueName);
+        } else
+            out.write(0);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    topicSubscriberId = in.readInt();
-    if (in.readByte() == 1)
-      tmpQueueName = in.readUTF();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        topicSubscriberId = in.readInt();
+        if (in.readByte() == 1)
+            tmpQueueName = in.readUTF();
+    }
 
-  public String getTmpQueueName()
-  {
-    return tmpQueueName;
-  }
+    public String getTmpQueueName() {
+        return tmpQueueName;
+    }
 
-  public void setTmpQueueName(String tmpQueueName)
-  {
-    this.tmpQueueName = tmpQueueName;
-  }
+    public void setTmpQueueName(String tmpQueueName) {
+        this.tmpQueueName = tmpQueueName;
+    }
 
-  public void setTopicSubscriberId(int topicSubscriberId)
-  {
-    this.topicSubscriberId = topicSubscriberId;
-  }
+    public void setTopicSubscriberId(int topicSubscriberId) {
+        this.topicSubscriberId = topicSubscriberId;
+    }
 
-  public int getTopicSubscriberId()
-  {
-    return (topicSubscriberId);
-  }
+    public int getTopicSubscriberId() {
+        return (topicSubscriberId);
+    }
 
-  public String toString()
-  {
-    return "[CreateSubscriberReply " + super.toString() + " topicSubscriberId="
-        + topicSubscriberId + " tmpQueueName=" + tmpQueueName + "]";
-  }
+    public String toString() {
+        return "[CreateSubscriberReply " + super.toString() + " topicSubscriberId="
+                + topicSubscriberId + " tmpQueueName=" + tmpQueueName + "]";
+    }
 
 }
 

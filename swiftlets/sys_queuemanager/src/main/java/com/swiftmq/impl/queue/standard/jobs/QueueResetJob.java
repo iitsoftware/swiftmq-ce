@@ -26,73 +26,60 @@ import com.swiftmq.tools.sql.LikeComparator;
 
 import java.util.Properties;
 
-public class QueueResetJob implements Job
-{
-  SwiftletContext ctx = null;
-  boolean stopCalled = false;
-  Properties properties = null;
+public class QueueResetJob implements Job {
+    SwiftletContext ctx = null;
+    boolean stopCalled = false;
+    Properties properties = null;
 
-  public QueueResetJob(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  private void terminate()
-  {
-  }
-
-  public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " ...");
-    this.properties = properties;
-    if (stopCalled)
-    {
-      terminate();
-      return;
+    public QueueResetJob(SwiftletContext ctx) {
+        this.ctx = ctx;
     }
-    try
-    {
-      String predicate = properties.getProperty("Queue Name Predicate");
-      String[] names = ctx.queueManager.getDefinedQueueNames();
-      if (names != null)
-      {
-        for (int i = 0; i < names.length; i++)
-        {
-          if (LikeComparator.compare(names[i], predicate, '\\'))
-          {
-            AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(names[i]);
-            if (queue != null)
-            {
-              if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/reset: " + names[i]);
-              queue.resetCounters();
-            }
-          }
-          if (stopCalled)
-            break;
+
+    private void terminate() {
+    }
+
+    public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " ...");
+        this.properties = properties;
+        if (stopCalled) {
+            terminate();
+            return;
         }
-      }
-    } catch (Exception e)
-    {
-      terminate();
-      throw new JobException(e.toString(), e, false);
+        try {
+            String predicate = properties.getProperty("Queue Name Predicate");
+            String[] names = ctx.queueManager.getDefinedQueueNames();
+            if (names != null) {
+                for (int i = 0; i < names.length; i++) {
+                    if (LikeComparator.compare(names[i], predicate, '\\')) {
+                        AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(names[i]);
+                        if (queue != null) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/reset: " + names[i]);
+                            queue.resetCounters();
+                        }
+                    }
+                    if (stopCalled)
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            terminate();
+            throw new JobException(e.toString(), e, false);
+        }
+        terminate();
+        jobTerminationListener.jobTerminated();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " done");
     }
-    terminate();
-    jobTerminationListener.jobTerminated();
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " done");
-  }
 
-  public void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop ...");
-    stopCalled = true;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop done");
-  }
+    public void stop() throws JobException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop ...");
+        stopCalled = true;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop done");
+    }
 
-  public String toString()
-  {
-    return "[QueueResetJob, properties=" + properties + "]";
-  }
+    public String toString() {
+        return "[QueueResetJob, properties=" + properties + "]";
+    }
 }

@@ -26,51 +26,43 @@ import com.swiftmq.swiftlet.scheduler.JobParameter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class QueueCleanupDLQJobFactory implements JobFactory
-{
-  SwiftletContext ctx = null;
-  Map parameters = new HashMap();
+public class QueueCleanupDLQJobFactory implements JobFactory {
+    SwiftletContext ctx = null;
+    Map parameters = new HashMap();
 
-  public QueueCleanupDLQJobFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    JobParameter p = new JobParameter("Queue Name Predicate","SQL Like Predicate to match for Queue Names",null,true,null);
-    parameters.put(p.getName(),p);
-  }
+    public QueueCleanupDLQJobFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        JobParameter p = new JobParameter("Queue Name Predicate", "SQL Like Predicate to match for Queue Names", null, true, null);
+        parameters.put(p.getName(), p);
+    }
 
-  public String getName()
-  {
-    return "Queue Cleanup DLQ";
-  }
+    public String getName() {
+        return "Queue Cleanup DLQ";
+    }
 
-  public String getDescription()
-  {
-    return "Moves expired Messages to Deadletter Queue";
-  }
+    public String getDescription() {
+        return "Moves expired Messages to Deadletter Queue";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/getJobInstance");
-    return new QueueCleanupDLQJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/getJobInstance");
+        return new QueueCleanupDLQJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[QueueCleanupDLQJobFactory]";
-  }
+    public String toString() {
+        return "[QueueCleanupDLQJobFactory]";
+    }
 }

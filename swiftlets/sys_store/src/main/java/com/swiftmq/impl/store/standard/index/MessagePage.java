@@ -18,65 +18,56 @@
 
 package com.swiftmq.impl.store.standard.index;
 
-import com.swiftmq.impl.store.standard.cache.*;
+import com.swiftmq.impl.store.standard.cache.Page;
 
-public class MessagePage
-{
-	static final int POS_PREV_PAGE = Page.HEADER_LENGTH;
-	static final int POS_NEXT_PAGE = POS_PREV_PAGE+4;
-	static final int POS_LENGTH = POS_NEXT_PAGE+4;
-	static final int START_DATA    = POS_LENGTH+4;
-	
-	int nextPage = -1;
-	int prevPage = -1;
-	int length = 0;
-	
-	Page page = null;
-	
-	MessagePage(Page page)
-	{
-		this.page = page;
-		prevPage = Util.readInt(page.data,POS_PREV_PAGE);
-		nextPage = Util.readInt(page.data,POS_NEXT_PAGE);
-		length = Util.readInt(page.data,POS_LENGTH);
-	}
-	
-	int getNextPage()
-	{
-		return nextPage;
-	}
-	
-	void setNextPage(int l)
-	{
-		nextPage = l;
-		Util.writeInt(nextPage,page.data,POS_NEXT_PAGE);
-	}
-	
-	int getPrevPage()
-	{
-		return prevPage;
-	}
-	
-	void setPrevPage(int l)
-	{
-		prevPage = l;
-		Util.writeInt(prevPage,page.data,POS_PREV_PAGE);
-	}
-	
-	int getLength()
-	{
-		return length;
-	}
-	
-	void setLength(int length)
-	{
-		this.length = length;
-		Util.writeInt(length,page.data,POS_LENGTH);
-	}
-	
-	public String toString()
-	{
-		return "[MessagePage, length="+length+", prevPage="+prevPage+", nextPage="+nextPage+", page="+page+"]";
-	}
+public class MessagePage {
+    static final int POS_PREV_PAGE = Page.HEADER_LENGTH;
+    static final int POS_NEXT_PAGE = POS_PREV_PAGE + 4;
+    static final int POS_LENGTH = POS_NEXT_PAGE + 4;
+    static final int START_DATA = POS_LENGTH + 4;
+
+    int nextPage = -1;
+    int prevPage = -1;
+    int length = 0;
+
+    Page page = null;
+
+    MessagePage(Page page) {
+        this.page = page;
+        prevPage = Util.readInt(page.data, POS_PREV_PAGE);
+        nextPage = Util.readInt(page.data, POS_NEXT_PAGE);
+        length = Util.readInt(page.data, POS_LENGTH);
+    }
+
+    int getNextPage() {
+        return nextPage;
+    }
+
+    void setNextPage(int l) {
+        nextPage = l;
+        Util.writeInt(nextPage, page.data, POS_NEXT_PAGE);
+    }
+
+    int getPrevPage() {
+        return prevPage;
+    }
+
+    void setPrevPage(int l) {
+        prevPage = l;
+        Util.writeInt(prevPage, page.data, POS_PREV_PAGE);
+    }
+
+    int getLength() {
+        return length;
+    }
+
+    void setLength(int length) {
+        this.length = length;
+        Util.writeInt(length, page.data, POS_LENGTH);
+    }
+
+    public String toString() {
+        return "[MessagePage, length=" + length + ", prevPage=" + prevPage + ", nextPage=" + nextPage + ", page=" + page + "]";
+    }
 }
 

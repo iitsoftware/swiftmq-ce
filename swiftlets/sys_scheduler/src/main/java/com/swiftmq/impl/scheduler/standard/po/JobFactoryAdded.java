@@ -18,44 +18,38 @@
 package com.swiftmq.impl.scheduler.standard.po;
 
 import com.swiftmq.swiftlet.scheduler.JobFactory;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class JobFactoryAdded extends POObject
-{
-  String groupName = null;
-  String name = null;
-  JobFactory factory = null;
+public class JobFactoryAdded extends POObject {
+    String groupName = null;
+    String name = null;
+    JobFactory factory = null;
 
-  public JobFactoryAdded(String groupName, String name, JobFactory factory)
-  {
-    super(null, null);
-    this.groupName = groupName;
-    this.name = name;
-    this.factory = factory;
-  }
+    public JobFactoryAdded(String groupName, String name, JobFactory factory) {
+        super(null, null);
+        this.groupName = groupName;
+        this.name = name;
+        this.factory = factory;
+    }
 
-  public String getGroupName()
-  {
-    return groupName;
-  }
+    public String getGroupName() {
+        return groupName;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public JobFactory getFactory()
-  {
-    return factory;
-  }
+    public JobFactory getFactory() {
+        return factory;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[JobFactoryAdded, groupName="+groupName+", name="+name+", factory="+factory+"]";
-  }
+    public String toString() {
+        return "[JobFactoryAdded, groupName=" + groupName + ", name=" + name + ", factory=" + factory + "]";
+    }
 }

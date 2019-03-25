@@ -29,59 +29,59 @@ import java.util.List;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
 public abstract class MgmtSwiftlet extends Swiftlet {
-  List listeners = new ArrayList();
-  boolean active = false;
+    List listeners = new ArrayList();
+    boolean active = false;
 
-  /**
-   * Add a management listener
-   *
-   * @param l management listener.
-   */
-  public synchronized void addMgmtListener(MgmtListener l) {
-    listeners.add(l);
-    if (active)
-      l.adminToolActivated();
-  }
-
-  /**
-   * Remove a management listener
-   *
-   * @param l management listener.
-   */
-  public synchronized void removeMgmtListener(MgmtListener l) {
-    listeners.remove(l);
-  }
-
-  /**
-   * Remove all management listeners
-   */
-  protected synchronized void removeAllMgmtListeners() {
-    listeners.clear();
-  }
-
-  public abstract void fireEvent(boolean activated);
-
-  /**
-   * Fires a management event to all management listeners.
-   *
-   * @param activated states whether an admin tool has been activated or not
-   */
-  protected synchronized void fireMgmtEvent(boolean activated) {
-    for (int i = 0; i < listeners.size(); i++) {
-      MgmtListener l = (MgmtListener) listeners.get(i);
-      if (activated)
-        l.adminToolActivated();
-      else
-        l.adminToolDeactivated();
+    /**
+     * Add a management listener
+     *
+     * @param l management listener.
+     */
+    public synchronized void addMgmtListener(MgmtListener l) {
+        listeners.add(l);
+        if (active)
+            l.adminToolActivated();
     }
-    active = activated;
-  }
 
-  /**
-   * Create a CLIExecutor
-   *
-   * @return CLIExecutor.
-   */
-  public abstract CLIExecutor createCLIExecutor();
+    /**
+     * Remove a management listener
+     *
+     * @param l management listener.
+     */
+    public synchronized void removeMgmtListener(MgmtListener l) {
+        listeners.remove(l);
+    }
+
+    /**
+     * Remove all management listeners
+     */
+    protected synchronized void removeAllMgmtListeners() {
+        listeners.clear();
+    }
+
+    public abstract void fireEvent(boolean activated);
+
+    /**
+     * Fires a management event to all management listeners.
+     *
+     * @param activated states whether an admin tool has been activated or not
+     */
+    protected synchronized void fireMgmtEvent(boolean activated) {
+        for (int i = 0; i < listeners.size(); i++) {
+            MgmtListener l = (MgmtListener) listeners.get(i);
+            if (activated)
+                l.adminToolActivated();
+            else
+                l.adminToolDeactivated();
+        }
+        active = activated;
+    }
+
+    /**
+     * Create a CLIExecutor
+     *
+     * @return CLIExecutor.
+     */
+    public abstract CLIExecutor createCLIExecutor();
 }
 

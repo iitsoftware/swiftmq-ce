@@ -27,52 +27,45 @@ import com.swiftmq.tools.requestreply.RequestVisitor;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class RecoverSessionRequest extends Request
-{
+public class RecoverSessionRequest extends Request {
 
-  /**
-   * @param dispatchId
-   * @SBGen Constructor
-   */
-  public RecoverSessionRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    /**
+     * @param dispatchId
+     * @SBGen Constructor
+     */
+    public RecoverSessionRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_RECOVER_SESSION_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_RECOVER_SESSION_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new RecoverSessionReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new RecoverSessionReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitRecoverSessionRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitRecoverSessionRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[RecoverSessionRequest " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[RecoverSessionRequest " + super.toString() + "]";
+    }
 
 }
 

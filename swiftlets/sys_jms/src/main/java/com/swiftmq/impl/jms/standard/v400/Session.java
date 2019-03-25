@@ -39,170 +39,148 @@ import com.swiftmq.tools.requestreply.RequestService;
 import java.util.ArrayList;
 
 public abstract class Session extends SessionVisitor
-    implements RequestService
-{
-  static final String TP_SESSIONSVC = "sys$jms.session.service";
+        implements RequestService {
+    static final String TP_SESSIONSVC = "sys$jms.session.service";
 
-  protected ArrayList consumerList = new ArrayList();
-  protected ArrayList producerList = new ArrayList();
-  protected SessionContext ctx = null;
-  protected int dispatchId;
-  protected ThreadPool sessionTP = null;
-  protected int recoveryEpoche = 0;
-  protected boolean recoveryInProgress = false;
-  protected boolean closed = false;
+    protected ArrayList consumerList = new ArrayList();
+    protected ArrayList producerList = new ArrayList();
+    protected SessionContext ctx = null;
+    protected int dispatchId;
+    protected ThreadPool sessionTP = null;
+    protected int recoveryEpoche = 0;
+    protected boolean recoveryInProgress = false;
+    protected boolean closed = false;
 
-  public Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin)
-  {
-    this.dispatchId = dispatchId;
-    ctx = new SessionContext();
-    ctx.queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
-    ctx.topicManager = (TopicManager) SwiftletManager.getInstance().getSwiftlet("sys$topicmanager");
-    ctx.authSwiftlet = (AuthenticationSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$authentication");
-    ctx.threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-    ctx.logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    ctx.traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    ctx.traceSpace = ctx.traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    ctx.tracePrefix = connectionTracePrefix + "/" + toString();
-    ctx.activeLogin = activeLogin;
-    ctx.sessionEntity = sessionEntity;
-    sessionTP = ctx.threadpoolSwiftlet.getPool(TP_SESSIONSVC);
-    ctx.sessionQueue = new SessionQueue(sessionTP, this);
-    ctx.connectionOutboundQueue = connectionOutboundQueue;
-    ctx.sessionQueue.startQueue();
-  }
-
-  protected Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode)
-  {
-    this(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
-    ctx.ackMode = ackMode;
-  }
-
-  public void visitStartConsumerRequest(StartConsumerRequest req)
-  {
-    if (closed)
-      return;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitStartConsumerRequest");
-    int qcId = req.getQueueConsumerId();
-    Consumer consumer = (Consumer) consumerList.get(qcId);
-    if (consumer == null)
-      return;
-    int clientDispatchId = req.getClientDispatchId();
-    int clientListenerId = req.getClientListenerId();
-    try
-    {
-      MessageProcessor mp = consumer.getMessageProcessor();
-      if (mp == null)
-      {
-        mp = new AsyncMessageProcessor(this, ctx, consumer, req.getConsumerCacheSize(), recoveryEpoche);
-        consumer.setMessageListener(clientDispatchId, clientListenerId, mp);
-      }
-      QueuePullTransaction t = consumer.getReadTransaction();
-      if (t != null && !t.isClosed())
-        t.registerMessageProcessor(mp);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
+    public Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
+        this.dispatchId = dispatchId;
+        ctx = new SessionContext();
+        ctx.queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
+        ctx.topicManager = (TopicManager) SwiftletManager.getInstance().getSwiftlet("sys$topicmanager");
+        ctx.authSwiftlet = (AuthenticationSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$authentication");
+        ctx.threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        ctx.logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        ctx.traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        ctx.traceSpace = ctx.traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        ctx.tracePrefix = connectionTracePrefix + "/" + toString();
+        ctx.activeLogin = activeLogin;
+        ctx.sessionEntity = sessionEntity;
+        sessionTP = ctx.threadpoolSwiftlet.getPool(TP_SESSIONSVC);
+        ctx.sessionQueue = new SessionQueue(sessionTP, this);
+        ctx.connectionOutboundQueue = connectionOutboundQueue;
+        ctx.sessionQueue.startQueue();
     }
-  }
 
-  public void visitDeliveryItem(DeliveryItem item)
-  {
-    if (closed || recoveryInProgress || item.request.getRecoveryEpoche() != recoveryEpoche)
-      return;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitDeliveryItem, item= " + item);
-    QueuePullTransaction rt = (QueuePullTransaction) item.consumer.getReadTransaction();
-    QueuePullTransaction t = (QueuePullTransaction) item.consumer.getTransaction();
-    try
-    {
-      item.request.setMessageEntry(item.messageEntry);
-      ctx.connectionOutboundQueue.enqueue(item.request);
-    } catch (Exception e)
-    {
-      if (!closed)
-      {
-        e.printStackTrace();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/handleDelivery, exception= " + e);
-      }
+    protected Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        this(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
+        ctx.ackMode = ackMode;
     }
-  }
 
-  public void visitMessageDeliveredRequest(MessageDeliveredRequest req)
-  {
-    if (closed || recoveryInProgress)
-      return;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest");
-    try
-    {
-      Consumer consumer = (Consumer) consumerList.get(req.getQueueConsumerId());
-      QueuePullTransaction rt = (QueuePullTransaction) consumer.getReadTransaction();
-      QueuePullTransaction t = (QueuePullTransaction) consumer.getTransaction();
-      t.moveToTransaction(req.getMessageIndex(), rt);
-    } catch (Exception e)
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest, exception="+e);
-      e.printStackTrace();
-    }
-  }
-
-  public void visitCloseSessionRequest(CloseSessionRequest request)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseSessionRequest...");
-    close();
-    request.sem.notifySingleWaiter();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseSessionRequest...DONE");
-  }
-
-  public void serviceRequest(Request request)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/serviceRequest, request=" + request);
-    ctx.sessionQueue.enqueue(request);
-  }
-
-  protected void close()
-  {
-    closed = true;
-    ctx.sessionQueue.stopQueue();
-
-    for (int i = 0; i < consumerList.size(); i++)
-    {
-      Consumer consumer = (Consumer) consumerList.get(i);
-      if (consumer != null)
-      {
-        try
-        {
-          consumer.close();
-        } catch (Exception e)
-        {
+    public void visitStartConsumerRequest(StartConsumerRequest req) {
+        if (closed)
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitStartConsumerRequest");
+        int qcId = req.getQueueConsumerId();
+        Consumer consumer = (Consumer) consumerList.get(qcId);
+        if (consumer == null)
+            return;
+        int clientDispatchId = req.getClientDispatchId();
+        int clientListenerId = req.getClientListenerId();
+        try {
+            MessageProcessor mp = consumer.getMessageProcessor();
+            if (mp == null) {
+                mp = new AsyncMessageProcessor(this, ctx, consumer, req.getConsumerCacheSize(), recoveryEpoche);
+                consumer.setMessageListener(clientDispatchId, clientListenerId, mp);
+            }
+            QueuePullTransaction t = consumer.getReadTransaction();
+            if (t != null && !t.isClosed())
+                t.registerMessageProcessor(mp);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        ctx.activeLogin.getResourceLimitGroup().decConsumers();
-      }
     }
-    for (int i = 0; i < producerList.size(); i++)
-    {
-      Producer producer = (Producer) producerList.get(i);
-      if (producer != null)
-      {
-        try
-        {
-          producer.close();
-        } catch (Exception e)
-        {
+
+    public void visitDeliveryItem(DeliveryItem item) {
+        if (closed || recoveryInProgress || item.request.getRecoveryEpoche() != recoveryEpoche)
+            return;
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitDeliveryItem, item= " + item);
+        QueuePullTransaction rt = (QueuePullTransaction) item.consumer.getReadTransaction();
+        QueuePullTransaction t = (QueuePullTransaction) item.consumer.getTransaction();
+        try {
+            item.request.setMessageEntry(item.messageEntry);
+            ctx.connectionOutboundQueue.enqueue(item.request);
+        } catch (Exception e) {
+            if (!closed) {
+                e.printStackTrace();
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/handleDelivery, exception= " + e);
+            }
         }
-      }
-      ctx.activeLogin.getResourceLimitGroup().decProducers();
     }
-  }
 
-  protected boolean isClosed()
-  {
-    return closed;
-  }
+    public void visitMessageDeliveredRequest(MessageDeliveredRequest req) {
+        if (closed || recoveryInProgress)
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest");
+        try {
+            Consumer consumer = (Consumer) consumerList.get(req.getQueueConsumerId());
+            QueuePullTransaction rt = (QueuePullTransaction) consumer.getReadTransaction();
+            QueuePullTransaction t = (QueuePullTransaction) consumer.getTransaction();
+            t.moveToTransaction(req.getMessageIndex(), rt);
+        } catch (Exception e) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest, exception=" + e);
+            e.printStackTrace();
+        }
+    }
 
-  public String toString()
-  {
-    return "Session, dispatchId=" + dispatchId;
-  }
+    public void visitCloseSessionRequest(CloseSessionRequest request) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseSessionRequest...");
+        close();
+        request.sem.notifySingleWaiter();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseSessionRequest...DONE");
+    }
+
+    public void serviceRequest(Request request) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/serviceRequest, request=" + request);
+        ctx.sessionQueue.enqueue(request);
+    }
+
+    protected void close() {
+        closed = true;
+        ctx.sessionQueue.stopQueue();
+
+        for (int i = 0; i < consumerList.size(); i++) {
+            Consumer consumer = (Consumer) consumerList.get(i);
+            if (consumer != null) {
+                try {
+                    consumer.close();
+                } catch (Exception e) {
+                }
+                ctx.activeLogin.getResourceLimitGroup().decConsumers();
+            }
+        }
+        for (int i = 0; i < producerList.size(); i++) {
+            Producer producer = (Producer) producerList.get(i);
+            if (producer != null) {
+                try {
+                    producer.close();
+                } catch (Exception e) {
+                }
+            }
+            ctx.activeLogin.getResourceLimitGroup().decProducers();
+        }
+    }
+
+    protected boolean isClosed() {
+        return closed;
+    }
+
+    public String toString() {
+        return "Session, dispatchId=" + dispatchId;
+    }
 
 }
 

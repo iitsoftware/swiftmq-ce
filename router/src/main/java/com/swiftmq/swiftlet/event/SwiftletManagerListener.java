@@ -21,37 +21,41 @@ import java.util.EventListener;
 
 /**
  * A listener that is interested in events from the SwiftletManager
- * @see SwiftletManager
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
+ * @see SwiftletManager
  */
-public interface SwiftletManagerListener extends EventListener
-{
-  /**
-   * Will be called from the SwiftletManager if a Swiftlet should be started. That
-   * means: just before starting the Swiftlet.
-   * @param evt swiftlet manager event
-   */
-  public void swiftletStartInitiated(SwiftletManagerEvent evt);
+public interface SwiftletManagerListener extends EventListener {
+    /**
+     * Will be called from the SwiftletManager if a Swiftlet should be started. That
+     * means: just before starting the Swiftlet.
+     *
+     * @param evt swiftlet manager event
+     */
+    public void swiftletStartInitiated(SwiftletManagerEvent evt);
 
-  /**
-   * Will be called from the SwiftletManager if a Swiftlet has been started. That
-   * means: just after starting the Swiftlet.
-   * @param evt swiftlet manager event
-   */
-  public void swiftletStarted(SwiftletManagerEvent evt);
+    /**
+     * Will be called from the SwiftletManager if a Swiftlet has been started. That
+     * means: just after starting the Swiftlet.
+     *
+     * @param evt swiftlet manager event
+     */
+    public void swiftletStarted(SwiftletManagerEvent evt);
 
-  /**
-   * Will be called from the SwiftletManager if a Swiftlet should be stopped. That
-   * means: just before stopping the Swiftlet.
-   * @param evt swiftlet manager event
-   */
-  public void swiftletStopInitiated(SwiftletManagerEvent evt);
+    /**
+     * Will be called from the SwiftletManager if a Swiftlet should be stopped. That
+     * means: just before stopping the Swiftlet.
+     *
+     * @param evt swiftlet manager event
+     */
+    public void swiftletStopInitiated(SwiftletManagerEvent evt);
 
-  /**
-   * Will be called from the SwiftletManager if a Swiftlet is stopped. That
-   * means: just after stopping the Swiftlet.
-   * @param evt swiftlet manager event
-   */
-  public void swiftletStopped(SwiftletManagerEvent evt);
+    /**
+     * Will be called from the SwiftletManager if a Swiftlet is stopped. That
+     * means: just after stopping the Swiftlet.
+     *
+     * @param evt swiftlet manager event
+     */
+    public void swiftletStopped(SwiftletManagerEvent evt);
 }
 

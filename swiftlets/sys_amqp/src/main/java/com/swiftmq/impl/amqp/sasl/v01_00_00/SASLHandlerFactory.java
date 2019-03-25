@@ -23,19 +23,16 @@ import com.swiftmq.impl.amqp.HandlerFactory;
 import com.swiftmq.impl.amqp.SwiftletContext;
 import com.swiftmq.impl.amqp.VersionedConnection;
 
-public class SASLHandlerFactory implements HandlerFactory
-{
-  public static final ProtocolHeader SASL_INIT = new ProtocolHeader("AMQP", 3, 1, 0, 0);
+public class SASLHandlerFactory implements HandlerFactory {
+    public static final ProtocolHeader SASL_INIT = new ProtocolHeader("AMQP", 3, 1, 0, 0);
 
-  SwiftletContext ctx = null;
+    SwiftletContext ctx = null;
 
-  public SASLHandlerFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public SASLHandlerFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public Handler createHandler(VersionedConnection versionedConnection)
-  {
-    return new SASLHandler(ctx, versionedConnection);
-  }
+    public Handler createHandler(VersionedConnection versionedConnection) {
+        return new SASLHandler(ctx, versionedConnection);
+    }
 }

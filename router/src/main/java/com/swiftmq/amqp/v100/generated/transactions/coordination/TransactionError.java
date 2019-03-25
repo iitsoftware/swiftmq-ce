@@ -17,65 +17,53 @@
 
 package com.swiftmq.amqp.v100.generated.transactions.coordination;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.generated.transport.definitions.ErrorConditionIF;
+import com.swiftmq.amqp.v100.generated.transport.definitions.ErrorConditionVisitor;
+import com.swiftmq.amqp.v100.types.AMQPSymbol;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
 public class TransactionError extends AMQPSymbol
-       implements ErrorConditionIF
-{
+        implements ErrorConditionIF {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add("amqp:transaction:unknown-id");
-    POSSIBLE_VALUES.add("amqp:transaction:rollback");
-    POSSIBLE_VALUES.add("amqp:transaction:timeout");
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final TransactionError UNKNOWN_ID = new TransactionError("amqp:transaction:unknown-id");
-  public static final TransactionError TRANSACTION_ROLLBACK = new TransactionError("amqp:transaction:rollback");
-  public static final TransactionError TRANSACTION_TIMEOUT = new TransactionError("amqp:transaction:timeout");
+    static {
+        POSSIBLE_VALUES.add("amqp:transaction:unknown-id");
+        POSSIBLE_VALUES.add("amqp:transaction:rollback");
+        POSSIBLE_VALUES.add("amqp:transaction:timeout");
+    }
 
-  /**
-   * Constructs a TransactionError.
-   *
-   * @param initValue initial value
-   */
-  public TransactionError(String initValue) 
-  {
-    super(initValue);
-  }
+    public static final TransactionError UNKNOWN_ID = new TransactionError("amqp:transaction:unknown-id");
+    public static final TransactionError TRANSACTION_ROLLBACK = new TransactionError("amqp:transaction:rollback");
+    public static final TransactionError TRANSACTION_TIMEOUT = new TransactionError("amqp:transaction:timeout");
 
-  /**
-   * Accept method for a ErrorCondition visitor.
-   *
-   * @param visitor ErrorCondition visitor
-   */
-   public void accept(ErrorConditionVisitor visitor)
-   {
-     visitor.visit(this);
-   }
+    /**
+     * Constructs a TransactionError.
+     *
+     * @param initValue initial value
+     */
+    public TransactionError(String initValue) {
+        super(initValue);
+    }
+
+    /**
+     * Accept method for a ErrorCondition visitor.
+     *
+     * @param visitor ErrorCondition visitor
+     */
+    public void accept(ErrorConditionVisitor visitor) {
+        visitor.visit(this);
+    }
 
 
-  public String toString()
-  {
-    return "[TransactionError " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[TransactionError " + super.toString() + "]";
+    }
 }

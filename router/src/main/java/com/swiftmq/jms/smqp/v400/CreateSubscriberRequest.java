@@ -23,201 +23,180 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreateSubscriberRequest extends Request
-{
-  TopicImpl topic = null;
-  String messageSelector = null;
-  boolean noLocal = false;
+public class CreateSubscriberRequest extends Request {
+    TopicImpl topic = null;
+    String messageSelector = null;
+    boolean noLocal = false;
 
-  /**
-   * @param topic
-   * @param messageSelector
-   * @param noLocal
-   * @param dispatchId
-   * @SBGen Constructor assigns topic, messageSelector
-   */
-  public CreateSubscriberRequest(int dispatchId, TopicImpl topic,
-                                 String messageSelector, boolean noLocal)
-  {
-    super(dispatchId, true);
+    /**
+     * @param topic
+     * @param messageSelector
+     * @param noLocal
+     * @param dispatchId
+     * @SBGen Constructor assigns topic, messageSelector
+     */
+    public CreateSubscriberRequest(int dispatchId, TopicImpl topic,
+                                   String messageSelector, boolean noLocal) {
+        super(dispatchId, true);
 
-    // SBgen: Assign variables
-    this.topic = topic;
-    this.messageSelector = messageSelector;
-    this.noLocal = noLocal;
-    // SBgen: End assign
-  }
-
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_SUBSCRIBER_REQ;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    out.writeBoolean(noLocal);
-
-    if (topic == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      DestinationFactory.dumpDestination(topic, out);
+        // SBgen: Assign variables
+        this.topic = topic;
+        this.messageSelector = messageSelector;
+        this.noLocal = noLocal;
+        // SBgen: End assign
     }
 
-    if (messageSelector == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(messageSelector);
-    }
-  }
-
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    noLocal = in.readBoolean();
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      topic = null;
-    } else
-    {
-      topic = (TopicImpl) DestinationFactory.createDestination(in);
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_SUBSCRIBER_REQ;
     }
 
-    set = in.readByte();
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-    if (set == 0)
-    {
-      messageSelector = null;
-    } else
-    {
-      messageSelector = in.readUTF();
+        out.writeBoolean(noLocal);
+
+        if (topic == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            DestinationFactory.dumpDestination(topic, out);
+        }
+
+        if (messageSelector == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(messageSelector);
+        }
     }
-  }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CreateSubscriberReply();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  /**
-   * @param topic
-   * @SBGen Method set topic
-   */
-  public void setTopic(TopicImpl topic)
-  {
+        noLocal = in.readBoolean();
 
-    // SBgen: Assign variable
-    this.topic = topic;
-  }
+        byte set = in.readByte();
 
-  /**
-   * @return
-   * @SBGen Method get topic
-   */
-  public TopicImpl getTopic()
-  {
+        if (set == 0) {
+            topic = null;
+        } else {
+            topic = (TopicImpl) DestinationFactory.createDestination(in);
+        }
 
-    // SBgen: Get variable
-    return (topic);
-  }
+        set = in.readByte();
 
-  /**
-   * @param messageSelector
-   * @SBGen Method set messageSelector
-   */
-  public void setMessageSelector(String messageSelector)
-  {
+        if (set == 0) {
+            messageSelector = null;
+        } else {
+            messageSelector = in.readUTF();
+        }
+    }
 
-    // SBgen: Assign variable
-    this.messageSelector = messageSelector;
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CreateSubscriberReply();
+    }
 
-  /**
-   * @return
-   * @SBGen Method get messageSelector
-   */
-  public String getMessageSelector()
-  {
+    /**
+     * @param topic
+     * @SBGen Method set topic
+     */
+    public void setTopic(TopicImpl topic) {
 
-    // SBgen: Get variable
-    return (messageSelector);
-  }
+        // SBgen: Assign variable
+        this.topic = topic;
+    }
 
-  /**
-   * @param noLocal
-   * @SBGen Method set noLocal
-   */
-  public void setNoLocal(boolean noLocal)
-  {
+    /**
+     * @return
+     * @SBGen Method get topic
+     */
+    public TopicImpl getTopic() {
 
-    // SBgen: Assign variable
-    this.noLocal = noLocal;
-  }
+        // SBgen: Get variable
+        return (topic);
+    }
 
-  /**
-   * @return
-   * @SBGen Method get noLocal
-   */
-  public boolean isNoLocal()
-  {
-    // SBgen: Get variable
-    return (noLocal);
-  }
+    /**
+     * @param messageSelector
+     * @SBGen Method set messageSelector
+     */
+    public void setMessageSelector(String messageSelector) {
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCreateSubscriberRequest(this);
-  }
+        // SBgen: Assign variable
+        this.messageSelector = messageSelector;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreateSubscriberRequest " + super.toString() + " topic=" + topic
-        + " messageSelector=" + messageSelector + "]";
-  }
+    /**
+     * @return
+     * @SBGen Method get messageSelector
+     */
+    public String getMessageSelector() {
+
+        // SBgen: Get variable
+        return (messageSelector);
+    }
+
+    /**
+     * @param noLocal
+     * @SBGen Method set noLocal
+     */
+    public void setNoLocal(boolean noLocal) {
+
+        // SBgen: Assign variable
+        this.noLocal = noLocal;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get noLocal
+     */
+    public boolean isNoLocal() {
+        // SBgen: Get variable
+        return (noLocal);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCreateSubscriberRequest(this);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreateSubscriberRequest " + super.toString() + " topic=" + topic
+                + " messageSelector=" + messageSelector + "]";
+    }
 
 }
 

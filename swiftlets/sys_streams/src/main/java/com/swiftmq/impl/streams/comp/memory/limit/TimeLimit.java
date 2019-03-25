@@ -122,7 +122,7 @@ public class TimeLimit implements Limit {
                 return;
             long time;
             if (memory.orderBy() != null)
-                time = memory.getStoreTime(memory.size()-1) - millis;
+                time = memory.getStoreTime(memory.size() - 1) - millis;
             else
                 time = System.currentTimeMillis() - millis;
             if (sliding) {

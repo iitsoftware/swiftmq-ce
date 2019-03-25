@@ -17,57 +17,58 @@
 
 package com.swiftmq.impl.jms.standard.v510;
 
-import com.swiftmq.jms.smqp.v510.*;
+import com.swiftmq.jms.smqp.v510.SMQPBulkRequest;
+import com.swiftmq.jms.smqp.v510.SMQPFactory;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
-import com.swiftmq.swiftlet.net.*;
-import com.swiftmq.swiftlet.trace.*;
-import com.swiftmq.tools.dump.*;
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.swiftlet.net.Connection;
+import com.swiftmq.swiftlet.net.InboundHandler;
+import com.swiftmq.swiftlet.trace.TraceSpace;
+import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
+import com.swiftmq.tools.dump.Dumpalizer;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestServiceRegistry;
 import com.swiftmq.tools.util.DataStreamInputStream;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class InboundReader extends RequestServiceRegistry
-  implements InboundHandler
-{
-  static final DumpableFactory dumpableFactory = new SMQPFactory();
+        implements InboundHandler {
+    static final DumpableFactory dumpableFactory = new SMQPFactory();
 
-  LogSwiftlet logSwiftlet = null;
-  TraceSwiftlet traceSwiftlet = null;
-  TraceSpace traceSpace = null;
-  String tracePrefix;
-  DataStreamInputStream dis = new DataStreamInputStream();
+    LogSwiftlet logSwiftlet = null;
+    TraceSwiftlet traceSwiftlet = null;
+    TraceSpace traceSpace = null;
+    String tracePrefix;
+    DataStreamInputStream dis = new DataStreamInputStream();
 
-  InboundReader(String tracePrefix)
-  {
-    this.tracePrefix = tracePrefix;
-    this.tracePrefix += "/InboundReader";
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
-  }
-
-  public void dataAvailable(Connection connection, InputStream inputStream)
-    throws IOException
-  {
-    dis.setInputStream(inputStream);
-    Dumpable obj = Dumpalizer.construct(dis, dumpableFactory);
-    if (traceSpace.enabled) traceSpace.trace("smqp", "read object: " + obj);
-    if (obj.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ)
-    {
-      if (obj.getDumpId() == SMQPFactory.DID_BULK_REQ)
-      {
-        SMQPBulkRequest bulkRequest = (SMQPBulkRequest) obj;
-        for (int i = 0; i < bulkRequest.len; i++)
-        {
-          Request req = (Request) bulkRequest.dumpables[i];
-          if (req.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ)
-            dispatch(req);
-        }
-      } else
-        dispatch((Request) obj);
+    InboundReader(String tracePrefix) {
+        this.tracePrefix = tracePrefix;
+        this.tracePrefix += "/InboundReader";
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
     }
-  }
+
+    public void dataAvailable(Connection connection, InputStream inputStream)
+            throws IOException {
+        dis.setInputStream(inputStream);
+        Dumpable obj = Dumpalizer.construct(dis, dumpableFactory);
+        if (traceSpace.enabled) traceSpace.trace("smqp", "read object: " + obj);
+        if (obj.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ) {
+            if (obj.getDumpId() == SMQPFactory.DID_BULK_REQ) {
+                SMQPBulkRequest bulkRequest = (SMQPBulkRequest) obj;
+                for (int i = 0; i < bulkRequest.len; i++) {
+                    Request req = (Request) bulkRequest.dumpables[i];
+                    if (req.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ)
+                        dispatch(req);
+                }
+            } else
+                dispatch((Request) obj);
+        }
+    }
 }
 

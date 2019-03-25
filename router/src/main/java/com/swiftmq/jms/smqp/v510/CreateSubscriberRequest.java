@@ -17,143 +17,126 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CreateSubscriberRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CreateSubscriberRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.TopicImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CreateSubscriberRequest extends Request
-{
-  private TopicImpl topic;
-  private String messageSelector;
-  private boolean noLocal;
-  private boolean autoCommit;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateSubscriberRequest()
-  {
-    super(0,true);
-  }
+public class CreateSubscriberRequest extends Request {
+    private TopicImpl topic;
+    private String messageSelector;
+    private boolean noLocal;
+    private boolean autoCommit;
 
-  public CreateSubscriberRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public CreateSubscriberRequest() {
+        super(0, true);
+    }
 
-  public CreateSubscriberRequest(int dispatchId, TopicImpl topic, String messageSelector, boolean noLocal, boolean autoCommit)
-  {
-    super(dispatchId,true);
-    this.topic = topic;
-    this.messageSelector = messageSelector;
-    this.noLocal = noLocal;
-    this.autoCommit = autoCommit;
-  }
-  
-  public void setTopic(TopicImpl topic)
-  {
-    this.topic = topic;
-  }
+    public CreateSubscriberRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public TopicImpl getTopic()
-  {
-    return topic;
-  }
-  
-  public void setMessageSelector(String messageSelector)
-  {
-    this.messageSelector = messageSelector;
-  }
+    public CreateSubscriberRequest(int dispatchId, TopicImpl topic, String messageSelector, boolean noLocal, boolean autoCommit) {
+        super(dispatchId, true);
+        this.topic = topic;
+        this.messageSelector = messageSelector;
+        this.noLocal = noLocal;
+        this.autoCommit = autoCommit;
+    }
 
-  public String getMessageSelector()
-  {
-    return messageSelector;
-  }
-  
-  public void setNoLocal(boolean noLocal)
-  {
-    this.noLocal = noLocal;
-  }
+    public void setTopic(TopicImpl topic) {
+        this.topic = topic;
+    }
 
-  public boolean isNoLocal()
-  {
-    return noLocal;
-  }
-  
-  public void setAutoCommit(boolean autoCommit)
-  {
-    this.autoCommit = autoCommit;
-  }
+    public TopicImpl getTopic() {
+        return topic;
+    }
 
-  public boolean isAutoCommit()
-  {
-    return autoCommit;
-  }
+    public void setMessageSelector(String messageSelector) {
+        this.messageSelector = messageSelector;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATESUBSCRIBER_REQ;
-  }
+    public String getMessageSelector() {
+        return messageSelector;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(topic,out);
-    if (messageSelector != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(messageSelector,out);
-    } else
-      out.writeBoolean(false);
-    SMQPUtil.write(noLocal,out);
-    SMQPUtil.write(autoCommit,out);
-  }
+    public void setNoLocal(boolean noLocal) {
+        this.noLocal = noLocal;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    topic = SMQPUtil.read(topic,in);
-    boolean messageSelector_set = in.readBoolean();
-    if (messageSelector_set)
-      messageSelector = SMQPUtil.read(messageSelector,in);
-    noLocal = SMQPUtil.read(noLocal,in);
-    autoCommit = SMQPUtil.read(autoCommit,in);
-  }
+    public boolean isNoLocal() {
+        return noLocal;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreateSubscriberReply();
-  }
+    public void setAutoCommit(boolean autoCommit) {
+        this.autoCommit = autoCommit;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public boolean isAutoCommit() {
+        return autoCommit;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CreateSubscriberRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("topic=");
-    _b.append(topic);
-    _b.append(", ");
-    _b.append("messageSelector=");
-    _b.append(messageSelector);
-    _b.append(", ");
-    _b.append("noLocal=");
-    _b.append(noLocal);
-    _b.append(", ");
-    _b.append("autoCommit=");
-    _b.append(autoCommit);
-    _b.append("]");
-    return _b.toString();
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATESUBSCRIBER_REQ;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(topic, out);
+        if (messageSelector != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(messageSelector, out);
+        } else
+            out.writeBoolean(false);
+        SMQPUtil.write(noLocal, out);
+        SMQPUtil.write(autoCommit, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        topic = SMQPUtil.read(topic, in);
+        boolean messageSelector_set = in.readBoolean();
+        if (messageSelector_set)
+            messageSelector = SMQPUtil.read(messageSelector, in);
+        noLocal = SMQPUtil.read(noLocal, in);
+        autoCommit = SMQPUtil.read(autoCommit, in);
+    }
+
+    protected Reply createReplyInstance() {
+        return new CreateSubscriberReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CreateSubscriberRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("topic=");
+        _b.append(topic);
+        _b.append(", ");
+        _b.append("messageSelector=");
+        _b.append(messageSelector);
+        _b.append(", ");
+        _b.append("noLocal=");
+        _b.append(noLocal);
+        _b.append(", ");
+        _b.append("autoCommit=");
+        _b.append(autoCommit);
+        _b.append("]");
+        return _b.toString();
+    }
 }

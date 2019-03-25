@@ -23,34 +23,28 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POConnectionFrameReceived extends POObject
-{
-  FrameIF frame = null;
+public class POConnectionFrameReceived extends POObject {
+    FrameIF frame = null;
 
-  public POConnectionFrameReceived(Semaphore semaphore, FrameIF frame)
-  {
-    super(null, semaphore);
-    this.frame = frame;
-  }
+    public POConnectionFrameReceived(Semaphore semaphore, FrameIF frame) {
+        super(null, semaphore);
+        this.frame = frame;
+    }
 
-  public POConnectionFrameReceived(FrameIF frame)
-  {
-    super(null, null);
-    this.frame = frame;
-  }
+    public POConnectionFrameReceived(FrameIF frame) {
+        super(null, null);
+        this.frame = frame;
+    }
 
-  public FrameIF getFrame()
-  {
-    return frame;
-  }
+    public FrameIF getFrame() {
+        return frame;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POConnectionFrameReceived, frame=" + frame + "]";
-  }
+    public String toString() {
+        return "[POConnectionFrameReceived, frame=" + frame + "]";
+    }
 }

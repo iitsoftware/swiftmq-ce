@@ -17,51 +17,43 @@
 
 package com.swiftmq.tools.util;
 
-public class UninterruptableWaiter
-{
-  public static void doWait(Object waiter)
-  {
-    boolean wasInterrupted = Thread.interrupted();
-    boolean ok = false;
-    do {
-      try
-      {
-        waiter.wait();
-        ok = true;
-      } catch (InterruptedException e)
-      {
-        ok = false;
-        wasInterrupted = true;
-      }
-    } while (!ok);
-    if (wasInterrupted)
-      Thread.currentThread().interrupt();
-  }
-
-  public static void doWait(Object waiter, long timeout)
-  {
-    if (timeout == 0)
-    {
-      doWait(waiter);
-      return;
+public class UninterruptableWaiter {
+    public static void doWait(Object waiter) {
+        boolean wasInterrupted = Thread.interrupted();
+        boolean ok = false;
+        do {
+            try {
+                waiter.wait();
+                ok = true;
+            } catch (InterruptedException e) {
+                ok = false;
+                wasInterrupted = true;
+            }
+        } while (!ok);
+        if (wasInterrupted)
+            Thread.currentThread().interrupt();
     }
-    boolean wasInterrupted = Thread.interrupted();
-    boolean ok = false;
-    do {
-      long start = System.currentTimeMillis();
-      try
-      {
-        waiter.wait(timeout);
-        ok = true;
-      } catch (InterruptedException e)
-      {
-        long delta = System.currentTimeMillis()-start;
-        timeout -= delta;
-        ok = timeout <=0;
-        wasInterrupted = true;
-      }
-    } while (!ok);
-    if (wasInterrupted)
-      Thread.currentThread().interrupt();
-  }
+
+    public static void doWait(Object waiter, long timeout) {
+        if (timeout == 0) {
+            doWait(waiter);
+            return;
+        }
+        boolean wasInterrupted = Thread.interrupted();
+        boolean ok = false;
+        do {
+            long start = System.currentTimeMillis();
+            try {
+                waiter.wait(timeout);
+                ok = true;
+            } catch (InterruptedException e) {
+                long delta = System.currentTimeMillis() - start;
+                timeout -= delta;
+                ok = timeout <= 0;
+                wasInterrupted = true;
+            }
+        } while (!ok);
+        if (wasInterrupted)
+            Thread.currentThread().interrupt();
+    }
 }

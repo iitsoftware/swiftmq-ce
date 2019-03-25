@@ -17,45 +17,36 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.util.SwiftUtilities;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ClientRequest extends EventObject
-{
-  String userName = null;
-  String queueName = null;
-  byte[] buffer = null;
+public class ClientRequest extends EventObject {
+    String userName = null;
+    String queueName = null;
+    byte[] buffer = null;
 
-  public ClientRequest(String userName, String queueName, byte[] buffer)
-  {
-    this.userName = userName;
-    this.queueName = queueName;
-    this.buffer = buffer;
-  }
+    public ClientRequest(String userName, String queueName, byte[] buffer) {
+        this.userName = userName;
+        this.queueName = queueName;
+        this.buffer = buffer;
+    }
 
-  public String getUserName()
-  {
-    return userName;
-  }
+    public String getUserName() {
+        return userName;
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public byte[] getBuffer()
-  {
-    return buffer;
-  }
+    public byte[] getBuffer() {
+        return buffer;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventObjectVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventObjectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ClientRequest, userName="+userName+", queueName="+queueName+", length="+buffer.length+"]";
-  }
+    public String toString() {
+        return "[ClientRequest, userName=" + userName + ", queueName=" + queueName + ", length=" + buffer.length + "]";
+    }
 }

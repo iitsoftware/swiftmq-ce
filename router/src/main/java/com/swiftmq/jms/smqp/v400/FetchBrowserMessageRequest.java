@@ -23,119 +23,109 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class FetchBrowserMessageRequest extends Request
-{
-  int queueBrowserId = 0;
-  boolean resetRequired = false;
+public class FetchBrowserMessageRequest extends Request {
+    int queueBrowserId = 0;
+    boolean resetRequired = false;
 
-  /**
-   * @param queueBrowserId
-   * @param dispatchId
-   * @SBGen Constructor assigns queueBrowserId
-   */
-  public FetchBrowserMessageRequest(int dispatchId, int queueBrowserId, boolean resetRequired)
-  {
-    super(dispatchId, true);
+    /**
+     * @param queueBrowserId
+     * @param dispatchId
+     * @SBGen Constructor assigns queueBrowserId
+     */
+    public FetchBrowserMessageRequest(int dispatchId, int queueBrowserId, boolean resetRequired) {
+        super(dispatchId, true);
 
-    // SBgen: Assign variable
-    this.queueBrowserId = queueBrowserId;
-    this.resetRequired = resetRequired;
-  }
+        // SBgen: Assign variable
+        this.queueBrowserId = queueBrowserId;
+        this.resetRequired = resetRequired;
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_FETCH_BROWSER_MESSAGE_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_FETCH_BROWSER_MESSAGE_REQ;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueBrowserId);
-    out.writeBoolean(resetRequired);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueBrowserId);
+        out.writeBoolean(resetRequired);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueBrowserId = in.readInt();
-    resetRequired = in.readBoolean();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueBrowserId = in.readInt();
+        resetRequired = in.readBoolean();
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new FetchBrowserMessageReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new FetchBrowserMessageReply();
+    }
 
-  /**
-   * @param queueBrowserId
-   * @SBGen Method set queueBrowserId
-   */
-  public void setQueueBrowserId(int queueBrowserId)
-  {
+    /**
+     * @param queueBrowserId
+     * @SBGen Method set queueBrowserId
+     */
+    public void setQueueBrowserId(int queueBrowserId) {
 
-    // SBgen: Assign variable
-    this.queueBrowserId = queueBrowserId;
-  }
+        // SBgen: Assign variable
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get queueBrowserId
-   */
-  public int getQueueBrowserId()
-  {
+    /**
+     * @return
+     * @SBGen Method get queueBrowserId
+     */
+    public int getQueueBrowserId() {
 
-    // SBgen: Get variable
-    return (queueBrowserId);
-  }
+        // SBgen: Get variable
+        return (queueBrowserId);
+    }
 
-  public boolean isResetRequired()
-  {
-    return resetRequired;
-  }
+    public boolean isResetRequired() {
+        return resetRequired;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitFetchBrowserMessageRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitFetchBrowserMessageRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[FetchBrowserMessageRequest " + super.toString()
-        + " queueBrowserId=" + queueBrowserId + ", resetRequired=" + resetRequired + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[FetchBrowserMessageRequest " + super.toString()
+                + " queueBrowserId=" + queueBrowserId + ", resetRequired=" + resetRequired + "]";
+    }
 
 }
 

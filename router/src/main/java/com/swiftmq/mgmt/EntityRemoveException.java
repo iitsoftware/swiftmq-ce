@@ -24,15 +24,14 @@ package com.swiftmq.mgmt;
  * @see Entity
  * @see EntityAddListener
  */
-public class EntityRemoveException extends Exception
-{
-  /**
-   * Creates a new EntityRemoveException.
-   * @param msg the message.
-   */
-  public EntityRemoveException(String msg)
-  {
-    super(msg);
-  }
+public class EntityRemoveException extends Exception {
+    /**
+     * Creates a new EntityRemoveException.
+     *
+     * @param msg the message.
+     */
+    public EntityRemoveException(String msg) {
+        super(msg);
+    }
 }
 

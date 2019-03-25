@@ -17,165 +17,148 @@
 
 package com.swiftmq.amqp.v091.generated.exchange;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Unbind extends ExchangeMethod
-{
-  int reserved1;
-  String destination;
-  String source;
-  String routingKey;
-  boolean noWait;
-  Map<String, Object> arguments;
+import java.io.IOException;
+import java.util.Map;
 
-  public Unbind()
-  {
-    _classId = 40;
-    _methodId = 40;
-  }
+public class Unbind extends ExchangeMethod {
+    int reserved1;
+    String destination;
+    String source;
+    String routingKey;
+    boolean noWait;
+    Map<String, Object> arguments;
 
-  public void accept(ExchangeMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Unbind() {
+        _classId = 40;
+        _methodId = 40;
+    }
 
-  public int getReserved1()
-  {
-    return reserved1;
-  }
+    public void accept(ExchangeMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReserved1(int reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public int getReserved1() {
+        return reserved1;
+    }
 
-  public String getDestination()
-  {
-    return destination;
-  }
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  public void setDestination(String destination)
-  {
-    this.destination = destination;
-  }
+    public String getDestination() {
+        return destination;
+    }
 
-  public String getSource()
-  {
-    return source;
-  }
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
 
-  public void setSource(String source)
-  {
-    this.source = source;
-  }
+    public String getSource() {
+        return source;
+    }
 
-  public String getRoutingKey()
-  {
-    return routingKey;
-  }
+    public void setSource(String source) {
+        this.source = source;
+    }
 
-  public void setRoutingKey(String routingKey)
-  {
-    this.routingKey = routingKey;
-  }
+    public String getRoutingKey() {
+        return routingKey;
+    }
 
-  public boolean getNoWait()
-  {
-    return noWait;
-  }
+    public void setRoutingKey(String routingKey) {
+        this.routingKey = routingKey;
+    }
 
-  public void setNoWait(boolean noWait)
-  {
-    this.noWait = noWait;
-  }
+    public boolean getNoWait() {
+        return noWait;
+    }
 
-  public Map<String, Object> getArguments()
-  {
-    return arguments;
-  }
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
 
-  public void setArguments(Map<String, Object> arguments)
-  {
-    this.arguments = arguments;
-  }
+    public Map<String, Object> getArguments() {
+        return arguments;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    reserved1 = Coder.readShort(in);
-    destination = Coder.readShortString(in);
-    source = Coder.readShortString(in);
-    routingKey = Coder.readShortString(in);
-    noWait = Coder.readBit(in);
-    arguments = Coder.readTable(in);
-  }
+    public void setArguments(Map<String, Object> arguments) {
+        this.arguments = arguments;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShort(reserved1, out);
-    Coder.writeShortString(destination, out);
-    Coder.writeShortString(source, out);
-    Coder.writeShortString(routingKey, out);
-    Coder.writeBit(noWait, out);
-    Coder.writeTable(arguments, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        reserved1 = Coder.readShort(in);
+        destination = Coder.readShortString(in);
+        source = Coder.readShortString(in);
+        routingKey = Coder.readShortString(in);
+        noWait = Coder.readBit(in);
+        arguments = Coder.readTable(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("destination=");
-    b.append(destination);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("source=");
-    b.append(source);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("routingKey=");
-    b.append(routingKey);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noWait=");
-    b.append(noWait);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("arguments=");
-    b.append(arguments);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShort(reserved1, out);
+        Coder.writeShortString(destination, out);
+        Coder.writeShortString(source, out);
+        Coder.writeShortString(routingKey, out);
+        Coder.writeBit(noWait, out);
+        Coder.writeTable(arguments, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Unbind " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("destination=");
+        b.append(destination);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("source=");
+        b.append(source);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("routingKey=");
+        b.append(routingKey);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noWait=");
+        b.append(noWait);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("arguments=");
+        b.append(arguments);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Unbind " + super.toString() + getDisplayString() + "]";
+    }
 }

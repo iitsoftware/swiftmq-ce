@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: XAResGetTxTimeoutRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: XAResGetTxTimeoutRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -28,46 +29,38 @@ import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestRetryValidator;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResGetTxTimeoutRequest extends Request
-{
+public class XAResGetTxTimeoutRequest extends Request {
 
-  public XAResGetTxTimeoutRequest()
-  {
-    super(0, true);
-  }
+    public XAResGetTxTimeoutRequest() {
+        super(0, true);
+    }
 
-  public XAResGetTxTimeoutRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public XAResGetTxTimeoutRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XAResGetTxTimeoutRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public XAResGetTxTimeoutRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESGETTXTIMEOUT_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESGETTXTIMEOUT_REQ;
+    }
 
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResGetTxTimeoutReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResGetTxTimeoutReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/XAResGetTxTimeoutRequest, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/XAResGetTxTimeoutRequest, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

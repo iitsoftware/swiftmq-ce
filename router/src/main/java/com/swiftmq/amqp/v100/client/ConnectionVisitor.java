@@ -20,23 +20,22 @@ package com.swiftmq.amqp.v100.client;
 import com.swiftmq.amqp.v100.client.po.*;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface ConnectionVisitor extends POVisitor
-{
-  public void visit(POProtocolRequest po);
+public interface ConnectionVisitor extends POVisitor {
+    public void visit(POProtocolRequest po);
 
-  public void visit(POProtocolResponse po);
+    public void visit(POProtocolResponse po);
 
-  public void visit(POAuthenticate po);
+    public void visit(POAuthenticate po);
 
-  public void visit(POOpen po);
+    public void visit(POOpen po);
 
-  public void visit(POConnectionFrameReceived po);
+    public void visit(POConnectionFrameReceived po);
 
-  public void visit(POSendHeartBeat po);
+    public void visit(POSendHeartBeat po);
 
-  public void visit(POCheckIdleTimeout po);
+    public void visit(POCheckIdleTimeout po);
 
-  public void visit(POSendClose po);
+    public void visit(POSendClose po);
 
-  public void visit(POConnectionClose po);
+    public void visit(POConnectionClose po);
 }

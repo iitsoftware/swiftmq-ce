@@ -26,31 +26,30 @@ import java.io.IOException;
 /**
  * Interface to write an object to a DataOutput.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public interface Writable
-{
-  /**
-   * Returns an optional semaphore which is triggered after writeContent has been called. Can be used
-   * to ensure an object has been written to a stream until processing continues.
-   *
-   * @return  Semaphore
-   */
-  public Semaphore getSemaphore();
+public interface Writable {
+    /**
+     * Returns an optional semaphore which is triggered after writeContent has been called. Can be used
+     * to ensure an object has been written to a stream until processing continues.
+     *
+     * @return Semaphore
+     */
+    public Semaphore getSemaphore();
 
-  /**
-   * Alternatively returns a callback which is triggered after writeContent has been called. Can be used
-   * to ensure an object has been written to a stream until processing continues.
-   *
-   * @return callback
-   */
-  public AsyncCompletionCallback getCallback();
+    /**
+     * Alternatively returns a callback which is triggered after writeContent has been called. Can be used
+     * to ensure an object has been written to a stream until processing continues.
+     *
+     * @return callback
+     */
+    public AsyncCompletionCallback getCallback();
 
-  /**
-   * Write the content of this object to a DataOutput
-   *
-   * @param out DataOutput
-   * @throws IOException on error
-   */
-  public void writeContent(DataOutput out) throws IOException;
+    /**
+     * Write the content of this object to a DataOutput
+     *
+     * @param out DataOutput
+     * @throws IOException on error
+     */
+    public void writeContent(DataOutput out) throws IOException;
 }

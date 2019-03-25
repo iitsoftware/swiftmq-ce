@@ -23,144 +23,127 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CommitRequest extends Request
-{
-  Object[] messages;
+public class CommitRequest extends Request {
+    Object[] messages;
 
-  /**
-   * @param dispatchId
-   * @SBGen Constructor
-   */
-  public CommitRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
-
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_COMMIT_REQ;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (messages == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeInt(messages.length);
-      for (int i = 0; i < messages.length; i++)
-      {
-        byte[] msg = (byte[]) messages[i];
-        out.writeInt(msg.length);
-        out.write(msg);
-      }
+    /**
+     * @param dispatchId
+     * @SBGen Constructor
+     */
+    public CommitRequest(int dispatchId) {
+        super(dispatchId, true);
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      messages = null;
-    } else
-    {
-      int len = in.readInt();
-
-      messages = new Object[len];
-
-      for (int i = 0; i < len; i++)
-      {
-        int msglen = in.readInt();
-        byte[] arr = new byte[msglen];
-        in.readFully(arr);
-        messages[i] = arr;
-      }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_COMMIT_REQ;
     }
-  }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CommitReply();
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * @param messages
-   * @SBGen Method set messages
-   */
-  public void setMessages(Object[] messages)
-  {
+        if (messages == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeInt(messages.length);
+            for (int i = 0; i < messages.length; i++) {
+                byte[] msg = (byte[]) messages[i];
+                out.writeInt(msg.length);
+                out.write(msg);
+            }
+        }
+    }
 
-    // SBgen: Assign variable
-    this.messages = messages;
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  /**
-   * @return
-   * @SBGen Method get messages
-   */
-  public Object[] getMessages()
-  {
+        byte set = in.readByte();
 
-    // SBgen: Get variable
-    return (messages);
-  }
+        if (set == 0) {
+            messages = null;
+        } else {
+            int len = in.readInt();
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCommitRequest(this);
-  }
+            messages = new Object[len];
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CommitRequest " + super.toString() + " messages=" + messages
-        + "]";
-  }
+            for (int i = 0; i < len; i++) {
+                int msglen = in.readInt();
+                byte[] arr = new byte[msglen];
+                in.readFully(arr);
+                messages[i] = arr;
+            }
+        }
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    protected Reply createReplyInstance() {
+        return new CommitReply();
+    }
+
+    /**
+     * @param messages
+     * @SBGen Method set messages
+     */
+    public void setMessages(Object[] messages) {
+
+        // SBgen: Assign variable
+        this.messages = messages;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get messages
+     */
+    public Object[] getMessages() {
+
+        // SBgen: Get variable
+        return (messages);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCommitRequest(this);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CommitRequest " + super.toString() + " messages=" + messages
+                + "]";
+    }
 
 }
 

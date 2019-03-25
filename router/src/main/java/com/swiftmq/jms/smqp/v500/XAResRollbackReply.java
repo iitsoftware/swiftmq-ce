@@ -20,43 +20,36 @@ package com.swiftmq.jms.smqp.v500;
 import com.swiftmq.tools.requestreply.Reply;
 
 import javax.transaction.xa.XAResource;
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResRollbackReply extends Reply
-{
-  int errorCode = XAResource.XA_OK;
+public class XAResRollbackReply extends Reply {
+    int errorCode = XAResource.XA_OK;
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESROLLBACK_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESROLLBACK_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(errorCode);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(errorCode);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = in.readInt();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = in.readInt();
+    }
 
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public String toString()
-  {
-    return "[XAResRollbackReply " + super.toString() + " errorCode=" + errorCode + "]";
-  }
+    public String toString() {
+        return "[XAResRollbackReply " + super.toString() + " errorCode=" + errorCode + "]";
+    }
 }

@@ -17,30 +17,27 @@
 
 package com.swiftmq.impl.mqtt.po;
 
+import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttConnectMessage;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttConnectMessage;
 
-public class POConnect extends POObject
-{
-  MqttConnectMessage message;
-  public POConnect(MqttConnectMessage message)
-  {
-    super(null, null);
-    this.message = message;
-  }
+public class POConnect extends POObject {
+    MqttConnectMessage message;
 
-  public MqttConnectMessage getMessage() {
-    return message;
-  }
+    public POConnect(MqttConnectMessage message) {
+        super(null, null);
+        this.message = message;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((MQTTVisitor) visitor).visit(this);
-  }
+    public MqttConnectMessage getMessage() {
+        return message;
+    }
 
-  public String toString()
-  {
-    return "[POConnect, message="+message+"]";
-  }
+    public void accept(POVisitor visitor) {
+        ((MQTTVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        return "[POConnect, message=" + message + "]";
+    }
 }

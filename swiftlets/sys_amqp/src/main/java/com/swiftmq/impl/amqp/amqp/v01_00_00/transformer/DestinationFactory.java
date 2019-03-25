@@ -21,7 +21,6 @@ import com.swiftmq.amqp.v100.generated.messaging.message_format.AddressIF;
 
 import javax.jms.Destination;
 
-public interface DestinationFactory
-{
-  public Destination create(AddressIF addressIF);
+public interface DestinationFactory {
+    public Destination create(AddressIF addressIF);
 }

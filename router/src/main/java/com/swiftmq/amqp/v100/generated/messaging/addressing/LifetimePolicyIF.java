@@ -18,33 +18,32 @@
 package com.swiftmq.amqp.v100.generated.messaging.addressing;
 
 /**
- *  The LifetimePolicy interface.
+ * The LifetimePolicy interface.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface LifetimePolicyIF
-{
-  /**
-   * Accept method for a LifetimePolicy visitor.
-   *
-   * @param visitor LifetimePolicy visitor
-   */
-  public void accept(LifetimePolicyVisitor visitor);
+public interface LifetimePolicyIF {
+    /**
+     * Accept method for a LifetimePolicy visitor.
+     *
+     * @param visitor LifetimePolicy visitor
+     */
+    public void accept(LifetimePolicyVisitor visitor);
 
-  /**
-   * Returns the predicted size of this LifetimePolicyIF. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize();
+    /**
+     * Returns the predicted size of this LifetimePolicyIF. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize();
 
-  /**
-   * Returns a value representation of this LifetimePolicyIF.
-   *
-   * @return value representation
-   */
-  public String getValueString();
+    /**
+     * Returns a value representation of this LifetimePolicyIF.
+     *
+     * @return value representation
+     */
+    public String getValueString();
 }

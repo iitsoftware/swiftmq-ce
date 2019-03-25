@@ -21,123 +21,103 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.BitSet;
 
-public class BitSupportDataOutputStream implements BitSupportDataOutput
-{
-  DataOutput out = null;
-  BitSet bitSet = null;
-  int nBits = 0;
+public class BitSupportDataOutputStream implements BitSupportDataOutput {
+    DataOutput out = null;
+    BitSet bitSet = null;
+    int nBits = 0;
 
-  public BitSupportDataOutputStream(DataOutput out)
-  {
-    this.out = out;
-  }
-
-  public void writeBit(boolean b) throws IOException
-  {
-    if (bitSet == null)
-      bitSet = new BitSet(8);
-    bitSet.set(nBits++, b);
-    if (nBits == 8)
-      bitFlush();
-  }
-
-  public void bitFlush() throws IOException
-  {
-    if (bitSet != null)
-    {
-      byte b = 0;
-      for (int i = 0; i < nBits; i++)
-      {
-        if (bitSet.get(i))
-          b |= 1 << (i % 8);
-      }
-      out.writeByte(b);
-      bitSet = null;
-      nBits = 0;
+    public BitSupportDataOutputStream(DataOutput out) {
+        this.out = out;
     }
-  }
 
-  public void write(int b) throws IOException
-  {
-    bitFlush();
-    out.write(b);
-  }
+    public void writeBit(boolean b) throws IOException {
+        if (bitSet == null)
+            bitSet = new BitSet(8);
+        bitSet.set(nBits++, b);
+        if (nBits == 8)
+            bitFlush();
+    }
 
-  public void write(byte[] b, int off, int len) throws IOException
-  {
-    bitFlush();
-    out.write(b, off, len);
-  }
+    public void bitFlush() throws IOException {
+        if (bitSet != null) {
+            byte b = 0;
+            for (int i = 0; i < nBits; i++) {
+                if (bitSet.get(i))
+                    b |= 1 << (i % 8);
+            }
+            out.writeByte(b);
+            bitSet = null;
+            nBits = 0;
+        }
+    }
 
-  public void write(byte[] b) throws IOException
-  {
-    bitFlush();
-    out.write(b);
-  }
+    public void write(int b) throws IOException {
+        bitFlush();
+        out.write(b);
+    }
 
-  public void writeBoolean(boolean v) throws IOException
-  {
-    bitFlush();
-    out.writeBoolean(v);
-  }
+    public void write(byte[] b, int off, int len) throws IOException {
+        bitFlush();
+        out.write(b, off, len);
+    }
 
-  public void writeByte(int v) throws IOException
-  {
-    bitFlush();
-    out.writeByte(v);
-  }
+    public void write(byte[] b) throws IOException {
+        bitFlush();
+        out.write(b);
+    }
 
-  public void writeShort(int v) throws IOException
-  {
-    bitFlush();
-    out.writeShort(v);
-  }
+    public void writeBoolean(boolean v) throws IOException {
+        bitFlush();
+        out.writeBoolean(v);
+    }
 
-  public void writeChar(int v) throws IOException
-  {
-    bitFlush();
-    out.writeChar(v);
-  }
+    public void writeByte(int v) throws IOException {
+        bitFlush();
+        out.writeByte(v);
+    }
 
-  public void writeInt(int v) throws IOException
-  {
-    bitFlush();
-    out.writeInt(v);
-  }
+    public void writeShort(int v) throws IOException {
+        bitFlush();
+        out.writeShort(v);
+    }
 
-  public void writeLong(long v) throws IOException
-  {
-    bitFlush();
-    out.writeLong(v);
-  }
+    public void writeChar(int v) throws IOException {
+        bitFlush();
+        out.writeChar(v);
+    }
 
-  public void writeFloat(float v) throws IOException
-  {
-    bitFlush();
-    out.writeFloat(v);
-  }
+    public void writeInt(int v) throws IOException {
+        bitFlush();
+        out.writeInt(v);
+    }
 
-  public void writeDouble(double v) throws IOException
-  {
-    bitFlush();
-    out.writeDouble(v);
-  }
+    public void writeLong(long v) throws IOException {
+        bitFlush();
+        out.writeLong(v);
+    }
 
-  public void writeBytes(String s) throws IOException
-  {
-    bitFlush();
-    out.writeBytes(s);
-  }
+    public void writeFloat(float v) throws IOException {
+        bitFlush();
+        out.writeFloat(v);
+    }
 
-  public void writeChars(String s) throws IOException
-  {
-    bitFlush();
-    out.writeChars(s);
-  }
+    public void writeDouble(double v) throws IOException {
+        bitFlush();
+        out.writeDouble(v);
+    }
 
-  public void writeUTF(String str) throws IOException
-  {
-    bitFlush();
-    out.writeUTF(str);
-  }
+    public void writeBytes(String s) throws IOException {
+        bitFlush();
+        out.writeBytes(s);
+    }
+
+    public void writeChars(String s) throws IOException {
+        bitFlush();
+        out.writeChars(s);
+    }
+
+    public void writeUTF(String str) throws IOException {
+        bitFlush();
+        out.writeUTF(str);
+    }
 }

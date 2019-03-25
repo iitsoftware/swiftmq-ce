@@ -21,25 +21,20 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CloseSession extends Request
-{
-  public CloseSession()
-  {
-    super(0, false);
-  }
+public class CloseSession extends Request {
+    public CloseSession() {
+        super(0, false);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SessionVisitorAdapter) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SessionVisitorAdapter) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[CloseSession]";
-  }
+    public String toString() {
+        return "[CloseSession]";
+    }
 }

@@ -17,92 +17,80 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: XAResRecoverReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: XAResRecoverReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class XAResRecoverReply extends ReplyNE
-{
-  private int errorCode;
-  private List xids;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
-  public XAResRecoverReply(int errorCode, List xids)
-  {
-    this.errorCode = errorCode;
-    this.xids = xids;
-  }
+public class XAResRecoverReply extends ReplyNE {
+    private int errorCode;
+    private List xids;
 
-  protected XAResRecoverReply()
-  {
-  }
-  
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public XAResRecoverReply(int errorCode, List xids) {
+        this.errorCode = errorCode;
+        this.xids = xids;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
-  
-  public void setXids(List xids)
-  {
-    this.xids = xids;
-  }
+    protected XAResRecoverReply() {
+    }
 
-  public List getXids()
-  {
-    return xids;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESRECOVER_REP;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(errorCode,out);
-    if (xids != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writeXid(xids,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void setXids(List xids) {
+        this.xids = xids;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = SMQPUtil.read(errorCode,in);
-    boolean xids_set = in.readBoolean();
-    if (xids_set)
-      xids = SMQPUtil.readXid(xids,in);
-  }
+    public List getXids() {
+        return xids;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[XAResRecoverReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("errorCode=");
-    _b.append(errorCode);
-    _b.append(", ");
-    _b.append("xids=");
-    _b.append(xids);
-    _b.append("]");
-    return _b.toString();
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESRECOVER_REP;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(errorCode, out);
+        if (xids != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writeXid(xids, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = SMQPUtil.read(errorCode, in);
+        boolean xids_set = in.readBoolean();
+        if (xids_set)
+            xids = SMQPUtil.readXid(xids, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[XAResRecoverReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("errorCode=");
+        _b.append(errorCode);
+        _b.append(", ");
+        _b.append("xids=");
+        _b.append(xids);
+        _b.append("]");
+        return _b.toString();
+    }
 }

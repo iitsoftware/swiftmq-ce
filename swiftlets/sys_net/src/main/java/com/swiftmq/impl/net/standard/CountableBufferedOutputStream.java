@@ -17,63 +17,56 @@
 
 package com.swiftmq.impl.net.standard;
 
-import com.swiftmq.net.protocol.*;
+import com.swiftmq.net.protocol.OutputListener;
+import com.swiftmq.net.protocol.ProtocolOutputHandler;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class CountableBufferedOutputStream extends OutputStream
-  implements Countable, OutputListener
-{
-  ProtocolOutputHandler protocolOutputHandler = null;
-  OutputStream out = null;
-  volatile long byteCount = 0;
+        implements Countable, OutputListener {
+    ProtocolOutputHandler protocolOutputHandler = null;
+    OutputStream out = null;
+    volatile long byteCount = 0;
 
-  public CountableBufferedOutputStream(ProtocolOutputHandler protocolOutputHandler, OutputStream out)
-  {
-    this.protocolOutputHandler = protocolOutputHandler;
-    this.out = out;
-    protocolOutputHandler.setOutputListener(this);
-  }
+    public CountableBufferedOutputStream(ProtocolOutputHandler protocolOutputHandler, OutputStream out) {
+        this.protocolOutputHandler = protocolOutputHandler;
+        this.out = out;
+        protocolOutputHandler.setOutputListener(this);
+    }
 
-  public void write(byte[] b, int offset, int len) throws IOException
-  {
-    byteCount += len;
-    protocolOutputHandler.write(b, offset, len);
-  }
+    public void write(byte[] b, int offset, int len) throws IOException {
+        byteCount += len;
+        protocolOutputHandler.write(b, offset, len);
+    }
 
-  public void write(int b) throws IOException
-  {
-    byteCount++;
-    protocolOutputHandler.write(b);
-  }
+    public void write(int b) throws IOException {
+        byteCount++;
+        protocolOutputHandler.write(b);
+    }
 
-  public void flush() throws IOException
-  {
-    protocolOutputHandler.flush();
-    protocolOutputHandler.invokeOutputListener();
-  }
+    public void flush() throws IOException {
+        protocolOutputHandler.flush();
+        protocolOutputHandler.invokeOutputListener();
+    }
 
-  public int performWrite(byte[] b, int offset, int len)
-    throws IOException
-  {
-    out.write(b, offset, len);
-    out.flush();
-    return len;
-  }
+    public int performWrite(byte[] b, int offset, int len)
+            throws IOException {
+        out.write(b, offset, len);
+        out.flush();
+        return len;
+    }
 
-  public void addByteCount(long cnt)
-  {
-    byteCount += cnt;
-  }
+    public void addByteCount(long cnt) {
+        byteCount += cnt;
+    }
 
-  public long getByteCount()
-  {
-    return byteCount;
-  }
+    public long getByteCount() {
+        return byteCount;
+    }
 
-  public void resetByteCount()
-  {
-    byteCount = 0;
-  }
+    public void resetByteCount() {
+        byteCount = 0;
+    }
 }
 

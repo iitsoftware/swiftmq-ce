@@ -26,57 +26,48 @@ import com.swiftmq.tools.gc.Recycler;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public abstract class QueueTransactionHandler extends QueueHandler
-{
-  Recycler recycler = null;
+public abstract class QueueTransactionHandler extends QueueHandler {
+    Recycler recycler = null;
 
-  /**
-   * Creates a new QueueTransactionHandler
-   *
-   * @param abstractQueue the queue
-   */
-  QueueTransactionHandler(AbstractQueue abstractQueue)
-  {
-    super(abstractQueue);
-  }
-
-  Recycler getRecycler()
-  {
-    return recycler;
-  }
-
-  void setRecycler(Recycler recycler)
-  {
-    this.recycler = recycler;
-  }
-
-  /**
-   * Closes the QueueTransactionHandler. All open transaction will be rolled back
-   * and removed from the handler
-   *
-   * @throws QueueException              thrown by the queue
-   * @throws QueueHandlerClosedException if the handler already was closed
-   */
-  public void close()
-      throws QueueException, QueueHandlerClosedException
-  {
-    verifyQueueHandlerState();
-    super.close();
-    Recyclable[] ta = recycler.getUseList();
-    for (int i = 0; i < ta.length; i++)
-    {
-      QueueTransaction t = (QueueTransaction) ta[i];
-      if (t != null && !t.isClosed() && !t.isPrepared() && t.isDoRollbackOnClose())
-      {
-        try
-        {
-          t.rollback();
-        } catch (Exception e)
-        {
-        }
-      }
+    /**
+     * Creates a new QueueTransactionHandler
+     *
+     * @param abstractQueue the queue
+     */
+    QueueTransactionHandler(AbstractQueue abstractQueue) {
+        super(abstractQueue);
     }
-    recycler.clear();
-  }
+
+    Recycler getRecycler() {
+        return recycler;
+    }
+
+    void setRecycler(Recycler recycler) {
+        this.recycler = recycler;
+    }
+
+    /**
+     * Closes the QueueTransactionHandler. All open transaction will be rolled back
+     * and removed from the handler
+     *
+     * @throws QueueException              thrown by the queue
+     * @throws QueueHandlerClosedException if the handler already was closed
+     */
+    public void close()
+            throws QueueException, QueueHandlerClosedException {
+        verifyQueueHandlerState();
+        super.close();
+        Recyclable[] ta = recycler.getUseList();
+        for (int i = 0; i < ta.length; i++) {
+            QueueTransaction t = (QueueTransaction) ta[i];
+            if (t != null && !t.isClosed() && !t.isPrepared() && t.isDoRollbackOnClose()) {
+                try {
+                    t.rollback();
+                } catch (Exception e) {
+                }
+            }
+        }
+        recycler.clear();
+    }
 }
 

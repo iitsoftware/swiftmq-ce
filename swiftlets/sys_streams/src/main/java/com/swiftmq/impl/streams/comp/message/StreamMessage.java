@@ -35,14 +35,14 @@ public class StreamMessage extends Message {
         super(ctx, _impl);
     }
 
-  /**
-   * return the type of this Message
-   *
-   * @return "stream"
-   */
-  public String type() {
-    return "stream";
-  }
+    /**
+     * return the type of this Message
+     *
+     * @return "stream"
+     */
+    public String type() {
+        return "stream";
+    }
 
     /**
      * Returns the body.

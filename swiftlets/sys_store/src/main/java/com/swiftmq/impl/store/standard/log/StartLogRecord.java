@@ -21,41 +21,33 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class StartLogRecord extends LogRecord
-{
-  public StartLogRecord(long magic)
-  {
-    super(0, null, null, null, null, null);
-    this.magic = magic;
-  }
+public class StartLogRecord extends LogRecord {
+    public StartLogRecord(long magic) {
+        super(0, null, null, null, null, null);
+        this.magic = magic;
+    }
 
-  public int getLogType()
-  {
-    return LogRecord.START;
-  }
+    public int getLogType() {
+        return LogRecord.START;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    out.writeLong(magic);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        out.writeLong(magic);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    magic = in.readLong();
-  }
+    public void readContent(DataInput in) throws IOException {
+        magic = in.readLong();
+    }
 
-  public void writeContent(DataOutput out, boolean includeMagic) throws IOException
-  {
-    out.writeLong(magic);
-  }
+    public void writeContent(DataOutput out, boolean includeMagic) throws IOException {
+        out.writeLong(magic);
+    }
 
-  public void readContent(DataInput in, boolean includeMagic) throws IOException
-  {
-    magic = in.readLong();
-  }
+    public void readContent(DataInput in, boolean includeMagic) throws IOException {
+        magic = in.readLong();
+    }
 
-  public String toString()
-  {
-    return "[StartLogRecord, magic=" + magic + "]";
-  }
+    public String toString() {
+        return "[StartLogRecord, magic=" + magic + "]";
+    }
 }

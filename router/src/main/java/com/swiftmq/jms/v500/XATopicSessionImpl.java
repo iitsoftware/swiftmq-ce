@@ -22,16 +22,13 @@ import javax.jms.TopicSession;
 import javax.jms.XATopicSession;
 
 public class XATopicSessionImpl extends XASessionImpl
-    implements XATopicSession
-{
+        implements XATopicSession {
 
-  XATopicSessionImpl(SessionImpl session)
-  {
-    super(session);
-  }
+    XATopicSessionImpl(SessionImpl session) {
+        super(session);
+    }
 
-  public TopicSession getTopicSession() throws JMSException
-  {
-    return (TopicSession) session;
-  }
+    public TopicSession getTopicSession() throws JMSException {
+        return (TopicSession) session;
+    }
 }

@@ -22,49 +22,41 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.AMQPConnectionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendChannelClose extends POObject
-{
-  int channelNo = -1;
-  int errorCondition = -1;
-  String description;
-  Method failedMethod;
+public class POSendChannelClose extends POObject {
+    int channelNo = -1;
+    int errorCondition = -1;
+    String description;
+    Method failedMethod;
 
-  public POSendChannelClose(int channelNo, int errorCondition, String description, Method failedMethod)
-  {
-    super(null, null);
-    this.channelNo = channelNo;
-    this.errorCondition = errorCondition;
-    this.description = description;
-    this.failedMethod = failedMethod;
-  }
+    public POSendChannelClose(int channelNo, int errorCondition, String description, Method failedMethod) {
+        super(null, null);
+        this.channelNo = channelNo;
+        this.errorCondition = errorCondition;
+        this.description = description;
+        this.failedMethod = failedMethod;
+    }
 
-  public int getChannelNo()
-  {
-    return channelNo;
-  }
+    public int getChannelNo() {
+        return channelNo;
+    }
 
-  public int getErrorCondition()
-  {
-    return errorCondition;
-  }
+    public int getErrorCondition() {
+        return errorCondition;
+    }
 
-  public String getDescription()
-  {
-    return description;
-  }
+    public String getDescription() {
+        return description;
+    }
 
-  public Method getFailedMethod()
-  {
-    return failedMethod;
-  }
+    public Method getFailedMethod() {
+        return failedMethod;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendClose, channelNo=" + channelNo + ", errorCondition=" + errorCondition + ", description=" + description + ", failedMethod=" + failedMethod + "]";
-  }
+    public String toString() {
+        return "[POSendClose, channelNo=" + channelNo + ", errorCondition=" + errorCondition + ", description=" + description + ", failedMethod=" + failedMethod + "]";
+    }
 }

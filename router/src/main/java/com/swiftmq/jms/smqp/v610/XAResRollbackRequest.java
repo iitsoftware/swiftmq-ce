@@ -17,158 +17,141 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: XAResRollbackRequest
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:11 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: XAResRollbackRequest
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:11 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.XidImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResRollbackRequest extends Request 
-{
-  private XidImpl xid;
-  private boolean retry;
-  private List recoverRequestList;
-  private int recoveryEpoche;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
-  public XAResRollbackRequest()
-  {
-    super(0,true);
-  }
+public class XAResRollbackRequest extends Request {
+    private XidImpl xid;
+    private boolean retry;
+    private List recoverRequestList;
+    private int recoveryEpoche;
 
-  public XAResRollbackRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public XAResRollbackRequest() {
+        super(0, true);
+    }
 
-  public XAResRollbackRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public XAResRollbackRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XAResRollbackRequest(int dispatchId, XidImpl xid, boolean retry, List recoverRequestList, int recoveryEpoche)
-  {
-    super(dispatchId,true);
-    this.xid = xid;
-    this.retry = retry;
-    this.recoverRequestList = recoverRequestList;
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public XAResRollbackRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public XAResRollbackRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, boolean retry, List recoverRequestList, int recoveryEpoche)
-  {
-    super(dispatchId,true,validator);
-    this.xid = xid;
-    this.retry = retry;
-    this.recoverRequestList = recoverRequestList;
-    this.recoveryEpoche = recoveryEpoche;
-  }
-  
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public XAResRollbackRequest(int dispatchId, XidImpl xid, boolean retry, List recoverRequestList, int recoveryEpoche) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.retry = retry;
+        this.recoverRequestList = recoverRequestList;
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
-  
-  public void setRetry(boolean retry)
-  {
-    this.retry = retry;
-  }
+    public XAResRollbackRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, boolean retry, List recoverRequestList, int recoveryEpoche) {
+        super(dispatchId, true, validator);
+        this.xid = xid;
+        this.retry = retry;
+        this.recoverRequestList = recoverRequestList;
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public boolean isRetry()
-  {
-    return retry;
-  }
-  
-  public void setRecoverRequestList(List recoverRequestList)
-  {
-    this.recoverRequestList = recoverRequestList;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public List getRecoverRequestList()
-  {
-    return recoverRequestList;
-  }
-  
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
+    public void setRetry(boolean retry) {
+        this.retry = retry;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESROLLBACK_REQ;
-  }
+    public boolean isRetry() {
+        return retry;
+    }
+
+    public void setRecoverRequestList(List recoverRequestList) {
+        this.recoverRequestList = recoverRequestList;
+    }
+
+    public List getRecoverRequestList() {
+        return recoverRequestList;
+    }
+
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
+
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESROLLBACK_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(xid,out);
-    SMQPUtil.write(retry,out);
-    if (recoverRequestList != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writeRequest(recoverRequestList,out);
-    } else
-      out.writeBoolean(false);
-    SMQPUtil.write(recoveryEpoche,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(xid, out);
+        SMQPUtil.write(retry, out);
+        if (recoverRequestList != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writeRequest(recoverRequestList, out);
+        } else
+            out.writeBoolean(false);
+        SMQPUtil.write(recoveryEpoche, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = SMQPUtil.read(xid,in);
-    retry = SMQPUtil.read(retry,in);
-    boolean recoverRequestList_set = in.readBoolean();
-    if (recoverRequestList_set)
-      recoverRequestList = SMQPUtil.readRequest(recoverRequestList,in);
-    recoveryEpoche = SMQPUtil.read(recoveryEpoche,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = SMQPUtil.read(xid, in);
+        retry = SMQPUtil.read(retry, in);
+        boolean recoverRequestList_set = in.readBoolean();
+        if (recoverRequestList_set)
+            recoverRequestList = SMQPUtil.readRequest(recoverRequestList, in);
+        recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResRollbackReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResRollbackReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/XAResRollbackRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("xid=");
-    _b.append(xid);
-    _b.append(", ");
-    _b.append("retry=");
-    _b.append(retry);
-    _b.append(", ");
-    _b.append("recoverRequestList=");
-    _b.append(recoverRequestList);
-    _b.append(", ");
-    _b.append("recoveryEpoche=");
-    _b.append(recoveryEpoche);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/XAResRollbackRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("xid=");
+        _b.append(xid);
+        _b.append(", ");
+        _b.append("retry=");
+        _b.append(retry);
+        _b.append(", ");
+        _b.append("recoverRequestList=");
+        _b.append(recoverRequestList);
+        _b.append(", ");
+        _b.append("recoveryEpoche=");
+        _b.append(recoveryEpoche);
+        _b.append("]");
+        return _b.toString();
+    }
 }

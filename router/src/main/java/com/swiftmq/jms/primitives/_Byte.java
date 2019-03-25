@@ -23,53 +23,43 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Byte implements Dumpable, Primitive
-{
-  Byte value = null;
+public class _Byte implements Dumpable, Primitive {
+    Byte value = null;
 
-  public _Byte()
-  {
-  }
+    public _Byte() {
+    }
 
-  public _Byte(byte value)
-  {
-    this.value = new Byte(value);
-  }
+    public _Byte(byte value) {
+        this.value = new Byte(value);
+    }
 
-  public _Byte(String s)
-  {
-    this.value = Byte.valueOf(s);
-  }
+    public _Byte(String s) {
+        this.value = Byte.valueOf(s);
+    }
 
-  public byte byteValue()
-  {
-    return value.byteValue();
-  }
+    public byte byteValue() {
+        return value.byteValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return BYTE;
-  }
+    public int getDumpId() {
+        return BYTE;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeByte(value.byteValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeByte(value.byteValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Byte(in.readByte());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Byte(in.readByte());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

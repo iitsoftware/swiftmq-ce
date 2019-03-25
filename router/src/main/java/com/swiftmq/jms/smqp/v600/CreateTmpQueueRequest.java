@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CreateTmpQueueRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CreateTmpQueueRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -28,46 +29,38 @@ import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestRetryValidator;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CreateTmpQueueRequest extends Request
-{
+public class CreateTmpQueueRequest extends Request {
 
-  public CreateTmpQueueRequest()
-  {
-    super(0, true);
-  }
+    public CreateTmpQueueRequest() {
+        super(0, true);
+    }
 
-  public CreateTmpQueueRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public CreateTmpQueueRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CreateTmpQueueRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public CreateTmpQueueRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATETMPQUEUE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATETMPQUEUE_REQ;
+    }
 
 
-  protected Reply createReplyInstance()
-  {
-    return new CreateTmpQueueReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CreateTmpQueueReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CreateTmpQueueRequest, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CreateTmpQueueRequest, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

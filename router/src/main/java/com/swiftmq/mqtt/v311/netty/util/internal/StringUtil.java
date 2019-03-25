@@ -16,10 +16,7 @@
  */
 package com.swiftmq.mqtt.v311.netty.util.internal;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**

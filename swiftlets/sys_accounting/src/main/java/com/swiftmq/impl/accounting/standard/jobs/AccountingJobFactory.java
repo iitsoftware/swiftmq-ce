@@ -26,52 +26,44 @@ import com.swiftmq.swiftlet.scheduler.JobParameter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AccountingJobFactory implements JobFactory
-{
-  SwiftletContext ctx = null;
-  Map parameters = new HashMap();
+public class AccountingJobFactory implements JobFactory {
+    SwiftletContext ctx = null;
+    Map parameters = new HashMap();
 
-  public AccountingJobFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    JobParameter p = new JobParameter("Connection Name", "Name of the Accounting Connection", null, true, null);
-    parameters.put(p.getName(), p);
-  }
+    public AccountingJobFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        JobParameter p = new JobParameter("Connection Name", "Name of the Accounting Connection", null, true, null);
+        parameters.put(p.getName(), p);
+    }
 
-  public String getName()
-  {
-    return "Accounting Enabler";
-  }
+    public String getName() {
+        return "Accounting Enabler";
+    }
 
-  public String getDescription()
-  {
-    return "Enables an Accounting Connection";
-  }
+    public String getDescription() {
+        return "Enables an Accounting Connection";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter) parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/getJobInstance");
-    return new AccountingJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/getJobInstance");
+        return new AccountingJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[AccountingJobFactory]";
-  }
+    public String toString() {
+        return "[AccountingJobFactory]";
+    }
 }

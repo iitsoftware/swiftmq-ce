@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: RollbackReply
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:10 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: RollbackReply
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:10 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class RollbackReply extends ReplyNE
-{
-  private int recoveryEpoche;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public RollbackReply(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+public class RollbackReply extends ReplyNE {
+    private int recoveryEpoche;
 
-  protected RollbackReply()
-  {
-  }
-  
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public RollbackReply(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
+    protected RollbackReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROLLBACK_REP;
-  }
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(recoveryEpoche,out);
-  }
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    recoveryEpoche = SMQPUtil.read(recoveryEpoche,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_ROLLBACK_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/RollbackReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("recoveryEpoche=");
-    _b.append(recoveryEpoche);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(recoveryEpoche, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/RollbackReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("recoveryEpoche=");
+        _b.append(recoveryEpoche);
+        _b.append("]");
+        return _b.toString();
+    }
 }

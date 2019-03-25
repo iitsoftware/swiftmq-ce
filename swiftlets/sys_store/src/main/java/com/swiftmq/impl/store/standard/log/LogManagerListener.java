@@ -17,9 +17,8 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-public interface LogManagerListener
-{
-  public void startProcessing();
+public interface LogManagerListener {
+    public void startProcessing();
 
-  public void stopProcessing();
+    public void stopProcessing();
 }

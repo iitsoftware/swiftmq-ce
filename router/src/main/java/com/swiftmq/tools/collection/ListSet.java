@@ -19,86 +19,71 @@ package com.swiftmq.tools.collection;
 
 import java.util.*;
 
-public class ListSet
-{
-  List list = new LinkedList();
-  Set set = new HashSet();
-  int max = 0;
+public class ListSet {
+    List list = new LinkedList();
+    Set set = new HashSet();
+    int max = 0;
 
-  public ListSet(int max)
-  {
-    this.max = max;
-  }
-
-  public void resize(int newSize)
-  {
-    while (list.size() > 0 && list.size() > newSize)
-    {
-      Object first = list.remove(0);
-      set.remove(first);
+    public ListSet(int max) {
+        this.max = max;
     }
-    max = newSize;
-  }
 
-  public void add(Object o)
-  {
-    if (set.contains(o))
-      return;
-    if (list.size() == max)
-    {
-      Object first = list.remove(0);
-      set.remove(first);
+    public void resize(int newSize) {
+        while (list.size() > 0 && list.size() > newSize) {
+            Object first = list.remove(0);
+            set.remove(first);
+        }
+        max = newSize;
     }
-    list.add(o);
-    set.add(o);
-  }
 
-  public ListIterator forwardIterator()
-  {
-    return list.listIterator();
-  }
+    public void add(Object o) {
+        if (set.contains(o))
+            return;
+        if (list.size() == max) {
+            Object first = list.remove(0);
+            set.remove(first);
+        }
+        list.add(o);
+        set.add(o);
+    }
 
-  public ListIterator backwardIterator()
-  {
-    return list.listIterator(list.size());
-  }
+    public ListIterator forwardIterator() {
+        return list.listIterator();
+    }
 
-  public void addAll(Collection c)
-  {
-    for (Iterator iter = c.iterator(); iter.hasNext();)
-      add(iter.next());
-  }
+    public ListIterator backwardIterator() {
+        return list.listIterator(list.size());
+    }
 
-  public void removeAll(Collection c)
-  {
-    for (Iterator iter = c.iterator(); iter.hasNext();)
-      remove(iter.next());
-  }
+    public void addAll(Collection c) {
+        for (Iterator iter = c.iterator(); iter.hasNext(); )
+            add(iter.next());
+    }
 
-  public boolean remove(Object o)
-  {
-    list.remove(o);
-    return set.remove(o);
-  }
+    public void removeAll(Collection c) {
+        for (Iterator iter = c.iterator(); iter.hasNext(); )
+            remove(iter.next());
+    }
 
-  public boolean contains(Object o)
-  {
-    return set.contains(o);
-  }
+    public boolean remove(Object o) {
+        list.remove(o);
+        return set.remove(o);
+    }
 
-  public int size()
-  {
-    return set.size();
-  }
+    public boolean contains(Object o) {
+        return set.contains(o);
+    }
 
-  public int getMax()
-  {
-    return max;
-  }
+    public int size() {
+        return set.size();
+    }
 
-  public void clear()
-  {
-    list.clear();
-    set.clear();
-  }
+    public int getMax() {
+        return max;
+    }
+
+    public void clear() {
+        list.clear();
+        set.clear();
+    }
 }

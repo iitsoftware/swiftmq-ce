@@ -21,25 +21,20 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class CheckConnections extends POObject
-{
-  public CheckConnections(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public class CheckConnections extends POObject {
+    public CheckConnections(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public CheckConnections()
-  {
-    super(null, null);
-  }
+    public CheckConnections() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor) poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[CheckConnections]";
-  }
+    public String toString() {
+        return "[CheckConnections]";
+    }
 }

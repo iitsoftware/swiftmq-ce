@@ -17,30 +17,25 @@
 
 package com.swiftmq.impl.queue.standard;
 
-public class Mover extends Copier
-{
-  public Mover(SwiftletContext ctx)
-  {
-    super(ctx);
-    setRemove(true);
-  }
+public class Mover extends Copier {
+    public Mover(SwiftletContext ctx) {
+        super(ctx);
+        setRemove(true);
+    }
 
-  protected String _getCommand()
-  {
-    return "move";
-  }
+    protected String _getCommand() {
+        return "move";
+    }
 
-  protected String _getPattern()
-  {
-    return "move <source> -queue|-topic <target> [(-selector <selector>)|(-index <start> <stop>)] [-maxlimit <nmsgs>]";
-  }
+    protected String _getPattern() {
+        return "move <source> -queue|-topic <target> [(-selector <selector>)|(-index <start> <stop>)] [-maxlimit <nmsgs>]";
+    }
 
-  protected String _getDescription()
-  {
-    return "Move messages from queue <source> to\n" +
-        "queue/topic <target>. A subset can be defined\n" +
-        "with -selector <selector> or by specifying\n" +
-        "a range with -index <start> <stop>,\n" +
-        "with a -maxlimit of <nmsgs> to move.";
-  }
+    protected String _getDescription() {
+        return "Move messages from queue <source> to\n" +
+                "queue/topic <target>. A subset can be defined\n" +
+                "with -selector <selector> or by specifying\n" +
+                "a range with -index <start> <stop>,\n" +
+                "with a -maxlimit of <nmsgs> to move.";
+    }
 }

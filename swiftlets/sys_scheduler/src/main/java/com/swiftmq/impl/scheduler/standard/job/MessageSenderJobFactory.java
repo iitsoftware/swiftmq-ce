@@ -17,57 +17,54 @@
 
 package com.swiftmq.impl.scheduler.standard.job;
 
-import com.swiftmq.swiftlet.scheduler.*;
-import com.swiftmq.impl.scheduler.standard.*;
+import com.swiftmq.impl.scheduler.standard.SwiftletContext;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobFactory;
+import com.swiftmq.swiftlet.scheduler.JobParameter;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MessageSenderJobFactory implements JobFactory
-{
-  SwiftletContext ctx = null;
-  Map parms = new HashMap();
+public class MessageSenderJobFactory implements JobFactory {
+    SwiftletContext ctx = null;
+    Map parms = new HashMap();
 
-  public MessageSenderJobFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    JobParameter p = new JobParameter(ctx.PARM,"Schedule ID",null,true,null);
-    parms.put(p.getName(),p);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
-  }
+    public MessageSenderJobFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        JobParameter p = new JobParameter(ctx.PARM, "Schedule ID", null, true, null);
+        parms.put(p.getName(), p);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
+    }
 
-  public String getName()
-  {
-    return ctx.JOBNAME;
-  }
+    public String getName() {
+        return ctx.JOBNAME;
+    }
 
-  public String getDescription()
-  {
-    return ctx.JOBNAME;
-  }
+    public String getDescription() {
+        return ctx.JOBNAME;
+    }
 
-  public Map getJobParameters()
-  {
-    return parms;
-  }
+    public Map getJobParameters() {
+        return parms;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parms.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parms.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/getJobInstance");
-    return new MessageSenderJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/getJobInstance");
+        return new MessageSenderJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[MessageSenderJobFactory]";
-  }
+    public String toString() {
+        return "[MessageSenderJobFactory]";
+    }
 }

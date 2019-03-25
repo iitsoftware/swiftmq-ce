@@ -20,26 +20,24 @@ package com.swiftmq.impl.queue.standard.composite;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 
-public class CompositeTransactionIdEntry
-{
-  boolean isQueue = true;
-  AbstractQueue queue = null;
-  Object txId = null;
-  MessageSelector selector = null;
-  boolean generateNewMessageId = false;
-  boolean changeDestination = false;
-  boolean isDefaultBinding = false;
-  String originalName = null;
+public class CompositeTransactionIdEntry {
+    boolean isQueue = true;
+    AbstractQueue queue = null;
+    Object txId = null;
+    MessageSelector selector = null;
+    boolean generateNewMessageId = false;
+    boolean changeDestination = false;
+    boolean isDefaultBinding = false;
+    String originalName = null;
 
-  public CompositeTransactionIdEntry(boolean isQueue, AbstractQueue queue, Object txId, MessageSelector selector, boolean generateNewMessageId, boolean changeDestination, boolean isDefaultBinding, String originalName)
-  {
-    this.isQueue = isQueue;
-    this.queue = queue;
-    this.txId = txId;
-    this.selector = selector;
-    this.generateNewMessageId = generateNewMessageId;
-    this.changeDestination = changeDestination;
-    this.isDefaultBinding = isDefaultBinding;
-    this.originalName = originalName;
-  }
+    public CompositeTransactionIdEntry(boolean isQueue, AbstractQueue queue, Object txId, MessageSelector selector, boolean generateNewMessageId, boolean changeDestination, boolean isDefaultBinding, String originalName) {
+        this.isQueue = isQueue;
+        this.queue = queue;
+        this.txId = txId;
+        this.selector = selector;
+        this.generateNewMessageId = generateNewMessageId;
+        this.changeDestination = changeDestination;
+        this.isDefaultBinding = isDefaultBinding;
+        this.originalName = originalName;
+    }
 }

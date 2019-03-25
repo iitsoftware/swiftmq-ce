@@ -23,53 +23,45 @@ import com.swiftmq.jms.MessageImpl;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public class FilePublishReply extends MessageBasedReply
-{
-  public static final String CHUNKLENGTH_PROP = "JMS_SWIFTMQ_FT_CHUNKLENGTH";
-  int chunkLength = 0;
+public class FilePublishReply extends MessageBasedReply {
+    public static final String CHUNKLENGTH_PROP = "JMS_SWIFTMQ_FT_CHUNKLENGTH";
+    int chunkLength = 0;
 
-  public FilePublishReply(Message message) throws JMSException
-  {
-    super(message);
-    chunkLength = message.getIntProperty(CHUNKLENGTH_PROP);
-  }
+    public FilePublishReply(Message message) throws JMSException {
+        super(message);
+        chunkLength = message.getIntProperty(CHUNKLENGTH_PROP);
+    }
 
-  public FilePublishReply(int chunkLength)
-  {
-    this.chunkLength = chunkLength;
-  }
+    public FilePublishReply(int chunkLength) {
+        this.chunkLength = chunkLength;
+    }
 
-  public FilePublishReply()
-  {
-    this(0);
-  }
+    public FilePublishReply() {
+        this(0);
+    }
 
-  public int getChunkLength()
-  {
-    return chunkLength;
-  }
+    public int getChunkLength() {
+        return chunkLength;
+    }
 
-  public void setChunkLength(int chunkLength)
-  {
-    this.chunkLength = chunkLength;
-  }
+    public void setChunkLength(int chunkLength) {
+        this.chunkLength = chunkLength;
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    Message message = new MessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEPUBLISH_REP);
-    message.setIntProperty(CHUNKLENGTH_PROP, chunkLength);
-    return fillMessage(message);
+    public Message toMessage() throws JMSException {
+        Message message = new MessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEPUBLISH_REP);
+        message.setIntProperty(CHUNKLENGTH_PROP, chunkLength);
+        return fillMessage(message);
 
-  }
+    }
 
-  public String toString()
-  {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("[FilePublishReply");
-    sb.append(super.toString());
-    sb.append(", replyInterval=").append(chunkLength);
-    sb.append(']');
-    return sb.toString();
-  }
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("[FilePublishReply");
+        sb.append(super.toString());
+        sb.append(", replyInterval=").append(chunkLength);
+        sb.append(']');
+        return sb.toString();
+    }
 }

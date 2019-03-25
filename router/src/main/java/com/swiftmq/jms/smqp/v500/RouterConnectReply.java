@@ -19,104 +19,94 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class RouterConnectReply extends Reply
-{
-  String routerName = null;
-  boolean authRequired = false;
-  long keepaliveInterval = -1;
+public class RouterConnectReply extends Reply {
+    String routerName = null;
+    boolean authRequired = false;
+    long keepaliveInterval = -1;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROUTER_CONNECT_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_ROUTER_CONNECT_REP;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeUTF(routerName);
-    out.writeBoolean(authRequired);
-    out.writeLong(keepaliveInterval);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeUTF(routerName);
+        out.writeBoolean(authRequired);
+        out.writeLong(keepaliveInterval);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    routerName = in.readUTF();
-    authRequired = in.readBoolean();
-    keepaliveInterval = in.readLong();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        routerName = in.readUTF();
+        authRequired = in.readBoolean();
+        keepaliveInterval = in.readLong();
+    }
 
-  public void setRouterName(String routerName)
-  {
-    this.routerName = routerName;
-  }
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  /**
-   * @param authRequired
-   * @SBGen Method set authRequired
-   */
-  public void setAuthRequired(boolean authRequired)
-  {
+    /**
+     * @param authRequired
+     * @SBGen Method set authRequired
+     */
+    public void setAuthRequired(boolean authRequired) {
 
-    // SBgen: Assign variable
-    this.authRequired = authRequired;
-  }
+        // SBgen: Assign variable
+        this.authRequired = authRequired;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get authRequired
-   */
-  public boolean isAuthRequired()
-  {
+    /**
+     * @return
+     * @SBGen Method get authRequired
+     */
+    public boolean isAuthRequired() {
 
-    // SBgen: Get variable
-    return (authRequired);
-  }
+        // SBgen: Get variable
+        return (authRequired);
+    }
 
-  public void setKeepaliveInterval(long keepaliveInterval)
-  {
-    this.keepaliveInterval = keepaliveInterval;
-  }
+    public void setKeepaliveInterval(long keepaliveInterval) {
+        this.keepaliveInterval = keepaliveInterval;
+    }
 
-  public long getKeepaliveInterval()
-  {
-    return keepaliveInterval;
-  }
+    public long getKeepaliveInterval() {
+        return keepaliveInterval;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[RouterConnectReply " + super.toString() + " routerName=" + routerName + " authRequired=" + authRequired + " keepaliveInterval=" + keepaliveInterval
-        + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[RouterConnectReply " + super.toString() + " routerName=" + routerName + " authRequired=" + authRequired + " keepaliveInterval=" + keepaliveInterval
+                + "]";
+    }
 }

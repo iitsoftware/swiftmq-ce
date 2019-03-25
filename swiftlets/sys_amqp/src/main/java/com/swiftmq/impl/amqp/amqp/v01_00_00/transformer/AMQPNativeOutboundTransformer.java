@@ -23,32 +23,27 @@ import com.swiftmq.jms.BytesMessageImpl;
 
 import javax.jms.JMSException;
 
-public class AMQPNativeOutboundTransformer extends OutboundTransformer
-{
-  public void transform(Delivery delivery) throws AMQPException, JMSException
-  {
-    BytesMessageImpl msg = null;
-    try
-    {
-      msg = (BytesMessageImpl) delivery.getMessage();
-    } catch (ClassCastException e)
-    {
-      throw new JMSException("Unable to transform. JMS message is not a BytesMessage");
-    }
-    if (!msg.propertyExists(messageFormat))
-      throw new JMSException("Message format property not set");
+public class AMQPNativeOutboundTransformer extends OutboundTransformer {
+    public void transform(Delivery delivery) throws AMQPException, JMSException {
+        BytesMessageImpl msg = null;
+        try {
+            msg = (BytesMessageImpl) delivery.getMessage();
+        } catch (ClassCastException e) {
+            throw new JMSException("Unable to transform. JMS message is not a BytesMessage");
+        }
+        if (!msg.propertyExists(messageFormat))
+            throw new JMSException("Message format property not set");
 
-    if (!msg.propertyExists(amqpNative) || !msg.getBooleanProperty(amqpNative))
-      throw new JMSException("Message is not an AMQP native transformation");
+        if (!msg.propertyExists(amqpNative) || !msg.getBooleanProperty(amqpNative))
+            throw new JMSException("Message is not an AMQP native transformation");
 
-    byte[] body = msg._getBody();
-    if (body == null)
-    {
-      msg.reset();
-      body = new byte[(int) msg.getBodyLength()];
-      msg.readBytes(body);
+        byte[] body = msg._getBody();
+        if (body == null) {
+            msg.reset();
+            body = new byte[(int) msg.getBodyLength()];
+            msg.readBytes(body);
+        }
+        delivery.setData(body);
+        delivery.setMessageFormat(msg.getLongProperty(messageFormat));
     }
-    delivery.setData(body);
-    delivery.setMessageFormat(msg.getLongProperty(messageFormat));
-  }
 }

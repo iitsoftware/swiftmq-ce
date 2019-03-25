@@ -19,30 +19,27 @@ package com.swiftmq.impl.routing.single.manager.po;
 
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POCallback;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class PORemoveObject extends POObject
-{
-  RoutingConnection connection = null;
+public class PORemoveObject extends POObject {
+    RoutingConnection connection = null;
 
-  public PORemoveObject(POCallback callback, Semaphore semaphore, RoutingConnection connection)
-  {
-    super(callback, semaphore);
-    this.connection = connection;
-  }
+    public PORemoveObject(POCallback callback, Semaphore semaphore, RoutingConnection connection) {
+        super(callback, semaphore);
+        this.connection = connection;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POCMVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POCMVisitor) visitor).visit(this);
+    }
 
-  public RoutingConnection getConnection()
-  {
-    return connection;
-  }
+    public RoutingConnection getConnection() {
+        return connection;
+    }
 
-  public String toString()
-  {
-    return "[PORemoveObject, connection="+connection+"]";
-  }
+    public String toString() {
+        return "[PORemoveObject, connection=" + connection + "]";
+    }
 }

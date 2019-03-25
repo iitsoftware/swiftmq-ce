@@ -17,32 +17,29 @@
 
 package com.swiftmq.impl.queue.standard;
 
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.mgmt.*;
+import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.PropertyWatchListener;
+import com.swiftmq.swiftlet.queue.AbstractQueue;
+import com.swiftmq.swiftlet.queue.ActiveQueue;
 
-public class ActiveQueueImpl extends ActiveQueue
-{
-  Entity queueEntity = null;
-  PropertyWatchListener watchListener = null;
+public class ActiveQueueImpl extends ActiveQueue {
+    Entity queueEntity = null;
+    PropertyWatchListener watchListener = null;
 
-  public ActiveQueueImpl(AbstractQueue abstractQueue, Entity queueEntity)
-  {
-    super(abstractQueue);
-    this.queueEntity = queueEntity;
-  }
+    public ActiveQueueImpl(AbstractQueue abstractQueue, Entity queueEntity) {
+        super(abstractQueue);
+        this.queueEntity = queueEntity;
+    }
 
-  public Entity getQueueEntity()
-  {
-    return queueEntity;
-  }
+    public Entity getQueueEntity() {
+        return queueEntity;
+    }
 
-  public PropertyWatchListener getWatchListener()
-  {
-    return watchListener;
-  }
+    public PropertyWatchListener getWatchListener() {
+        return watchListener;
+    }
 
-  public void setWatchListener(PropertyWatchListener watchListener)
-  {
-    this.watchListener = watchListener;
-  }
+    public void setWatchListener(PropertyWatchListener watchListener) {
+        this.watchListener = watchListener;
+    }
 }

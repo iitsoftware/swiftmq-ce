@@ -19,15 +19,12 @@ package com.swiftmq.impl.queue.standard.cluster;
 
 import com.swiftmq.swiftlet.queue.FlowController;
 
-public class ClusteredQueueFlowController extends FlowController
-{
-  public synchronized void setLastDelay(long lastDelay)
-  {
-    this.lastDelay = lastDelay;
-  }
+public class ClusteredQueueFlowController extends FlowController {
+    public synchronized void setLastDelay(long lastDelay) {
+        this.lastDelay = lastDelay;
+    }
 
-  public synchronized long getNewDelay()
-  {
-    return lastDelay;
-  }
+    public synchronized long getNewDelay() {
+        return lastDelay;
+    }
 }

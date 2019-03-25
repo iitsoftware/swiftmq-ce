@@ -19,17 +19,14 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-public class DisconnectReply extends Reply
-{
+public class DisconnectReply extends Reply {
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DISCONNECT_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_DISCONNECT_REP;
+    }
 
-  public String toString()
-  {
-    return "[DisconnectReply " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[DisconnectReply " + super.toString() + "]";
+    }
 
 }

@@ -17,28 +17,25 @@
 
 package com.swiftmq.impl.topic.standard.announce;
 
-import com.swiftmq.tools.versioning.*;
+import com.swiftmq.tools.versioning.VersionedConverter;
+import com.swiftmq.tools.versioning.VersionedDumpable;
+import com.swiftmq.tools.versioning.VersionedException;
 
-public class TopicInfoConverter implements VersionedConverter
-{
-  public void convert(VersionedDumpable vd, int toVersion) throws VersionedException
-  {
-    if (toVersion != 400)
-      throw new VersionedException("Can't convert "+vd+" to version: "+toVersion);
-  }
-
-  public void convert(VersionedDumpable vd, int[] acceptedVersions) throws VersionedException
-  {
-    boolean found = false;
-    for (int i=0;i<acceptedVersions.length;i++)
-    {
-      if (acceptedVersions[i] == 400)
-      {
-        found = true;
-        break;
-      }
+public class TopicInfoConverter implements VersionedConverter {
+    public void convert(VersionedDumpable vd, int toVersion) throws VersionedException {
+        if (toVersion != 400)
+            throw new VersionedException("Can't convert " + vd + " to version: " + toVersion);
     }
-    if (!found)
-      throw new VersionedException("Can't convert "+vd+" to one of the accepted versions");
-  }
+
+    public void convert(VersionedDumpable vd, int[] acceptedVersions) throws VersionedException {
+        boolean found = false;
+        for (int i = 0; i < acceptedVersions.length; i++) {
+            if (acceptedVersions[i] == 400) {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            throw new VersionedException("Can't convert " + vd + " to one of the accepted versions");
+    }
 }

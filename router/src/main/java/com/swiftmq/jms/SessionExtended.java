@@ -19,7 +19,6 @@ package com.swiftmq.jms;
 
 import javax.jms.Session;
 
-public interface SessionExtended extends Session
-{
-  void setIgnoreClose(boolean b);
+public interface SessionExtended extends Session {
+    void setIgnoreClose(boolean b);
 }

@@ -41,11 +41,11 @@ public final class MqttConnectPayload {
             String userName,
             String password) {
         this(
-          clientIdentifier,
-          willTopic,
-          willMessage.getBytes(com.swiftmq.mqtt.v311.netty.util.internal.StringUtil.UTF8),
-          userName,
-          password.getBytes(com.swiftmq.mqtt.v311.netty.util.internal.StringUtil.UTF8));
+                clientIdentifier,
+                willTopic,
+                willMessage.getBytes(com.swiftmq.mqtt.v311.netty.util.internal.StringUtil.UTF8),
+                userName,
+                password.getBytes(com.swiftmq.mqtt.v311.netty.util.internal.StringUtil.UTF8));
     }
 
     public MqttConnectPayload(
@@ -100,13 +100,13 @@ public final class MqttConnectPayload {
     @Override
     public String toString() {
         return new StringBuilder(StringUtil.simpleClassName(this))
-            .append('[')
-            .append("clientIdentifier=").append(clientIdentifier)
-            .append(", willTopic=").append(willTopic)
-            .append(", willMessage=").append(willMessage)
-            .append(", userName=").append(userName)
-            .append(", password=").append(password)
-            .append(']')
-            .toString();
+                .append('[')
+                .append("clientIdentifier=").append(clientIdentifier)
+                .append(", willTopic=").append(willTopic)
+                .append(", willMessage=").append(willMessage)
+                .append(", userName=").append(userName)
+                .append(", password=").append(password)
+                .append(']')
+                .toString();
     }
 }

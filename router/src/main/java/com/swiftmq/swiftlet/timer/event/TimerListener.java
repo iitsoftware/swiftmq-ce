@@ -24,11 +24,10 @@ import java.util.EventListener;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface TimerListener extends EventListener
-{
-  /**
-   * Perform the specific time action
-   */
-  public void performTimeAction();
+public interface TimerListener extends EventListener {
+    /**
+     * Perform the specific time action
+     */
+    public void performTimeAction();
 }
 

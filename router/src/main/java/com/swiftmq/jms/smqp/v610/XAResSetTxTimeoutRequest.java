@@ -17,97 +17,85 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: XAResSetTxTimeoutRequest
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:11 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: XAResSetTxTimeoutRequest
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:11 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResSetTxTimeoutRequest extends Request 
-{
-  private long txTimeout;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public XAResSetTxTimeoutRequest()
-  {
-    super(0,true);
-  }
+public class XAResSetTxTimeoutRequest extends Request {
+    private long txTimeout;
 
-  public XAResSetTxTimeoutRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public XAResSetTxTimeoutRequest() {
+        super(0, true);
+    }
 
-  public XAResSetTxTimeoutRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public XAResSetTxTimeoutRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XAResSetTxTimeoutRequest(int dispatchId, long txTimeout)
-  {
-    super(dispatchId,true);
-    this.txTimeout = txTimeout;
-  }
+    public XAResSetTxTimeoutRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public XAResSetTxTimeoutRequest(RequestRetryValidator validator, int dispatchId, long txTimeout)
-  {
-    super(dispatchId,true,validator);
-    this.txTimeout = txTimeout;
-  }
-  
-  public void setTxTimeout(long txTimeout)
-  {
-    this.txTimeout = txTimeout;
-  }
+    public XAResSetTxTimeoutRequest(int dispatchId, long txTimeout) {
+        super(dispatchId, true);
+        this.txTimeout = txTimeout;
+    }
 
-  public long getTxTimeout()
-  {
-    return txTimeout;
-  }
+    public XAResSetTxTimeoutRequest(RequestRetryValidator validator, int dispatchId, long txTimeout) {
+        super(dispatchId, true, validator);
+        this.txTimeout = txTimeout;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESSETTXTIMEOUT_REQ;
-  }
+    public void setTxTimeout(long txTimeout) {
+        this.txTimeout = txTimeout;
+    }
+
+    public long getTxTimeout() {
+        return txTimeout;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESSETTXTIMEOUT_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(txTimeout,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(txTimeout, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    txTimeout = SMQPUtil.read(txTimeout,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        txTimeout = SMQPUtil.read(txTimeout, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResSetTxTimeoutReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResSetTxTimeoutReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/XAResSetTxTimeoutRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("txTimeout=");
-    _b.append(txTimeout);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/XAResSetTxTimeoutRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("txTimeout=");
+        _b.append(txTimeout);
+        _b.append("]");
+        return _b.toString();
+    }
 }

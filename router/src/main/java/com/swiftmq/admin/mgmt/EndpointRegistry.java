@@ -21,45 +21,37 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class EndpointRegistry
-{
-  Map endpoints = new HashMap();
-  boolean closed = false;
+public class EndpointRegistry {
+    Map endpoints = new HashMap();
+    boolean closed = false;
 
-  public EndpointRegistry()
-  {
-  }
-
-  public synchronized void put(String routerName, Endpoint endpoint) throws EndpointRegistryClosedException
-  {
-    if (closed)
-      throw new EndpointRegistryClosedException("EndpointRegistry already closed!");
-    endpoints.put(routerName, endpoint);
-  }
-
-  public synchronized Endpoint get(String routerName)
-  {
-    return (Endpoint) endpoints.get(routerName);
-  }
-
-  public synchronized Endpoint remove(String routerName)
-  {
-    return (Endpoint) endpoints.remove(routerName);
-  }
-
-  public void close()
-  {
-    Map map;
-    synchronized (this)
-    {
-      map = (Map) ((HashMap) endpoints).clone();
-      endpoints.clear();
-      closed = true;
+    public EndpointRegistry() {
     }
-    for (Iterator iter = map.entrySet().iterator(); iter.hasNext();)
-    {
-      Endpoint endpoint = (Endpoint) ((Map.Entry) iter.next()).getValue();
-      endpoint.close();
+
+    public synchronized void put(String routerName, Endpoint endpoint) throws EndpointRegistryClosedException {
+        if (closed)
+            throw new EndpointRegistryClosedException("EndpointRegistry already closed!");
+        endpoints.put(routerName, endpoint);
     }
-  }
+
+    public synchronized Endpoint get(String routerName) {
+        return (Endpoint) endpoints.get(routerName);
+    }
+
+    public synchronized Endpoint remove(String routerName) {
+        return (Endpoint) endpoints.remove(routerName);
+    }
+
+    public void close() {
+        Map map;
+        synchronized (this) {
+            map = (Map) ((HashMap) endpoints).clone();
+            endpoints.clear();
+            closed = true;
+        }
+        for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
+            Endpoint endpoint = (Endpoint) ((Map.Entry) iter.next()).getValue();
+            endpoint.close();
+        }
+    }
 }

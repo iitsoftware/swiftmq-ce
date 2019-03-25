@@ -24,75 +24,65 @@ import java.io.IOException;
 /**
  * Integer in the range -(2^7) to 2^7-1 inclusive
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPByte extends AMQPType
-{
-  byte value;
+public class AMQPByte extends AMQPType {
+    byte value;
 
-  /**
-   * Constructs an AMQPByte with an undefined value
-   *
-   */
-  public AMQPByte()
-  {
-    super("byte", AMQPTypeDecoder.BYTE);
-  }
+    /**
+     * Constructs an AMQPByte with an undefined value
+     */
+    public AMQPByte() {
+        super("byte", AMQPTypeDecoder.BYTE);
+    }
 
-  /**
-   * Constructs an AMQPByte with a value
-   *
-   * @param value value
-   */
-  public AMQPByte(byte value)
-  {
-    super("byte", AMQPTypeDecoder.BYTE);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPByte with a value
+     *
+     * @param value value
+     */
+    public AMQPByte(byte value) {
+        super("byte", AMQPTypeDecoder.BYTE);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(byte value)
-  {
-    this.value = value;
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(byte value) {
+        this.value = value;
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public byte getValue()
-  {
-    return value;
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public byte getValue() {
+        return value;
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+1;
-    return n;
-  }
-     
-  public void readContent(DataInput in) throws IOException
-  {
-    value = in.readByte();
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + 1;
+        return n;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeByte(value);
-  }
+    public void readContent(DataInput in) throws IOException {
+        value = in.readByte();
+    }
 
-  public String getValueString()
-  {
-    return Byte.toString(value);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeByte(value);
+    }
 
-  public String toString()
-  {
-    return "[AMQPByte, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String getValueString() {
+        return Byte.toString(value);
+    }
+
+    public String toString() {
+        return "[AMQPByte, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

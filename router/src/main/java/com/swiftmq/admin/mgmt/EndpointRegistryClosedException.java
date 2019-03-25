@@ -17,10 +17,8 @@
 
 package com.swiftmq.admin.mgmt;
 
-public class EndpointRegistryClosedException extends Exception
-{
-  public EndpointRegistryClosedException(String s)
-  {
-    super(s);
-  }
+public class EndpointRegistryClosedException extends Exception {
+    public EndpointRegistryClosedException(String s) {
+        super(s);
+    }
 }

@@ -17,38 +17,32 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
+import com.swiftmq.tools.pipeline.POVisitor;
 import com.swiftmq.util.SwiftUtilities;
-import com.swiftmq.tools.pipeline.*;
 
-public class EntityRemoved extends EventObject
-{
-  String[] context = null;
-  String name = null;
+public class EntityRemoved extends EventObject {
+    String[] context = null;
+    String name = null;
 
-  public EntityRemoved(String[] context, String name)
-  {
-    this.context = context;
-    this.name = name;
-  }
+    public EntityRemoved(String[] context, String name) {
+        this.context = context;
+        this.name = name;
+    }
 
-  public String[] getContext()
-  {
-    return context;
-  }
+    public String[] getContext() {
+        return context;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventObjectVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventObjectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[EntityRemoved, context="+(context != null?SwiftUtilities.concat(context,"/"):"null")+
-          ", name="+name+"]";
-  }
+    public String toString() {
+        return "[EntityRemoved, context=" + (context != null ? SwiftUtilities.concat(context, "/") : "null") +
+                ", name=" + name + "]";
+    }
 }

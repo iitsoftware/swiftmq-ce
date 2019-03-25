@@ -19,7 +19,6 @@ package com.swiftmq.swiftlet.queue.event;
 
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 
-public interface QueueReceiverListener
-{
-  public void receiverCountChanged(AbstractQueue queue, int count);
+public interface QueueReceiverListener {
+    public void receiverCountChanged(AbstractQueue queue, int count);
 }

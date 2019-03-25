@@ -94,6 +94,7 @@ public class InactivityTimeout {
 
     /**
      * Sets the RetirementCallback at the Memory
+     *
      * @param callback RetirementCallback
      * @return this
      */
@@ -105,7 +106,7 @@ public class InactivityTimeout {
     /**
      * Returns a LimitBuilder to add Limits to the Memory
      *
-     * @return  LimitBuilder
+     * @return LimitBuilder
      */
     public LimitBuilder limit() {
         return memory.limit();

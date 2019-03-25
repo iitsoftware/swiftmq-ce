@@ -26,55 +26,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class NonXACommitRequest extends Request
-{
-  int sequenceNo = 0;
+public class NonXACommitRequest extends Request {
+    int sequenceNo = 0;
 
-  NonXACommitRequest()
-  {
-    this(0);
-  }
+    NonXACommitRequest() {
+        this(0);
+    }
 
-  public NonXACommitRequest(int sequenceNo)
-  {
-    super(0, false);
-    this.sequenceNo = sequenceNo;
-  }
+    public NonXACommitRequest(int sequenceNo) {
+        super(0, false);
+        this.sequenceNo = sequenceNo;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.NONXA_COMMIT_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.NONXA_COMMIT_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeInt(sequenceNo);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeInt(sequenceNo);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    sequenceNo = input.readInt();
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        sequenceNo = input.readInt();
+    }
 
-  public int getSequenceNo()
-  {
-    return sequenceNo;
-  }
+    public int getSequenceNo() {
+        return sequenceNo;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor)visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[NonXACommitRequest "+super.toString()+", sequenceNo="+sequenceNo+"]";
-  }
+    public String toString() {
+        return "[NonXACommitRequest " + super.toString() + ", sequenceNo=" + sequenceNo + "]";
+    }
 }

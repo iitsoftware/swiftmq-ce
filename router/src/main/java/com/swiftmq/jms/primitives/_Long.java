@@ -23,53 +23,43 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Long implements Dumpable, Primitive
-{
-  Long value = null;
+public class _Long implements Dumpable, Primitive {
+    Long value = null;
 
-  public _Long()
-  {
-  }
+    public _Long() {
+    }
 
-  public _Long(long value)
-  {
-    this.value = new Long(value);
-  }
+    public _Long(long value) {
+        this.value = new Long(value);
+    }
 
-  public _Long(String s)
-  {
-    this.value = Long.valueOf(s);
-  }
+    public _Long(String s) {
+        this.value = Long.valueOf(s);
+    }
 
-  public long longValue()
-  {
-    return value.longValue();
-  }
+    public long longValue() {
+        return value.longValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return LONG;
-  }
+    public int getDumpId() {
+        return LONG;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeLong(value.longValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeLong(value.longValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Long(in.readLong());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Long(in.readLong());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

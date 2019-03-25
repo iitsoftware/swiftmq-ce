@@ -16,71 +16,61 @@
  */
 
 package com.swiftmq.impl.jms.standard.v500;
+
 import com.swiftmq.swiftlet.threadpool.AsyncTask;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 
-public class ConnectionQueue extends SingleProcessorQueue
-{
-  ThreadPool pool;
-  JMSConnection connection;
-  QueueProcessor queueProcessor;
+public class ConnectionQueue extends SingleProcessorQueue {
+    ThreadPool pool;
+    JMSConnection connection;
+    QueueProcessor queueProcessor;
 
-  ConnectionQueue(ThreadPool pool, JMSConnection connection)
-  {
-    super(100);
-    this.pool = pool;
-    this.connection = connection;
-    queueProcessor = new QueueProcessor();
-  }
-
-  protected void startProcessor()
-  {
-    if (!connection.closed)
-      pool.dispatchTask(queueProcessor);
-  }
-
-  /**
-   * @param obj
-   */
-  protected void process(Object[] bulk, int n)
-  {
-    for (int i=0;i<n;i++)
-    {
-      if (!connection.closed)
-        ((Request)bulk[i]).accept(connection.visitor);
-      else
-        break;
-    }
-  }
-
-  private class QueueProcessor implements AsyncTask
-  {
-    public boolean isValid()
-    {
-      return !connection.closed;
+    ConnectionQueue(ThreadPool pool, JMSConnection connection) {
+        super(100);
+        this.pool = pool;
+        this.connection = connection;
+        queueProcessor = new QueueProcessor();
     }
 
-    public String getDispatchToken()
-    {
-      return Session.TP_SESSIONSVC;
+    protected void startProcessor() {
+        if (!connection.closed)
+            pool.dispatchTask(queueProcessor);
     }
 
-    public String getDescription()
-    {
-      return connection.toString() + "/QueueProcessor";
+    /**
+     * @param obj
+     */
+    protected void process(Object[] bulk, int n) {
+        for (int i = 0; i < n; i++) {
+            if (!connection.closed)
+                ((Request) bulk[i]).accept(connection.visitor);
+            else
+                break;
+        }
     }
 
-    public void stop()
-    {
-    }
+    private class QueueProcessor implements AsyncTask {
+        public boolean isValid() {
+            return !connection.closed;
+        }
 
-    public void run()
-    {
-      if (!connection.closed && dequeue())
-        pool.dispatchTask(this);
+        public String getDispatchToken() {
+            return Session.TP_SESSIONSVC;
+        }
+
+        public String getDescription() {
+            return connection.toString() + "/QueueProcessor";
+        }
+
+        public void stop() {
+        }
+
+        public void run() {
+            if (!connection.closed && dequeue())
+                pool.dispatchTask(this);
+        }
     }
-  }
 }
 

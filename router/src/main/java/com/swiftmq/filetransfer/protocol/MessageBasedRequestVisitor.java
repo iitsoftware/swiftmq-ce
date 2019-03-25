@@ -17,6 +17,5 @@
 
 package com.swiftmq.filetransfer.protocol;
 
-public interface MessageBasedRequestVisitor
-{
+public interface MessageBasedRequestVisitor {
 }

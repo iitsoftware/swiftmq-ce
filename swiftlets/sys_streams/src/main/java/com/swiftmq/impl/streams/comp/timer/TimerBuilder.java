@@ -36,30 +36,30 @@ public class TimerBuilder {
         this.name = name;
     }
 
-  /**
-   * Creates an IntervalTimer.
-   *
-   * @return IntervalTimer
-   */
-  public IntervalTimer interval() {
-    return (IntervalTimer) ctx.stream.addTimer(name, new IntervalTimer(ctx, name));
-  }
+    /**
+     * Creates an IntervalTimer.
+     *
+     * @return IntervalTimer
+     */
+    public IntervalTimer interval() {
+        return (IntervalTimer) ctx.stream.addTimer(name, new IntervalTimer(ctx, name));
+    }
 
-  /**
-   * Creates an AtTimer.
-   *
-   * @return AtTimer
-   */
-  public AtTimer at() {
-    return (AtTimer) ctx.stream.addTimer(name, new AtTimer(ctx, name));
-  }
+    /**
+     * Creates an AtTimer.
+     *
+     * @return AtTimer
+     */
+    public AtTimer at() {
+        return (AtTimer) ctx.stream.addTimer(name, new AtTimer(ctx, name));
+    }
 
-  /**
-   * Creates a NextTimer.
-   *
-   * @return NextTimer
-   */
-  public NextTimer next() {
-    return (NextTimer) ctx.stream.addTimer(name, new NextTimer(ctx, name));
-  }
+    /**
+     * Creates a NextTimer.
+     *
+     * @return NextTimer
+     */
+    public NextTimer next() {
+        return (NextTimer) ctx.stream.addTimer(name, new NextTimer(ctx, name));
+    }
 }

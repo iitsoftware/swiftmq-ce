@@ -19,7 +19,6 @@ package com.swiftmq.admin.mgmt;
 
 import com.swiftmq.tools.requestreply.RequestService;
 
-public interface RequestServiceFactory
-{
-  RequestService createRequestService(int protocolVersion);
+public interface RequestServiceFactory {
+    RequestService createRequestService(int protocolVersion);
 }

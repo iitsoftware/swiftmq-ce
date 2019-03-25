@@ -17,30 +17,25 @@
 
 package com.swiftmq.impl.auth.standard;
 
-public class LoginId
-{
-  String loginId;
-  String userName;
+public class LoginId {
+    String loginId;
+    String userName;
 
-  protected LoginId(String loginId, String userName)
-  {
-    this.loginId = loginId;
-    this.userName = userName;
-  }
+    protected LoginId(String loginId, String userName) {
+        this.loginId = loginId;
+        this.userName = userName;
+    }
 
-  protected String getLoginId()
-  {
-    return loginId;
-  }
+    protected String getLoginId() {
+        return loginId;
+    }
 
-  protected String getUserName()
-  {
-    return userName;
-  }
+    protected String getUserName() {
+        return userName;
+    }
 
-  public String toString()
-  {
-    return loginId;
-  }
+    public String toString() {
+        return loginId;
+    }
 }
 

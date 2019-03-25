@@ -18,42 +18,34 @@
 package com.swiftmq.impl.store.standard.cache;
 
 
-public class Slot implements Comparable
-{
-  int pinCount = 0;
-  boolean latched = false;
-  Page page = null;
-  long accessCount = 0;
+public class Slot implements Comparable {
+    int pinCount = 0;
+    boolean latched = false;
+    Page page = null;
+    long accessCount = 0;
 
-  public synchronized void latch()
-  {
-    if (latched)
-    {
-      try
-      {
-        wait();
-      } catch (Exception ignored)
-      {
-      }
+    public synchronized void latch() {
+        if (latched) {
+            try {
+                wait();
+            } catch (Exception ignored) {
+            }
+        }
+        latched = true;
     }
-    latched = true;
-  }
 
-  public synchronized void unlatch()
-  {
-    latched = false;
-    notify();
-  }
+    public synchronized void unlatch() {
+        latched = false;
+        notify();
+    }
 
-  public int compareTo(Object that)
-  {
-    Slot thatSlot = (Slot) that;
-    return accessCount == thatSlot.accessCount ? 0 : accessCount > thatSlot.accessCount ? 1 : -1;
-  }
+    public int compareTo(Object that) {
+        Slot thatSlot = (Slot) that;
+        return accessCount == thatSlot.accessCount ? 0 : accessCount > thatSlot.accessCount ? 1 : -1;
+    }
 
-  public String toString()
-  {
-    return "[Slot, pinCount=" + pinCount + ", accessCount=" + accessCount + ", latched=" + latched + ", page=" + page + "]";
-  }
+    public String toString() {
+        return "[Slot, pinCount=" + pinCount + ", accessCount=" + accessCount + ", latched=" + latched + ", page=" + page + "]";
+    }
 }
 

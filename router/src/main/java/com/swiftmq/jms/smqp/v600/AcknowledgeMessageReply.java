@@ -17,32 +17,29 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: AcknowledgeMessageReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:45 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: AcknowledgeMessageReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:45 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class AcknowledgeMessageReply extends ReplyNE
-{
+public class AcknowledgeMessageReply extends ReplyNE {
 
-  protected AcknowledgeMessageReply()
-  {
-  }
+    protected AcknowledgeMessageReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ACKNOWLEDGEMESSAGE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_ACKNOWLEDGEMESSAGE_REP;
+    }
 
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/AcknowledgeMessageReply, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/AcknowledgeMessageReply, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -17,38 +17,34 @@
 
 package com.swiftmq.impl.routing.single.route;
 
-import com.swiftmq.tools.dump.*;
 import com.swiftmq.impl.routing.single.connection.stage.StageFactory;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
 
-public class RouteConverter extends DumpableFactory
-{
-  public static final int ROUTE_V400 = 0;
+public class RouteConverter extends DumpableFactory {
+    public static final int ROUTE_V400 = 0;
 
-  public Dumpable createDumpable(int dumpId)
-  {
-    Dumpable d = null;
-    switch(dumpId)
-    {
-      case ROUTE_V400:
-        d = new com.swiftmq.impl.routing.single.route.v400.RouteImpl();
-        break;
+    public Dumpable createDumpable(int dumpId) {
+        Dumpable d = null;
+        switch (dumpId) {
+            case ROUTE_V400:
+                d = new com.swiftmq.impl.routing.single.route.v400.RouteImpl();
+                break;
+        }
+        return d;
     }
-    return d;
-  }
 
-  public Route convert(Route route, String toVersion) throws Exception
-  {
-    if (!route.getVersion().equals(StageFactory.PROT_V400)&&!route.getVersion().equals(StageFactory.PROT_V942))
-      throw new Exception("Invalid route version: "+route.getVersion());
-    if (!toVersion.equals(StageFactory.PROT_V400)&&!toVersion.equals(StageFactory.PROT_V942))
-      throw new Exception("Invalid destination version: "+toVersion);
-    return route;
-  }
+    public Route convert(Route route, String toVersion) throws Exception {
+        if (!route.getVersion().equals(StageFactory.PROT_V400) && !route.getVersion().equals(StageFactory.PROT_V942))
+            throw new Exception("Invalid route version: " + route.getVersion());
+        if (!toVersion.equals(StageFactory.PROT_V400) && !toVersion.equals(StageFactory.PROT_V942))
+            throw new Exception("Invalid destination version: " + toVersion);
+        return route;
+    }
 
-  public Route createRoute(String destinationRouter, String version, int type)
-  {
-    if (version.equals(StageFactory.PROT_V400)||version.equals(StageFactory.PROT_V942))
-      return new com.swiftmq.impl.routing.single.route.v400.RouteImpl(StageFactory.PROT_V400,type,destinationRouter);
-    return null;
-  }
+    public Route createRoute(String destinationRouter, String version, int type) {
+        if (version.equals(StageFactory.PROT_V400) || version.equals(StageFactory.PROT_V942))
+            return new com.swiftmq.impl.routing.single.route.v400.RouteImpl(StageFactory.PROT_V400, type, destinationRouter);
+        return null;
+    }
 }

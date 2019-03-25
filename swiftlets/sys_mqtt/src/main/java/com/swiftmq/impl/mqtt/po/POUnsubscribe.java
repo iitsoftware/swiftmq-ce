@@ -17,30 +17,27 @@
 
 package com.swiftmq.impl.mqtt.po;
 
+import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 
-public class POUnsubscribe extends POObject
-{
-  MqttUnsubscribeMessage message;
-  public POUnsubscribe(MqttUnsubscribeMessage message)
-  {
-    super(null, null);
-    this.message = message;
-  }
+public class POUnsubscribe extends POObject {
+    MqttUnsubscribeMessage message;
 
-  public MqttUnsubscribeMessage getMessage() {
-    return message;
-  }
+    public POUnsubscribe(MqttUnsubscribeMessage message) {
+        super(null, null);
+        this.message = message;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((MQTTVisitor) visitor).visit(this);
-  }
+    public MqttUnsubscribeMessage getMessage() {
+        return message;
+    }
 
-  public String toString()
-  {
-    return "[POUnsubscribe, message="+message+"]";
-  }
+    public void accept(POVisitor visitor) {
+        ((MQTTVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        return "[POUnsubscribe, message=" + message + "]";
+    }
 }

@@ -17,33 +17,27 @@
 
 package com.swiftmq.impl.topic.standard.announce.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.swiftlet.routing.Route;
 import com.swiftmq.impl.topic.standard.announce.TopicInfo;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POAnnounceSubscriptions extends POObject
-{
-  TopicInfo topicInfo = null;
-  
-  public POAnnounceSubscriptions(TopicInfo topicInfo)
-  {
-    super(null, null);
-    this.topicInfo = topicInfo;
-  }
+public class POAnnounceSubscriptions extends POObject {
+    TopicInfo topicInfo = null;
 
-  public TopicInfo getTopicInfo()
-  {
-    return topicInfo;
-  }
+    public POAnnounceSubscriptions(TopicInfo topicInfo) {
+        super(null, null);
+        this.topicInfo = topicInfo;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POAnnounceSenderVisitor)visitor).visit(this);
-  }
+    public TopicInfo getTopicInfo() {
+        return topicInfo;
+    }
 
-  public String toString()
-  {
-    return "[POAnnounceSubscriptions, topicInfo="+topicInfo+"]";
-  }
+    public void accept(POVisitor visitor) {
+        ((POAnnounceSenderVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        return "[POAnnounceSubscriptions, topicInfo=" + topicInfo + "]";
+    }
 }

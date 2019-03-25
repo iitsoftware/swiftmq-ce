@@ -25,67 +25,56 @@ import com.swiftmq.swiftlet.xa.XAContext;
 import java.util.Iterator;
 import java.util.Map;
 
-public abstract class XAContextImpl implements XAContext
-{
-  static int cnt = 1;
-  SwiftletContext ctx = null;
-  XidImpl xid = null;
-  String signature = null;
-  boolean recovered = false;
+public abstract class XAContextImpl implements XAContext {
+    static int cnt = 1;
+    SwiftletContext ctx = null;
+    XidImpl xid = null;
+    String signature = null;
+    boolean recovered = false;
 
-  public XAContextImpl(SwiftletContext ctx, XidImpl xid)
-  {
-    this.ctx = ctx;
-    this.xid = xid;
-    signature = xid.toString();
-  }
-
-  protected static synchronized int incCount()
-  {
-    int i = cnt;
-    if (cnt == Integer.MAX_VALUE)
-      cnt = 1;
-    else
-      cnt++;
-    return i;
-  }
-
-  private Entity lookupEntity(String signature)
-  {
-    Map entities = ctx.preparedUsageList.getEntities();
-    for (Iterator iter = entities.entrySet().iterator(); iter.hasNext();)
-    {
-      Entity xidEntity = (Entity) ((Map.Entry) iter.next()).getValue();
-      if ((xidEntity.getProperty("xid").getValue()).equals(signature))
-        return xidEntity;
+    public XAContextImpl(SwiftletContext ctx, XidImpl xid) {
+        this.ctx = ctx;
+        this.xid = xid;
+        signature = xid.toString();
     }
-    return null;
-  }
 
-  protected void removeUsageEntity()
-  {
-    try
-    {
-      Entity entity = lookupEntity(signature);
-      if (entity != null)
-        ctx.preparedUsageList.removeEntity(entity);
-    } catch (EntityRemoveException e)
-    {
+    protected static synchronized int incCount() {
+        int i = cnt;
+        if (cnt == Integer.MAX_VALUE)
+            cnt = 1;
+        else
+            cnt++;
+        return i;
     }
-  }
 
-  public void setRecovered(boolean recovered)
-  {
-    this.recovered = recovered;
-  }
+    private Entity lookupEntity(String signature) {
+        Map entities = ctx.preparedUsageList.getEntities();
+        for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
+            Entity xidEntity = (Entity) ((Map.Entry) iter.next()).getValue();
+            if ((xidEntity.getProperty("xid").getValue()).equals(signature))
+                return xidEntity;
+        }
+        return null;
+    }
 
-  public boolean isRecovered()
-  {
-    return recovered;
-  }
+    protected void removeUsageEntity() {
+        try {
+            Entity entity = lookupEntity(signature);
+            if (entity != null)
+                ctx.preparedUsageList.removeEntity(entity);
+        } catch (EntityRemoveException e) {
+        }
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public void setRecovered(boolean recovered) {
+        this.recovered = recovered;
+    }
+
+    public boolean isRecovered() {
+        return recovered;
+    }
+
+    public XidImpl getXid() {
+        return xid;
+    }
 }

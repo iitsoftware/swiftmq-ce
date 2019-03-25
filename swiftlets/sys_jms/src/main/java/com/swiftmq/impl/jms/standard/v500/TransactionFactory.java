@@ -18,12 +18,13 @@
 
 package com.swiftmq.impl.jms.standard.v500;
 
-import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.swiftlet.queue.QueueTransaction;
 
-public interface TransactionFactory
-{
-  QueueTransaction createTransaction() throws Exception;
-	void markForClose();
-	boolean isMarkedForClose();
+public interface TransactionFactory {
+    QueueTransaction createTransaction() throws Exception;
+
+    void markForClose();
+
+    boolean isMarkedForClose();
 }
 

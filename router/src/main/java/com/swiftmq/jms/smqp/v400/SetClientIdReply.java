@@ -19,96 +19,86 @@ package com.swiftmq.jms.smqp.v400;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class SetClientIdReply extends Reply
-{
-  String clientId = null;
+public class SetClientIdReply extends Reply {
+    String clientId = null;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_SET_CLIENT_ID_REP;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (clientId == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(clientId);
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_SET_CLIENT_ID_REP;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      clientId = null;
-    } else
-    {
-      clientId = in.readUTF();
+        if (clientId == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(clientId);
+        }
     }
-  }
 
-  /**
-   * @param clientId
-   * @SBGen Method set clientId
-   */
-  public void setClientId(String clientId)
-  {
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    // SBgen: Assign variable
-    this.clientId = clientId;
-  }
+        byte set = in.readByte();
 
-  /**
-   * @return
-   * @SBGen Method get clientId
-   */
-  public String getClientId()
-  {
+        if (set == 0) {
+            clientId = null;
+        } else {
+            clientId = in.readUTF();
+        }
+    }
 
-    // SBgen: Get variable
-    return (clientId);
-  }
+    /**
+     * @param clientId
+     * @SBGen Method set clientId
+     */
+    public void setClientId(String clientId) {
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[SetClientIdReply " + super.toString() + " clientId=" + clientId
-        + "]";
-  }
+        // SBgen: Assign variable
+        this.clientId = clientId;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get clientId
+     */
+    public String getClientId() {
+
+        // SBgen: Get variable
+        return (clientId);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[SetClientIdReply " + super.toString() + " clientId=" + clientId
+                + "]";
+    }
 }
 

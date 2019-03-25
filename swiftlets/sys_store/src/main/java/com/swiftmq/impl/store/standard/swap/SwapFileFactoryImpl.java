@@ -19,23 +19,20 @@ package com.swiftmq.impl.store.standard.swap;
 
 import com.swiftmq.impl.store.standard.StoreContext;
 
-public class SwapFileFactoryImpl implements SwapFileFactory
-{
-  StoreContext ctx = null;
+public class SwapFileFactoryImpl implements SwapFileFactory {
+    StoreContext ctx = null;
 
-  public SwapFileFactoryImpl(StoreContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public SwapFileFactoryImpl(StoreContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public SwapFile createSwapFile(String path, String filename, long maxLength) throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createSwapFile, filename="+filename+", maxLength="+maxLength);
-    return new SwapFileImpl(path,filename,maxLength);
-  }
+    public SwapFile createSwapFile(String path, String filename, long maxLength) throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/createSwapFile, filename=" + filename + ", maxLength=" + maxLength);
+        return new SwapFileImpl(path, filename, maxLength);
+    }
 
-  public String toString()
-  {
-    return "SwapFileFactoryImpl";
-  }
+    public String toString() {
+        return "SwapFileFactoryImpl";
+    }
 }

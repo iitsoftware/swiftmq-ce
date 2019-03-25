@@ -17,62 +17,53 @@
 
 package com.swiftmq.jms.smqp.v400;
 
+import com.swiftmq.jms.XidImpl;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.jms.XidImpl;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResRollbackRequest extends Request
-{
-  XidImpl xid = null;
+public class XAResRollbackRequest extends Request {
+    XidImpl xid = null;
 
-  public XAResRollbackRequest(int dispatchId, XidImpl xid)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-  }
+    public XAResRollbackRequest(int dispatchId, XidImpl xid) {
+        super(dispatchId, true);
+        this.xid = xid;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESROLLBACK_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESROLLBACK_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResRollbackReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResRollbackReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResRollbackRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResRollbackRequest(this);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    xid.writeContent(out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        xid.writeContent(out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = new XidImpl();
-    xid.readContent(in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = new XidImpl();
+        xid.readContent(in);
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public String toString()
-  {
-    return "[XAResRollbackRequest " + super.toString() + ", xid=" + xid + "]";
-  }
+    public String toString() {
+        return "[XAResRollbackRequest " + super.toString() + ", xid=" + xid + "]";
+    }
 
 }
 

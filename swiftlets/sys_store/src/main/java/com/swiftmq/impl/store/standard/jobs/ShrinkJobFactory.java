@@ -17,54 +17,50 @@
 
 package com.swiftmq.impl.store.standard.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
 import com.swiftmq.impl.store.standard.StoreContext;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobFactory;
+import com.swiftmq.swiftlet.scheduler.JobParameter;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ShrinkJobFactory implements JobFactory
-{
-  StoreContext ctx = null;
-  Map parameters = new HashMap();
+public class ShrinkJobFactory implements JobFactory {
+    StoreContext ctx = null;
+    Map parameters = new HashMap();
 
-  public ShrinkJobFactory(StoreContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public ShrinkJobFactory(StoreContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public String getName()
-  {
-    return "Shrink";
-  }
+    public String getName() {
+        return "Shrink";
+    }
 
-  public String getDescription()
-  {
-    return "Performs a Shrink of the page.db";
-  }
+    public String getDescription() {
+        return "Performs a Shrink of the page.db";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(),toString()+"/getJobInstance");
-    return new ShrinkJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/getJobInstance");
+        return new ShrinkJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(),toString()+"/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[ShrinkJobFactory]";
-  }
+    public String toString() {
+        return "[ShrinkJobFactory]";
+    }
 }

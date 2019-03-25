@@ -18,18 +18,15 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-public class InitiateSyncOperation extends LogOperation
-{
-  /**
-   * @return
-   */
-  int getOperationType()
-  {
-    return OPER_INITIATE_SYNC;
-  }
+public class InitiateSyncOperation extends LogOperation {
+    /**
+     * @return
+     */
+    int getOperationType() {
+        return OPER_INITIATE_SYNC;
+    }
 
-  public String toString()
-  {
-		return "[InitiateSyncOperation]";
-  }
+    public String toString() {
+        return "[InitiateSyncOperation]";
+    }
 }

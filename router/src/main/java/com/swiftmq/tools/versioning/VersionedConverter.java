@@ -17,10 +17,8 @@
 
 package com.swiftmq.tools.versioning;
 
-import com.swiftmq.tools.dump.Dumpable;
+public interface VersionedConverter {
+    public void convert(VersionedDumpable vd, int toVersion) throws VersionedException;
 
-public interface VersionedConverter
-{
-  public void convert(VersionedDumpable vd, int toVersion) throws VersionedException;
-  public void convert(VersionedDumpable vd, int[] acceptedVersions) throws VersionedException;
+    public void convert(VersionedDumpable vd, int[] acceptedVersions) throws VersionedException;
 }

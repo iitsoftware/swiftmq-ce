@@ -20,14 +20,13 @@ package com.swiftmq.amqp;
 /**
  * An outbound handler send "Writables" to a network.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public interface OutboundHandler
-{
-  /**
-   * Send a Writable to the network.
-   *
-   * @param writable  Writable
-   */
-  public void send(Writable writable);
+public interface OutboundHandler {
+    /**
+     * Send a Writable to the network.
+     *
+     * @param writable Writable
+     */
+    public void send(Writable writable);
 }

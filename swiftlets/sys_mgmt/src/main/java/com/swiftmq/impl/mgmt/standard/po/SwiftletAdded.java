@@ -17,38 +17,31 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.util.SwiftUtilities;
 import com.swiftmq.mgmt.Configuration;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class SwiftletAdded extends EventObject
-{
-  String name = null;
-  Configuration config = null;
+public class SwiftletAdded extends EventObject {
+    String name = null;
+    Configuration config = null;
 
-  public SwiftletAdded(String name, Configuration config)
-  {
-    this.name = name;
-    this.config = config;
-  }
+    public SwiftletAdded(String name, Configuration config) {
+        this.name = name;
+        this.config = config;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public Configuration getConfig()
-  {
-    return config;
-  }
+    public Configuration getConfig() {
+        return config;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventObjectVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventObjectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SwiftletAdded, name="+name+", config=<hidden>]";
-  }
+    public String toString() {
+        return "[SwiftletAdded, name=" + name + ", config=<hidden>]";
+    }
 }

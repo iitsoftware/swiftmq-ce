@@ -22,12 +22,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
-public class JMSAccessorHolder
-{
-  public String username = null;
-  public Session session = null;
-  public MessageProducer producer = null;
-  public MessageConsumer consumer = null;
-  public TemporaryQueue replyQueue = null;
+public class JMSAccessorHolder {
+    public String username = null;
+    public Session session = null;
+    public MessageProducer producer = null;
+    public MessageConsumer consumer = null;
+    public TemporaryQueue replyQueue = null;
 
 }

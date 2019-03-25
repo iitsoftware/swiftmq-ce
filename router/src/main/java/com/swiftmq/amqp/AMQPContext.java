@@ -33,114 +33,100 @@ import com.swiftmq.swiftlet.threadpool.ThreadPool;
  *
  * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPContext
-{
-  public static final int CLIENT = 0;
-  public static final int ROUTER = 1;
+public class AMQPContext {
+    public static final int CLIENT = 0;
+    public static final int ROUTER = 1;
 
-  int ctx;
-  Tracer frameTracer = null;
-  Tracer processingTracer = null;
-  ThreadPool connectionPool = null;
-  ThreadPool sessionPool = null;
+    int ctx;
+    Tracer frameTracer = null;
+    Tracer processingTracer = null;
+    ThreadPool connectionPool = null;
+    ThreadPool sessionPool = null;
 
-  /**
-   * Constructs an AMQP context.
-   *
-   * @param ctx the context, CLIENT or ROUTER
-   */
-  public AMQPContext(int ctx)
-  {
-    this.ctx = ctx;
-    if (ctx == CLIENT)
-      PoolManager.setIntraVM(false);
-  }
-
-  /**
-   * Returns a frame tracer.
-   *
-   * @return frame tracer
-   */
-  public synchronized Tracer getFrameTracer()
-  {
-    if (frameTracer == null)
-    {
-      if (ctx == CLIENT)
-        frameTracer = new ClientTracer("swiftmq.amqp.frame.debug");
-      else
-        frameTracer = getRouterFrameTracer();
+    /**
+     * Constructs an AMQP context.
+     *
+     * @param ctx the context, CLIENT or ROUTER
+     */
+    public AMQPContext(int ctx) {
+        this.ctx = ctx;
+        if (ctx == CLIENT)
+            PoolManager.setIntraVM(false);
     }
-    return frameTracer;
-  }
 
-  /**
-   * Returns a processing tracer.
-   *
-   * @return processing tracer
-   */
-  public synchronized Tracer getProcessingTracer()
-  {
-    if (processingTracer == null)
-    {
-      if (ctx == CLIENT)
-        processingTracer = new ClientTracer("swiftmq.amqp.debug");
-      else
-        processingTracer = getRouterProcessiongTracer();
+    /**
+     * Returns a frame tracer.
+     *
+     * @return frame tracer
+     */
+    public synchronized Tracer getFrameTracer() {
+        if (frameTracer == null) {
+            if (ctx == CLIENT)
+                frameTracer = new ClientTracer("swiftmq.amqp.frame.debug");
+            else
+                frameTracer = getRouterFrameTracer();
+        }
+        return frameTracer;
     }
-    return processingTracer;
-  }
 
-  /**
-   * Returns the connection thread pool.
-   *
-   * @return connection thread pool
-   */
-  public synchronized ThreadPool getConnectionPool()
-  {
-    if (connectionPool == null)
-    {
-      if (ctx == CLIENT)
-        connectionPool = PoolManager.getInstance().getConnectionPool();
-      else
-        connectionPool = getRouterConnectionPool();
+    /**
+     * Returns a processing tracer.
+     *
+     * @return processing tracer
+     */
+    public synchronized Tracer getProcessingTracer() {
+        if (processingTracer == null) {
+            if (ctx == CLIENT)
+                processingTracer = new ClientTracer("swiftmq.amqp.debug");
+            else
+                processingTracer = getRouterProcessiongTracer();
+        }
+        return processingTracer;
     }
-    return connectionPool;
-  }
 
-  /**
-   * Returns the session thread pool.
-   *
-   * @return session thread pool
-   */
-  public synchronized ThreadPool getSessionPool()
-  {
-    if (sessionPool == null)
-    {
-      if (ctx == CLIENT)
-        sessionPool = PoolManager.getInstance().getSessionPool();
-      else
-        sessionPool = getRouterSessionPool();
+    /**
+     * Returns the connection thread pool.
+     *
+     * @return connection thread pool
+     */
+    public synchronized ThreadPool getConnectionPool() {
+        if (connectionPool == null) {
+            if (ctx == CLIENT)
+                connectionPool = PoolManager.getInstance().getConnectionPool();
+            else
+                connectionPool = getRouterConnectionPool();
+        }
+        return connectionPool;
     }
-    return sessionPool;
-  }
 
-  protected Tracer getRouterFrameTracer()
-  {
-    return null;
-  }
+    /**
+     * Returns the session thread pool.
+     *
+     * @return session thread pool
+     */
+    public synchronized ThreadPool getSessionPool() {
+        if (sessionPool == null) {
+            if (ctx == CLIENT)
+                sessionPool = PoolManager.getInstance().getSessionPool();
+            else
+                sessionPool = getRouterSessionPool();
+        }
+        return sessionPool;
+    }
 
-  protected Tracer getRouterProcessiongTracer()
-  {
-    return null;
-  }
+    protected Tracer getRouterFrameTracer() {
+        return null;
+    }
 
-  protected ThreadPool getRouterConnectionPool()
-  {
-    return null;
-  }
+    protected Tracer getRouterProcessiongTracer() {
+        return null;
+    }
 
-  protected ThreadPool getRouterSessionPool()
-  {
-    return null;
-  }
+    protected ThreadPool getRouterConnectionPool() {
+        return null;
+    }
+
+    protected ThreadPool getRouterSessionPool() {
+        return null;
+    }
 }

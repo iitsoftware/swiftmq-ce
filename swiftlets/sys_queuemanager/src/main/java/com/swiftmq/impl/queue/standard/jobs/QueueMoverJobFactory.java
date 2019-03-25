@@ -26,55 +26,47 @@ import com.swiftmq.swiftlet.scheduler.JobParameter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class QueueMoverJobFactory implements JobFactory
-{
-  SwiftletContext ctx = null;
-  Map parameters = new HashMap();
+public class QueueMoverJobFactory implements JobFactory {
+    SwiftletContext ctx = null;
+    Map parameters = new HashMap();
 
-  public QueueMoverJobFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    JobParameter p = new JobParameter("Source Queue","Source Queue Name",null,true,new QueueNameVerifier(ctx));
-    parameters.put(p.getName(),p);
-    p = new JobParameter("Target Queue","Target Queue Name",null,true,null);
-    parameters.put(p.getName(),p);
-    p = new JobParameter("Message Selector","Message Selector to use (optional)",null,false,new SelectorVerifier());
-    parameters.put(p.getName(),p);
-  }
+    public QueueMoverJobFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        JobParameter p = new JobParameter("Source Queue", "Source Queue Name", null, true, new QueueNameVerifier(ctx));
+        parameters.put(p.getName(), p);
+        p = new JobParameter("Target Queue", "Target Queue Name", null, true, null);
+        parameters.put(p.getName(), p);
+        p = new JobParameter("Message Selector", "Message Selector to use (optional)", null, false, new SelectorVerifier());
+        parameters.put(p.getName(), p);
+    }
 
-  public String getName()
-  {
-    return "Queue Mover";
-  }
+    public String getName() {
+        return "Queue Mover";
+    }
 
-  public String getDescription()
-  {
-    return "Moves the Content of a Source Queue to a Target Queue";
-  }
+    public String getDescription() {
+        return "Moves the Content of a Source Queue to a Target Queue";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/getJobInstance");
-    return new QueueMoverJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/getJobInstance");
+        return new QueueMoverJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[QueueMoverJobFactory]";
-  }
+    public String toString() {
+        return "[QueueMoverJobFactory]";
+    }
 }

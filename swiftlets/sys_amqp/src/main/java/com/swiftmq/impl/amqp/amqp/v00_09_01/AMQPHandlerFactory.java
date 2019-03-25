@@ -23,19 +23,16 @@ import com.swiftmq.impl.amqp.HandlerFactory;
 import com.swiftmq.impl.amqp.SwiftletContext;
 import com.swiftmq.impl.amqp.VersionedConnection;
 
-public class AMQPHandlerFactory implements HandlerFactory
-{
-  public static final ProtocolHeader AMQP_INIT = new ProtocolHeader("AMQP", 0, 0, 9, 1);
+public class AMQPHandlerFactory implements HandlerFactory {
+    public static final ProtocolHeader AMQP_INIT = new ProtocolHeader("AMQP", 0, 0, 9, 1);
 
-  SwiftletContext ctx = null;
+    SwiftletContext ctx = null;
 
-  public AMQPHandlerFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public AMQPHandlerFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public Handler createHandler(VersionedConnection versionedConnection)
-  {
-    return new AMQPHandler(ctx, versionedConnection);
-  }
+    public Handler createHandler(VersionedConnection versionedConnection) {
+        return new AMQPHandler(ctx, versionedConnection);
+    }
 }

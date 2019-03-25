@@ -24,65 +24,56 @@ import java.io.IOException;
 /**
  * Represents a true or false value
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPBoolean extends AMQPType
-{
-  public static final AMQPBoolean TRUE = new AMQPBoolean(true);
-  public static final AMQPBoolean FALSE = new AMQPBoolean(false);
+public class AMQPBoolean extends AMQPType {
+    public static final AMQPBoolean TRUE = new AMQPBoolean(true);
+    public static final AMQPBoolean FALSE = new AMQPBoolean(false);
 
-  /**
-   * Constructs an AMQPBoolean withe a code AMQPTypeDecoder.TRUE or AMQPTypeDecoder.FALSE
-   *
-   * @param code code
-   */
-  public AMQPBoolean(int code)
-  {
-    super("boolean", code);
-  }
-
-  /**
-   * Constructs an AMQPBoolean withe a boolean
-   *
-   * @param value value
-   */
-  public AMQPBoolean(boolean value)
-  {
-    super("boolean", value ? AMQPTypeDecoder.TRUE : AMQPTypeDecoder.FALSE);
-  }
-
-  /**
-   * Returns the value.
-   *
-   * @return value
-   */
-  public boolean getValue()
-  {
-    return code == AMQPTypeDecoder.TRUE ? true : false;
-  }
-
-  public void readContent(DataInput in) throws IOException
-  {
-    if (code == AMQPTypeDecoder.BOOLEAN)
-    {
-      byte b = in.readByte();
-      setCode(b == 0x00 ? AMQPTypeDecoder.FALSE : AMQPTypeDecoder.TRUE);
+    /**
+     * Constructs an AMQPBoolean withe a code AMQPTypeDecoder.TRUE or AMQPTypeDecoder.FALSE
+     *
+     * @param code code
+     */
+    public AMQPBoolean(int code) {
+        super("boolean", code);
     }
-  }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    // Only need to write the code
-    super.writeContent(out);
-  }
+    /**
+     * Constructs an AMQPBoolean withe a boolean
+     *
+     * @param value value
+     */
+    public AMQPBoolean(boolean value) {
+        super("boolean", value ? AMQPTypeDecoder.TRUE : AMQPTypeDecoder.FALSE);
+    }
 
-  public String getValueString()
-  {
-    return code == AMQPTypeDecoder.TRUE ? "TRUE" : "FALSE";
-  }
+    /**
+     * Returns the value.
+     *
+     * @return value
+     */
+    public boolean getValue() {
+        return code == AMQPTypeDecoder.TRUE ? true : false;
+    }
 
-  public String toString()
-  {
-    return "[AMQPBoolean, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public void readContent(DataInput in) throws IOException {
+        if (code == AMQPTypeDecoder.BOOLEAN) {
+            byte b = in.readByte();
+            setCode(b == 0x00 ? AMQPTypeDecoder.FALSE : AMQPTypeDecoder.TRUE);
+        }
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        // Only need to write the code
+        super.writeContent(out);
+    }
+
+    public String getValueString() {
+        return code == AMQPTypeDecoder.TRUE ? "TRUE" : "FALSE";
+    }
+
+    public String toString() {
+        return "[AMQPBoolean, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

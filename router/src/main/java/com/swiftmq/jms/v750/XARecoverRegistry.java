@@ -25,52 +25,43 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class XARecoverRegistry
-{
-  Map xidMap = new HashMap();
+public class XARecoverRegistry {
+    Map xidMap = new HashMap();
 
 
-  private XARecoverRegistry()
-  {
-  }
-
-  private static class InstanceHolder
-  {
-    public static XARecoverRegistry instance = new XARecoverRegistry();
-  }
-
-  public static XARecoverRegistry getInstance()
-  {
-    return InstanceHolder.instance;
-  }
-
-  public synchronized void addRequest(XidImpl xid, Request request)
-  {
-    List list = (List) xidMap.get(xid);
-    if (list == null)
-    {
-      list = new ArrayList();
-      xidMap.put(xid, list);
+    private XARecoverRegistry() {
     }
-    list.add(request);
-  }
 
-  public synchronized List getRequestList(XidImpl xid)
-  {
-    ArrayList l = (ArrayList) xidMap.get(xid);
-    if (l != null)
-      return (List) l.clone();
-    return null;
-  }
+    private static class InstanceHolder {
+        public static XARecoverRegistry instance = new XARecoverRegistry();
+    }
 
-  public synchronized void clear(XidImpl xid)
-  {
-    xidMap.remove(xid);
-  }
+    public static XARecoverRegistry getInstance() {
+        return InstanceHolder.instance;
+    }
 
-  public synchronized void clear()
-  {
-    xidMap.clear();
-  }
+    public synchronized void addRequest(XidImpl xid, Request request) {
+        List list = (List) xidMap.get(xid);
+        if (list == null) {
+            list = new ArrayList();
+            xidMap.put(xid, list);
+        }
+        list.add(request);
+    }
+
+    public synchronized List getRequestList(XidImpl xid) {
+        ArrayList l = (ArrayList) xidMap.get(xid);
+        if (l != null)
+            return (List) l.clone();
+        return null;
+    }
+
+    public synchronized void clear(XidImpl xid) {
+        xidMap.remove(xid);
+    }
+
+    public synchronized void clear() {
+        xidMap.clear();
+    }
 
 }

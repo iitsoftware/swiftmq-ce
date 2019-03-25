@@ -19,7 +19,6 @@ package com.swiftmq.jndi.protocol.v400;
 
 import com.swiftmq.tools.dump.Dumpable;
 
-public interface JNDIRequest extends Dumpable
-{
-  public void accept(JNDIRequestVisitor visitor);
+public interface JNDIRequest extends Dumpable {
+    public void accept(JNDIRequestVisitor visitor);
 }

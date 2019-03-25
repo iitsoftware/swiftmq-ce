@@ -17,85 +17,74 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: RouterConnectRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: RouterConnectRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class RouterConnectRequest extends Request
-{
-  private String routerName;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public RouterConnectRequest()
-  {
-    super(0,true);
-  }
+public class RouterConnectRequest extends Request {
+    private String routerName;
 
-  public RouterConnectRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public RouterConnectRequest() {
+        super(0, true);
+    }
 
-  public RouterConnectRequest(int dispatchId, String routerName)
-  {
-    super(dispatchId,true);
-    this.routerName = routerName;
-  }
-  
-  public void setRouterName(String routerName)
-  {
-    this.routerName = routerName;
-  }
+    public RouterConnectRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public RouterConnectRequest(int dispatchId, String routerName) {
+        super(dispatchId, true);
+        this.routerName = routerName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROUTERCONNECT_REQ;
-  }
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(routerName,out);
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    routerName = SMQPUtil.read(routerName,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_ROUTERCONNECT_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new RouterConnectReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(routerName, out);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        routerName = SMQPUtil.read(routerName, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[RouterConnectRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("routerName=");
-    _b.append(routerName);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new RouterConnectReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[RouterConnectRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("routerName=");
+        _b.append(routerName);
+        _b.append("]");
+        return _b.toString();
+    }
 }

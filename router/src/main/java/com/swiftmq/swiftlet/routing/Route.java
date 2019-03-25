@@ -19,29 +19,32 @@ package com.swiftmq.swiftlet.routing;
 
 /**
  * A route to a remote router.
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public abstract class Route
-{
+public abstract class Route {
 
-  /**
-   * Returns the name of the remote router.
-   * @return router name.
-   */
-  public abstract String getDestination();
-
-
-  /**
-   * Returns the name of the routing queue.
-   * @return queue name.
-   */
-  public abstract String getOutboundQueueName();
+    /**
+     * Returns the name of the remote router.
+     *
+     * @return router name.
+     */
+    public abstract String getDestination();
 
 
-  /**
-   * Returns whether this route is active or not.
-   * @return true/false.
-   */
-  public abstract boolean isActive();
+    /**
+     * Returns the name of the routing queue.
+     *
+     * @return queue name.
+     */
+    public abstract String getOutboundQueueName();
+
+
+    /**
+     * Returns whether this route is active or not.
+     *
+     * @return true/false.
+     */
+    public abstract boolean isActive();
 }
 

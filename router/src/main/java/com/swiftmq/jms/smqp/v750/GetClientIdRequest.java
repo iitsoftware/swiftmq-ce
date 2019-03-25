@@ -17,62 +17,50 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: GetClientIdRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: GetClientIdRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class GetClientIdRequest extends Request 
-{
+public class GetClientIdRequest extends Request {
 
-  public GetClientIdRequest()
-  {
-    super(0,true);
-  }
+    public GetClientIdRequest() {
+        super(0, true);
+    }
 
-  public GetClientIdRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public GetClientIdRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public GetClientIdRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public GetClientIdRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
 
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GETCLIENTID_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_GETCLIENTID_REQ;
+    }
 
 
+    protected Reply createReplyInstance() {
+        return new GetClientIdReply();
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new GetClientIdReply();
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
-
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/GetClientIdRequest, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/GetClientIdRequest, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -23,28 +23,23 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POProtocolRequest extends POObject
-{
-  ProtocolHeader header = null;
+public class POProtocolRequest extends POObject {
+    ProtocolHeader header = null;
 
-  public POProtocolRequest(Semaphore semaphore, ProtocolHeader header)
-  {
-    super(null, semaphore);
-    this.header = header;
-  }
+    public POProtocolRequest(Semaphore semaphore, ProtocolHeader header) {
+        super(null, semaphore);
+        this.header = header;
+    }
 
-  public ProtocolHeader getHeader()
-  {
-    return header;
-  }
+    public ProtocolHeader getHeader() {
+        return header;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POProtocolRequest, header=" + header + "]";
-  }
+    public String toString() {
+        return "[POProtocolRequest, header=" + header + "]";
+    }
 }

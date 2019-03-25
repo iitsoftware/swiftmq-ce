@@ -19,15 +19,12 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-public class XAResSetTxTimeoutReply extends Reply
-{
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESSETTXTIMEOUT_REP;
-  }
+public class XAResSetTxTimeoutReply extends Reply {
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESSETTXTIMEOUT_REP;
+    }
 
-  public String toString()
-  {
-    return "[XAResSetTxTimeoutReply " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[XAResSetTxTimeoutReply " + super.toString() + "]";
+    }
 }

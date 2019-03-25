@@ -28,129 +28,107 @@ import java.util.List;
 /**
  * TransactionId covers type of transaction and internal id
  */
-public class TransactionId
-{
-  public final static int PULL_TRANSACTION = 0;
-  public final static int PUSH_TRANSACTION = 1;
-  int transactionType = PULL_TRANSACTION;
-  boolean prepared = false;
-  boolean alreadyStored = false;
-  StoreTransaction storeTransaction = null;
-  XidImpl globalTxId = null;
-  List preparedList = null;
-  PrepareLogRecord logRecord = null;
-  List txList = null;
-  int txId = -1;
+public class TransactionId {
+    public final static int PULL_TRANSACTION = 0;
+    public final static int PUSH_TRANSACTION = 1;
+    int transactionType = PULL_TRANSACTION;
+    boolean prepared = false;
+    boolean alreadyStored = false;
+    StoreTransaction storeTransaction = null;
+    XidImpl globalTxId = null;
+    List preparedList = null;
+    PrepareLogRecord logRecord = null;
+    List txList = null;
+    int txId = -1;
 
-  public TransactionId(int transactionType)
-  {
-    this.transactionType = transactionType;
-    this.txList = Collections.synchronizedList(new ArrayList());
-  }
+    public TransactionId(int transactionType) {
+        this.transactionType = transactionType;
+        this.txList = Collections.synchronizedList(new ArrayList());
+    }
 
-  public TransactionId()
-  {
-  }
+    public TransactionId() {
+    }
 
-  public int getTransactionType()
-  {
-    return (transactionType);
-  }
+    public int getTransactionType() {
+        return (transactionType);
+    }
 
-  public int getTxId()
-  {
-    return txId;
-  }
+    public int getTxId() {
+        return txId;
+    }
 
-  public void setTxId(int txId)
-  {
-    this.txId = txId;
-  }
+    public void setTxId(int txId) {
+        this.txId = txId;
+    }
 
-  public void setTxList(List txList)
-  {
-    this.txList = txList;
-  }
+    public void setTxList(List txList) {
+        this.txList = txList;
+    }
 
-  public List getTxList()
-  {
-    return txList;
-  }
+    public List getTxList() {
+        return txList;
+    }
 
-  void setPrepared(boolean prepared)
-  {
-    this.prepared = prepared;
-  }
+    void setPrepared(boolean prepared) {
+        this.prepared = prepared;
+    }
 
-  boolean isPrepared()
-  {
-    return prepared;
-  }
+    boolean isPrepared() {
+        return prepared;
+    }
 
-  boolean isAlreadyStored()
-  {
-    return alreadyStored;
-  }
+    boolean isAlreadyStored() {
+        return alreadyStored;
+    }
 
-  void setAlreadyStored(boolean alreadyStored)
-  {
-    this.alreadyStored = alreadyStored;
-  }
+    void setAlreadyStored(boolean alreadyStored) {
+        this.alreadyStored = alreadyStored;
+    }
 
-  PrepareLogRecord getLogRecord()
-  {
-    return logRecord;
-  }
+    PrepareLogRecord getLogRecord() {
+        return logRecord;
+    }
 
-  void setLogRecord(PrepareLogRecord logRecord)
-  {
-    this.logRecord = logRecord;
-  }
+    void setLogRecord(PrepareLogRecord logRecord) {
+        this.logRecord = logRecord;
+    }
 
-  StoreTransaction getStoreTransaction()
-  {
-    return storeTransaction;
-  }
+    StoreTransaction getStoreTransaction() {
+        return storeTransaction;
+    }
 
-  void setStoreTransaction(StoreTransaction storeTransaction)
-  {
-    this.storeTransaction = storeTransaction;
-  }
+    void setStoreTransaction(StoreTransaction storeTransaction) {
+        this.storeTransaction = storeTransaction;
+    }
 
-  XidImpl getGlobalTxId()
-  {
-    return globalTxId;
-  }
+    XidImpl getGlobalTxId() {
+        return globalTxId;
+    }
 
-  void setGlobalTxId(XidImpl globalTxId)
-  {
-    this.globalTxId = globalTxId;
-  }
+    void setGlobalTxId(XidImpl globalTxId) {
+        this.globalTxId = globalTxId;
+    }
 
-  List getPreparedList()
-  {
-    return preparedList;
-  }
+    List getPreparedList() {
+        return preparedList;
+    }
 
-  void setPreparedList(List preparedList)
-  {
-    this.preparedList = preparedList;
-  }
+    void setPreparedList(List preparedList) {
+        this.preparedList = preparedList;
+    }
 
-  void clear()
-  {
-    prepared = false;
-    storeTransaction = null;
-    globalTxId = null;
-    preparedList = null;
-    logRecord = null;
-    txList = null;
-    txId = -1;
-  }
+    void clear() {
+        prepared = false;
+        storeTransaction = null;
+        globalTxId = null;
+        preparedList = null;
+        logRecord = null;
+        txList = null;
+        txId = -1;
+    }
 
-  public String toString()
-  {
-    return (transactionType == PULL_TRANSACTION ? "PULL_TRANSACTION" : "PUSH_TRANSACTION") + "TxId=" + txId;
-  }
+    public String toString() {
+        return (transactionType == PULL_TRANSACTION ? "PULL_TRANSACTION" : "PUSH_TRANSACTION") + "TxId=" + txId;
+    }
 }
 

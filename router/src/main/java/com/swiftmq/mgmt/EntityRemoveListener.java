@@ -22,19 +22,19 @@ package com.swiftmq.mgmt;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface EntityRemoveListener
-{
+public interface EntityRemoveListener {
 
-  /**
-   * Called before the Entity is removed.
-   * The listener should do the appropriate work and should throw an EntityRemoveException
-   * if there is any reason that prevents the removal. If no exception is thrown, the
-   * entity will be removed from the parent.
-   * @param parent the parent.
-   * @param delEntity the entity to be delete.
-   * @exception EntityRemoveException if there is any reason that prevents the removal.
-   */
-  public void onEntityRemove(Entity parent, Entity delEntity)
-    throws EntityRemoveException;
+    /**
+     * Called before the Entity is removed.
+     * The listener should do the appropriate work and should throw an EntityRemoveException
+     * if there is any reason that prevents the removal. If no exception is thrown, the
+     * entity will be removed from the parent.
+     *
+     * @param parent    the parent.
+     * @param delEntity the entity to be delete.
+     * @throws EntityRemoveException if there is any reason that prevents the removal.
+     */
+    public void onEntityRemove(Entity parent, Entity delEntity)
+            throws EntityRemoveException;
 }
 

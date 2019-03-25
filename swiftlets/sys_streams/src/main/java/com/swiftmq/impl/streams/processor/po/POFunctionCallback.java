@@ -45,6 +45,6 @@ public class POFunctionCallback extends POObject {
     }
 
     public String toString() {
-        return "[POFunctionCallback, functionCallback=" + functionCallback + ", context="+context+"]";
+        return "[POFunctionCallback, functionCallback=" + functionCallback + ", context=" + context + "]";
     }
 }

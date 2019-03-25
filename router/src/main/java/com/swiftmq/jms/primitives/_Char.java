@@ -23,48 +23,39 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Char implements Dumpable, Primitive
-{
-  Character value = null;
+public class _Char implements Dumpable, Primitive {
+    Character value = null;
 
-  public _Char()
-  {
-  }
+    public _Char() {
+    }
 
-  public _Char(char value)
-  {
-    this.value = new Character(value);
-  }
+    public _Char(char value) {
+        this.value = new Character(value);
+    }
 
-  public char charValue()
-  {
-    return value.charValue();
-  }
+    public char charValue() {
+        return value.charValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return CHAR;
-  }
+    public int getDumpId() {
+        return CHAR;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeChar(value.charValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeChar(value.charValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Character(in.readChar());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Character(in.readChar());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

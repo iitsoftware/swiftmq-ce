@@ -20,31 +20,26 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00;
 import com.swiftmq.amqp.v100.generated.transport.definitions.ErrorConditionIF;
 import com.swiftmq.amqp.v100.types.AMQPString;
 
-public abstract class EndWithErrorException extends Exception
-{
-  ErrorConditionIF condition;
-  AMQPString description;
+public abstract class EndWithErrorException extends Exception {
+    ErrorConditionIF condition;
+    AMQPString description;
 
-  public EndWithErrorException(ErrorConditionIF condition, AMQPString description)
-  {
-    this.condition = condition;
-    this.description = description;
-  }
+    public EndWithErrorException(ErrorConditionIF condition, AMQPString description) {
+        this.condition = condition;
+        this.description = description;
+    }
 
-  public ErrorConditionIF getCondition()
-  {
-    return condition;
-  }
+    public ErrorConditionIF getCondition() {
+        return condition;
+    }
 
-  public AMQPString getDescription()
-  {
-    return description;
-  }
+    public AMQPString getDescription() {
+        return description;
+    }
 
-  public abstract void accept(EndWithErrorExceptionVisitor visitor);
+    public abstract void accept(EndWithErrorExceptionVisitor visitor);
 
-  public String toString()
-  {
-    return "condition=" + condition.getValueString() + ", description=" + description.getValue();
-  }
+    public String toString() {
+        return "condition=" + condition.getValueString() + ", description=" + description.getValue();
+    }
 }

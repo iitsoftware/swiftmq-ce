@@ -22,7 +22,7 @@ import com.swiftmq.mqtt.v311.netty.util.internal.StringUtil;
 
 /**
  * See <a href="http://public.dhe.ibm.com/software/dw/webservices/ws-mqtt/mqtt-v3r1.html#fixed-header">
- *     MQTTV3.1/fixed-header</a>
+ * MQTTV3.1/fixed-header</a>
  */
 public final class MqttFixedHeader {
 
@@ -68,13 +68,13 @@ public final class MqttFixedHeader {
     @Override
     public String toString() {
         return new StringBuilder(StringUtil.simpleClassName(this))
-            .append('[')
-            .append("messageType=").append(messageType)
-            .append(", isDup=").append(isDup)
-            .append(", qosLevel=").append(qosLevel)
-            .append(", isRetain=").append(isRetain)
-            .append(", remainingLength=").append(remainingLength)
-            .append(']')
-            .toString();
+                .append('[')
+                .append("messageType=").append(messageType)
+                .append(", isDup=").append(isDup)
+                .append(", qosLevel=").append(qosLevel)
+                .append(", isRetain=").append(isRetain)
+                .append(", remainingLength=").append(remainingLength)
+                .append(']')
+                .toString();
     }
 }

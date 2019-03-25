@@ -20,16 +20,16 @@ package com.swiftmq.amqp.v100.client;
 /**
  * <p>A listener that can be registered on a Consumer with a receiveNoWait call to get a notification when new messages become available.
  * </p>
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ *
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
  */
 
-public interface MessageAvailabilityListener
-{
-  /**
-   * Will be called from a Consumer when a message becomes available. The Consumer is locked during the call so never
-   * access the Consumer out of this method call (rather the intention is to notify another thread to call receive on it)
-   *
-   * @param consumer The calling Consumer
-   */
-  public void messageAvailable(Consumer consumer);
+public interface MessageAvailabilityListener {
+    /**
+     * Will be called from a Consumer when a message becomes available. The Consumer is locked during the call so never
+     * access the Consumer out of this method call (rather the intention is to notify another thread to call receive on it)
+     *
+     * @param consumer The calling Consumer
+     */
+    public void messageAvailable(Consumer consumer);
 }

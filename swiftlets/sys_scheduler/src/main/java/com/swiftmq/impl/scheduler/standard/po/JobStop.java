@@ -19,41 +19,35 @@ package com.swiftmq.impl.scheduler.standard.po;
 
 import com.swiftmq.impl.scheduler.standard.Scheduler;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class JobStop extends POObject implements TimerListener
-{
-  String name = null;
-  Scheduler scheduler = null;
+public class JobStop extends POObject implements TimerListener {
+    String name = null;
+    Scheduler scheduler = null;
 
-  public JobStop(String name)
-  {
-    super(null, null);
-    this.name = name;
-  }
+    public JobStop(String name) {
+        super(null, null);
+        this.name = name;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public void setScheduler(Scheduler scheduler)
-  {
-    this.scheduler = scheduler;
-  }
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
 
-  public void performTimeAction()
-  {
-    scheduler.enqueue(this);
-  }
+    public void performTimeAction() {
+        scheduler.enqueue(this);
+    }
 
-  public String toString()
-  {
-    return "[JobStop, name="+name+"]";
-  }
+    public String toString() {
+        return "[JobStop, name=" + name + "]";
+    }
 }

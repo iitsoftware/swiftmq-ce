@@ -22,32 +22,31 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 
 import java.util.Map;
 
-public interface Cache
-{
-  void setCacheTable(Map cacheTable);
+public interface Cache {
+    void setCacheTable(Map cacheTable);
 
-  Map getCacheTable();
+    Map getCacheTable();
 
-  void setMaxMessages(int size);
+    void setMaxMessages(int size);
 
-  int getMaxMessages();
+    int getMaxMessages();
 
-  void setMaxBytesKB(int size);
+    void setMaxBytesKB(int size);
 
-  int getMaxBytesKB();
+    int getMaxBytesKB();
 
-  int getCurrentMessages();
+    int getCurrentMessages();
 
-  int getCurrentBytesKB();
+    int getCurrentBytesKB();
 
-  void put(StoreId storeId, MessageImpl message)
-      throws Exception;
+    void put(StoreId storeId, MessageImpl message)
+            throws Exception;
 
-  MessageEntry get(StoreId storeId)
-      throws Exception;
+    MessageEntry get(StoreId storeId)
+            throws Exception;
 
-  void remove(StoreId storeId)
-      throws Exception;
+    void remove(StoreId storeId)
+            throws Exception;
 
-  void clear();
+    void clear();
 }

@@ -17,9 +17,8 @@
 
 package com.swiftmq.amqp.integration;
 
-public abstract class Tracer
-{
-  public abstract boolean isEnabled();
+public abstract class Tracer {
+    public abstract boolean isEnabled();
 
-  public abstract void trace(String traceKey, String msg);
+    public abstract void trace(String traceKey, String msg);
 }

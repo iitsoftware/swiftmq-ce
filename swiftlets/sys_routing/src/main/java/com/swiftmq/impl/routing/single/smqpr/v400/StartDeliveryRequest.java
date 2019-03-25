@@ -22,31 +22,25 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class StartDeliveryRequest extends Request
-{
+public class StartDeliveryRequest extends Request {
 
-  public StartDeliveryRequest()
-  {
-    super(0, false);
-  }
+    public StartDeliveryRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.STARTDELIVERY_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.STARTDELIVERY_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[StartDeliveryRequest " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[StartDeliveryRequest " + super.toString() + "]";
+    }
 }

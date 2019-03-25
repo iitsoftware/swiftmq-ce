@@ -17,75 +17,64 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: CreateTmpQueueReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: CreateTmpQueueReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CreateTmpQueueReply extends ReplyNE
-{
-  private String queueName;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateTmpQueueReply(String queueName)
-  {
-    this.queueName = queueName;
-  }
+public class CreateTmpQueueReply extends ReplyNE {
+    private String queueName;
 
-  protected CreateTmpQueueReply()
-  {
-  }
-  
-  public void setQueueName(String queueName)
-  {
-    this.queueName = queueName;
-  }
+    public CreateTmpQueueReply(String queueName) {
+        this.queueName = queueName;
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    protected CreateTmpQueueReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATETMPQUEUE_REP;
-  }
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (queueName != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(queueName,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean queueName_set = in.readBoolean();
-    if (queueName_set)
-      queueName = SMQPUtil.read(queueName,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATETMPQUEUE_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/CreateTmpQueueReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueName=");
-    _b.append(queueName);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (queueName != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(queueName, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean queueName_set = in.readBoolean();
+        if (queueName_set)
+            queueName = SMQPUtil.read(queueName, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/CreateTmpQueueReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueName=");
+        _b.append(queueName);
+        _b.append("]");
+        return _b.toString();
+    }
 }

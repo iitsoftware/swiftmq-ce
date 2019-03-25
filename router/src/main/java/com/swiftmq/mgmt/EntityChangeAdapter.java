@@ -22,36 +22,32 @@ package com.swiftmq.mgmt;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class EntityChangeAdapter implements EntityAddListener, EntityRemoveListener
-{
-  protected Object configObject;
+public class EntityChangeAdapter implements EntityAddListener, EntityRemoveListener {
+    protected Object configObject;
 
 
-  /**
-   * Create a new EntityChangeAdapter.
-   * A custom config object can be store at creation time for later use.
-   * @param configObject config object.
-   */
-  public EntityChangeAdapter(Object configObject)
-  {
-    // SBgen: Assign variable
-    this.configObject = configObject;
-  }
+    /**
+     * Create a new EntityChangeAdapter.
+     * A custom config object can be store at creation time for later use.
+     *
+     * @param configObject config object.
+     */
+    public EntityChangeAdapter(Object configObject) {
+        // SBgen: Assign variable
+        this.configObject = configObject;
+    }
 
-  public void onEntityAdd(Entity parent, Entity newEntity)
-    throws EntityAddException
-  {
-  }
+    public void onEntityAdd(Entity parent, Entity newEntity)
+            throws EntityAddException {
+    }
 
-  public Configuration onConfigurationAdd(Entity parent, Entity newEntity)
-    throws EntityAddException
-  {
-    return null;
-  }
+    public Configuration onConfigurationAdd(Entity parent, Entity newEntity)
+            throws EntityAddException {
+        return null;
+    }
 
-  public void onEntityRemove(Entity parent, Entity newEntity)
-    throws EntityRemoveException
-  {
-  }
+    public void onEntityRemove(Entity parent, Entity newEntity)
+            throws EntityRemoveException {
+    }
 }
 

@@ -17,74 +17,67 @@
 
 package com.swiftmq.jms.v630;
 
-import com.swiftmq.tools.requestreply.RequestRegistry;
-import com.swiftmq.tools.requestreply.Request;
-import com.swiftmq.tools.requestreply.Reply;
-import com.swiftmq.jms.smqp.v630.CreatePublisherRequest;
-import com.swiftmq.jms.smqp.v630.CreatePublisherReply;
 import com.swiftmq.jms.TopicImpl;
+import com.swiftmq.jms.smqp.v630.CreatePublisherReply;
+import com.swiftmq.jms.smqp.v630.CreatePublisherRequest;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
 import java.util.List;
 
 public class TopicPublisherImpl extends MessageProducerImpl
-  implements TopicPublisher, Recreatable
-{
-  Topic topic = null;
+        implements TopicPublisher, Recreatable {
+    Topic topic = null;
 
-  public TopicPublisherImpl(SessionImpl mySession, Topic topic,
-                            int producerId, RequestRegistry requestRegistry,
-                            String myHostname, String clientId)
-  {
-    super(mySession, producerId, requestRegistry, myHostname, clientId);
-    this.topic = topic;
-  }
+    public TopicPublisherImpl(SessionImpl mySession, Topic topic,
+                              int producerId, RequestRegistry requestRegistry,
+                              String myHostname, String clientId) {
+        super(mySession, producerId, requestRegistry, myHostname, clientId);
+        this.topic = topic;
+    }
 
-  public Request getRecreateRequest()
-  {
-    return new CreatePublisherRequest(mySession, mySession.dispatchId, (TopicImpl) topic);
-  }
+    public Request getRecreateRequest() {
+        return new CreatePublisherRequest(mySession, mySession.dispatchId, (TopicImpl) topic);
+    }
 
-  public void setRecreateReply(Reply reply)
-  {
-    producerId = ((CreatePublisherReply)reply).getTopicPublisherId();
-  }
+    public void setRecreateReply(Reply reply) {
+        producerId = ((CreatePublisherReply) reply).getTopicPublisherId();
+    }
 
-  public List getRecreatables()
-  {
-    return null;
-  }
+    public List getRecreatables() {
+        return null;
+    }
 
-  public Topic getTopic()
-    throws JMSException
-  {
-    verifyState();
+    public Topic getTopic()
+            throws JMSException {
+        verifyState();
 
-    return (topic);
-  }
+        return (topic);
+    }
 
-  public void publish(Message message)
-    throws JMSException
-  {
-    send(message);
-  }
+    public void publish(Message message)
+            throws JMSException {
+        send(message);
+    }
 
-  public void publish(Message message, int deliveryMode, int priority, long timeToLive)
-    throws JMSException
-  {
-    send(message, deliveryMode, priority, timeToLive);
-  }
+    public void publish(Message message, int deliveryMode, int priority, long timeToLive)
+            throws JMSException {
+        send(message, deliveryMode, priority, timeToLive);
+    }
 
-  public void publish(Topic topic, Message message)
-    throws JMSException
-  {
-    send(topic, message);
-  }
+    public void publish(Topic topic, Message message)
+            throws JMSException {
+        send(topic, message);
+    }
 
-  public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive)
-    throws JMSException
-  {
-    send(topic, message, deliveryMode, priority, timeToLive);
-  }
+    public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive)
+            throws JMSException {
+        send(topic, message, deliveryMode, priority, timeToLive);
+    }
 }
 

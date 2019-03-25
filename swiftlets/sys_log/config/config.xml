@@ -1,7 +1,7 @@
 <swiftlet name="sys$log"
           displayname="Log Swiftlet"
           class="com.swiftmq.impl.log.standard.LogSwiftletImpl"
-          icon="/com/swiftmq/impl/log/standard/images/swiftlet.png"
+          icon="/sys_log/images/swiftlet.png"
           description="Central Logging Facility"
           release="${release}"
           vendor="IIT Software GmbH, Bremen/Germany">

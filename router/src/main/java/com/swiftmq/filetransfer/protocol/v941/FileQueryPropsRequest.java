@@ -26,74 +26,63 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
-public class FileQueryPropsRequest extends MessageBasedRequest
-{
-  public static final String LINK_PROP = "JMS_SWIFTMQ_FT_LINK";
-  String link = null;
-  String selector = null;
+public class FileQueryPropsRequest extends MessageBasedRequest {
+    public static final String LINK_PROP = "JMS_SWIFTMQ_FT_LINK";
+    String link = null;
+    String selector = null;
 
-  public FileQueryPropsRequest(Message message) throws JMSException
-  {
-    super(message);
-    link = message.getStringProperty(LINK_PROP);
-    selector = ((TextMessage) message).getText();
-  }
+    public FileQueryPropsRequest(Message message) throws JMSException {
+        super(message);
+        link = message.getStringProperty(LINK_PROP);
+        selector = ((TextMessage) message).getText();
+    }
 
-  public FileQueryPropsRequest(String link, String selector)
-  {
-    this.link = link;
-    this.selector = selector;
-    setReplyRequired(true);
-  }
+    public FileQueryPropsRequest(String link, String selector) {
+        this.link = link;
+        this.selector = selector;
+        setReplyRequired(true);
+    }
 
-  public String getLink()
-  {
-    return link;
-  }
+    public String getLink() {
+        return link;
+    }
 
-  public void setLink(String link)
-  {
-    this.link = link;
-  }
+    public void setLink(String link) {
+        this.link = link;
+    }
 
-  public String getSelector()
-  {
-    return selector;
-  }
+    public String getSelector() {
+        return selector;
+    }
 
-  public void setSelector(String selector)
-  {
-    this.selector = selector;
-  }
+    public void setSelector(String selector) {
+        this.selector = selector;
+    }
 
-  public MessageBasedReply createReplyInstance()
-  {
-    return new FileQueryPropsReply();
-  }
+    public MessageBasedReply createReplyInstance() {
+        return new FileQueryPropsReply();
+    }
 
-  public void accept(MessageBasedRequestVisitor visitor)
-  {
-    ((ProtocolVisitor) visitor).visit(this);
-  }
+    public void accept(MessageBasedRequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    TextMessage message = new TextMessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEQUERYPROPS_REQ);
-    if (link != null)
-      message.setStringProperty(LINK_PROP, link);
-    fillMessage(message);
-    message.setText(selector);
-    return message;
-  }
+    public Message toMessage() throws JMSException {
+        TextMessage message = new TextMessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEQUERYPROPS_REQ);
+        if (link != null)
+            message.setStringProperty(LINK_PROP, link);
+        fillMessage(message);
+        message.setText(selector);
+        return message;
+    }
 
-  public String toString()
-  {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("[FileQueryPropsRequest");
-    sb.append(", link='").append(link);
-    sb.append(", selector='").append(selector);
-    sb.append(']');
-    return sb.toString();
-  }
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("[FileQueryPropsRequest");
+        sb.append(", link='").append(link);
+        sb.append(", selector='").append(selector);
+        sb.append(']');
+        return sb.toString();
+    }
 }

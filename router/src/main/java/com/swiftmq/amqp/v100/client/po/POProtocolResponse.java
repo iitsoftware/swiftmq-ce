@@ -22,28 +22,23 @@ import com.swiftmq.amqp.v100.client.ConnectionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POProtocolResponse extends POObject
-{
-  ProtocolHeader header = null;
+public class POProtocolResponse extends POObject {
+    ProtocolHeader header = null;
 
-  public POProtocolResponse(ProtocolHeader header)
-  {
-    super(null, null);
-    this.header = header;
-  }
+    public POProtocolResponse(ProtocolHeader header) {
+        super(null, null);
+        this.header = header;
+    }
 
-  public ProtocolHeader getHeader()
-  {
-    return header;
-  }
+    public ProtocolHeader getHeader() {
+        return header;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POProtocolResponse, header=" + header + "]";
-  }
+    public String toString() {
+        return "[POProtocolResponse, header=" + header + "]";
+    }
 }

@@ -67,8 +67,7 @@ public class OutputBuilder {
      * @return Output
      * @throws Exception
      */
-    public Output forAddress(Destination address) throws Exception
-    {
+    public Output forAddress(Destination address) throws Exception {
         Output output = new QueueOutput(ctx, name);
         if (name != null)
             ctx.stream.addOutput(name, output);

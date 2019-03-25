@@ -17,44 +17,38 @@
 
 package com.swiftmq.impl.routing.single.smqpr;
 
-import com.swiftmq.tools.requestreply.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CloseStageQueueRequest extends Request
-{
-  Semaphore semaphore = null;
+public class CloseStageQueueRequest extends Request {
+    Semaphore semaphore = null;
 
-  public CloseStageQueueRequest()
-  {
-    super(0,false);
-  }
+    public CloseStageQueueRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.CLOSE_STAGE_QUEUE_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.CLOSE_STAGE_QUEUE_REQ;
+    }
 
-  public Semaphore getSemaphore()
-  {
-    return semaphore;
-  }
+    public Semaphore getSemaphore() {
+        return semaphore;
+    }
 
-  public void setSemaphore(Semaphore semaphore)
-  {
-    this.semaphore = semaphore;
-  }
+    public void setSemaphore(Semaphore semaphore) {
+        this.semaphore = semaphore;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-  }
+    public void accept(RequestVisitor visitor) {
+    }
 
-  public String toString()
-  {
-    return "[CloseStageQueueRequest, semaphore="+semaphore+"]";
-  }
+    public String toString() {
+        return "[CloseStageQueueRequest, semaphore=" + semaphore + "]";
+    }
 }

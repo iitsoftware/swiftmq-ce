@@ -19,17 +19,18 @@ package com.swiftmq.tools.dump;
 
 /**
  * Abstract Factory for Dumpables.
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  * @see Dumpalizer
  */
-public abstract class DumpableFactory
-{
-  /**
-   * Creates a new Dumpable object for the given dump id.
-   * @param dumpId the dump id
-   * @return Dumpable
-   */
-  public abstract Dumpable createDumpable(int dumpId);
+public abstract class DumpableFactory {
+    /**
+     * Creates a new Dumpable object for the given dump id.
+     *
+     * @param dumpId the dump id
+     * @return Dumpable
+     */
+    public abstract Dumpable createDumpable(int dumpId);
 }
 

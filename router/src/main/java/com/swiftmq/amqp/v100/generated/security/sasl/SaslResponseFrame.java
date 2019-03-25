@@ -17,20 +17,14 @@
 
 package com.swiftmq.amqp.v100.generated.security.sasl;
 
+import com.swiftmq.amqp.v100.transport.AMQPFrame;
 import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * <p>
@@ -38,215 +32,195 @@ import java.util.*;
  * </p><p>
  * </p>
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
 public class SaslResponseFrame extends AMQPFrame
-       implements SaslFrameIF
-{
-  public static String DESCRIPTOR_NAME = "amqp:sasl-response:list";
-  public static long DESCRIPTOR_CODE = 0x00000000L<<32 | 0x00000043L;
+        implements SaslFrameIF {
+    public static String DESCRIPTOR_NAME = "amqp:sasl-response:list";
+    public static long DESCRIPTOR_CODE = 0x00000000L << 32 | 0x00000043L;
 
-  public AMQPDescribedConstructor codeConstructor = new AMQPDescribedConstructor(new AMQPUnsignedLong(DESCRIPTOR_CODE), AMQPTypeDecoder.UNKNOWN);
-  public AMQPDescribedConstructor nameConstructor = new AMQPDescribedConstructor(new AMQPSymbol(DESCRIPTOR_NAME), AMQPTypeDecoder.UNKNOWN);
-  
-  AMQPList body = null;
-  boolean dirty = false;
+    public AMQPDescribedConstructor codeConstructor = new AMQPDescribedConstructor(new AMQPUnsignedLong(DESCRIPTOR_CODE), AMQPTypeDecoder.UNKNOWN);
+    public AMQPDescribedConstructor nameConstructor = new AMQPDescribedConstructor(new AMQPSymbol(DESCRIPTOR_NAME), AMQPTypeDecoder.UNKNOWN);
 
-  AMQPBinary response =  null;
+    AMQPList body = null;
+    boolean dirty = false;
 
-  /**
-   * Constructs a SaslResponseFrame.
-   *
-   * @param channel the channel id
-   * @param body the frame body
-   */
-  public SaslResponseFrame(int channel, AMQPList body) throws Exception
-  {
-    super(channel);
-    setTypeCode(TYPE_CODE_SASL_FRAME);
-    this.body = body;
-    if (body != null)
-      decode();
-  }
+    AMQPBinary response = null;
 
-  /**
-   * Constructs a SaslResponseFrame.
-   *
-   * @param channel the channel id
-   */
-  public SaslResponseFrame(int channel)
-  {
-    super(channel);
-    setTypeCode(TYPE_CODE_SASL_FRAME);
-  }
-
-  /**
-   * Accept method for a SaslFrame visitor.
-   *
-   * @param visitor SaslFrame visitor
-   */
-  public void accept(SaslFrameVisitor visitor)
-  {
-    visitor.visit(this);
-  }
-
-
-  /**
-   * Sets the mandatory Response field.
-   *
-   * <p>
-   * </p><p>
-   * </p><p>
-   * A block of opaque data passed to the security mechanism. The contents of this data are
-   * defined by the SASL security mechanism.
-   * </p><p>
-   * </p><p>
-   * </p><p>
-   * </p>
-   * @param response Response
-   */
-  public void setResponse(AMQPBinary response)
-  {
-    dirty = true;
-    this.response = response;
-  }
-
-  /**
-   * Returns the mandatory Response field.
-   *
-   * @return Response
-   */
-  public AMQPBinary getResponse()
-  {
-    return response;
-  }
-
-
-  /**
-   * Returns the predicted size of this SaslResponseFrame. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize();
-    if (body == null)
-    {
-      n += 4; // For safety (length field and size of the list)
-      n += codeConstructor.getPredictedSize();
-      n += (response != null?response.getPredictedSize():1);
-    } else
-      n += body.getPredictedSize();
-    return n;
-  }
-
-  private AMQPArray singleToArray(AMQPType t) throws IOException
-  {
-    return new AMQPArray(t.getCode(), new AMQPType[]{t});
-  }
-
-  private void decode() throws Exception
-  {
-    List l = body.getValue();
-    AMQPType t = null;
-    int idx = 0;
-
-
-    // Field: response
-    // Type     : binary, converted: AMQPBinary
-    // Basetype : binary
-    // Default  : null
-    // Mandatory: true
-    // Multiple : false
-    // Factory  : ./.
-    if (idx >= l.size())
-      return;
-    t = (AMQPType) l.get(idx++);
-    if (t.getCode() == AMQPTypeDecoder.NULL)
-      throw new Exception("Mandatory field 'response' in 'SaslResponse' frame is NULL");
-    try {
-      response = (AMQPBinary)t;
-    } catch (ClassCastException e)
-    {
-      throw new Exception("Invalid type of field 'response' in 'SaslResponse' frame: "+e);
+    /**
+     * Constructs a SaslResponseFrame.
+     *
+     * @param channel the channel id
+     * @param body    the frame body
+     */
+    public SaslResponseFrame(int channel, AMQPList body) throws Exception {
+        super(channel);
+        setTypeCode(TYPE_CODE_SASL_FRAME);
+        this.body = body;
+        if (body != null)
+            decode();
     }
-  }
 
-  private void addToList(List list, Object value)
-  {
-    if (value != null)
-      list.add(value);
-    else
-      list.add(AMQPNull.NULL);
-  }
+    /**
+     * Constructs a SaslResponseFrame.
+     *
+     * @param channel the channel id
+     */
+    public SaslResponseFrame(int channel) {
+        super(channel);
+        setTypeCode(TYPE_CODE_SASL_FRAME);
+    }
 
-  private void encode() throws IOException
-  {
-    List l = new ArrayList();
-    addToList(l, response);
-    for (ListIterator iter=l.listIterator(l.size());iter.hasPrevious();)
-    {
-        AMQPType t = (AMQPType)iter.previous();
+    /**
+     * Accept method for a SaslFrame visitor.
+     *
+     * @param visitor SaslFrame visitor
+     */
+    public void accept(SaslFrameVisitor visitor) {
+        visitor.visit(this);
+    }
+
+
+    /**
+     * Sets the mandatory Response field.
+     *
+     * <p>
+     * </p><p>
+     * </p><p>
+     * A block of opaque data passed to the security mechanism. The contents of this data are
+     * defined by the SASL security mechanism.
+     * </p><p>
+     * </p><p>
+     * </p><p>
+     * </p>
+     *
+     * @param response Response
+     */
+    public void setResponse(AMQPBinary response) {
+        dirty = true;
+        this.response = response;
+    }
+
+    /**
+     * Returns the mandatory Response field.
+     *
+     * @return Response
+     */
+    public AMQPBinary getResponse() {
+        return response;
+    }
+
+
+    /**
+     * Returns the predicted size of this SaslResponseFrame. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize() {
+        int n = super.getPredictedSize();
+        if (body == null) {
+            n += 4; // For safety (length field and size of the list)
+            n += codeConstructor.getPredictedSize();
+            n += (response != null ? response.getPredictedSize() : 1);
+        } else
+            n += body.getPredictedSize();
+        return n;
+    }
+
+    private AMQPArray singleToArray(AMQPType t) throws IOException {
+        return new AMQPArray(t.getCode(), new AMQPType[]{t});
+    }
+
+    private void decode() throws Exception {
+        List l = body.getValue();
+        AMQPType t = null;
+        int idx = 0;
+
+
+        // Field: response
+        // Type     : binary, converted: AMQPBinary
+        // Basetype : binary
+        // Default  : null
+        // Mandatory: true
+        // Multiple : false
+        // Factory  : ./.
+        if (idx >= l.size())
+            return;
+        t = (AMQPType) l.get(idx++);
         if (t.getCode() == AMQPTypeDecoder.NULL)
-          iter.remove();
+            throw new Exception("Mandatory field 'response' in 'SaslResponse' frame is NULL");
+        try {
+            response = (AMQPBinary) t;
+        } catch (ClassCastException e) {
+            throw new Exception("Invalid type of field 'response' in 'SaslResponse' frame: " + e);
+        }
+    }
+
+    private void addToList(List list, Object value) {
+        if (value != null)
+            list.add(value);
         else
-          break;
+            list.add(AMQPNull.NULL);
     }
-    body = new AMQPList(l);
-    dirty = false;
-  }
 
-  protected void writeBody(DataOutput out) throws IOException
-  {
-    if (dirty || body == null)
-      encode();
-    codeConstructor.setFormatCode(body.getCode());
-    body.setConstructor(codeConstructor);
-    body.writeContent(out);
-  }
-
-  /**
-   * Returns a value representation of this SaslResponseFrame.
-   *
-   * @return value representation
-   */
-  public String getValueString()
-  {
-    try
-    {
-      if (dirty || body == null)
-        encode();
-    } catch (IOException e)
-    {
-      e.printStackTrace();
+    private void encode() throws IOException {
+        List l = new ArrayList();
+        addToList(l, response);
+        for (ListIterator iter = l.listIterator(l.size()); iter.hasPrevious(); ) {
+            AMQPType t = (AMQPType) iter.previous();
+            if (t.getCode() == AMQPTypeDecoder.NULL)
+                iter.remove();
+            else
+                break;
+        }
+        body = new AMQPList(l);
+        dirty = false;
     }
-    StringBuffer b = new StringBuffer("[SaslResponse ");
-    b.append(super.getValueString());
-    b.append("]");
-    return b.toString();
-  }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer();
-    if (response != null)
-    {
-      if (!_first)
-        b.append(", ");
-      else
-        _first = false;
-      b.append("response=");
-      b.append(response.getValueString());
+    protected void writeBody(DataOutput out) throws IOException {
+        if (dirty || body == null)
+            encode();
+        codeConstructor.setFormatCode(body.getCode());
+        body.setConstructor(codeConstructor);
+        body.writeContent(out);
     }
-    return b.toString();
-  }
 
-  public String toString()
-  {
-    return "[SaslResponse "+getDisplayString()+"]";
-  }
+    /**
+     * Returns a value representation of this SaslResponseFrame.
+     *
+     * @return value representation
+     */
+    public String getValueString() {
+        try {
+            if (dirty || body == null)
+                encode();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        StringBuffer b = new StringBuffer("[SaslResponse ");
+        b.append(super.getValueString());
+        b.append("]");
+        return b.toString();
+    }
+
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer();
+        if (response != null) {
+            if (!_first)
+                b.append(", ");
+            else
+                _first = false;
+            b.append("response=");
+            b.append(response.getValueString());
+        }
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[SaslResponse " + getDisplayString() + "]";
+    }
 }

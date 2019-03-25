@@ -19,193 +19,165 @@ package com.swiftmq.impl.net.standard;
 
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.net.*;
-import com.swiftmq.swiftlet.threadpool.*;
-import com.swiftmq.swiftlet.trace.*;
+import com.swiftmq.swiftlet.net.Connection;
+import com.swiftmq.swiftlet.net.ConnectionManager;
+import com.swiftmq.swiftlet.threadpool.AsyncTask;
+import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
+import com.swiftmq.swiftlet.trace.TraceSpace;
+import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
-import java.text.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 
-public class ConnectionManagerImpl implements ConnectionManager
-{
-  DecimalFormat formatter = new DecimalFormat("###,##0.00", new DecimalFormatSymbols(Locale.US));
+public class ConnectionManagerImpl implements ConnectionManager {
+    DecimalFormat formatter = new DecimalFormat("###,##0.00", new DecimalFormatSymbols(Locale.US));
 
-  TraceSwiftlet traceSwiftlet = null;
-  TraceSpace traceSpace = null;
-  ThreadpoolSwiftlet threadpoolSwiftlet = null;
+    TraceSwiftlet traceSwiftlet = null;
+    TraceSpace traceSpace = null;
+    ThreadpoolSwiftlet threadpoolSwiftlet = null;
 
-  EntityList usageList;
-  HashSet connections = new HashSet();
+    EntityList usageList;
+    HashSet connections = new HashSet();
 
-  long lastCollectTime = -1;
+    long lastCollectTime = -1;
 
-  protected ConnectionManagerImpl(EntityList usageList)
-  {
-    this.usageList = usageList;
-    usageList.setEntityRemoveListener(new EntityChangeAdapter(null)
-    {
-      public void onEntityRemove(Entity parent, Entity delEntity)
-        throws EntityRemoveException
-      {
-        Connection myConnection = (Connection) delEntity.getDynamicObject();
-        removeConnection(myConnection);
-      }
-    });
+    protected ConnectionManagerImpl(EntityList usageList) {
+        this.usageList = usageList;
+        usageList.setEntityRemoveListener(new EntityChangeAdapter(null) {
+            public void onEntityRemove(Entity parent, Entity delEntity)
+                    throws EntityRemoveException {
+                Connection myConnection = (Connection) delEntity.getDynamicObject();
+                removeConnection(myConnection);
+            }
+        });
 
-    threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
 
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/created");
-  }
-
-  public synchronized int getNumberConnections()
-  {
-    return connections.size();
-  }
-
-  public synchronized void addConnection(Connection connection)
-  {
-    if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/addConnection: " + connection);
-    Entity ce = usageList.createEntity();
-    ce.setName(connection.toString());
-    ce.setDynamicObject(connection);
-    ce.createCommands();
-    try
-    {
-      Property prop = ce.getProperty("swiftlet");
-      prop.setValue(connection.getMetaData().getSwiftlet().getName());
-      prop = ce.getProperty("connect-time");
-      prop.setValue(new Date().toString());
-      usageList.addEntity(ce);
-    } catch (Exception ignored)
-    {
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/created");
     }
-    connections.add(connection);
-  }
 
-  public synchronized void removeConnection(Connection connection)
-  {
-    // possible during shutdown/reboot
-    if (connection == null)
-      return;
-    if (!(connection.isMarkedForClose() || connection.isClosed()))
-    {
-      connection.setMarkedForClose();
-      if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/removeConnection: " + connection);
-      threadpoolSwiftlet.dispatchTask(new Disconnector(connection));
+    public synchronized int getNumberConnections() {
+        return connections.size();
     }
-  }
 
-  public synchronized void removeAllConnections()
-  {
-    if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/removeAllConnections");
-    Set cloned = (Set)connections.clone();
-    for (Iterator iter = cloned.iterator(); iter.hasNext();)
-    {
-      deleteConnection((Connection) iter.next());
-    }
-    connections.clear();
-    if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/removeAllConnections, done.");
-  }
-
-  private void deleteConnection(Connection connection)
-  {
-    usageList.removeDynamicEntity(connection);
-    synchronized (this)
-    {
-      connections.remove(connection);
-    }
-    if (!connection.isClosed())
-    {
-      if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/deleteConnection: " + connection);
-      connection.close();
-      if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/deleteConnection: " + connection + ", DONE.");
-    }
-  }
-
-  public void clearLastCollectTime()
-  {
-    lastCollectTime = -1;
-  }
-
-  public synchronized void collectByteCounts()
-  {
-    long actTime = System.currentTimeMillis();
-    double deltas = (actTime - lastCollectTime) / 1000;
-    for (Iterator iter = usageList.getEntities().entrySet().iterator(); iter.hasNext();)
-    {
-      Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
-      Property input = entity.getProperty("throughput-input");
-      Property output = entity.getProperty("throughput-output");
-      Connection connection = (Connection) entity.getDynamicObject();
-      if (connection != null)
-      {
-        Countable in = (Countable) connection.getInputStream();
-        Countable out = (Countable) connection.getOutputStream();
-        if (lastCollectTime != -1)
-        {
-          try
-          {
-            input.setValue(formatter.format(new Double(((double) in.getByteCount() / 1024.0) / deltas)));
-            output.setValue(formatter.format(new Double(((double) out.getByteCount() / 1024.0) / deltas)));
-          } catch (Exception ignored)
-          {
-          }
-        } else
-        {
-          try
-          {
-            input.setValue(new Double(0.0));
-            output.setValue(new Double(0.0));
-          } catch (Exception ignored)
-          {
-          }
+    public synchronized void addConnection(Connection connection) {
+        if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/addConnection: " + connection);
+        Entity ce = usageList.createEntity();
+        ce.setName(connection.toString());
+        ce.setDynamicObject(connection);
+        ce.createCommands();
+        try {
+            Property prop = ce.getProperty("swiftlet");
+            prop.setValue(connection.getMetaData().getSwiftlet().getName());
+            prop = ce.getProperty("connect-time");
+            prop.setValue(new Date().toString());
+            usageList.addEntity(ce);
+        } catch (Exception ignored) {
         }
-        in.resetByteCount();
-        out.resetByteCount();
-      }
-    }
-    lastCollectTime = actTime;
-  }
-
-  public String toString()
-  {
-    return "ConnectionManager";
-  }
-
-  private class Disconnector implements AsyncTask
-  {
-    Connection connection = null;
-
-    Disconnector(Connection connection)
-    {
-      this.connection = connection;
+        connections.add(connection);
     }
 
-    public boolean isValid()
-    {
-      return !connection.isClosed();
+    public synchronized void removeConnection(Connection connection) {
+        // possible during shutdown/reboot
+        if (connection == null)
+            return;
+        if (!(connection.isMarkedForClose() || connection.isClosed())) {
+            connection.setMarkedForClose();
+            if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/removeConnection: " + connection);
+            threadpoolSwiftlet.dispatchTask(new Disconnector(connection));
+        }
     }
 
-    public String getDispatchToken()
-    {
-      return NetworkSwiftletImpl.TP_CONNMGR;
+    public synchronized void removeAllConnections() {
+        if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/removeAllConnections");
+        Set cloned = (Set) connections.clone();
+        for (Iterator iter = cloned.iterator(); iter.hasNext(); ) {
+            deleteConnection((Connection) iter.next());
+        }
+        connections.clear();
+        if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/removeAllConnections, done.");
     }
 
-    public String getDescription()
-    {
-      return "sys$net/ConnectionManager/Disconnector for Connection: " + connection;
+    private void deleteConnection(Connection connection) {
+        usageList.removeDynamicEntity(connection);
+        synchronized (this) {
+            connections.remove(connection);
+        }
+        if (!connection.isClosed()) {
+            if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/deleteConnection: " + connection);
+            connection.close();
+            if (traceSpace.enabled)
+                traceSpace.trace("sys$net", toString() + "/deleteConnection: " + connection + ", DONE.");
+        }
     }
 
-    public void stop()
-    {
+    public void clearLastCollectTime() {
+        lastCollectTime = -1;
     }
 
-    public void run()
-    {
-      deleteConnection(connection);
+    public synchronized void collectByteCounts() {
+        long actTime = System.currentTimeMillis();
+        double deltas = (actTime - lastCollectTime) / 1000;
+        for (Iterator iter = usageList.getEntities().entrySet().iterator(); iter.hasNext(); ) {
+            Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+            Property input = entity.getProperty("throughput-input");
+            Property output = entity.getProperty("throughput-output");
+            Connection connection = (Connection) entity.getDynamicObject();
+            if (connection != null) {
+                Countable in = (Countable) connection.getInputStream();
+                Countable out = (Countable) connection.getOutputStream();
+                if (lastCollectTime != -1) {
+                    try {
+                        input.setValue(formatter.format(new Double(((double) in.getByteCount() / 1024.0) / deltas)));
+                        output.setValue(formatter.format(new Double(((double) out.getByteCount() / 1024.0) / deltas)));
+                    } catch (Exception ignored) {
+                    }
+                } else {
+                    try {
+                        input.setValue(new Double(0.0));
+                        output.setValue(new Double(0.0));
+                    } catch (Exception ignored) {
+                    }
+                }
+                in.resetByteCount();
+                out.resetByteCount();
+            }
+        }
+        lastCollectTime = actTime;
     }
-  }
+
+    public String toString() {
+        return "ConnectionManager";
+    }
+
+    private class Disconnector implements AsyncTask {
+        Connection connection = null;
+
+        Disconnector(Connection connection) {
+            this.connection = connection;
+        }
+
+        public boolean isValid() {
+            return !connection.isClosed();
+        }
+
+        public String getDispatchToken() {
+            return NetworkSwiftletImpl.TP_CONNMGR;
+        }
+
+        public String getDescription() {
+            return "sys$net/ConnectionManager/Disconnector for Connection: " + connection;
+        }
+
+        public void stop() {
+        }
+
+        public void run() {
+            deleteConnection(connection);
+        }
+    }
 }
 

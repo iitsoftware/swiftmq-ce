@@ -17,69 +17,55 @@
 
 package com.swiftmq.amqp.v100.generated.transactions.coordination;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPSymbol;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
 public class TxnCapability extends AMQPSymbol
-       implements TxnCapabilityIF
-{
+        implements TxnCapabilityIF {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add("amqp:local-transactions");
-    POSSIBLE_VALUES.add("amqp:distributed-transactions");
-    POSSIBLE_VALUES.add("amqp:promotable-transactions");
-    POSSIBLE_VALUES.add("amqp:multi-txns-per-ssn");
-    POSSIBLE_VALUES.add("amqp:multi-ssns-per-txn");
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final TxnCapability LOCAL_TRANSACTIONS = new TxnCapability("amqp:local-transactions");
-  public static final TxnCapability DISTRIBUTED_TRANSACTIONS = new TxnCapability("amqp:distributed-transactions");
-  public static final TxnCapability PROMOTABLE_TRANSACTIONS = new TxnCapability("amqp:promotable-transactions");
-  public static final TxnCapability MULTI_TXNS_PER_SSN = new TxnCapability("amqp:multi-txns-per-ssn");
-  public static final TxnCapability MULTI_SSNS_PER_TXN = new TxnCapability("amqp:multi-ssns-per-txn");
+    static {
+        POSSIBLE_VALUES.add("amqp:local-transactions");
+        POSSIBLE_VALUES.add("amqp:distributed-transactions");
+        POSSIBLE_VALUES.add("amqp:promotable-transactions");
+        POSSIBLE_VALUES.add("amqp:multi-txns-per-ssn");
+        POSSIBLE_VALUES.add("amqp:multi-ssns-per-txn");
+    }
 
-  /**
-   * Constructs a TxnCapability.
-   *
-   * @param initValue initial value
-   */
-  public TxnCapability(String initValue) 
-  {
-    super(initValue);
-  }
+    public static final TxnCapability LOCAL_TRANSACTIONS = new TxnCapability("amqp:local-transactions");
+    public static final TxnCapability DISTRIBUTED_TRANSACTIONS = new TxnCapability("amqp:distributed-transactions");
+    public static final TxnCapability PROMOTABLE_TRANSACTIONS = new TxnCapability("amqp:promotable-transactions");
+    public static final TxnCapability MULTI_TXNS_PER_SSN = new TxnCapability("amqp:multi-txns-per-ssn");
+    public static final TxnCapability MULTI_SSNS_PER_TXN = new TxnCapability("amqp:multi-ssns-per-txn");
 
-  /**
-   * Accept method for a TxnCapability visitor.
-   *
-   * @param visitor TxnCapability visitor
-   */
-   public void accept(TxnCapabilityVisitor visitor)
-   {
-     visitor.visit(this);
-   }
+    /**
+     * Constructs a TxnCapability.
+     *
+     * @param initValue initial value
+     */
+    public TxnCapability(String initValue) {
+        super(initValue);
+    }
+
+    /**
+     * Accept method for a TxnCapability visitor.
+     *
+     * @param visitor TxnCapability visitor
+     */
+    public void accept(TxnCapabilityVisitor visitor) {
+        visitor.visit(this);
+    }
 
 
-  public String toString()
-  {
-    return "[TxnCapability " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[TxnCapability " + super.toString() + "]";
+    }
 }

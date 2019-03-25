@@ -25,6 +25,7 @@ import com.swiftmq.impl.mqtt.session.MQTTSession;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.mqtt.v311.MqttListener;
+import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.*;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
@@ -34,7 +35,6 @@ import com.swiftmq.swiftlet.net.Connection;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.PipelineQueue;
-import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
 
 import java.util.List;
 import java.util.UUID;
@@ -501,13 +501,13 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         }
 
         if (session != null) {
-          session.stop();
-          if (session.isPersistent()) {
-            ctx.sessionRegistry.disassociateSession(clientId, session);
-            if (cleanSession)
-              ctx.sessionRegistry.removeSession(clientId);
-          } else
-            session.destroy();
+            session.stop();
+            if (session.isPersistent()) {
+                ctx.sessionRegistry.disassociateSession(clientId, session);
+                if (cleanSession)
+                    ctx.sessionRegistry.removeSession(clientId);
+            } else
+                session.destroy();
         }
 
         connectionQueue.close();

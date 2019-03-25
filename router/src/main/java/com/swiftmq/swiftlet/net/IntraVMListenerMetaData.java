@@ -17,42 +17,41 @@
 
 package com.swiftmq.swiftlet.net;
 
+import com.swiftmq.net.protocol.ProtocolInputHandler;
+import com.swiftmq.net.protocol.ProtocolOutputHandler;
 import com.swiftmq.swiftlet.Swiftlet;
 import com.swiftmq.swiftlet.net.event.ConnectionListener;
-import com.swiftmq.net.protocol.*;
 
 /**
  * A IntraVMListenerMetaData object describes an intra-VM listener.
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class IntraVMListenerMetaData extends ConnectionMetaData
-{
-  /**
-   * Constructs a new IntraVMListenerMetaData with default SMQP protocol handlers.
-   * @param swiftlet Swiftlet.
-   * @param connectionListener connection listener.
-   */
-  public IntraVMListenerMetaData(Swiftlet swiftlet, ConnectionListener connectionListener)
-  {
-    super(swiftlet, 0, null, connectionListener, 0, 0, 0, 0, true);
-  }
+public class IntraVMListenerMetaData extends ConnectionMetaData {
+    /**
+     * Constructs a new IntraVMListenerMetaData with default SMQP protocol handlers.
+     *
+     * @param swiftlet           Swiftlet.
+     * @param connectionListener connection listener.
+     */
+    public IntraVMListenerMetaData(Swiftlet swiftlet, ConnectionListener connectionListener) {
+        super(swiftlet, 0, null, connectionListener, 0, 0, 0, 0, true);
+    }
 
-  /**
-   * Constructs a new ConnectionMetaData with custom protocol handlers.
-   * @param swiftlet Swiftlet.
-   * @param connectionListener connection listener.
-   * @param protocolInputHandler protocol input handler.
-   * @param protocolOutputHandler protocol output handler.
-   */
-  public IntraVMListenerMetaData(Swiftlet swiftlet, ConnectionListener connectionListener,
-                                 ProtocolInputHandler protocolInputHandler, ProtocolOutputHandler protocolOutputHandler)
-  {
-    super(swiftlet, 0, null, connectionListener, 0, 0, 0, 0, true, protocolInputHandler, protocolOutputHandler);
-  }
+    /**
+     * Constructs a new ConnectionMetaData with custom protocol handlers.
+     *
+     * @param swiftlet              Swiftlet.
+     * @param connectionListener    connection listener.
+     * @param protocolInputHandler  protocol input handler.
+     * @param protocolOutputHandler protocol output handler.
+     */
+    public IntraVMListenerMetaData(Swiftlet swiftlet, ConnectionListener connectionListener,
+                                   ProtocolInputHandler protocolInputHandler, ProtocolOutputHandler protocolOutputHandler) {
+        super(swiftlet, 0, null, connectionListener, 0, 0, 0, 0, true, protocolInputHandler, protocolOutputHandler);
+    }
 
-  public String toString()
-  {
-    return "[IntraVMListenerMetaData, "+super.toString()+"]";
-  }
+    public String toString() {
+        return "[IntraVMListenerMetaData, " + super.toString() + "]";
+    }
 }

@@ -24,194 +24,157 @@ import javax.naming.*;
 import java.io.*;
 import java.util.Hashtable;
 
-public class ContextImpl implements Context, java.io.Serializable, NameParser
-{
-  File contextDir = null;
-  XStream xStream = null;
+public class ContextImpl implements Context, java.io.Serializable, NameParser {
+    File contextDir = null;
+    XStream xStream = null;
 
-  ContextImpl(File contextDir)
-  {
-    this.contextDir = contextDir;
-    xStream = new XStream(new Dom4JDriver());
-  }
-
-  public Name parse(String s) throws NamingException
-  {
-    return new CompositeName(s);
-  }
-
-  public Object lookup(Name name) throws NamingException
-  {
-    return lookup(name.get(0));
-  }
-
-  public Object lookup(String s) throws NamingException
-  {
-    if (s == null || s.equals("") || s.equals("/"))
-      return this;
-    Object o = null;
-    File file = new File(contextDir, s + ".xml");
-    if (file.exists())
-    {
-      try
-      {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-        o = xStream.fromXML(bufferedReader);
-      } catch (FileNotFoundException e)
-      {
-      }
+    ContextImpl(File contextDir) {
+        this.contextDir = contextDir;
+        xStream = new XStream(new Dom4JDriver());
     }
-    return o;
-  }
 
-  public void bind(Name name, Object o) throws NamingException
-  {
-    bind(name.get(0), o);
-  }
-
-  public void bind(String s, Object o) throws NamingException
-  {
-    try
-    {
-      File file = new File(contextDir, s + ".xml");
-      if (file.exists())
-        throw new NameAlreadyBoundException("Name already bound: " + s);
-      BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
-      xStream.toXML(o, bufferedWriter);
-      bufferedWriter.flush();
-      bufferedWriter.close();
-    } catch (IOException e)
-    {
-      throw new NamingException(e.toString());
+    public Name parse(String s) throws NamingException {
+        return new CompositeName(s);
     }
-  }
 
-  public void rebind(Name name, Object o) throws NamingException
-  {
-    rebind(name.get(0), o);
-  }
+    public Object lookup(Name name) throws NamingException {
+        return lookup(name.get(0));
+    }
 
-  public void rebind(String s, Object o) throws NamingException
-  {
-    unbind(s);
-    bind(s, o);
-  }
+    public Object lookup(String s) throws NamingException {
+        if (s == null || s.equals("") || s.equals("/"))
+            return this;
+        Object o = null;
+        File file = new File(contextDir, s + ".xml");
+        if (file.exists()) {
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                o = xStream.fromXML(bufferedReader);
+            } catch (FileNotFoundException e) {
+            }
+        }
+        return o;
+    }
 
-  public void unbind(Name name) throws NamingException
-  {
-    unbind(name.get(0));
-  }
+    public void bind(Name name, Object o) throws NamingException {
+        bind(name.get(0), o);
+    }
 
-  public void unbind(String s) throws NamingException
-  {
-    File file = new File(contextDir, s + ".xml");
-    if (file.exists())
-      file.delete();
-  }
+    public void bind(String s, Object o) throws NamingException {
+        try {
+            File file = new File(contextDir, s + ".xml");
+            if (file.exists())
+                throw new NameAlreadyBoundException("Name already bound: " + s);
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
+            xStream.toXML(o, bufferedWriter);
+            bufferedWriter.flush();
+            bufferedWriter.close();
+        } catch (IOException e) {
+            throw new NamingException(e.toString());
+        }
+    }
 
-  public void rename(Name name, Name name1) throws NamingException
-  {
-    rename(name.get(0), name1.get(0));
-  }
+    public void rebind(Name name, Object o) throws NamingException {
+        rebind(name.get(0), o);
+    }
 
-  public void rename(String s, String s1) throws NamingException
-  {
-    File file = new File(contextDir, s + ".xml");
-    if (file.exists())
-      file.renameTo(new File(s1 + ".xml"));
-    else
-      throw new NameNotFoundException("Name not found: " + s);
-  }
+    public void rebind(String s, Object o) throws NamingException {
+        unbind(s);
+        bind(s, o);
+    }
 
-  public NamingEnumeration<NameClassPair> list(Name name) throws NamingException
-  {
-    return null;
-  }
+    public void unbind(Name name) throws NamingException {
+        unbind(name.get(0));
+    }
 
-  public NamingEnumeration<NameClassPair> list(String s) throws NamingException
-  {
-    return null;
-  }
+    public void unbind(String s) throws NamingException {
+        File file = new File(contextDir, s + ".xml");
+        if (file.exists())
+            file.delete();
+    }
 
-  public NamingEnumeration<Binding> listBindings(Name name) throws NamingException
-  {
-    return null;
-  }
+    public void rename(Name name, Name name1) throws NamingException {
+        rename(name.get(0), name1.get(0));
+    }
 
-  public NamingEnumeration<Binding> listBindings(String s) throws NamingException
-  {
-    return null;
-  }
+    public void rename(String s, String s1) throws NamingException {
+        File file = new File(contextDir, s + ".xml");
+        if (file.exists())
+            file.renameTo(new File(s1 + ".xml"));
+        else
+            throw new NameNotFoundException("Name not found: " + s);
+    }
 
-  public void destroySubcontext(Name name) throws NamingException
-  {
-  }
+    public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
+        return null;
+    }
 
-  public void destroySubcontext(String s) throws NamingException
-  {
-  }
+    public NamingEnumeration<NameClassPair> list(String s) throws NamingException {
+        return null;
+    }
 
-  public Context createSubcontext(Name name) throws NamingException
-  {
-    return this;
-  }
+    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
+        return null;
+    }
 
-  public Context createSubcontext(String s) throws NamingException
-  {
-    return this;
-  }
+    public NamingEnumeration<Binding> listBindings(String s) throws NamingException {
+        return null;
+    }
 
-  public Object lookupLink(Name name) throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public void destroySubcontext(Name name) throws NamingException {
+    }
 
-  public Object lookupLink(String s) throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public void destroySubcontext(String s) throws NamingException {
+    }
 
-  public NameParser getNameParser(Name name) throws NamingException
-  {
-    return this;
-  }
+    public Context createSubcontext(Name name) throws NamingException {
+        return this;
+    }
 
-  public NameParser getNameParser(String s) throws NamingException
-  {
-    return this;
-  }
+    public Context createSubcontext(String s) throws NamingException {
+        return this;
+    }
 
-  public Name composeName(Name name, Name name1) throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public Object lookupLink(Name name) throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
 
-  public String composeName(String s, String s1) throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public Object lookupLink(String s) throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
 
-  public Object addToEnvironment(String s, Object o) throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public NameParser getNameParser(Name name) throws NamingException {
+        return this;
+    }
 
-  public Object removeFromEnvironment(String s) throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public NameParser getNameParser(String s) throws NamingException {
+        return this;
+    }
 
-  public Hashtable<?, ?> getEnvironment() throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public Name composeName(Name name, Name name1) throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
 
-  public void close() throws NamingException
-  {
-  }
+    public String composeName(String s, String s1) throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
 
-  public String getNameInNamespace() throws NamingException
-  {
-    throw new OperationNotSupportedException("not supported");
-  }
+    public Object addToEnvironment(String s, Object o) throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
+
+    public Object removeFromEnvironment(String s) throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
+
+    public Hashtable<?, ?> getEnvironment() throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
+
+    public void close() throws NamingException {
+    }
+
+    public String getNameInNamespace() throws NamingException {
+        throw new OperationNotSupportedException("not supported");
+    }
 }

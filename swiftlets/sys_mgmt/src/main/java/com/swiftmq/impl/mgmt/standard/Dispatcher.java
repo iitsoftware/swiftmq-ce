@@ -17,19 +17,20 @@
 
 package com.swiftmq.impl.mgmt.standard;
 
-import com.swiftmq.tools.requestreply.Request;
-import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.mgmt.protocol.ProtocolFactory;
-import com.swiftmq.swiftlet.queue.QueueSender;
-import com.swiftmq.impl.mgmt.standard.po.*;
+import com.swiftmq.impl.mgmt.standard.po.EventObject;
 
-public interface Dispatcher
-{
-  public void process(EventObject event);
-  public void flush();
-  public boolean isInvalid();
-  public boolean isExpired();
-  public void doExpire();
-  public void doDisconnect();
-  public void close();
+public interface Dispatcher {
+    public void process(EventObject event);
+
+    public void flush();
+
+    public boolean isInvalid();
+
+    public boolean isExpired();
+
+    public void doExpire();
+
+    public void doDisconnect();
+
+    public void close();
 }

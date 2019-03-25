@@ -21,104 +21,93 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class SetClientIdRequest extends Request
-{
-  String clientId;
+public class SetClientIdRequest extends Request {
+    String clientId;
 
-  /**
-   * @param clientId
-   * @SBGen Constructor assigns clientId
-   */
-  public SetClientIdRequest(String clientId)
-  {
-    super(0, true);
-    // SBgen: Assign variable
-    this.clientId = clientId;
-  }
-
-  public SetClientIdRequest()
-  {
-    super(0, true);
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (clientId == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(clientId);
+    /**
+     * @param clientId
+     * @SBGen Constructor assigns clientId
+     */
+    public SetClientIdRequest(String clientId) {
+        super(0, true);
+        // SBgen: Assign variable
+        this.clientId = clientId;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      clientId = null;
-    } else
-    {
-      clientId = in.readUTF();
+    public SetClientIdRequest() {
+        super(0, true);
     }
-  }
 
-  /**
-   * @return
-   * @SBGen Method get clientId
-   */
-  public String getClientId()
-  {
-    // SBgen: Get variable
-    return (clientId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_SET_CLIENT_ID_REQ;
-  }
+        if (clientId == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(clientId);
+        }
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new SetClientIdReply();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitSetClientIdRequest(this);
-  }
+        byte set = in.readByte();
 
-  public String toString()
-  {
-    return "[SetClientIdRequest " + super.toString() + ", clientId=" + clientId + "]";
-  }
+        if (set == 0) {
+            clientId = null;
+        } else {
+            clientId = in.readUTF();
+        }
+    }
+
+    /**
+     * @return
+     * @SBGen Method get clientId
+     */
+    public String getClientId() {
+        // SBgen: Get variable
+        return (clientId);
+    }
+
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_SET_CLIENT_ID_REQ;
+    }
+
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new SetClientIdReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitSetClientIdRequest(this);
+    }
+
+    public String toString() {
+        return "[SetClientIdRequest " + super.toString() + ", clientId=" + clientId + "]";
+    }
 }
 

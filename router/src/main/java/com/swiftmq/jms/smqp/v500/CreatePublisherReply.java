@@ -21,85 +21,79 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreatePublisherReply extends Reply
-{
-  int topicPublisherId = 0;
+public class CreatePublisherReply extends Reply {
+    int topicPublisherId = 0;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_PUBLISHER_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_PUBLISHER_REP;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(topicPublisherId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(topicPublisherId);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    topicPublisherId = in.readInt();
-  }
+        topicPublisherId = in.readInt();
+    }
 
-  /**
-   * @param topicPublisherId
-   * @SBGen Method set topicPublisherId
-   */
-  public void setTopicPublisherId(int topicPublisherId)
-  {
+    /**
+     * @param topicPublisherId
+     * @SBGen Method set topicPublisherId
+     */
+    public void setTopicPublisherId(int topicPublisherId) {
 
-    // SBgen: Assign variable
-    this.topicPublisherId = topicPublisherId;
-  }
+        // SBgen: Assign variable
+        this.topicPublisherId = topicPublisherId;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get topicPublisherId
-   */
-  public int getTopicPublisherId()
-  {
+    /**
+     * @return
+     * @SBGen Method get topicPublisherId
+     */
+    public int getTopicPublisherId() {
 
-    // SBgen: Get variable
-    return (topicPublisherId);
-  }
+        // SBgen: Get variable
+        return (topicPublisherId);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreatePublisherReply " + super.toString() + " topicPublisherId="
-        + topicPublisherId + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreatePublisherReply " + super.toString() + " topicPublisherId="
+                + topicPublisherId + "]";
+    }
 
 }
 

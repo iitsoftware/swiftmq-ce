@@ -17,59 +17,55 @@
 
 package com.swiftmq.impl.store.standard.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.backup.BackupFinishedListener;
 import com.swiftmq.impl.store.standard.backup.po.StartBackup;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.Properties;
 
-public class BackupJob implements Job, BackupFinishedListener
-{
-  StoreContext ctx = null;
-  boolean stopCalled = false;
-  Properties properties = null;
-  JobTerminationListener jobTerminationListener = null;
+public class BackupJob implements Job, BackupFinishedListener {
+    StoreContext ctx = null;
+    boolean stopCalled = false;
+    Properties properties = null;
+    JobTerminationListener jobTerminationListener = null;
 
-  public BackupJob(StoreContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  public synchronized void backupFinished(boolean success, String exception)
-  {
-    if (!stopCalled)
-    {
-      if (!success)
-        jobTerminationListener.jobTerminated(new JobException(exception,new Exception(exception),false));
-      else
-        jobTerminationListener.jobTerminated();
+    public BackupJob(StoreContext ctx) {
+        this.ctx = ctx;
     }
-  }
 
-  public synchronized void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
-    this.jobTerminationListener = jobTerminationListener;
-    this.properties = properties;
-    Semaphore sem = new Semaphore();
-    StartBackup po = new StartBackup(sem,this);
-    ctx.backupProcessor.enqueue(po);
-    sem.waitHere();
-    if (!po.isSuccess())
-      jobTerminationListener.jobTerminated(new JobException(po.getException(),new Exception(po.getException()),false));
-  }
+    public synchronized void backupFinished(boolean success, String exception) {
+        if (!stopCalled) {
+            if (!success)
+                jobTerminationListener.jobTerminated(new JobException(exception, new Exception(exception), false));
+            else
+                jobTerminationListener.jobTerminated();
+        }
+    }
 
-  public synchronized void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop ...");
-    stopCalled = true;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop done");
-  }
+    public synchronized void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
+        this.jobTerminationListener = jobTerminationListener;
+        this.properties = properties;
+        Semaphore sem = new Semaphore();
+        StartBackup po = new StartBackup(sem, this);
+        ctx.backupProcessor.enqueue(po);
+        sem.waitHere();
+        if (!po.isSuccess())
+            jobTerminationListener.jobTerminated(new JobException(po.getException(), new Exception(po.getException()), false));
+    }
 
-  public String toString()
-  {
-    return "[BackupJob, properties=" + properties + "]";
-  }
+    public synchronized void stop() throws JobException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop ...");
+        stopCalled = true;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop done");
+    }
+
+    public String toString() {
+        return "[BackupJob, properties=" + properties + "]";
+    }
 }

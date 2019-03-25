@@ -25,30 +25,26 @@ import com.swiftmq.tools.requestreply.Reply;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class RecoverSessionReply extends Reply
-{
+public class RecoverSessionReply extends Reply {
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_RECOVER_SESSION_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_RECOVER_SESSION_REP;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[RecoverSessionReply " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[RecoverSessionReply " + super.toString() + "]";
+    }
 
 }
 

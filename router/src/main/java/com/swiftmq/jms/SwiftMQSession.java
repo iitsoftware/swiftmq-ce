@@ -21,7 +21,6 @@ import com.swiftmq.swiftlet.queue.MessageIndex;
 
 import javax.jms.JMSException;
 
-public interface SwiftMQSession
-{
-  public boolean acknowledgeMessage(MessageIndex messageIndex) throws JMSException;
+public interface SwiftMQSession {
+    public boolean acknowledgeMessage(MessageIndex messageIndex) throws JMSException;
 }

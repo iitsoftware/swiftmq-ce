@@ -30,74 +30,66 @@ import com.swiftmq.tools.gc.Recycler;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  * @see QueueManager#createQueueSender
  */
-public class QueueSender extends QueueTransactionHandler
-{
-  EntityList senderEntityList = null;
+public class QueueSender extends QueueTransactionHandler {
+    EntityList senderEntityList = null;
 
-  /**
-   * Creates a new QueueSender
-   *
-   * @param activeQueue the queue
-   */
-  public QueueSender(ActiveQueue activeQueue, EntityList senderEntityList)
-  {
-    super(activeQueue.getAbstractQueue());
-    setRecycler(new PushTransactionRecycler());
-    this.senderEntityList = senderEntityList;
-  }
-
-  /**
-   * Creates a new QueuePushTransaction.
-   *
-   * @return QueuePushTransaction
-   * @throws QueueException              thrown by the queue
-   * @throws QueueHandlerClosedException if the handler is closed
-   */
-  public QueuePushTransaction createTransaction()
-      throws QueueException, QueueHandlerClosedException
-  {
-    verifyQueueHandlerState();
-    QueuePushTransaction t = (QueuePushTransaction) recycler.checkOut();
-    t.restart(abstractQueue,
-        abstractQueue.createPushTransaction(),
-        this);
-    return t;
-  }
-
-  /**
-   * Returns the flow control delay, computed after the transaction has been committed.
-   *
-   * @return flow control delay.
-   */
-  public long getFlowControlDelay()
-  {
-    FlowController fc = abstractQueue.getFlowController();
-    return fc == null ? 0 : fc.getNewDelay();
-  }
-
-  /**
-   * Close the queue sender
-   *
-   * @throws QueueException              throws by the queue
-   * @throws QueueHandlerClosedException if the browser is already closed
-   */
-  public void close()
-      throws QueueException, QueueHandlerClosedException
-  {
-    super.close();
-    if (senderEntityList != null)
-    {
-      senderEntityList.removeDynamicEntity(this);
-      senderEntityList = null;
+    /**
+     * Creates a new QueueSender
+     *
+     * @param activeQueue the queue
+     */
+    public QueueSender(ActiveQueue activeQueue, EntityList senderEntityList) {
+        super(activeQueue.getAbstractQueue());
+        setRecycler(new PushTransactionRecycler());
+        this.senderEntityList = senderEntityList;
     }
-  }
 
-  private class PushTransactionRecycler extends Recycler
-  {
-    protected Recyclable createRecyclable()
-    {
-      return new QueuePushTransaction();
+    /**
+     * Creates a new QueuePushTransaction.
+     *
+     * @return QueuePushTransaction
+     * @throws QueueException              thrown by the queue
+     * @throws QueueHandlerClosedException if the handler is closed
+     */
+    public QueuePushTransaction createTransaction()
+            throws QueueException, QueueHandlerClosedException {
+        verifyQueueHandlerState();
+        QueuePushTransaction t = (QueuePushTransaction) recycler.checkOut();
+        t.restart(abstractQueue,
+                abstractQueue.createPushTransaction(),
+                this);
+        return t;
     }
-  }
+
+    /**
+     * Returns the flow control delay, computed after the transaction has been committed.
+     *
+     * @return flow control delay.
+     */
+    public long getFlowControlDelay() {
+        FlowController fc = abstractQueue.getFlowController();
+        return fc == null ? 0 : fc.getNewDelay();
+    }
+
+    /**
+     * Close the queue sender
+     *
+     * @throws QueueException              throws by the queue
+     * @throws QueueHandlerClosedException if the browser is already closed
+     */
+    public void close()
+            throws QueueException, QueueHandlerClosedException {
+        super.close();
+        if (senderEntityList != null) {
+            senderEntityList.removeDynamicEntity(this);
+            senderEntityList = null;
+        }
+    }
+
+    private class PushTransactionRecycler extends Recycler {
+        protected Recyclable createRecyclable() {
+            return new QueuePushTransaction();
+        }
+    }
 }
 

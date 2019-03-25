@@ -22,40 +22,33 @@ import com.swiftmq.amqp.v100.transport.AMQPFrame;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POConnectionFrameReceived extends POObject
-{
-  AMQPFrame frame = null;
-  boolean sasl = false;
+public class POConnectionFrameReceived extends POObject {
+    AMQPFrame frame = null;
+    boolean sasl = false;
 
-  public POConnectionFrameReceived(AMQPFrame frame)
-  {
-    super(null, null);
-    this.frame = frame;
-  }
+    public POConnectionFrameReceived(AMQPFrame frame) {
+        super(null, null);
+        this.frame = frame;
+    }
 
-  public POConnectionFrameReceived(AMQPFrame frame, boolean sasl)
-  {
-    this(frame);
-    this.sasl = sasl;
-  }
+    public POConnectionFrameReceived(AMQPFrame frame, boolean sasl) {
+        this(frame);
+        this.sasl = sasl;
+    }
 
-  public AMQPFrame getFrame()
-  {
-    return frame;
-  }
+    public AMQPFrame getFrame() {
+        return frame;
+    }
 
-  public boolean isSasl()
-  {
-    return sasl;
-  }
+    public boolean isSasl() {
+        return sasl;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POConnectionFrameReceived, frame=" + frame + ", sassl=" + sasl + "]";
-  }
+    public String toString() {
+        return "[POConnectionFrameReceived, frame=" + frame + ", sassl=" + sasl + "]";
+    }
 }

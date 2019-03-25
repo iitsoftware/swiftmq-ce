@@ -28,42 +28,34 @@ import java.util.Map;
  *
  * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
  */
-public class DefaultDeliveryMemory implements DeliveryMemory
-{
-  String linkName = null;
-  LinkedHashMap<DeliveryTag, UnsettledDelivery> unsettled = new LinkedHashMap<DeliveryTag, UnsettledDelivery>();
+public class DefaultDeliveryMemory implements DeliveryMemory {
+    String linkName = null;
+    LinkedHashMap<DeliveryTag, UnsettledDelivery> unsettled = new LinkedHashMap<DeliveryTag, UnsettledDelivery>();
 
-  public DefaultDeliveryMemory()
-  {
-  }
+    public DefaultDeliveryMemory() {
+    }
 
-  public synchronized String getLinkName()
-  {
-    return linkName;
-  }
+    public synchronized String getLinkName() {
+        return linkName;
+    }
 
-  public synchronized void setLinkName(String linkName)
-  {
-    this.linkName = linkName;
-  }
+    public synchronized void setLinkName(String linkName) {
+        this.linkName = linkName;
+    }
 
-  public synchronized void addUnsettledDelivery(UnsettledDelivery unsettledDelivery)
-  {
-    unsettled.put(unsettledDelivery.deliveryTag, unsettledDelivery);
-  }
+    public synchronized void addUnsettledDelivery(UnsettledDelivery unsettledDelivery) {
+        unsettled.put(unsettledDelivery.deliveryTag, unsettledDelivery);
+    }
 
-  public synchronized void deliverySettled(DeliveryTag deliveryTag)
-  {
-    unsettled.remove(deliveryTag);
-  }
+    public synchronized void deliverySettled(DeliveryTag deliveryTag) {
+        unsettled.remove(deliveryTag);
+    }
 
-  public synchronized int getNumberUnsettled()
-  {
-    return unsettled.size();
-  }
+    public synchronized int getNumberUnsettled() {
+        return unsettled.size();
+    }
 
-  public synchronized Collection<UnsettledDelivery> getUnsettled()
-  {
-    return ((Map<DeliveryTag, UnsettledDelivery>) unsettled.clone()).values();
-  }
+    public synchronized Collection<UnsettledDelivery> getUnsettled() {
+        return ((Map<DeliveryTag, UnsettledDelivery>) unsettled.clone()).values();
+    }
 }

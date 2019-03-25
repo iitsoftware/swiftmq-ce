@@ -17,11 +17,10 @@
 
 package com.swiftmq.impl.amqp.amqp.v00_09_01;
 
-public interface Exchange
-{
-  public static final int DIRECT = 1;
-  public static final int FANOUT = 2;
-  public static final int TOPIC = 3;
+public interface Exchange {
+    public static final int DIRECT = 1;
+    public static final int FANOUT = 2;
+    public static final int TOPIC = 3;
 
-  public int getType();
+    public int getType();
 }

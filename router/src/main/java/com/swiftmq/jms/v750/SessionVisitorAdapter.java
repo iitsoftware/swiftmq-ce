@@ -19,17 +19,13 @@ package com.swiftmq.jms.v750;
 
 import com.swiftmq.jms.smqp.v750.SMQPVisitorAdapter;
 
-public abstract class SessionVisitorAdapter extends SMQPVisitorAdapter
-{
-  public void visit(TriggerConsumerInvocation request)
-  {
-  }
+public abstract class SessionVisitorAdapter extends SMQPVisitorAdapter {
+    public void visit(TriggerConsumerInvocation request) {
+    }
 
-  public void visit(CloseSession request)
-  {
-  }
+    public void visit(CloseSession request) {
+    }
 
-  public void visit(CloseConsumer request)
-  {
-  }
+    public void visit(CloseConsumer request) {
+    }
 }

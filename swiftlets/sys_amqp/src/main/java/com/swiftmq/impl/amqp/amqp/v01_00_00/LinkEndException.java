@@ -20,28 +20,23 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00;
 import com.swiftmq.amqp.v100.generated.transport.definitions.ErrorConditionIF;
 import com.swiftmq.amqp.v100.types.AMQPString;
 
-public class LinkEndException extends EndWithErrorException
-{
-  ServerLink link;
+public class LinkEndException extends EndWithErrorException {
+    ServerLink link;
 
-  public LinkEndException(ServerLink link, ErrorConditionIF condition, AMQPString description)
-  {
-    super(condition, description);
-    this.link = link;
-  }
+    public LinkEndException(ServerLink link, ErrorConditionIF condition, AMQPString description) {
+        super(condition, description);
+        this.link = link;
+    }
 
-  public ServerLink getLink()
-  {
-    return link;
-  }
+    public ServerLink getLink() {
+        return link;
+    }
 
-  public void accept(EndWithErrorExceptionVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public void accept(EndWithErrorExceptionVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public String toString()
-  {
-    return "LinkEndException, link=" + link + ", " + super.toString();
-  }
+    public String toString() {
+        return "LinkEndException, link=" + link + ", " + super.toString();
+    }
 }

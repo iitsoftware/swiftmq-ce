@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: RecoverSessionRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: RecoverSessionRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,82 +33,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class RecoverSessionRequest extends Request
-{
-  private int recoveryEpoche;
+public class RecoverSessionRequest extends Request {
+    private int recoveryEpoche;
 
-  public RecoverSessionRequest()
-  {
-    super(0, true);
-  }
+    public RecoverSessionRequest() {
+        super(0, true);
+    }
 
-  public RecoverSessionRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public RecoverSessionRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public RecoverSessionRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public RecoverSessionRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public RecoverSessionRequest(int dispatchId, int recoveryEpoche)
-  {
-    super(dispatchId, true);
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public RecoverSessionRequest(int dispatchId, int recoveryEpoche) {
+        super(dispatchId, true);
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public RecoverSessionRequest(RequestRetryValidator validator, int dispatchId, int recoveryEpoche)
-  {
-    super(dispatchId, true, validator);
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public RecoverSessionRequest(RequestRetryValidator validator, int dispatchId, int recoveryEpoche) {
+        super(dispatchId, true, validator);
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_RECOVERSESSION_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_RECOVERSESSION_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(recoveryEpoche, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(recoveryEpoche, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new RecoverSessionReply();
-  }
+    protected Reply createReplyInstance() {
+        return new RecoverSessionReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/RecoverSessionRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("recoveryEpoche=");
-    _b.append(recoveryEpoche);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/RecoverSessionRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("recoveryEpoche=");
+        _b.append(recoveryEpoche);
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -24,130 +24,107 @@ import com.swiftmq.tools.util.DataByteArrayInputStream;
 
 import java.io.IOException;
 
-public class Packager
-{
-  int channel = 0;
-  int handle = 0;
-  boolean settled = false;
-  byte[] data = null;
-  int size = 0;
-  DataByteArrayInputStream dbis = null;
-  int maxPacketLength = 0;
-  int currentPacketNumber = 0;
-  long messageFormat = -1;
-  int predictedNumberPackets = -1;
+public class Packager {
+    int channel = 0;
+    int handle = 0;
+    boolean settled = false;
+    byte[] data = null;
+    int size = 0;
+    DataByteArrayInputStream dbis = null;
+    int maxPacketLength = 0;
+    int currentPacketNumber = 0;
+    long messageFormat = -1;
+    int predictedNumberPackets = -1;
 
-  public void setChannel(int channel)
-  {
-    this.channel = channel;
-  }
-
-  public void setHandle(int handle)
-  {
-    this.handle = handle;
-  }
-
-  public void setSettled(boolean settled)
-  {
-    this.settled = settled;
-  }
-
-  public void setData(byte[] data)
-  {
-    setData(data, data.length);
-  }
-
-  public void setData(byte[] data, int size)
-  {
-    this.data = data;
-    this.size = size;
-  }
-
-  public byte[] getData()
-  {
-    return data;
-  }
-
-  public int getSize()
-  {
-    return size;
-  }
-
-  public long getMessageFormat()
-  {
-    return messageFormat;
-  }
-
-  public void setMessageFormat(long messageFormat)
-  {
-    this.messageFormat = messageFormat;
-  }
-
-  public void setMaxFrameSize(int maxFrameSize)
-  {
-    this.maxPacketLength = maxFrameSize;
-  }
-
-  public int getMaxPayloadLength()
-  {
-    return maxPacketLength;
-  }
-
-  public int getPredictedNumberPackets()
-  {
-    return predictedNumberPackets;
-  }
-
-  public void getNextPacket(TransferFrame currentFrame) throws IOException
-  {
-    currentFrame.setMore(AMQPBoolean.FALSE);
-    if (messageFormat != -1)
-      currentFrame.setMessageFormat(new MessageFormat(messageFormat));
-    currentPacketNumber++;
-    byte [] b = null;
-    if (dbis != null)
-    {
-      int len = Math.min(dbis.available(), maxPacketLength-currentFrame.getPredictedSize());
-      b = new byte[len];
-      dbis.readFully(b);
-    } else
-    {
-      if (maxPacketLength-currentFrame.getPredictedSize() - size >= 0)
-      {
-        if (data.length != size)
-        {
-          b = new byte[size];
-          System.arraycopy(data, 0, b, 0, size);
-          data = null;
-        } else
-          b = data;
-      }
-      else
-      {
-        if (dbis == null)
-        {
-          dbis = new DataByteArrayInputStream();
-          dbis.setBuffer(data, 0, size);
-        }
-        int len = Math.min(dbis.available(), maxPacketLength-currentFrame.getPredictedSize());
-        b = new byte[len];
-        dbis.readFully(b);
-      }
+    public void setChannel(int channel) {
+        this.channel = channel;
     }
-    if (hasMore())
-      currentFrame.setMore(AMQPBoolean.TRUE);
-    currentFrame.setPayload(b);
-    if (predictedNumberPackets == -1)
-      predictedNumberPackets = size /b.length+1;
-  }
 
-  public int getCurrentPacketNumber()
-  {
-    return currentPacketNumber;
-  }
+    public void setHandle(int handle) {
+        this.handle = handle;
+    }
 
-  public boolean hasMore() throws IOException
-  {
-    return dbis != null && dbis.available() > 0;
-  }
+    public void setSettled(boolean settled) {
+        this.settled = settled;
+    }
+
+    public void setData(byte[] data) {
+        setData(data, data.length);
+    }
+
+    public void setData(byte[] data, int size) {
+        this.data = data;
+        this.size = size;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public long getMessageFormat() {
+        return messageFormat;
+    }
+
+    public void setMessageFormat(long messageFormat) {
+        this.messageFormat = messageFormat;
+    }
+
+    public void setMaxFrameSize(int maxFrameSize) {
+        this.maxPacketLength = maxFrameSize;
+    }
+
+    public int getMaxPayloadLength() {
+        return maxPacketLength;
+    }
+
+    public int getPredictedNumberPackets() {
+        return predictedNumberPackets;
+    }
+
+    public void getNextPacket(TransferFrame currentFrame) throws IOException {
+        currentFrame.setMore(AMQPBoolean.FALSE);
+        if (messageFormat != -1)
+            currentFrame.setMessageFormat(new MessageFormat(messageFormat));
+        currentPacketNumber++;
+        byte[] b = null;
+        if (dbis != null) {
+            int len = Math.min(dbis.available(), maxPacketLength - currentFrame.getPredictedSize());
+            b = new byte[len];
+            dbis.readFully(b);
+        } else {
+            if (maxPacketLength - currentFrame.getPredictedSize() - size >= 0) {
+                if (data.length != size) {
+                    b = new byte[size];
+                    System.arraycopy(data, 0, b, 0, size);
+                    data = null;
+                } else
+                    b = data;
+            } else {
+                if (dbis == null) {
+                    dbis = new DataByteArrayInputStream();
+                    dbis.setBuffer(data, 0, size);
+                }
+                int len = Math.min(dbis.available(), maxPacketLength - currentFrame.getPredictedSize());
+                b = new byte[len];
+                dbis.readFully(b);
+            }
+        }
+        if (hasMore())
+            currentFrame.setMore(AMQPBoolean.TRUE);
+        currentFrame.setPayload(b);
+        if (predictedNumberPackets == -1)
+            predictedNumberPackets = size / b.length + 1;
+    }
+
+    public int getCurrentPacketNumber() {
+        return currentPacketNumber;
+    }
+
+    public boolean hasMore() throws IOException {
+        return dbis != null && dbis.available() > 0;
+    }
 }

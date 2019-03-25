@@ -19,10 +19,8 @@ package com.swiftmq.amqp.v091.types;
 
 import java.io.IOException;
 
-public class FrameSizeExceededException extends IOException
-{
-  public FrameSizeExceededException(String s)
-  {
-    super(s);
-  }
+public class FrameSizeExceededException extends IOException {
+    public FrameSizeExceededException(String s) {
+        super(s);
+    }
 }

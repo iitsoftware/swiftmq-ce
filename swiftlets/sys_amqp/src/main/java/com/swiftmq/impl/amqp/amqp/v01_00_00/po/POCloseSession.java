@@ -22,20 +22,16 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POCloseSession extends POObject
-{
-  public POCloseSession(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public class POCloseSession extends POObject {
+    public POCloseSession(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPSessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPSessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POCloseSession]";
-  }
+    public String toString() {
+        return "[POCloseSession]";
+    }
 }

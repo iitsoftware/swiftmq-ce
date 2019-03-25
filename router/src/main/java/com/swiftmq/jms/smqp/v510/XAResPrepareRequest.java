@@ -17,85 +17,75 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: XAResPrepareRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: XAResPrepareRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.XidImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResPrepareRequest extends Request
-{
-  private XidImpl xid;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public XAResPrepareRequest()
-  {
-    super(0,true);
-  }
+public class XAResPrepareRequest extends Request {
+    private XidImpl xid;
 
-  public XAResPrepareRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public XAResPrepareRequest() {
+        super(0, true);
+    }
 
-  public XAResPrepareRequest(int dispatchId, XidImpl xid)
-  {
-    super(dispatchId,true);
-    this.xid = xid;
-  }
-  
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public XAResPrepareRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XAResPrepareRequest(int dispatchId, XidImpl xid) {
+        super(dispatchId, true);
+        this.xid = xid;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESPREPARE_REQ;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(xid,out);
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = SMQPUtil.read(xid,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESPREPARE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResPrepareReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(xid, out);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = SMQPUtil.read(xid, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[XAResPrepareRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("xid=");
-    _b.append(xid);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResPrepareReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[XAResPrepareRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("xid=");
+        _b.append(xid);
+        _b.append("]");
+        return _b.toString();
+    }
 }

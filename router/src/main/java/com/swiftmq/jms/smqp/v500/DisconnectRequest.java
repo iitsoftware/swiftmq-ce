@@ -21,32 +21,26 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class DisconnectRequest extends Request
-{
-  public DisconnectRequest()
-  {
-    super(0, true);
-  }
+public class DisconnectRequest extends Request {
+    public DisconnectRequest() {
+        super(0, true);
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DISCONNECT_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_DISCONNECT_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new DisconnectReply();
-  }
+    protected Reply createReplyInstance() {
+        return new DisconnectReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitDisconnectRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitDisconnectRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[DisconnectRequest " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[DisconnectRequest " + super.toString() + "]";
+    }
 
 }
 

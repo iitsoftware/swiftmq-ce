@@ -22,42 +22,35 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POAuthenticate extends POObject
-{
-  String mechanism = null;
-  String username = null;
-  String password = null;
+public class POAuthenticate extends POObject {
+    String mechanism = null;
+    String username = null;
+    String password = null;
 
-  public POAuthenticate(Semaphore semaphore, String mechanism, String username, String password)
-  {
-    super(null, semaphore);
-    this.mechanism = mechanism;
-    this.username = username;
-    this.password = password;
-  }
+    public POAuthenticate(Semaphore semaphore, String mechanism, String username, String password) {
+        super(null, semaphore);
+        this.mechanism = mechanism;
+        this.username = username;
+        this.password = password;
+    }
 
-  public String getMechanism()
-  {
-    return mechanism;
-  }
+    public String getMechanism() {
+        return mechanism;
+    }
 
-  public String getUsername()
-  {
-    return username;
-  }
+    public String getUsername() {
+        return username;
+    }
 
-  public String getPassword()
-  {
-    return password;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POAuthenticate, mechanism="+mechanism+", username=" + username + ", password=" + password + "]";
-  }
+    public String toString() {
+        return "[POAuthenticate, mechanism=" + mechanism + ", username=" + username + ", password=" + password + "]";
+    }
 }

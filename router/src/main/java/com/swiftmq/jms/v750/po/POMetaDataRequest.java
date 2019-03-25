@@ -20,20 +20,16 @@ package com.swiftmq.jms.v750.po;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POMetaDataRequest extends POObject
-{
-  public POMetaDataRequest()
-  {
-    super(null, null);
-  }
+public class POMetaDataRequest extends POObject {
+    public POMetaDataRequest() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POMetaDataRequest]";
-  }
+    public String toString() {
+        return "[POMetaDataRequest]";
+    }
 }

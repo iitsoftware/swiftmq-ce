@@ -20,33 +20,25 @@ package com.swiftmq.impl.jms.standard.v750;
 import com.swiftmq.jms.smqp.v750.SMQPVisitorAdapter;
 import com.swiftmq.tools.requestreply.GenericRequest;
 
-public class SessionVisitor extends SMQPVisitorAdapter
-{
-  public void visit(DeliveryItem item)
-  {
-  }
+public class SessionVisitor extends SMQPVisitorAdapter {
+    public void visit(DeliveryItem item) {
+    }
 
-  public void visit(RegisterMessageProcessor request)
-  {
-  }
+    public void visit(RegisterMessageProcessor request) {
+    }
 
-  public void visit(RunMessageProcessor request)
-  {
-  }
+    public void visit(RunMessageProcessor request) {
+    }
 
-  public void visitGenericRequest(GenericRequest request)
-  {
-  }
+    public void visitGenericRequest(GenericRequest request) {
+    }
 
-  public void visit(SessionStartAccounting startAccounting)
-  {
-  }
+    public void visit(SessionStartAccounting startAccounting) {
+    }
 
-  public void visit(SessionFlushAccounting flushAccounting)
-  {
-  }
+    public void visit(SessionFlushAccounting flushAccounting) {
+    }
 
-  public void visit(SessionStopAccounting stopAccounting)
-  {
-  }
+    public void visit(SessionStopAccounting stopAccounting) {
+    }
 }

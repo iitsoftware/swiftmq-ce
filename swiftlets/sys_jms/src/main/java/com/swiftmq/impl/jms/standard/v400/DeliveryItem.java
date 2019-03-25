@@ -17,37 +17,31 @@
 
 package com.swiftmq.impl.jms.standard.v400;
 
-import com.swiftmq.jms.smqp.v400.*;
-import com.swiftmq.jms.*;
-import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.jms.smqp.v400.AsyncMessageDeliveryRequest;
+import com.swiftmq.swiftlet.queue.MessageEntry;
+import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.tools.requestreply.Reply;
 
-public class DeliveryItem extends Request
-{
-	MessageEntry messageEntry = null;
-	Consumer consumer = null;
-	AsyncMessageDeliveryRequest request = null;
+public class DeliveryItem extends Request {
+    MessageEntry messageEntry = null;
+    Consumer consumer = null;
+    AsyncMessageDeliveryRequest request = null;
 
-  public DeliveryItem()
-  {
-    super(0,false);
-  }
+    public DeliveryItem() {
+        super(0, false);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SessionVisitor)visitor).visitDeliveryItem(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SessionVisitor) visitor).visitDeliveryItem(this);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public String toString()
-	{
-		return "[DeliveryItem, consumer="+consumer+", messageEntry="+messageEntry+", request="+request+"]";
-	}
+    public String toString() {
+        return "[DeliveryItem, consumer=" + consumer + ", messageEntry=" + messageEntry + ", request=" + request + "]";
+    }
 }
 

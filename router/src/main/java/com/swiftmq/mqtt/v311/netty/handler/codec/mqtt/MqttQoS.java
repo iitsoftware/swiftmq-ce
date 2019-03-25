@@ -34,7 +34,7 @@ public enum MqttQoS {
     }
 
     public static MqttQoS valueOf(int value) {
-        for (MqttQoS q: values()) {
+        for (MqttQoS q : values()) {
             if (q.value == value) {
                 return q;
             }

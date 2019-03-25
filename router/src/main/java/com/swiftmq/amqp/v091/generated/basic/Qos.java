@@ -17,108 +17,96 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Qos extends BasicMethod
-{
-  int prefetchSize;
-  int prefetchCount;
-  boolean global;
+import java.io.IOException;
 
-  public Qos()
-  {
-    _classId = 60;
-    _methodId = 10;
-  }
+public class Qos extends BasicMethod {
+    int prefetchSize;
+    int prefetchCount;
+    boolean global;
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Qos() {
+        _classId = 60;
+        _methodId = 10;
+    }
 
-  public int getPrefetchSize()
-  {
-    return prefetchSize;
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setPrefetchSize(int prefetchSize)
-  {
-    this.prefetchSize = prefetchSize;
-  }
+    public int getPrefetchSize() {
+        return prefetchSize;
+    }
 
-  public int getPrefetchCount()
-  {
-    return prefetchCount;
-  }
+    public void setPrefetchSize(int prefetchSize) {
+        this.prefetchSize = prefetchSize;
+    }
 
-  public void setPrefetchCount(int prefetchCount)
-  {
-    this.prefetchCount = prefetchCount;
-  }
+    public int getPrefetchCount() {
+        return prefetchCount;
+    }
 
-  public boolean getGlobal()
-  {
-    return global;
-  }
+    public void setPrefetchCount(int prefetchCount) {
+        this.prefetchCount = prefetchCount;
+    }
 
-  public void setGlobal(boolean global)
-  {
-    this.global = global;
-  }
+    public boolean getGlobal() {
+        return global;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    prefetchSize = Coder.readInt(in);
-    prefetchCount = Coder.readShort(in);
-    global = Coder.readBit(in);
-  }
+    public void setGlobal(boolean global) {
+        this.global = global;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeInt(prefetchSize, out);
-    Coder.writeShort(prefetchCount, out);
-    Coder.writeBit(global, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        prefetchSize = Coder.readInt(in);
+        prefetchCount = Coder.readShort(in);
+        global = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("prefetchSize=");
-    b.append(prefetchSize);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("prefetchCount=");
-    b.append(prefetchCount);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("global=");
-    b.append(global);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeInt(prefetchSize, out);
+        Coder.writeShort(prefetchCount, out);
+        Coder.writeBit(global, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Qos " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("prefetchSize=");
+        b.append(prefetchSize);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("prefetchCount=");
+        b.append(prefetchCount);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("global=");
+        b.append(global);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Qos " + super.toString() + getDisplayString() + "]";
+    }
 }

@@ -26,69 +26,57 @@ import javax.naming.InitialContext;
 import java.io.File;
 import java.util.Hashtable;
 
-public class FileReceiverSynchron
-{
-  static Connection connection = null;
-  static File outDir = null;
-  static Filetransfer filetransfer = null;
+public class FileReceiverSynchron {
+    static Connection connection = null;
+    static File outDir = null;
+    static Filetransfer filetransfer = null;
 
-  private static void transfer(String link) throws Exception
-  {
-    System.out.println("Transferring: " + link);
-    filetransfer.withLink(link).withOriginalFilename(true).withOutputDirectory(outDir).withPassword("Moin!").receive(new ProgressListener()
-    {
-      public void progress(String filename, int chunksTransferred, long fileSize, long bytesTransferred, int transferredPercent)
-      {
-        System.out.println("  " + filename + ": " + chunksTransferred + " chunks, " + bytesTransferred + " of " + fileSize + " transferred (" + transferredPercent + "%)");
-      }
-    }).delete();
-  }
-
-  public static void main(String[] args)
-  {
-    if (args.length != 4)
-    {
-      System.out.println("Usage: FileReceiverSynchron <smqp-url> <connection-factory> <link-input-dest> <output-dir>");
-      System.exit(-1);
+    private static void transfer(String link) throws Exception {
+        System.out.println("Transferring: " + link);
+        filetransfer.withLink(link).withOriginalFilename(true).withOutputDirectory(outDir).withPassword("Moin!").receive(new ProgressListener() {
+            public void progress(String filename, int chunksTransferred, long fileSize, long bytesTransferred, int transferredPercent) {
+                System.out.println("  " + filename + ": " + chunksTransferred + " chunks, " + bytesTransferred + " of " + fileSize + " transferred (" + transferredPercent + "%)");
+            }
+        }).delete();
     }
 
-    try
-    {
-      Hashtable env = new Hashtable();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.swiftmq.jndi.InitialContextFactoryImpl");
-      env.put(Context.PROVIDER_URL, args[0]);
-      InitialContext ctx = new InitialContext(env);
-      ConnectionFactory cf = (ConnectionFactory) ctx.lookup(args[1]);
-      Destination linkInputDest = (Destination) ctx.lookup(args[2]);
-      ctx.close();
-      connection = cf.createConnection();
-      connection.start();
-      outDir = new File(args[3]);
-      if (!outDir.exists())
-        outDir.mkdirs();
+    public static void main(String[] args) {
+        if (args.length != 4) {
+            System.out.println("Usage: FileReceiverSynchron <smqp-url> <connection-factory> <link-input-dest> <output-dir>");
+            System.exit(-1);
+        }
 
-      filetransfer = Filetransfer.create(connection, "router1", "test").withDigestType("MD5");
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer consumer = session.createConsumer(linkInputDest);
-      TextMessage msg = null;
-      while ((msg = (TextMessage) consumer.receive(30000)) != null)
-      {
-        final String link = msg.getText();
-        transfer(link);
-      }
-      filetransfer.close();
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-    } finally
-    {
-      try
-      {
-        connection.close();
-      } catch (JMSException e)
-      {
-      }
+        try {
+            Hashtable env = new Hashtable();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.swiftmq.jndi.InitialContextFactoryImpl");
+            env.put(Context.PROVIDER_URL, args[0]);
+            InitialContext ctx = new InitialContext(env);
+            ConnectionFactory cf = (ConnectionFactory) ctx.lookup(args[1]);
+            Destination linkInputDest = (Destination) ctx.lookup(args[2]);
+            ctx.close();
+            connection = cf.createConnection();
+            connection.start();
+            outDir = new File(args[3]);
+            if (!outDir.exists())
+                outDir.mkdirs();
+
+            filetransfer = Filetransfer.create(connection, "router1", "test").withDigestType("MD5");
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageConsumer consumer = session.createConsumer(linkInputDest);
+            TextMessage msg = null;
+            while ((msg = (TextMessage) consumer.receive(30000)) != null) {
+                final String link = msg.getText();
+                transfer(link);
+            }
+            filetransfer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (JMSException e) {
+            }
+        }
     }
-  }
 
 }

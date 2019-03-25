@@ -28,56 +28,47 @@ package com.swiftmq.jms.smqp.v400;
 import com.swiftmq.tools.requestreply.Reply;
 
 import javax.transaction.xa.XAResource;
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResCommitReply extends Reply
-{
-  int errorCode = XAResource.XA_OK;
-  long delay = 0;
+public class XAResCommitReply extends Reply {
+    int errorCode = XAResource.XA_OK;
+    long delay = 0;
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESCOMMIT_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESCOMMIT_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(errorCode);
-    out.writeLong(delay);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(errorCode);
+        out.writeLong(delay);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = in.readInt();
-    delay = in.readLong();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = in.readInt();
+        delay = in.readLong();
+    }
 
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public void setDelay(long delay)
-  {
-    this.delay = delay;
-  }
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
 
-  public long getDelay()
-  {
-    return (delay);
-  }
+    public long getDelay() {
+        return (delay);
+    }
 
-  public String toString()
-  {
-    return "[XAResCommitReply " + super.toString() + " errorCode=" + errorCode + " delay=" + delay + "]";
-  }
+    public String toString() {
+        return "[XAResCommitReply " + super.toString() + " errorCode=" + errorCode + " delay=" + delay + "]";
+    }
 }

@@ -17,41 +17,35 @@
 
 package com.swiftmq.impl.store.standard.backup.po;
 
-import com.swiftmq.tools.pipeline.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ScanSaveSets extends POObject
-{
-  POObject nextPO = null;
+public class ScanSaveSets extends POObject {
+    POObject nextPO = null;
 
-  public ScanSaveSets()
-  {
-    super(null, null);
-  }
+    public ScanSaveSets() {
+        super(null, null);
+    }
 
-  public ScanSaveSets(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+    public ScanSaveSets(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public ScanSaveSets(POObject nextPO)
-  {
-    super(null, null);
-    this.nextPO = nextPO;
-  }
+    public ScanSaveSets(POObject nextPO) {
+        super(null, null);
+        this.nextPO = nextPO;
+    }
 
-  public POObject getNextPO()
-  {
-    return nextPO;
-  }
+    public POObject getNextPO() {
+        return nextPO;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ScanSaveSets, nextPO="+nextPO+"]";
-  }
+    public String toString() {
+        return "[ScanSaveSets, nextPO=" + nextPO + "]";
+    }
 }

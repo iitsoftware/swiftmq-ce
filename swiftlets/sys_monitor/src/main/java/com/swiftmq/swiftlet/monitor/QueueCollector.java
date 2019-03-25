@@ -25,50 +25,39 @@ import com.swiftmq.swiftlet.queue.QueueManager;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class QueueCollector implements Collector
-{
-  SwiftletContext ctx = null;
-  QueueManager queueManager = null;
+public class QueueCollector implements Collector {
+    SwiftletContext ctx = null;
+    QueueManager queueManager = null;
 
-  public QueueCollector(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
-  }
-
-  public String getDescription()
-  {
-    return "QUEUE COLLECTOR";
-  }
-
-  public String[] getColumnNames()
-  {
-    return new String[]{"Queue Name", "Number Messages"};
-  }
-
-  public Map collect()
-  {
-    Map map = new TreeMap();
-    String[] names = queueManager.getDefinedQueueNames();
-    if (names != null)
-    {
-      for (int i = 0; i < names.length; i++)
-      {
-        if (!names[i].startsWith("tpc$"))
-        {
-          AbstractQueue queue = queueManager.getQueueForInternalUse(names[i]);
-          if (queue != null)
-          {
-            try
-            {
-              map.put(names[i], new Long(queue.getNumberQueueMessages()));
-            } catch (QueueException e)
-            {
-            }
-          }
-        }
-      }
+    public QueueCollector(SwiftletContext ctx) {
+        this.ctx = ctx;
+        queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
     }
-    return map;
-  }
+
+    public String getDescription() {
+        return "QUEUE COLLECTOR";
+    }
+
+    public String[] getColumnNames() {
+        return new String[]{"Queue Name", "Number Messages"};
+    }
+
+    public Map collect() {
+        Map map = new TreeMap();
+        String[] names = queueManager.getDefinedQueueNames();
+        if (names != null) {
+            for (int i = 0; i < names.length; i++) {
+                if (!names[i].startsWith("tpc$")) {
+                    AbstractQueue queue = queueManager.getQueueForInternalUse(names[i]);
+                    if (queue != null) {
+                        try {
+                            map.put(names[i], new Long(queue.getNumberQueueMessages()));
+                        } catch (QueueException e) {
+                        }
+                    }
+                }
+            }
+        }
+        return map;
+    }
 }

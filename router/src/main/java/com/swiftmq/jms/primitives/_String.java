@@ -23,53 +23,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _String implements Dumpable, Primitive
-{
-  // This is a workaround. JMS TCK requires that MapMessage can transfer a null String.
-  // This should actually be solved by introducing a new primitive NULLSTRING. However,
-  // since this base types are not versioned, a customer would be required to upgrade
-  // everything at once (router networks and all clients).
-  public static final String NULLMARKER = "\u0000";
+public class _String implements Dumpable, Primitive {
+    // This is a workaround. JMS TCK requires that MapMessage can transfer a null String.
+    // This should actually be solved by introducing a new primitive NULLSTRING. However,
+    // since this base types are not versioned, a customer would be required to upgrade
+    // everything at once (router networks and all clients).
+    public static final String NULLMARKER = "\u0000";
 
-  String value = null;
+    String value = null;
 
-  public _String()
-  {
-  }
+    public _String() {
+    }
 
-  public _String(String s)
-  {
-    this.value = s;
-  }
+    public _String(String s) {
+        this.value = s;
+    }
 
-  public Object getObject()
-  {
-    if (value == null||value.equals(NULLMARKER))
-      return null;
-    return value;
-  }
+    public Object getObject() {
+        if (value == null || value.equals(NULLMARKER))
+            return null;
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return STRING;
-  }
+    public int getDumpId() {
+        return STRING;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeUTF(value==null?NULLMARKER:value);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeUTF(value == null ? NULLMARKER : value);
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new String(in.readUTF());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new String(in.readUTF());
+    }
 
-  public String toString()
-  {
-    if (value == null||value.equals(NULLMARKER))
-      return null;
-    return value;
-  }
+    public String toString() {
+        if (value == null || value.equals(NULLMARKER))
+            return null;
+        return value;
+    }
 }

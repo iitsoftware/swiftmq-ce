@@ -24,16 +24,15 @@ package com.swiftmq.mgmt;
  * @see Property
  * @see PropertyChangeListener
  */
-public class PropertyChangeException extends Exception
-{
+public class PropertyChangeException extends Exception {
 
-  /**
-   * Creates a new PropertyChangeException.
-   * @param msg the message.
-   */
-  public PropertyChangeException(String msg)
-  {
-    super(msg);
-  }
+    /**
+     * Creates a new PropertyChangeException.
+     *
+     * @param msg the message.
+     */
+    public PropertyChangeException(String msg) {
+        super(msg);
+    }
 }
 

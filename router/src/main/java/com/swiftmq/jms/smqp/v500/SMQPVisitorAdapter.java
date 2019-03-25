@@ -20,210 +20,168 @@ package com.swiftmq.jms.smqp.v500;
 import com.swiftmq.tools.requestreply.GenericRequest;
 import com.swiftmq.tools.requestreply.Reply;
 
-public class SMQPVisitorAdapter implements SMQPVisitor
-{
-  public void visitAcknowledgeMessageRequest(AcknowledgeMessageRequest req)
-  {
-  }
+public class SMQPVisitorAdapter implements SMQPVisitor {
+    public void visitAcknowledgeMessageRequest(AcknowledgeMessageRequest req) {
+    }
 
-  public void visitAsyncMessageDeliveryRequest(AsyncMessageDeliveryRequest req)
-  {
-  }
+    public void visitAsyncMessageDeliveryRequest(AsyncMessageDeliveryRequest req) {
+    }
 
-  public void visitCloseBrowserRequest(CloseBrowserRequest req)
-  {
-  }
+    public void visitCloseBrowserRequest(CloseBrowserRequest req) {
+    }
 
-  public void visitCloseConsumerRequest(CloseConsumerRequest req)
-  {
-  }
+    public void visitCloseConsumerRequest(CloseConsumerRequest req) {
+    }
 
-  public void visitCloseProducerRequest(CloseProducerRequest req)
-  {
-  }
+    public void visitCloseProducerRequest(CloseProducerRequest req) {
+    }
 
-  public void visitCloseSessionRequest(CloseSessionRequest req)
-  {
-  }
+    public void visitCloseSessionRequest(CloseSessionRequest req) {
+    }
 
-  public void visitCommitRequest(CommitRequest req)
-  {
-  }
+    public void visitCommitRequest(CommitRequest req) {
+    }
 
-  public void visitCreateBrowserRequest(CreateBrowserRequest req)
-  {
-  }
+    public void visitCreateBrowserRequest(CreateBrowserRequest req) {
+    }
 
-  public void visitCreateConsumerRequest(CreateConsumerRequest req)
-  {
-  }
+    public void visitCreateConsumerRequest(CreateConsumerRequest req) {
+    }
 
-  public void visitCreateProducerRequest(CreateProducerRequest req)
-  {
-  }
+    public void visitCreateProducerRequest(CreateProducerRequest req) {
+    }
 
-  public void visitCreatePublisherRequest(CreatePublisherRequest req)
-  {
-  }
+    public void visitCreatePublisherRequest(CreatePublisherRequest req) {
+    }
 
-  public void visitCreateSessionRequest(CreateSessionRequest req)
-  {
-  }
+    public void visitCreateSessionRequest(CreateSessionRequest req) {
+    }
 
-  public void visitCreateSubscriberRequest(CreateSubscriberRequest req)
-  {
-  }
+    public void visitCreateSubscriberRequest(CreateSubscriberRequest req) {
+    }
 
-  public void visitCreateDurableRequest(CreateDurableRequest req)
-  {
-  }
+    public void visitCreateDurableRequest(CreateDurableRequest req) {
+    }
 
-  public void visitDeleteDurableRequest(DeleteDurableRequest req)
-  {
-  }
+    public void visitDeleteDurableRequest(DeleteDurableRequest req) {
+    }
 
-  public void visitCreateTmpQueueRequest(CreateTmpQueueRequest req)
-  {
-  }
+    public void visitCreateTmpQueueRequest(CreateTmpQueueRequest req) {
+    }
 
-  public void visitDeleteTmpQueueRequest(DeleteTmpQueueRequest req)
-  {
-  }
+    public void visitDeleteTmpQueueRequest(DeleteTmpQueueRequest req) {
+    }
 
-  public void visitFetchBrowserMessageRequest(FetchBrowserMessageRequest req)
-  {
-  }
+    public void visitFetchBrowserMessageRequest(FetchBrowserMessageRequest req) {
+    }
 
-  public void visitGetClientIdRequest(GetClientIdRequest req)
-  {
-  }
+    public void visitGetClientIdRequest(GetClientIdRequest req) {
+    }
 
-  public void visitSetClientIdRequest(SetClientIdRequest req)
-  {
-  }
+    public void visitSetClientIdRequest(SetClientIdRequest req) {
+    }
 
-  public void visitGetMetaDataRequest(GetMetaDataRequest req)
-  {
-  }
+    public void visitGetMetaDataRequest(GetMetaDataRequest req) {
+    }
 
-  public void visitProduceMessageRequest(ProduceMessageRequest req)
-  {
-  }
+    public void visitProduceMessageRequest(ProduceMessageRequest req) {
+    }
 
-  public void visitRecoverSessionRequest(RecoverSessionRequest req)
-  {
-  }
+    public void visitRecoverSessionRequest(RecoverSessionRequest req) {
+    }
 
-  public void visitRollbackRequest(RollbackRequest req)
-  {
-  }
+    public void visitRollbackRequest(RollbackRequest req) {
+    }
 
-  public void visitStartConsumerRequest(StartConsumerRequest req)
-  {
-  }
+    public void visitStartConsumerRequest(StartConsumerRequest req) {
+    }
 
-  public void visitGenericRequest(GenericRequest req)
-  {
-  }
+    public void visitGenericRequest(GenericRequest req) {
+    }
 
-  public void visitGetAuthChallengeRequest(GetAuthChallengeRequest req)
-  {
-  }
+    public void visitGetAuthChallengeRequest(GetAuthChallengeRequest req) {
+    }
 
-  public void visitAuthResponseRequest(AuthResponseRequest req)
-  {
-  }
+    public void visitAuthResponseRequest(AuthResponseRequest req) {
+    }
 
-  public void visitRouterConnectRequest(RouterConnectRequest req)
-  {
-  }
+    public void visitRouterConnectRequest(RouterConnectRequest req) {
+    }
 
-  public void visitDisconnectRequest(DisconnectRequest req)
-  {
-  }
+    public void visitDisconnectRequest(DisconnectRequest req) {
+    }
 
-  public void visitMessageDeliveredRequest(MessageDeliveredRequest req)
-  {
-  }
+    public void visitMessageDeliveredRequest(MessageDeliveredRequest req) {
+    }
 
-  public void visitXAResRecoverRequest(XAResRecoverRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResRecoverRequest(XAResRecoverRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitXAResStartRequest(XAResStartRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResStartRequest(XAResStartRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitXAResEndRequest(XAResEndRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResEndRequest(XAResEndRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitXAResPrepareRequest(XAResPrepareRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResPrepareRequest(XAResPrepareRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitXAResCommitRequest(XAResCommitRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResCommitRequest(XAResCommitRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitXAResRollbackRequest(XAResRollbackRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResRollbackRequest(XAResRollbackRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitXAResSetTxTimeoutRequest(XAResSetTxTimeoutRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResSetTxTimeoutRequest(XAResSetTxTimeoutRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitXAResGetTxTimeoutRequest(XAResGetTxTimeoutRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitXAResGetTxTimeoutRequest(XAResGetTxTimeoutRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitCreateShadowConsumerRequest(CreateShadowConsumerRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitCreateShadowConsumerRequest(CreateShadowConsumerRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 
-  public void visitAssociateMessageRequest(AssociateMessageRequest req)
-  {
-    Reply reply = req.createReply();
-    reply.setOk(false);
-    reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
-    reply.send();
-  }
+    public void visitAssociateMessageRequest(AssociateMessageRequest req) {
+        Reply reply = req.createReply();
+        reply.setOk(false);
+        reply.setException(new Exception("Please install the JMS XA/ASF Swiftlet to use this functionality!"));
+        reply.send();
+    }
 }
 

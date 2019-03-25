@@ -27,143 +27,122 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class LogRecord extends LogOperation
-{
-  public final static int START = 1;
-  public final static int COMMIT = 2;
-  public final static int ABORT = 3;
-  long magic = 0;
-  long txId;
-  Semaphore semaphore;
-  List journal = null;
-  boolean complete = false;
-  CacheReleaseListener cacheReleaseListener = null;
-  AsyncCompletionCallback callback = null;
-  List messagePageRefs = null;
+public abstract class LogRecord extends LogOperation {
+    public final static int START = 1;
+    public final static int COMMIT = 2;
+    public final static int ABORT = 3;
+    long magic = 0;
+    long txId;
+    Semaphore semaphore;
+    List journal = null;
+    boolean complete = false;
+    CacheReleaseListener cacheReleaseListener = null;
+    AsyncCompletionCallback callback = null;
+    List messagePageRefs = null;
 
-  public LogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, AsyncCompletionCallback callback, List messagePageRefs)
-  {
-    this.txId = txId;
-    this.semaphore = semaphore;
-    this.journal = journal;
-    this.cacheReleaseListener = cacheReleaseListener;
-    this.callback = callback;
-    this.messagePageRefs = messagePageRefs;
-  }
-
-  public static LogRecord create(int type)
-  {
-    LogRecord lr = null;
-    switch (type)
-    {
-      case START:
-        lr = new StartLogRecord(0);
-        break;
-      case COMMIT:
-        lr = new CommitLogRecord(0, null, null, null, null);
-        break;
-      case ABORT:
-        lr = new AbortLogRecord(0, null, null, null, null);
-        break;
+    public LogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, AsyncCompletionCallback callback, List messagePageRefs) {
+        this.txId = txId;
+        this.semaphore = semaphore;
+        this.journal = journal;
+        this.cacheReleaseListener = cacheReleaseListener;
+        this.callback = callback;
+        this.messagePageRefs = messagePageRefs;
     }
-    return lr;
-  }
 
-  public long getTxId()
-  {
-    return (txId);
-  }
-
-  public Semaphore getSemaphore()
-  {
-    return (semaphore);
-  }
-
-  int getOperationType()
-  {
-    return OPER_LOG_REC;
-  }
-
-  public abstract int getLogType();
-
-  public List getJournal()
-  {
-    return (journal);
-  }
-
-  public CacheReleaseListener getCacheReleaseListener()
-  {
-    return cacheReleaseListener;
-  }
-
-  public AsyncCompletionCallback getCallback()
-  {
-    return callback;
-  }
-
-  public List getMessagePageRefs()
-  {
-    return messagePageRefs;
-  }
-
-  public boolean isComplete()
-  {
-    return complete;
-  }
-
-  public long getMagic()
-  {
-    return magic;
-  }
-
-  public void setMagic(long magic)
-  {
-    this.magic = magic;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    writeContent(out, false);
-  }
-
-  public void writeContent(DataOutput out, boolean includeMagic) throws IOException
-  {
-    if (includeMagic)
-      out.writeLong(magic);
-    out.writeLong(txId);
-    out.writeInt(journal.size());
-    for (int i = 0; i < journal.size(); i++)
-    {
-      LogAction action = (LogAction) journal.get(i);
-      out.writeInt(action.getType());
-      action.writeContent(out);
+    public static LogRecord create(int type) {
+        LogRecord lr = null;
+        switch (type) {
+            case START:
+                lr = new StartLogRecord(0);
+                break;
+            case COMMIT:
+                lr = new CommitLogRecord(0, null, null, null, null);
+                break;
+            case ABORT:
+                lr = new AbortLogRecord(0, null, null, null, null);
+                break;
+        }
+        return lr;
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    readContent(in, false);
-  }
-
-  public void readContent(DataInput in, boolean includeMagic) throws IOException
-  {
-    if (includeMagic)
-      magic = in.readLong();
-    txId = in.readLong();
-    int n = in.readInt();
-    journal = new ArrayList(n);
-    for (int i = 0; i < n; i++)
-    {
-      LogAction la = LogAction.create(in.readInt());
-      la.readContent(in);
-      journal.add(la);
+    public long getTxId() {
+        return (txId);
     }
-    complete = true;
-  }
 
-  public String toString()
-  {
-    return "journal=" + journal;
-  }
+    public Semaphore getSemaphore() {
+        return (semaphore);
+    }
+
+    int getOperationType() {
+        return OPER_LOG_REC;
+    }
+
+    public abstract int getLogType();
+
+    public List getJournal() {
+        return (journal);
+    }
+
+    public CacheReleaseListener getCacheReleaseListener() {
+        return cacheReleaseListener;
+    }
+
+    public AsyncCompletionCallback getCallback() {
+        return callback;
+    }
+
+    public List getMessagePageRefs() {
+        return messagePageRefs;
+    }
+
+    public boolean isComplete() {
+        return complete;
+    }
+
+    public long getMagic() {
+        return magic;
+    }
+
+    public void setMagic(long magic) {
+        this.magic = magic;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        writeContent(out, false);
+    }
+
+    public void writeContent(DataOutput out, boolean includeMagic) throws IOException {
+        if (includeMagic)
+            out.writeLong(magic);
+        out.writeLong(txId);
+        out.writeInt(journal.size());
+        for (int i = 0; i < journal.size(); i++) {
+            LogAction action = (LogAction) journal.get(i);
+            out.writeInt(action.getType());
+            action.writeContent(out);
+        }
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        readContent(in, false);
+    }
+
+    public void readContent(DataInput in, boolean includeMagic) throws IOException {
+        if (includeMagic)
+            magic = in.readLong();
+        txId = in.readLong();
+        int n = in.readInt();
+        journal = new ArrayList(n);
+        for (int i = 0; i < n; i++) {
+            LogAction la = LogAction.create(in.readInt());
+            la.readContent(in);
+            journal.add(la);
+        }
+        complete = true;
+    }
+
+    public String toString() {
+        return "journal=" + journal;
+    }
 }
 

@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: SMQPBulkRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: SMQPBulkRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.dump.Dumpable;
@@ -30,72 +31,61 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class SMQPBulkRequest extends Request
-{
-  static final DumpableFactory factory = new SMQPFactory();
+public class SMQPBulkRequest extends Request {
+    static final DumpableFactory factory = new SMQPFactory();
 
-  public Object[] dumpables = null;
-  public int len = 0;
+    public Object[] dumpables = null;
+    public int len = 0;
 
-  public SMQPBulkRequest()
-  {
-    super(0, false);
-  }
-
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(len);
-    for (int i = 0; i < len; i++)
-      Dumpalizer.dump(out, (Dumpable) dumpables[i]);
-  }
-
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    super.readContent(in);
-    len = in.readInt();
-    dumpables = new Object[len];
-    for (int i = 0; i < len; i++)
-    {
-      dumpables[i] = Dumpalizer.construct(in, factory);
+    public SMQPBulkRequest() {
+        super(0, false);
     }
-  }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_BULK_REQ;
-  }
-
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
-
-  public void accept(RequestVisitor visitor)
-  {
-  }
-
-  private String dumpDumpables()
-  {
-    StringBuffer b = new StringBuffer("\n");
-    for (int i = 0; i < len; i++)
-    {
-      b.append(dumpables[i].toString());
-      b.append("\n");
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        out.writeInt(len);
+        for (int i = 0; i < len; i++)
+            Dumpalizer.dump(out, (Dumpable) dumpables[i]);
     }
-    return b.toString();
-  }
 
-  public String toString()
-  {
-    return "[SMQPBulkRequest " + super.toString() +
-        " len =" + len +
-        " dumpables=" + dumpDumpables() + "]";
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        len = in.readInt();
+        dumpables = new Object[len];
+        for (int i = 0; i < len; i++) {
+            dumpables[i] = Dumpalizer.construct(in, factory);
+        }
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_BULK_REQ;
+    }
+
+    protected Reply createReplyInstance() {
+        return null;
+    }
+
+    public void accept(RequestVisitor visitor) {
+    }
+
+    private String dumpDumpables() {
+        StringBuffer b = new StringBuffer("\n");
+        for (int i = 0; i < len; i++) {
+            b.append(dumpables[i].toString());
+            b.append("\n");
+        }
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[SMQPBulkRequest " + super.toString() +
+                " len =" + len +
+                " dumpables=" + dumpDumpables() + "]";
+    }
 }

@@ -17,80 +17,71 @@
 
 package com.swiftmq.mgmt.protocol.v750;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class DisconnectedRequest extends Request
-{
-  String routerName = null;
-  String reason = null;
+public class DisconnectedRequest extends Request {
+    String routerName = null;
+    String reason = null;
 
-  public DisconnectedRequest(String routerName, String reason)
-  {
-    super(0, false);
-    this.routerName = routerName;
-    this.reason = reason;
-  }
+    public DisconnectedRequest(String routerName, String reason) {
+        super(0, false);
+        this.routerName = routerName;
+        this.reason = reason;
+    }
 
-  public DisconnectedRequest()
-  {
-    this(null, null);
-  }
+    public DisconnectedRequest() {
+        this(null, null);
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public void setRouterName(String routerName)
-  {
-    this.routerName = routerName;
-  }
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
 
-  public String getReason()
-  {
-    return reason;
-  }
+    public String getReason() {
+        return reason;
+    }
 
-  public void setReason(String reason)
-  {
-    this.reason = reason;
-  }
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
 
-  public int getDumpId()
-  {
-    return ProtocolFactory.DISCONNECTED_REQ;
-  }
+    public int getDumpId() {
+        return ProtocolFactory.DISCONNECTED_REQ;
+    }
 
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    super.writeContent(out);
-    out.writeUTF(routerName);
-    out.writeUTF(reason);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        out.writeUTF(routerName);
+        out.writeUTF(reason);
+    }
 
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    super.readContent(in);
-    routerName = in.readUTF();
-    reason = in.readUTF();
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        routerName = in.readUTF();
+        reason = in.readUTF();
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[DisconnectedRequest "+super.toString()+", routerName="+routerName+", reason="+reason+"]";
-  }
+    public String toString() {
+        return "[DisconnectedRequest " + super.toString() + ", routerName=" + routerName + ", reason=" + reason + "]";
+    }
 }

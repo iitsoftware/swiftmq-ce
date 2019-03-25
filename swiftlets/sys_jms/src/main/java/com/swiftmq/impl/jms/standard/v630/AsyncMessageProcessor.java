@@ -18,149 +18,123 @@
 package com.swiftmq.impl.jms.standard.v630;
 
 import com.swiftmq.jms.smqp.v630.AsyncMessageDeliveryRequest;
-import com.swiftmq.swiftlet.queue.MessageEntry;
-import com.swiftmq.swiftlet.queue.MessageProcessor;
-import com.swiftmq.swiftlet.queue.QueueHandlerClosedException;
-import com.swiftmq.swiftlet.queue.QueuePullTransaction;
-import com.swiftmq.swiftlet.queue.QueueTransactionClosedException;
+import com.swiftmq.swiftlet.queue.*;
 
-public class AsyncMessageProcessor extends MessageProcessor
-{
-  RegisterMessageProcessor registerRequest = null;
-  RunMessageProcessor runRequest = null;
-  Session session = null;
-  SessionContext ctx = null;
-  Consumer consumer = null;
-  int consumerCacheSize = 0;
-  int recoveryEpoche = 0;
-  int deliveryCount = 0;
-  boolean valid = true;
-  int numberMessages = 0;
-  int lowWaterMark = 0;
+public class AsyncMessageProcessor extends MessageProcessor {
+    RegisterMessageProcessor registerRequest = null;
+    RunMessageProcessor runRequest = null;
+    Session session = null;
+    SessionContext ctx = null;
+    Consumer consumer = null;
+    int consumerCacheSize = 0;
+    int recoveryEpoche = 0;
+    int deliveryCount = 0;
+    boolean valid = true;
+    int numberMessages = 0;
+    int lowWaterMark = 0;
 
-  public AsyncMessageProcessor(Session session, SessionContext ctx, Consumer consumer, int consumerCacheSize, int recoveryEpoche)
-  {
-    super(consumer.getSelector());
-    this.session = session;
-    this.ctx = ctx;
-    this.consumer = consumer;
-    this.consumerCacheSize = consumerCacheSize;
-    this.recoveryEpoche = recoveryEpoche;
-    setAutoCommit(consumer.isAutoCommit());
-    setBulkMode(true);
-    createBulkBuffer(consumerCacheSize);
-    registerRequest = new RegisterMessageProcessor(this);
-    runRequest = new RunMessageProcessor(this);
-    lowWaterMark = session.getMyConnection().ctx.consumerCacheLowWaterMark;
-    if (lowWaterMark*2 >= consumerCacheSize)
-      lowWaterMark = 0;
-  }
+    public AsyncMessageProcessor(Session session, SessionContext ctx, Consumer consumer, int consumerCacheSize, int recoveryEpoche) {
+        super(consumer.getSelector());
+        this.session = session;
+        this.ctx = ctx;
+        this.consumer = consumer;
+        this.consumerCacheSize = consumerCacheSize;
+        this.recoveryEpoche = recoveryEpoche;
+        setAutoCommit(consumer.isAutoCommit());
+        setBulkMode(true);
+        createBulkBuffer(consumerCacheSize);
+        registerRequest = new RegisterMessageProcessor(this);
+        runRequest = new RunMessageProcessor(this);
+        lowWaterMark = session.getMyConnection().ctx.consumerCacheLowWaterMark;
+        if (lowWaterMark * 2 >= consumerCacheSize)
+            lowWaterMark = 0;
+    }
 
-  public int getConsumerCacheSize()
-  {
-    return consumerCacheSize;
-  }
+    public int getConsumerCacheSize() {
+        return consumerCacheSize;
+    }
 
-  public void setConsumerCacheSize(int consumerCacheSize)
-  {
-    this.consumerCacheSize = consumerCacheSize;
-  }
+    public void setConsumerCacheSize(int consumerCacheSize) {
+        this.consumerCacheSize = consumerCacheSize;
+    }
 
-  public boolean isValid()
-  {
-    return valid && !session.closed;
-  }
+    public boolean isValid() {
+        return valid && !session.closed;
+    }
 
-  public void stop()
-  {
-    valid = false;
-  }
+    public void stop() {
+        valid = false;
+    }
 
-  public void reset()
-  {
-    deliveryCount = 0;
-    valid = true;
-  }
+    public void reset() {
+        deliveryCount = 0;
+        valid = true;
+    }
 
-  public void processMessages(int numberMessages)
-  {
-    this.numberMessages = numberMessages;
-    if (isValid())
-      ctx.sessionQueue.enqueue(runRequest);
-  }
+    public void processMessages(int numberMessages) {
+        this.numberMessages = numberMessages;
+        if (isValid())
+            ctx.sessionQueue.enqueue(runRequest);
+    }
 
-  public void processMessage(MessageEntry messageEntry)
-  {
-    throw new RuntimeException("Invalid method call, bulk mode is enabled!");
-  }
+    public void processMessage(MessageEntry messageEntry) {
+        throw new RuntimeException("Invalid method call, bulk mode is enabled!");
+    }
 
-  public void processException(Exception exception)
-  {
-    valid = !(exception instanceof QueueHandlerClosedException);
-  }
+    public void processException(Exception exception) {
+        valid = !(exception instanceof QueueHandlerClosedException);
+    }
 
-  public void register()
-  {
-    if (!isValid())
-      return;
-    try
-    {
-      QueuePullTransaction t = consumer.getReadTransaction();
-      if (t != null && !t.isClosed())
-      {
-        try
-        {
-          t.unregisterMessageProcessor(this);
-          t.registerMessageProcessor(this);
-        } catch (QueueTransactionClosedException e)
-        {
+    public void register() {
+        if (!isValid())
+            return;
+        try {
+            QueuePullTransaction t = consumer.getReadTransaction();
+            if (t != null && !t.isClosed()) {
+                try {
+                    t.unregisterMessageProcessor(this);
+                    t.registerMessageProcessor(this);
+                } catch (QueueTransactionClosedException e) {
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-      }
-    } catch (Exception e)
-    {
-      e.printStackTrace();
     }
-  }
 
-  public void run()
-  {
-    if (!isValid())
-      return;
-    ctx.incMsgsReceived(numberMessages);
-    deliveryCount += numberMessages;
-    boolean restart = deliveryCount >= consumerCacheSize-lowWaterMark;
-    MessageEntry[] buffer = getBulkBuffer();
-    if (isAutoCommit())
-    {
-      MessageEntry[] bulk = new MessageEntry[numberMessages];
-      System.arraycopy(buffer, 0, bulk, 0, numberMessages);
-      AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), null, bulk, session.dispatchId, restart, recoveryEpoche);
-      ctx.connectionOutboundQueue.enqueue(request);
-    } else
-    {
-      for (int i = 0; i < numberMessages; i++)
-      {
-        AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), buffer[i], null, session.dispatchId, i == numberMessages - 1 && restart, recoveryEpoche);
-        DeliveryItem item = new DeliveryItem();
-        item.messageEntry = buffer[i];
-        item.consumer = consumer;
-        item.request = request;
-        ctx.sessionQueue.enqueue(item);
-      }
+    public void run() {
+        if (!isValid())
+            return;
+        ctx.incMsgsReceived(numberMessages);
+        deliveryCount += numberMessages;
+        boolean restart = deliveryCount >= consumerCacheSize - lowWaterMark;
+        MessageEntry[] buffer = getBulkBuffer();
+        if (isAutoCommit()) {
+            MessageEntry[] bulk = new MessageEntry[numberMessages];
+            System.arraycopy(buffer, 0, bulk, 0, numberMessages);
+            AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), null, bulk, session.dispatchId, restart, recoveryEpoche);
+            ctx.connectionOutboundQueue.enqueue(request);
+        } else {
+            for (int i = 0; i < numberMessages; i++) {
+                AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), buffer[i], null, session.dispatchId, i == numberMessages - 1 && restart, recoveryEpoche);
+                DeliveryItem item = new DeliveryItem();
+                item.messageEntry = buffer[i];
+                item.consumer = consumer;
+                item.request = request;
+                ctx.sessionQueue.enqueue(item);
+            }
+        }
+        if (!restart)
+            ctx.sessionQueue.enqueue(registerRequest);
+        else
+            deliveryCount = 0;
     }
-    if (!restart)
-      ctx.sessionQueue.enqueue(registerRequest);
-    else
-      deliveryCount = 0;
-  }
 
-  public String getDescription()
-  {
-    return session.toString() + "/AsyncMessageProcessor";
-  }
+    public String getDescription() {
+        return session.toString() + "/AsyncMessageProcessor";
+    }
 
-  public String getDispatchToken()
-  {
-    return Session.TP_SESSIONSVC;
-  }
+    public String getDispatchToken() {
+        return Session.TP_SESSIONSVC;
+    }
 }

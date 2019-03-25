@@ -21,30 +21,24 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class FlushAccountingRequest extends Request
-{
-  public FlushAccountingRequest()
-  {
-    super(0, false);
-  }
+public class FlushAccountingRequest extends Request {
+    public FlushAccountingRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.FLUSH_ACCOUNTING_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.FLUSH_ACCOUNTING_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[FlushAccountingRequest " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[FlushAccountingRequest " + super.toString() + "]";
+    }
 }

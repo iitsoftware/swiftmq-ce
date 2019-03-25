@@ -27,124 +27,102 @@ import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
 import com.swiftmq.tools.versioning.Versionable;
 
-public class QueueJNDIProcessor extends MessageProcessor
-{
-  SwiftletContext ctx = null;
-  volatile QueueReceiver receiver = null;
-  volatile QueuePullTransaction t = null;
-  volatile BytesMessageImpl msg = null;
-  volatile boolean closed = false;
+public class QueueJNDIProcessor extends MessageProcessor {
+    SwiftletContext ctx = null;
+    volatile QueueReceiver receiver = null;
+    volatile QueuePullTransaction t = null;
+    volatile BytesMessageImpl msg = null;
+    volatile boolean closed = false;
 
-  QueueJNDIProcessor(SwiftletContext ctx) throws Exception
-  {
-    this.ctx = ctx;
-    receiver = ctx.queueManager.createQueueReceiver(JNDISwiftlet.JNDI_QUEUE, null, null);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "Starting QueueJNDIProcessor...");
-    t = receiver.createTransaction(false);
-    t.registerMessageProcessor(this);
-  }
-
-  public boolean isValid()
-  {
-    return true;
-  }
-
-  public void processMessage(MessageEntry messageEntry)
-  {
-    try
-    {
-      msg = (BytesMessageImpl) messageEntry.getMessage();
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: receiving request: " + msg);
-      ctx.myTP.dispatchTask(this);
-    } catch (Exception e)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e + ", EXITING!");
+    QueueJNDIProcessor(SwiftletContext ctx) throws Exception {
+        this.ctx = ctx;
+        receiver = ctx.queueManager.createQueueReceiver(JNDISwiftlet.JNDI_QUEUE, null, null);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "Starting QueueJNDIProcessor...");
+        t = receiver.createTransaction(false);
+        t.registerMessageProcessor(this);
     }
-  }
 
-  public void processException(Exception exception)
-  {
-    if (closed)
-      return;
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: processException: " + exception + ", EXITING!");
-  }
+    public boolean isValid() {
+        return true;
+    }
 
-  public String getDispatchToken()
-  {
-    return JNDISwiftletImpl.TP_LISTENER;
-  }
-
-  public String getDescription()
-  {
-    return ctx.jndiSwiftlet.getName() + "/RequestProcessor";
-  }
-
-  public void stop()
-  {
-  }
-
-  public void run()
-  {
-    try
-    {
-      t.commit();
-      try
-      {
-        Versionable versionable = Versionable.toVersionable(msg);
-        int version = versionable.selectVersions(JNDISwiftletImpl.VERSIONS);
-        switch (version)
-        {
-          case 400:
-          {
-            JNDIRequest r = (JNDIRequest) versionable.createVersionedObject();
-            com.swiftmq.impl.jndi.standard.v400.RequestVisitor visitor = new com.swiftmq.impl.jndi.standard.v400.RequestVisitor(ctx, (QueueImpl) msg.getJMSReplyTo(), true);
-            r.accept(visitor);
-          }
-          break;
-          default:
-            throw new Exception("Invalid version: " + version);
+    public void processMessage(MessageEntry messageEntry) {
+        try {
+            msg = (BytesMessageImpl) messageEntry.getMessage();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: receiving request: " + msg);
+            ctx.myTP.dispatchTask(this);
+        } catch (Exception e) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e + ", EXITING!");
         }
-      } catch (Exception e)
-      {
-        if (closed)
-          return;
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e);
-        ctx.logSwiftlet.logError(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e);
-      }
-      msg = null;
-      if (closed)
-        return;
-      t = receiver.createTransaction(false);
-      t.registerMessageProcessor(this);
-    } catch (Exception e)
-    {
-      if (closed)
-        return;
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e + ", EXITING!");
     }
-  }
 
-  public void close()
-  {
-    closed = true;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: close");
-    try
-    {
-      if (t != null)
-        t.rollback();
-    } catch (Exception ignored)
-    {
+    public void processException(Exception exception) {
+        if (closed)
+            return;
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: processException: " + exception + ", EXITING!");
     }
-    try
-    {
-      receiver.close();
-    } catch (Exception ignored)
-    {
+
+    public String getDispatchToken() {
+        return JNDISwiftletImpl.TP_LISTENER;
     }
-  }
+
+    public String getDescription() {
+        return ctx.jndiSwiftlet.getName() + "/RequestProcessor";
+    }
+
+    public void stop() {
+    }
+
+    public void run() {
+        try {
+            t.commit();
+            try {
+                Versionable versionable = Versionable.toVersionable(msg);
+                int version = versionable.selectVersions(JNDISwiftletImpl.VERSIONS);
+                switch (version) {
+                    case 400: {
+                        JNDIRequest r = (JNDIRequest) versionable.createVersionedObject();
+                        com.swiftmq.impl.jndi.standard.v400.RequestVisitor visitor = new com.swiftmq.impl.jndi.standard.v400.RequestVisitor(ctx, (QueueImpl) msg.getJMSReplyTo(), true);
+                        r.accept(visitor);
+                    }
+                    break;
+                    default:
+                        throw new Exception("Invalid version: " + version);
+                }
+            } catch (Exception e) {
+                if (closed)
+                    return;
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e);
+                ctx.logSwiftlet.logError(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e);
+            }
+            msg = null;
+            if (closed)
+                return;
+            t = receiver.createTransaction(false);
+            t.registerMessageProcessor(this);
+        } catch (Exception e) {
+            if (closed)
+                return;
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e + ", EXITING!");
+        }
+    }
+
+    public void close() {
+        closed = true;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: close");
+        try {
+            if (t != null)
+                t.rollback();
+        } catch (Exception ignored) {
+        }
+        try {
+            receiver.close();
+        } catch (Exception ignored) {
+        }
+    }
 }

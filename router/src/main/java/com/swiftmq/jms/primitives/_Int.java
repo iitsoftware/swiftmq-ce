@@ -23,53 +23,43 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Int implements Dumpable, Primitive
-{
-  Integer value = null;
+public class _Int implements Dumpable, Primitive {
+    Integer value = null;
 
-  public _Int()
-  {
-  }
+    public _Int() {
+    }
 
-  public _Int(int value)
-  {
-    this.value = new Integer(value);
-  }
+    public _Int(int value) {
+        this.value = new Integer(value);
+    }
 
-  public _Int(String s)
-  {
-    this.value = Integer.valueOf(s);
-  }
+    public _Int(String s) {
+        this.value = Integer.valueOf(s);
+    }
 
-  public int intValue()
-  {
-    return value.intValue();
-  }
+    public int intValue() {
+        return value.intValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return INT;
-  }
+    public int getDumpId() {
+        return INT;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeInt(value.intValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeInt(value.intValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Integer(in.readInt());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Integer(in.readInt());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

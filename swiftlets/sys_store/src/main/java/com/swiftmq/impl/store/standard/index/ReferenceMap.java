@@ -24,72 +24,59 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class ReferenceMap
-{
-  StoreContext ctx = null;
-  Map map = new HashMap();
+public class ReferenceMap {
+    StoreContext ctx = null;
+    Map map = new HashMap();
 
-  public ReferenceMap(StoreContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  public synchronized MessagePageReference getReference(Integer pageNo, boolean create)
-  {
-    MessagePageReference ref = (MessagePageReference) map.get(pageNo);
-    if (ref == null && create)
-    {
-      ref = new MessagePageReference(ctx, pageNo.intValue(), 0);
-      map.put(pageNo, ref);
+    public ReferenceMap(StoreContext ctx) {
+        this.ctx = ctx;
     }
-    return ref;
-  }
 
-  public synchronized void removeReferencesLessThan(long lessThan)
-  {
-    for (Iterator iter = map.entrySet().iterator(); iter.hasNext();)
-    {
-      MessagePageReference ref = (MessagePageReference) ((Map.Entry) iter.next()).getValue();
-      if (ref != null && ref.getRefCount() < lessThan)
-        iter.remove();
+    public synchronized MessagePageReference getReference(Integer pageNo, boolean create) {
+        MessagePageReference ref = (MessagePageReference) map.get(pageNo);
+        if (ref == null && create) {
+            ref = new MessagePageReference(ctx, pageNo.intValue(), 0);
+            map.put(pageNo, ref);
+        }
+        return ref;
     }
-  }
 
-  public synchronized void removeReference(Integer pageNo)
-  {
-    map.remove(pageNo);
-  }
-
-  public synchronized void dump()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/dump ...");
-    for (Iterator iter = map.entrySet().iterator(); iter.hasNext();)
-    {
-      Map.Entry entry = (Map.Entry) iter.next();
-      Integer rootPageNo = (Integer) entry.getKey();
-      MessagePageReference ref = (MessagePageReference) entry.getValue();
-      try
-      {
-        Page p = ctx.cacheManager.fetchAndPin(rootPageNo.intValue());
-        MessagePage mp = new MessagePage(p);
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace("sys$store", toString() + "/dump, rootPageNo=" + rootPageNo + ", ref=" + ref + ", mp=" + mp);
-        ctx.cacheManager.unpin(rootPageNo.intValue());
-      } catch (Exception e)
-      {
-        e.printStackTrace();
-      }
+    public synchronized void removeReferencesLessThan(long lessThan) {
+        for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
+            MessagePageReference ref = (MessagePageReference) ((Map.Entry) iter.next()).getValue();
+            if (ref != null && ref.getRefCount() < lessThan)
+                iter.remove();
+        }
     }
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/dump done");
-  }
 
-  public synchronized void clear()
-  {
-    map.clear();
-  }
+    public synchronized void removeReference(Integer pageNo) {
+        map.remove(pageNo);
+    }
 
-  public String toString()
-  {
-    return "ReferenceMap";
-  }
+    public synchronized void dump() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/dump ...");
+        for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) iter.next();
+            Integer rootPageNo = (Integer) entry.getKey();
+            MessagePageReference ref = (MessagePageReference) entry.getValue();
+            try {
+                Page p = ctx.cacheManager.fetchAndPin(rootPageNo.intValue());
+                MessagePage mp = new MessagePage(p);
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$store", toString() + "/dump, rootPageNo=" + rootPageNo + ", ref=" + ref + ", mp=" + mp);
+                ctx.cacheManager.unpin(rootPageNo.intValue());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/dump done");
+    }
+
+    public synchronized void clear() {
+        map.clear();
+    }
+
+    public String toString() {
+        return "ReferenceMap";
+    }
 }

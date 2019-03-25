@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CreateDurableReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CreateDurableReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,78 +30,66 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreateDurableReply extends ReplyNE
-{
-  private String queueName;
-  private int topicSubscriberId;
+public class CreateDurableReply extends ReplyNE {
+    private String queueName;
+    private int topicSubscriberId;
 
-  public CreateDurableReply(String queueName, int topicSubscriberId)
-  {
-    this.queueName = queueName;
-    this.topicSubscriberId = topicSubscriberId;
-  }
+    public CreateDurableReply(String queueName, int topicSubscriberId) {
+        this.queueName = queueName;
+        this.topicSubscriberId = topicSubscriberId;
+    }
 
-  protected CreateDurableReply()
-  {
-  }
+    protected CreateDurableReply() {
+    }
 
-  public void setQueueName(String queueName)
-  {
-    this.queueName = queueName;
-  }
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public void setTopicSubscriberId(int topicSubscriberId)
-  {
-    this.topicSubscriberId = topicSubscriberId;
-  }
+    public void setTopicSubscriberId(int topicSubscriberId) {
+        this.topicSubscriberId = topicSubscriberId;
+    }
 
-  public int getTopicSubscriberId()
-  {
-    return topicSubscriberId;
-  }
+    public int getTopicSubscriberId() {
+        return topicSubscriberId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEDURABLE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEDURABLE_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (queueName != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(queueName, out);
-    } else
-      out.writeBoolean(false);
-    SMQPUtil.write(topicSubscriberId, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (queueName != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(queueName, out);
+        } else
+            out.writeBoolean(false);
+        SMQPUtil.write(topicSubscriberId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean queueName_set = in.readBoolean();
-    if (queueName_set)
-      queueName = SMQPUtil.read(queueName, in);
-    topicSubscriberId = SMQPUtil.read(topicSubscriberId, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean queueName_set = in.readBoolean();
+        if (queueName_set)
+            queueName = SMQPUtil.read(queueName, in);
+        topicSubscriberId = SMQPUtil.read(topicSubscriberId, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CreateDurableReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueName=");
-    _b.append(queueName);
-    _b.append(", ");
-    _b.append("topicSubscriberId=");
-    _b.append(topicSubscriberId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CreateDurableReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueName=");
+        _b.append(queueName);
+        _b.append(", ");
+        _b.append("topicSubscriberId=");
+        _b.append(topicSubscriberId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

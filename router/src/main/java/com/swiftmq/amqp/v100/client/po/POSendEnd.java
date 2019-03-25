@@ -22,28 +22,23 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendEnd extends POObject
-{
-  String condition = null;
+public class POSendEnd extends POObject {
+    String condition = null;
 
-  public POSendEnd(Semaphore semaphore, String condition)
-  {
-    super(null, semaphore);
-    this.condition = condition;
-  }
+    public POSendEnd(Semaphore semaphore, String condition) {
+        super(null, semaphore);
+        this.condition = condition;
+    }
 
-  public String getCondition()
-  {
-    return condition;
-  }
+    public String getCondition() {
+        return condition;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendEnd, condition=" + condition + "]";
-  }
+    public String toString() {
+        return "[POSendEnd, condition=" + condition + "]";
+    }
 }

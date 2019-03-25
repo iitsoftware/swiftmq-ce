@@ -25,24 +25,22 @@ import java.util.ArrayList;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class ArrayListTool
-{
-  /**
-   * set the object in the list on the first position with value equals null
-   * or - if no free index exists - expand.
-   * @param list the list
-   * @param object the object to insert
-   * @return the index for this object
-   */
-  public static int setFirstFreeOrExpand(ArrayList list, Object object)
-  {
-    int idx = list.indexOf(null);
-    if (idx == -1)
-    {
-      idx = list.size();
-      list.add(object);
-    } else
-      list.set(idx, object);
-    return idx;
-  }
+public class ArrayListTool {
+    /**
+     * set the object in the list on the first position with value equals null
+     * or - if no free index exists - expand.
+     *
+     * @param list   the list
+     * @param object the object to insert
+     * @return the index for this object
+     */
+    public static int setFirstFreeOrExpand(ArrayList list, Object object) {
+        int idx = list.indexOf(null);
+        if (idx == -1) {
+            idx = list.size();
+            list.add(object);
+        } else
+            list.set(idx, object);
+        return idx;
+    }
 }

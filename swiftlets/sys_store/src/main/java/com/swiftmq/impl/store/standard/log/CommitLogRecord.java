@@ -23,26 +23,21 @@ import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.List;
 
-public class CommitLogRecord extends LogRecord
-{
-  public CommitLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, AsyncCompletionCallback callback, List messagePageRefs)
-  {
-    super(txId, semaphore, journal, cacheReleaseListener, callback, messagePageRefs);
-  }
+public class CommitLogRecord extends LogRecord {
+    public CommitLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, AsyncCompletionCallback callback, List messagePageRefs) {
+        super(txId, semaphore, journal, cacheReleaseListener, callback, messagePageRefs);
+    }
 
-  public CommitLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, List messagePageRefs)
-  {
-    super(txId, semaphore, journal, cacheReleaseListener, null, messagePageRefs);
-  }
+    public CommitLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, List messagePageRefs) {
+        super(txId, semaphore, journal, cacheReleaseListener, null, messagePageRefs);
+    }
 
-  public int getLogType()
-  {
-    return COMMIT;
-  }
+    public int getLogType() {
+        return COMMIT;
+    }
 
-  public String toString()
-  {
-    return "[CommitLogRecord, magic=" + magic + ", txId=" + txId + ", Semaphore=" + semaphore + ", messagePageRefs=" + messagePageRefs + ", " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[CommitLogRecord, magic=" + magic + ", txId=" + txId + ", Semaphore=" + semaphore + ", messagePageRefs=" + messagePageRefs + ", " + super.toString() + "]";
+    }
 }
 

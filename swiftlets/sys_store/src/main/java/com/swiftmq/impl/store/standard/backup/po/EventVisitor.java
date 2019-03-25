@@ -19,12 +19,16 @@ package com.swiftmq.impl.store.standard.backup.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface EventVisitor extends POVisitor
-{
-  public void visit(ScanSaveSets po);
-  public void visit(ChangePath po);
-  public void visit(ChangeGenerations po);
-  public void visit(StartBackup po);
-  public void visit(BackupCompleted po);
-  public void visit(Close po);
+public interface EventVisitor extends POVisitor {
+    public void visit(ScanSaveSets po);
+
+    public void visit(ChangePath po);
+
+    public void visit(ChangeGenerations po);
+
+    public void visit(StartBackup po);
+
+    public void visit(BackupCompleted po);
+
+    public void visit(Close po);
 }

@@ -18,33 +18,32 @@
 package com.swiftmq.amqp.v100.generated.transactions.coordination;
 
 /**
- *  The TxnId interface.
+ * The TxnId interface.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface TxnIdIF
-{
-  /**
-   * Accept method for a TxnId visitor.
-   *
-   * @param visitor TxnId visitor
-   */
-  public void accept(TxnIdVisitor visitor);
+public interface TxnIdIF {
+    /**
+     * Accept method for a TxnId visitor.
+     *
+     * @param visitor TxnId visitor
+     */
+    public void accept(TxnIdVisitor visitor);
 
-  /**
-   * Returns the predicted size of this TxnIdIF. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize();
+    /**
+     * Returns the predicted size of this TxnIdIF. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize();
 
-  /**
-   * Returns a value representation of this TxnIdIF.
-   *
-   * @return value representation
-   */
-  public String getValueString();
+    /**
+     * Returns a value representation of this TxnIdIF.
+     *
+     * @return value representation
+     */
+    public String getValueString();
 }

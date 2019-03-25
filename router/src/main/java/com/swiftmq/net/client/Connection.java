@@ -20,23 +20,22 @@ package com.swiftmq.net.client;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface Connection
-{
-  public void setInboundHandler(InboundHandler inboundHandler);
+public interface Connection {
+    public void setInboundHandler(InboundHandler inboundHandler);
 
-  public void setInputActiveIndicator(AtomicBoolean inputActiveIndicator);
+    public void setInputActiveIndicator(AtomicBoolean inputActiveIndicator);
 
-  public void setExceptionHandler(ExceptionHandler exceptionHandler);
+    public void setExceptionHandler(ExceptionHandler exceptionHandler);
 
-  public OutputStream getOutputStream();
+    public OutputStream getOutputStream();
 
-  public String getLocalHostname();
+    public String getLocalHostname();
 
-  public String getHostname();
+    public String getHostname();
 
-  public int getPort();
+    public int getPort();
 
-  public void start();
+    public void start();
 
-  public void close();
+    public void close();
 }

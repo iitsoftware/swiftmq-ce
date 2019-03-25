@@ -17,25 +17,36 @@
 
 package com.swiftmq.impl.routing.single.route;
 
-import com.swiftmq.tools.dump.Dumpable;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
+import com.swiftmq.tools.dump.Dumpable;
 
-public interface Route extends Dumpable
-{
-  public final static int ADD = 0;
-  public final static int REMOVE = 1;
+public interface Route extends Dumpable {
+    public final static int ADD = 0;
+    public final static int REMOVE = 1;
 
-  public int getType();
-  public void setType(int type);
-  public String getVersion();
-  public void setVersion(String version);
-  public String getDestinationRouter();
-  public void setDestinationRouter(String destinationRouter);
-  public String getKey();
-  public String getLastHop();
-  public void addHop(String routerName);
-  public boolean hasHop(String routerName);
-  public int getHopCount();
-  public RoutingConnection getRoutingConnection();
-  public void setRoutingConnection(RoutingConnection connection);
+    public int getType();
+
+    public void setType(int type);
+
+    public String getVersion();
+
+    public void setVersion(String version);
+
+    public String getDestinationRouter();
+
+    public void setDestinationRouter(String destinationRouter);
+
+    public String getKey();
+
+    public String getLastHop();
+
+    public void addHop(String routerName);
+
+    public boolean hasHop(String routerName);
+
+    public int getHopCount();
+
+    public RoutingConnection getRoutingConnection();
+
+    public void setRoutingConnection(RoutingConnection connection);
 }

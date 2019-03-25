@@ -17,67 +17,59 @@
 
 package com.swiftmq.mgmt.protocol.v400;
 
-import com.swiftmq.tools.requestreply.*;
-import com.swiftmq.util.SwiftUtilities;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class SwiftletRemovedRequest extends Request
-{
-  String name = null;
+public class SwiftletRemovedRequest extends Request {
+    String name = null;
 
-  public SwiftletRemovedRequest(String name)
-  {
-    super(0,false);
-    this.name = name;
-  }
+    public SwiftletRemovedRequest(String name) {
+        super(0, false);
+        this.name = name;
+    }
 
-  public SwiftletRemovedRequest()
-  {
-    super(0,false);
-  }
+    public SwiftletRemovedRequest() {
+        super(0, false);
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name)
-  {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public int getDumpId()
-  {
-    return ProtocolFactory.SWIFTLETREMOVED_REQ;
-  }
+    public int getDumpId() {
+        return ProtocolFactory.SWIFTLETREMOVED_REQ;
+    }
 
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    super.writeContent(out);
-    out.writeUTF(name);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        out.writeUTF(name);
+    }
 
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    super.readContent(in);
-    name = in.readUTF();
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        name = in.readUTF();
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SwiftletRemovedRequest "+super.toString()+", name="+name+"]";
-  }
+    public String toString() {
+        return "[SwiftletRemovedRequest " + super.toString() + ", name=" + name + "]";
+    }
 }

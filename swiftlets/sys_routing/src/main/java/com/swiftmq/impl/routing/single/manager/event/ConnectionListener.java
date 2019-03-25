@@ -18,10 +18,9 @@
 package com.swiftmq.impl.routing.single.manager.event;
 
 
-public interface ConnectionListener
-{
-  public void connectionAdded(ConnectionEvent evt);
+public interface ConnectionListener {
+    public void connectionAdded(ConnectionEvent evt);
 
-  public void connectionRemoved(ConnectionEvent evt);
+    public void connectionRemoved(ConnectionEvent evt);
 }
 

@@ -22,56 +22,47 @@ import com.swiftmq.amqp.v100.client.SessionVisitor;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POAttachConsumer extends POAttach
-{
-  String source;
-  int linkCredit;
-  int qoS;
-  boolean noLocal;
-  String selector;
+public class POAttachConsumer extends POAttach {
+    String source;
+    int linkCredit;
+    int qoS;
+    boolean noLocal;
+    String selector;
 
-  public POAttachConsumer(Semaphore semaphore, String source, int linkCredit, int qoS, boolean noLocal, String selector, DeliveryMemory deliveryMemory)
-  {
-    super(null, semaphore, deliveryMemory);
-    this.source = source;
-    this.linkCredit = linkCredit;
-    this.qoS = qoS;
-    this.noLocal = noLocal;
-    this.selector = selector;
-  }
+    public POAttachConsumer(Semaphore semaphore, String source, int linkCredit, int qoS, boolean noLocal, String selector, DeliveryMemory deliveryMemory) {
+        super(null, semaphore, deliveryMemory);
+        this.source = source;
+        this.linkCredit = linkCredit;
+        this.qoS = qoS;
+        this.noLocal = noLocal;
+        this.selector = selector;
+    }
 
-  public String getSource()
-  {
-    return source;
-  }
+    public String getSource() {
+        return source;
+    }
 
-  public int getLinkCredit()
-  {
-    return linkCredit;
-  }
+    public int getLinkCredit() {
+        return linkCredit;
+    }
 
-  public int getQoS()
-  {
-    return qoS;
-  }
+    public int getQoS() {
+        return qoS;
+    }
 
-  public boolean isNoLocal()
-  {
-    return noLocal;
-  }
+    public boolean isNoLocal() {
+        return noLocal;
+    }
 
-  public String getSelector()
-  {
-    return selector;
-  }
+    public String getSelector() {
+        return selector;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POAttachConsumer, source=" + source + ", link=" + link + ", linkCredit=" + linkCredit + ", qoS=" + qoS + ", noLocal=" + noLocal + ", selector=" + selector + ", deliveryMemory="+deliveryMemory+"]";
-  }
+    public String toString() {
+        return "[POAttachConsumer, source=" + source + ", link=" + link + ", linkCredit=" + linkCredit + ", qoS=" + qoS + ", noLocal=" + noLocal + ", selector=" + selector + ", deliveryMemory=" + deliveryMemory + "]";
+    }
 }

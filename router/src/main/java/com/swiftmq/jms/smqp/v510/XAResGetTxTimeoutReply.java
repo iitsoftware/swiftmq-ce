@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: XAResGetTxTimeoutReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: XAResGetTxTimeoutReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class XAResGetTxTimeoutReply extends ReplyNE
-{
-  private long txTimeout;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public XAResGetTxTimeoutReply(long txTimeout)
-  {
-    this.txTimeout = txTimeout;
-  }
+public class XAResGetTxTimeoutReply extends ReplyNE {
+    private long txTimeout;
 
-  protected XAResGetTxTimeoutReply()
-  {
-  }
-  
-  public void setTxTimeout(long txTimeout)
-  {
-    this.txTimeout = txTimeout;
-  }
+    public XAResGetTxTimeoutReply(long txTimeout) {
+        this.txTimeout = txTimeout;
+    }
 
-  public long getTxTimeout()
-  {
-    return txTimeout;
-  }
+    protected XAResGetTxTimeoutReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESGETTXTIMEOUT_REP;
-  }
+    public void setTxTimeout(long txTimeout) {
+        this.txTimeout = txTimeout;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(txTimeout,out);
-  }
+    public long getTxTimeout() {
+        return txTimeout;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    txTimeout = SMQPUtil.read(txTimeout,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESGETTXTIMEOUT_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[XAResGetTxTimeoutReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("txTimeout=");
-    _b.append(txTimeout);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(txTimeout, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        txTimeout = SMQPUtil.read(txTimeout, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[XAResGetTxTimeoutReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("txTimeout=");
+        _b.append(txTimeout);
+        _b.append("]");
+        return _b.toString();
+    }
 }

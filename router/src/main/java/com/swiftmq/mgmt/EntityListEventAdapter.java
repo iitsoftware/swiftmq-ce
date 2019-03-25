@@ -17,50 +17,42 @@
 
 package com.swiftmq.mgmt;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
 
-public abstract class EntityListEventAdapter extends EntityChangeAdapter
-{
-  EntityList entityList = null;
+public abstract class EntityListEventAdapter extends EntityChangeAdapter {
+    EntityList entityList = null;
 
-  public EntityListEventAdapter(EntityList entityList, Object configObject, boolean add, boolean remove)
-  {
-    super(configObject);
-    this.entityList = entityList;
-    if (add)
-      entityList.setEntityAddListener(this);
-    if (remove)
-      entityList.setEntityRemoveListener(this);
-  }
-
-  public EntityListEventAdapter(EntityList entityList, boolean add, boolean remove)
-  {
-    this(entityList,null,add,remove);
-  }
-
-  public void init() throws Exception
-  {
-    Map entities = entityList.getEntities();
-    if (entities != null)
-    {
-      for (Iterator iter=entities.entrySet().iterator();iter.hasNext();)
-      {
-        Entity e = (Entity)((Map.Entry)iter.next()).getValue();
-        onEntityAdd(entityList,e);
-      }
+    public EntityListEventAdapter(EntityList entityList, Object configObject, boolean add, boolean remove) {
+        super(configObject);
+        this.entityList = entityList;
+        if (add)
+            entityList.setEntityAddListener(this);
+        if (remove)
+            entityList.setEntityRemoveListener(this);
     }
-  }
 
-  public void close() throws Exception
-  {
-    Map entities = entityList.getEntities();
-    if (entities != null)
-    {
-      for (Iterator iter=entities.entrySet().iterator();iter.hasNext();)
-      {
-        Entity e = (Entity)((Map.Entry)iter.next()).getValue();
-        onEntityRemove(entityList,e);
-      }
+    public EntityListEventAdapter(EntityList entityList, boolean add, boolean remove) {
+        this(entityList, null, add, remove);
     }
-  }
+
+    public void init() throws Exception {
+        Map entities = entityList.getEntities();
+        if (entities != null) {
+            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
+                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+                onEntityAdd(entityList, e);
+            }
+        }
+    }
+
+    public void close() throws Exception {
+        Map entities = entityList.getEntities();
+        if (entities != null) {
+            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
+                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+                onEntityRemove(entityList, e);
+            }
+        }
+    }
 }

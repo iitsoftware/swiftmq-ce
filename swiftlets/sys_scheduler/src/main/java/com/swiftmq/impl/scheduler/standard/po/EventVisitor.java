@@ -19,18 +19,28 @@ package com.swiftmq.impl.scheduler.standard.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface EventVisitor extends POVisitor
-{
-  public void visit(CalendarAdded po);
-  public void visit(CalendarRemoved po);
-  public void visit(CalendarChanged po);
-  public void visit(ScheduleAdded po);
-  public void visit(ScheduleRemoved po);
-  public void visit(ScheduleChanged po);
-  public void visit(JobFactoryAdded po);
-  public void visit(JobFactoryRemoved po);
-  public void visit(JobStart po);
-  public void visit(JobStop po);
-  public void visit(JobTerminated po);
-  public void visit(Close po);
+public interface EventVisitor extends POVisitor {
+    public void visit(CalendarAdded po);
+
+    public void visit(CalendarRemoved po);
+
+    public void visit(CalendarChanged po);
+
+    public void visit(ScheduleAdded po);
+
+    public void visit(ScheduleRemoved po);
+
+    public void visit(ScheduleChanged po);
+
+    public void visit(JobFactoryAdded po);
+
+    public void visit(JobFactoryRemoved po);
+
+    public void visit(JobStart po);
+
+    public void visit(JobStop po);
+
+    public void visit(JobTerminated po);
+
+    public void visit(Close po);
 }

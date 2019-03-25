@@ -36,45 +36,39 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class InboundReader extends RequestServiceRegistry
-    implements InboundHandler
-{
-  static final DumpableFactory dumpableFactory = new SMQPFactory();
+        implements InboundHandler {
+    static final DumpableFactory dumpableFactory = new SMQPFactory();
 
-  LogSwiftlet logSwiftlet = null;
-  TraceSwiftlet traceSwiftlet = null;
-  TraceSpace traceSpace = null;
-  String tracePrefix;
-  DataStreamInputStream dis = new DataStreamInputStream();
+    LogSwiftlet logSwiftlet = null;
+    TraceSwiftlet traceSwiftlet = null;
+    TraceSpace traceSpace = null;
+    String tracePrefix;
+    DataStreamInputStream dis = new DataStreamInputStream();
 
-  InboundReader(String tracePrefix)
-  {
-    this.tracePrefix = tracePrefix;
-    this.tracePrefix += "/InboundReader";
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
-  }
-
-  public void dataAvailable(Connection connection, InputStream inputStream)
-      throws IOException
-  {
-    dis.setInputStream(inputStream);
-    Dumpable obj = Dumpalizer.construct(dis, dumpableFactory);
-    if (traceSpace.enabled) traceSpace.trace("smqp", "read object: " + obj);
-    if (obj.getDumpId() != SMQPFactory.DID_KEEP_ALIVE_REQ)
-    {
-      if (obj.getDumpId() == SMQPFactory.DID_BULK_REQ)
-      {
-        SMQPBulkRequest bulkRequest = (SMQPBulkRequest) obj;
-        for (int i = 0; i < bulkRequest.len; i++)
-        {
-          Request req = (Request) bulkRequest.dumpables[i];
-          if (req.getDumpId() != SMQPFactory.DID_KEEP_ALIVE_REQ)
-            dispatch(req);
-        }
-      } else
-        dispatch((Request) obj);
+    InboundReader(String tracePrefix) {
+        this.tracePrefix = tracePrefix;
+        this.tracePrefix += "/InboundReader";
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
     }
-  }
+
+    public void dataAvailable(Connection connection, InputStream inputStream)
+            throws IOException {
+        dis.setInputStream(inputStream);
+        Dumpable obj = Dumpalizer.construct(dis, dumpableFactory);
+        if (traceSpace.enabled) traceSpace.trace("smqp", "read object: " + obj);
+        if (obj.getDumpId() != SMQPFactory.DID_KEEP_ALIVE_REQ) {
+            if (obj.getDumpId() == SMQPFactory.DID_BULK_REQ) {
+                SMQPBulkRequest bulkRequest = (SMQPBulkRequest) obj;
+                for (int i = 0; i < bulkRequest.len; i++) {
+                    Request req = (Request) bulkRequest.dumpables[i];
+                    if (req.getDumpId() != SMQPFactory.DID_KEEP_ALIVE_REQ)
+                        dispatch(req);
+                }
+            } else
+                dispatch((Request) obj);
+        }
+    }
 }
 

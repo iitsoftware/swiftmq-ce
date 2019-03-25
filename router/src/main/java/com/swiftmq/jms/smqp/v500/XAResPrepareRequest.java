@@ -17,62 +17,53 @@
 
 package com.swiftmq.jms.smqp.v500;
 
+import com.swiftmq.jms.XidImpl;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.jms.XidImpl;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResPrepareRequest extends Request
-{
-  XidImpl xid = null;
+public class XAResPrepareRequest extends Request {
+    XidImpl xid = null;
 
-  public XAResPrepareRequest(int dispatchId, XidImpl xid)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-  }
+    public XAResPrepareRequest(int dispatchId, XidImpl xid) {
+        super(dispatchId, true);
+        this.xid = xid;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESPREPARE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESPREPARE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResPrepareReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResPrepareReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResPrepareRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResPrepareRequest(this);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    xid.writeContent(out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        xid.writeContent(out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = new XidImpl();
-    xid.readContent(in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = new XidImpl();
+        xid.readContent(in);
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public String toString()
-  {
-    return "[XAResPrepareRequest " + super.toString() + ", xid=" + xid + "]";
-  }
+    public String toString() {
+        return "[XAResPrepareRequest " + super.toString() + ", xid=" + xid + "]";
+    }
 
 }
 

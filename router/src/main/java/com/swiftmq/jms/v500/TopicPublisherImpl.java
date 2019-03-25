@@ -19,54 +19,50 @@ package com.swiftmq.jms.v500;
 
 import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
 
 public class TopicPublisherImpl extends MessageProducerImpl
-  implements TopicPublisher
-{
-  Topic topic = null;
-  int producerId = -1;
+        implements TopicPublisher {
+    Topic topic = null;
+    int producerId = -1;
 
-  public TopicPublisherImpl(SessionImpl mySession, Topic topic,
-                            int dispatchId, int producerId, RequestRegistry requestRegistry,
-                            String myHostname, String clientId)
-  {
-    super(mySession, dispatchId, producerId, requestRegistry, myHostname, clientId);
+    public TopicPublisherImpl(SessionImpl mySession, Topic topic,
+                              int dispatchId, int producerId, RequestRegistry requestRegistry,
+                              String myHostname, String clientId) {
+        super(mySession, dispatchId, producerId, requestRegistry, myHostname, clientId);
 
-    this.topic = topic;
-    this.producerId = producerId;
-  }
+        this.topic = topic;
+        this.producerId = producerId;
+    }
 
-  public Topic getTopic()
-    throws JMSException
-  {
-    verifyState();
+    public Topic getTopic()
+            throws JMSException {
+        verifyState();
 
-    return (topic);
-  }
+        return (topic);
+    }
 
-  public void publish(Message message)
-    throws JMSException
-  {
-    send(message);
-  }
+    public void publish(Message message)
+            throws JMSException {
+        send(message);
+    }
 
-  public void publish(Message message, int deliveryMode, int priority, long timeToLive)
-    throws JMSException
-  {
-    send(message, deliveryMode, priority, timeToLive);
-  }
+    public void publish(Message message, int deliveryMode, int priority, long timeToLive)
+            throws JMSException {
+        send(message, deliveryMode, priority, timeToLive);
+    }
 
-  public void publish(Topic topic, Message message)
-    throws JMSException
-  {
-    send(topic, message);
-  }
+    public void publish(Topic topic, Message message)
+            throws JMSException {
+        send(topic, message);
+    }
 
-  public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive)
-    throws JMSException
-  {
-    send(topic, message, deliveryMode, priority, timeToLive);
-  }
+    public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive)
+            throws JMSException {
+        send(topic, message, deliveryMode, priority, timeToLive);
+    }
 }
 

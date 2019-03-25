@@ -17,8 +17,7 @@
 
 package com.swiftmq.tools.requestreply;
 
-public interface RequestHandler
-{
-  public void performRequest(Request request);
+public interface RequestHandler {
+    public void performRequest(Request request);
 }
 

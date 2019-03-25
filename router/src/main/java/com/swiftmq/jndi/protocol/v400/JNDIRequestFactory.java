@@ -17,33 +17,31 @@
 
 package com.swiftmq.jndi.protocol.v400;
 
-import com.swiftmq.tools.dump.*;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
 
-public class JNDIRequestFactory extends DumpableFactory
-{
-  public static final int LOOKUP = 0;
-  public static final int BIND = 1;
-  public static final int REBIND = 2;
-  public static final int UNBIND = 3;
+public class JNDIRequestFactory extends DumpableFactory {
+    public static final int LOOKUP = 0;
+    public static final int BIND = 1;
+    public static final int REBIND = 2;
+    public static final int UNBIND = 3;
 
-  public Dumpable createDumpable(int dumpId)
-  {
-    Dumpable d = null;
-    switch (dumpId)
-    {
-      case LOOKUP:
-        d = new LookupRequest();
-        break;
-      case BIND:
-        d = new BindRequest();
-        break;
-      case REBIND:
-        d = new RebindRequest();
-        break;
-      case UNBIND:
-        d = new UnbindRequest();
-        break;
+    public Dumpable createDumpable(int dumpId) {
+        Dumpable d = null;
+        switch (dumpId) {
+            case LOOKUP:
+                d = new LookupRequest();
+                break;
+            case BIND:
+                d = new BindRequest();
+                break;
+            case REBIND:
+                d = new RebindRequest();
+                break;
+            case UNBIND:
+                d = new UnbindRequest();
+                break;
+        }
+        return d;
     }
-    return d;
-  }
 }

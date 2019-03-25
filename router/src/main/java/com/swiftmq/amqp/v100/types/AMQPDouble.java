@@ -24,75 +24,65 @@ import java.io.IOException;
 /**
  * 64-bit floating point number (IEEE 754-2008 binary64)
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPDouble extends AMQPType
-{
-  byte[] bytes = new byte[8];
+public class AMQPDouble extends AMQPType {
+    byte[] bytes = new byte[8];
 
-  /**
-   * Constructs an AMQPDouble with an undefined value
-   *
-   */
-  public AMQPDouble()
-  {
-    super("double", AMQPTypeDecoder.DOUBLE);
-  }
+    /**
+     * Constructs an AMQPDouble with an undefined value
+     */
+    public AMQPDouble() {
+        super("double", AMQPTypeDecoder.DOUBLE);
+    }
 
-  /**
-   * Constructs an AMQPDouble with a value
-   *
-   * @param value value
-   */
-  public AMQPDouble(double value)
-  {
-    super("double", AMQPTypeDecoder.DOUBLE);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPDouble with a value
+     *
+     * @param value value
+     */
+    public AMQPDouble(double value) {
+        super("double", AMQPTypeDecoder.DOUBLE);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(double value)
-  {
-    Util.writeDouble(value, bytes, 0);
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(double value) {
+        Util.writeDouble(value, bytes, 0);
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public double getValue()
-  {
-    return Util.readDouble(bytes, 0);
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public double getValue() {
+        return Util.readDouble(bytes, 0);
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+bytes.length;
-    return n;
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + bytes.length;
+        return n;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    in.readFully(bytes);
-  }
+    public void readContent(DataInput in) throws IOException {
+        in.readFully(bytes);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.write(bytes);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.write(bytes);
+    }
 
-  public String getValueString()
-  {
-    return Double.toString(getValue());
-  }
+    public String getValueString() {
+        return Double.toString(getValue());
+    }
 
-  public String toString()
-  {
-    return "[AMQPDouble, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AMQPDouble, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

@@ -17,37 +17,30 @@
 
 package com.swiftmq.impl.routing.single.schedule.po;
 
-import com.swiftmq.impl.routing.single.connection.RoutingConnection;
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class PODeliverObject extends POObject
-{
-  int length = 0;
+public class PODeliverObject extends POObject {
+    int length = 0;
 
-  public PODeliverObject(int length)
-  {
-    super(null, null);
-    this.length = length;
-  }
+    public PODeliverObject(int length) {
+        super(null, null);
+        this.length = length;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POSchedulerVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POSchedulerVisitor) visitor).visit(this);
+    }
 
-  public int getLength()
-  {
-    return length;
-  }
+    public int getLength() {
+        return length;
+    }
 
-  public void setLength(int length)
-  {
-    this.length = length;
-  }
+    public void setLength(int length) {
+        this.length = length;
+    }
 
-  public String toString()
-  {
-    return "[PODeliverObject, length="+length+"]";
-  }
+    public String toString() {
+        return "[PODeliverObject, length=" + length + "]";
+    }
 }

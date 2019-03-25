@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: DeleteTmpQueueRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: DeleteTmpQueueRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,82 +33,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class DeleteTmpQueueRequest extends Request
-{
-  private String queueName;
+public class DeleteTmpQueueRequest extends Request {
+    private String queueName;
 
-  public DeleteTmpQueueRequest()
-  {
-    super(0, true);
-  }
+    public DeleteTmpQueueRequest() {
+        super(0, true);
+    }
 
-  public DeleteTmpQueueRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public DeleteTmpQueueRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public DeleteTmpQueueRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public DeleteTmpQueueRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public DeleteTmpQueueRequest(int dispatchId, String queueName)
-  {
-    super(dispatchId, true);
-    this.queueName = queueName;
-  }
+    public DeleteTmpQueueRequest(int dispatchId, String queueName) {
+        super(dispatchId, true);
+        this.queueName = queueName;
+    }
 
-  public DeleteTmpQueueRequest(RequestRetryValidator validator, int dispatchId, String queueName)
-  {
-    super(dispatchId, true, validator);
-    this.queueName = queueName;
-  }
+    public DeleteTmpQueueRequest(RequestRetryValidator validator, int dispatchId, String queueName) {
+        super(dispatchId, true, validator);
+        this.queueName = queueName;
+    }
 
-  public void setQueueName(String queueName)
-  {
-    this.queueName = queueName;
-  }
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DELETETMPQUEUE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_DELETETMPQUEUE_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueName, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueName, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueName = SMQPUtil.read(queueName, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueName = SMQPUtil.read(queueName, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new DeleteTmpQueueReply();
-  }
+    protected Reply createReplyInstance() {
+        return new DeleteTmpQueueReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/DeleteTmpQueueRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueName=");
-    _b.append(queueName);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/DeleteTmpQueueRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueName=");
+        _b.append(queueName);
+        _b.append("]");
+        return _b.toString();
+    }
 }

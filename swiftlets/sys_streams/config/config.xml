@@ -1,7 +1,7 @@
 <swiftlet name="sys$streams"
           displayname="Streams Swiftlet"
           class="com.swiftmq.impl.streams.StreamsSwiftlet"
-          icon="/com/swiftmq/impl/streams/images/swiftlet.png"
+          icon="/sys_streams/images/swiftlet.png"
           description="Complex Event Stream Swiftlet"
           release="${release}"
           vendor="IIT Software GmbH">

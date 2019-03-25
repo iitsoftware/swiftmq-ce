@@ -31,50 +31,42 @@ import javax.jms.QueueSender;
 import java.util.List;
 
 public class QueueSenderImpl extends MessageProducerImpl
-  implements QueueSender, Recreatable
-{
-  Queue queue = null;
+        implements QueueSender, Recreatable {
+    Queue queue = null;
 
-  public QueueSenderImpl(SessionImpl mySession, Queue queue,
-                         int producerId, RequestRegistry requestRegistry,
-                         String myHostname)
-  {
-    super(mySession, producerId, requestRegistry, myHostname, null);
-    this.queue = queue;
-  }
+    public QueueSenderImpl(SessionImpl mySession, Queue queue,
+                           int producerId, RequestRegistry requestRegistry,
+                           String myHostname) {
+        super(mySession, producerId, requestRegistry, myHostname, null);
+        this.queue = queue;
+    }
 
-  public Request getRecreateRequest()
-  {
-    return new CreateProducerRequest(mySession, mySession.dispatchId, (QueueImpl) queue);
-  }
+    public Request getRecreateRequest() {
+        return new CreateProducerRequest(mySession, mySession.dispatchId, (QueueImpl) queue);
+    }
 
-  public void setRecreateReply(Reply reply)
-  {
-    producerId = ((CreateProducerReply)reply).getQueueProducerId();
-  }
+    public void setRecreateReply(Reply reply) {
+        producerId = ((CreateProducerReply) reply).getQueueProducerId();
+    }
 
-  public List getRecreatables()
-  {
-    return null;
-  }
+    public List getRecreatables() {
+        return null;
+    }
 
-  public Queue getQueue() throws JMSException
-  {
-    verifyState();
+    public Queue getQueue() throws JMSException {
+        verifyState();
 
-    return (queue);
-  }
+        return (queue);
+    }
 
-  public void send(Queue queue, Message message) throws JMSException
-  {
-    super.send(queue, message);
-  }
+    public void send(Queue queue, Message message) throws JMSException {
+        super.send(queue, message);
+    }
 
-  public void send(Queue queue, Message message, int deliveryMode,
-                   int priority, long timeToLive) throws JMSException
-  {
-    super.send(queue, message, deliveryMode, priority, timeToLive);
-  }
+    public void send(Queue queue, Message message, int deliveryMode,
+                     int priority, long timeToLive) throws JMSException {
+        super.send(queue, message, deliveryMode, priority, timeToLive);
+    }
 
 }
 

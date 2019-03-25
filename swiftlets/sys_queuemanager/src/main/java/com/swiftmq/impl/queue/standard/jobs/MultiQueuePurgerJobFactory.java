@@ -26,53 +26,45 @@ import com.swiftmq.swiftlet.scheduler.JobParameter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MultiQueuePurgerJobFactory implements JobFactory
-{
-  SwiftletContext ctx = null;
-  Map parameters = new HashMap();
+public class MultiQueuePurgerJobFactory implements JobFactory {
+    SwiftletContext ctx = null;
+    Map parameters = new HashMap();
 
-  public MultiQueuePurgerJobFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    JobParameter p = new JobParameter("Queue Name Predicate","SQL Like Predicate to match for Queue Names",null,true,null);
-    parameters.put(p.getName(),p);
-    p = new JobParameter("Message Selector","Message Selector to use (optional)",null,false,new SelectorVerifier());
-    parameters.put(p.getName(),p);
-  }
+    public MultiQueuePurgerJobFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+        JobParameter p = new JobParameter("Queue Name Predicate", "SQL Like Predicate to match for Queue Names", null, true, null);
+        parameters.put(p.getName(), p);
+        p = new JobParameter("Message Selector", "Message Selector to use (optional)", null, false, new SelectorVerifier());
+        parameters.put(p.getName(), p);
+    }
 
-  public String getName()
-  {
-    return "Multi Queue Purger";
-  }
+    public String getName() {
+        return "Multi Queue Purger";
+    }
 
-  public String getDescription()
-  {
-    return "Purges multiple Queues";
-  }
+    public String getDescription() {
+        return "Purges multiple Queues";
+    }
 
-  public Map getJobParameters()
-  {
-    return parameters;
-  }
+    public Map getJobParameters() {
+        return parameters;
+    }
 
-  public JobParameter getJobParameter(String s)
-  {
-    return (JobParameter)parameters.get(s);
-  }
+    public JobParameter getJobParameter(String s) {
+        return (JobParameter) parameters.get(s);
+    }
 
-  public Job getJobInstance()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/getJobInstance");
-    return new MultiQueuePurgerJob(ctx);
-  }
+    public Job getJobInstance() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/getJobInstance");
+        return new MultiQueuePurgerJob(ctx);
+    }
 
-  public void finished(Job job, JobException e)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(),toString()+"/finished, job="+job+", jobException="+e);
-  }
+    public void finished(Job job, JobException e) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/finished, job=" + job + ", jobException=" + e);
+    }
 
-  public String toString()
-  {
-    return "[MultiQueuePurgerJobFactory]";
-  }
+    public String toString() {
+        return "[MultiQueuePurgerJobFactory]";
+    }
 }

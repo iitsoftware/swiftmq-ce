@@ -122,14 +122,14 @@ public class CLI {
         if (entity instanceof EntityList) {
             result = entity.getEntityNames();
         }
-        return result==null?new String[]{}:result;
+        return result == null ? new String[]{} : result;
     }
 
     /**
      * Return the value of a Property.
      *
      * @param context  CLI context
-     * @param propName  Property name
+     * @param propName Property name
      * @return value as String
      * @throws Exception
      */
@@ -140,8 +140,8 @@ public class CLI {
             throw new Exception("Invalid context: " + context);
         Property prop = entity.getProperty(propName);
         if (prop == null)
-            throw new Exception("Unknown property: "+propName+" in context: "+context);
-        return prop.getValue() == null?"":prop.getValue().toString();
+            throw new Exception("Unknown property: " + propName + " in context: " + context);
+        return prop.getValue() == null ? "" : prop.getValue().toString();
     }
 
     /**
@@ -164,7 +164,7 @@ public class CLI {
                 Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
                 Property prop = e.getProperty(propName);
                 if (prop == null)
-                    throw new Exception("Unknown property: " + propName+" in context: "+context);
+                    throw new Exception("Unknown property: " + propName + " in context: " + context);
                 if (prop.getValue() != null) {
                     if (prop.getType() == Integer.class)
                         result += (Integer) prop.getValue();

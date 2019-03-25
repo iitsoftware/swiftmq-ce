@@ -17,32 +17,29 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CloseBrowserReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CloseBrowserReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CloseBrowserReply extends ReplyNE
-{
+public class CloseBrowserReply extends ReplyNE {
 
-  protected CloseBrowserReply()
-  {
-  }
+    protected CloseBrowserReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSEBROWSER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSEBROWSER_REP;
+    }
 
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CloseBrowserReply, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CloseBrowserReply, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

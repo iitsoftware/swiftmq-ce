@@ -26,75 +26,62 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ClusteredQueueMetricImpl implements ClusteredQueueMetric
-{
-  String clusteredQueueName = null;
-  List queueMetrics = null;
-  boolean receiverSomewhere = false;
+public class ClusteredQueueMetricImpl implements ClusteredQueueMetric {
+    String clusteredQueueName = null;
+    List queueMetrics = null;
+    boolean receiverSomewhere = false;
 
-  public ClusteredQueueMetricImpl(String clusteredQueueName, List queueMetrics, boolean receiverSomewhere)
-  {
-    this.clusteredQueueName = clusteredQueueName;
-    this.queueMetrics = queueMetrics;
-    this.receiverSomewhere = receiverSomewhere;
-  }
-
-  public ClusteredQueueMetricImpl()
-  {
-  }
-
-  public String getClusteredQueueName()
-  {
-    return clusteredQueueName;
-  }
-
-  public List getQueueMetrics()
-  {
-    return queueMetrics;
-  }
-
-  public boolean isReceiverSomewhere()
-  {
-    return receiverSomewhere;
-  }
-
-  public void setReceiverSomewhere(boolean b)
-  {
-    receiverSomewhere = b;
-  }
-
-  public int getDumpId()
-  {
-    return MetricFactory.CLUSTERED_QUEUE_METRIC;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    out.writeUTF(clusteredQueueName);
-    if (queueMetrics != null)
-    {
-      out.writeBoolean(true);
-      out.writeInt(queueMetrics.size());
-      for (int i = 0; i < queueMetrics.size(); i++)
-        Dumpalizer.dump(out, (QueueMetricImpl) queueMetrics.get(i));
-    } else
-      out.writeBoolean(false);
-  }
-
-  public void readContent(DataInput in) throws IOException
-  {
-    clusteredQueueName = in.readUTF();
-    if (in.readBoolean())
-    {
-      int size = in.readInt();
-      queueMetrics = new LinkedList();
-      for (int i = 0; i < size; i++)
-        queueMetrics.add(Dumpalizer.construct(in, MetricFactory.FACTORY));
+    public ClusteredQueueMetricImpl(String clusteredQueueName, List queueMetrics, boolean receiverSomewhere) {
+        this.clusteredQueueName = clusteredQueueName;
+        this.queueMetrics = queueMetrics;
+        this.receiverSomewhere = receiverSomewhere;
     }
-  }
 
-  public String toString()
-  {
-    return "[ClusteredQueueMetricImpl (v700), clusteredQueueName=" + clusteredQueueName + ", queueMetrics=" + queueMetrics + "]";
-  }
+    public ClusteredQueueMetricImpl() {
+    }
+
+    public String getClusteredQueueName() {
+        return clusteredQueueName;
+    }
+
+    public List getQueueMetrics() {
+        return queueMetrics;
+    }
+
+    public boolean isReceiverSomewhere() {
+        return receiverSomewhere;
+    }
+
+    public void setReceiverSomewhere(boolean b) {
+        receiverSomewhere = b;
+    }
+
+    public int getDumpId() {
+        return MetricFactory.CLUSTERED_QUEUE_METRIC;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        out.writeUTF(clusteredQueueName);
+        if (queueMetrics != null) {
+            out.writeBoolean(true);
+            out.writeInt(queueMetrics.size());
+            for (int i = 0; i < queueMetrics.size(); i++)
+                Dumpalizer.dump(out, (QueueMetricImpl) queueMetrics.get(i));
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        clusteredQueueName = in.readUTF();
+        if (in.readBoolean()) {
+            int size = in.readInt();
+            queueMetrics = new LinkedList();
+            for (int i = 0; i < size; i++)
+                queueMetrics.add(Dumpalizer.construct(in, MetricFactory.FACTORY));
+        }
+    }
+
+    public String toString() {
+        return "[ClusteredQueueMetricImpl (v700), clusteredQueueName=" + clusteredQueueName + ", queueMetrics=" + queueMetrics + "]";
+    }
 }

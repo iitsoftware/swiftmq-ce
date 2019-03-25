@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: GetMetaDataRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: GetMetaDataRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -28,44 +29,36 @@ import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestRetryValidator;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class GetMetaDataRequest extends Request
-{
+public class GetMetaDataRequest extends Request {
 
-  public GetMetaDataRequest()
-  {
-    super(0, true);
-  }
+    public GetMetaDataRequest() {
+        super(0, true);
+    }
 
-  public GetMetaDataRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public GetMetaDataRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public GetMetaDataRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public GetMetaDataRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GETMETADATA_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_GETMETADATA_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new GetMetaDataReply();
-  }
+    protected Reply createReplyInstance() {
+        return new GetMetaDataReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/GetMetaDataRequest, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/GetMetaDataRequest, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

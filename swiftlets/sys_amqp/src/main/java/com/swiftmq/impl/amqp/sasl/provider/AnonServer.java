@@ -21,55 +21,45 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
-public class AnonServer implements SaslServer
-{
-  public static final String MECHNAME = "ANONYMOUS";
+public class AnonServer implements SaslServer {
+    public static final String MECHNAME = "ANONYMOUS";
 
-  CallbackHandler callbackHandler = null;
-  boolean done = false;
+    CallbackHandler callbackHandler = null;
+    boolean done = false;
 
-  public AnonServer(CallbackHandler callbackHandler)
-  {
-    this.callbackHandler = callbackHandler;
-  }
+    public AnonServer(CallbackHandler callbackHandler) {
+        this.callbackHandler = callbackHandler;
+    }
 
-  public String getMechanismName()
-  {
-    return MECHNAME;
-  }
+    public String getMechanismName() {
+        return MECHNAME;
+    }
 
-  public byte[] evaluateResponse(byte[] bytes) throws SaslException
-  {
-    done = true;
-    return null;
-  }
+    public byte[] evaluateResponse(byte[] bytes) throws SaslException {
+        done = true;
+        return null;
+    }
 
-  public boolean isComplete()
-  {
-    return done;
-  }
+    public boolean isComplete() {
+        return done;
+    }
 
-  public String getAuthorizationID()
-  {
-    return "anonymous";
-  }
+    public String getAuthorizationID() {
+        return "anonymous";
+    }
 
-  public byte[] unwrap(byte[] bytes, int i, int i1) throws SaslException
-  {
-    throw new SaslException("Operation not supported");
-  }
+    public byte[] unwrap(byte[] bytes, int i, int i1) throws SaslException {
+        throw new SaslException("Operation not supported");
+    }
 
-  public byte[] wrap(byte[] bytes, int i, int i1) throws SaslException
-  {
-    throw new SaslException("Operation not supported");
-  }
+    public byte[] wrap(byte[] bytes, int i, int i1) throws SaslException {
+        throw new SaslException("Operation not supported");
+    }
 
-  public Object getNegotiatedProperty(String s)
-  {
-    return null;
-  }
+    public Object getNegotiatedProperty(String s) {
+        return null;
+    }
 
-  public void dispose() throws SaslException
-  {
-  }
+    public void dispose() throws SaslException {
+    }
 }

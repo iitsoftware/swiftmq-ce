@@ -17,26 +17,24 @@
 
 package com.swiftmq.jms.v500;
 
-import javax.jms.*;
-import java.net.Socket;
+import javax.jms.JMSException;
+import javax.jms.XAQueueConnection;
+import javax.jms.XAQueueSession;
+import javax.jms.XASession;
 
 public class XAQueueConnectionImpl extends QueueConnectionImpl
-    implements XAQueueConnection
-{
+        implements XAQueueConnection {
 
-  protected XAQueueConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn)
-      throws JMSException
-  {
-    super(userName, password, conn);
-  }
+    protected XAQueueConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn)
+            throws JMSException {
+        super(userName, password, conn);
+    }
 
-  public XAQueueSession createXAQueueSession() throws JMSException
-  {
-    return new XAQueueSessionImpl((SessionImpl) createQueueSession(true, 0));
-  }
+    public XAQueueSession createXAQueueSession() throws JMSException {
+        return new XAQueueSessionImpl((SessionImpl) createQueueSession(true, 0));
+    }
 
-  public XASession createXASession() throws JMSException
-  {
-    return new XASessionImpl((SessionImpl) createSession(true, 0));
-  }
+    public XASession createXASession() throws JMSException {
+        return new XASessionImpl((SessionImpl) createSession(true, 0));
+    }
 }

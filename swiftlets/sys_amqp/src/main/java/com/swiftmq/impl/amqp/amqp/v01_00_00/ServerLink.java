@@ -41,195 +41,162 @@ import javax.jms.InvalidSelectorException;
 import java.net.MalformedURLException;
 import java.util.Set;
 
-public abstract class ServerLink
-{
-  SwiftletContext ctx = null;
-  SessionHandler mySessionHandler = null;
-  String name;
-  Set offeredCapabilities = null;
-  Set desiredCapabilities = null;
-  int handle;
-  long remoteHandle;
-  AddressIF remoteAddress;
-  AddressIF localAddress;
-  Destination localDestination;
-  boolean dynamic = false;
-  String exception = null;
-  boolean closed = false;
-  boolean isQueue = false;
-  POObject waitingPO = null;
+public abstract class ServerLink {
+    SwiftletContext ctx = null;
+    SessionHandler mySessionHandler = null;
+    String name;
+    Set offeredCapabilities = null;
+    Set desiredCapabilities = null;
+    int handle;
+    long remoteHandle;
+    AddressIF remoteAddress;
+    AddressIF localAddress;
+    Destination localDestination;
+    boolean dynamic = false;
+    String exception = null;
+    boolean closed = false;
+    boolean isQueue = false;
+    POObject waitingPO = null;
 
-  public ServerLink(SwiftletContext ctx, SessionHandler mySessionHandler, String name)
-  {
-    this.ctx = ctx;
-    this.mySessionHandler = mySessionHandler;
-    this.name = name;
-  }
-
-  public String getName()
-  {
-    return name;
-  }
-
-  protected void setHandle(int handle)
-  {
-    this.handle = handle;
-  }
-
-  protected int getHandle()
-  {
-    return handle;
-  }
-
-  protected void setRemoteHandle(long remoteHandle)
-  {
-    this.remoteHandle = remoteHandle;
-  }
-
-  public AddressIF getRemoteAddress()
-  {
-    return remoteAddress;
-  }
-
-  protected void setRemoteAddress(AddressIF remoteAddress)
-  {
-    this.remoteAddress = remoteAddress;
-  }
-
-  protected long getRemoteHandle()
-  {
-    return remoteHandle;
-  }
-
-  public Set getOfferedCapabilities()
-  {
-    return offeredCapabilities;
-  }
-
-  public void setOfferedCapabilities(Set offeredCapabilities)
-  {
-    this.offeredCapabilities = offeredCapabilities;
-  }
-
-  public Set getDesiredCapabilities()
-  {
-    return desiredCapabilities;
-  }
-
-  public void setDesiredCapabilities(Set desiredCapabilities)
-  {
-    this.desiredCapabilities = desiredCapabilities;
-  }
-
-  public boolean isClosed()
-  {
-    return closed;
-  }
-
-  public void setLocalAddress(AddressIF localAddress)
-  {
-    this.localAddress = localAddress;
-  }
-
-  public AddressIF getLocalAddress()
-  {
-    return localAddress;
-  }
-
-  public Destination getLocalDestination()
-  {
-    return localDestination;
-  }
-
-  public boolean isDynamic()
-  {
-    return dynamic;
-  }
-
-  public void setDynamic(boolean dynamic)
-  {
-    this.dynamic = dynamic;
-  }
-
-  public SessionHandler getMySessionHandler()
-  {
-    return mySessionHandler;
-  }
-
-  public POObject getWaitingPO()
-  {
-    return waitingPO;
-  }
-
-  public void setWaitingPO(POObject waitingPO)
-  {
-    this.waitingPO = waitingPO;
-  }
-
-  public abstract void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache);
-
-  public abstract void removeCollector();
-
-  public abstract DestinationCollector getCollector();
-
-  public void verifyLocalAddress() throws AuthenticationException, QueueException, TopicException, InvalidSelectorException
-  {
-    if (localAddress == null)
-      throw new QueueException("Local address not set!");
-    localAddress.accept(new AddressVisitor()
-    {
-      public void visit(AddressString addressString)
-      {
-        try
-        {
-          String s = SwiftUtilities.extractAMQPName(addressString.getValue());
-          if (!ctx.queueManager.isQueueRunning(s))
-          {
-            if (!ctx.topicManager.isTopicDefined(s))
-              exception = "Neither a queue nor a topic is defined with that name: " + addressString.getValue();
-            else
-            {
-              localDestination = new TopicImpl(ctx.topicManager.getQueueForTopic(s), s);
-            }
-          } else
-          {
-            if (!ctx.queueManager.isTemporaryQueue(s) && ctx.queueManager.isSystemQueue(s))
-              exception = "Tried to access a system queue: " + s;
-            else
-            {
-              if (s.indexOf('@') == -1)
-                s += '@' + SwiftletManager.getInstance().getRouterName();
-              localDestination = new QueueImpl(s);
-              isQueue = true;
-            }
-          }
-        } catch (MalformedURLException e)
-        {
-          exception = e.toString() + " (" + addressString.getValue() + ")";
-        }
-      }
-    });
-    if (exception != null)
-      throw new QueueException(exception);
-  }
-
-  public abstract void settle(long deliveryId, DeliveryStateIF deliveryState) throws EndWithErrorException;
-
-  public abstract void setUsage(Entity usage);
-
-  public abstract void fillUsage();
-
-  public void close()
-  {
-    closed = true;
-    if (waitingPO != null)
-    {
-      waitingPO.setSuccess(false);
-      waitingPO.setException("ServerLink closed");
-      Semaphore sem = waitingPO.getSemaphore();
-      if (sem != null)
-        sem.notifySingleWaiter();
-      waitingPO = null;
+    public ServerLink(SwiftletContext ctx, SessionHandler mySessionHandler, String name) {
+        this.ctx = ctx;
+        this.mySessionHandler = mySessionHandler;
+        this.name = name;
     }
-  }
+
+    public String getName() {
+        return name;
+    }
+
+    protected void setHandle(int handle) {
+        this.handle = handle;
+    }
+
+    protected int getHandle() {
+        return handle;
+    }
+
+    protected void setRemoteHandle(long remoteHandle) {
+        this.remoteHandle = remoteHandle;
+    }
+
+    public AddressIF getRemoteAddress() {
+        return remoteAddress;
+    }
+
+    protected void setRemoteAddress(AddressIF remoteAddress) {
+        this.remoteAddress = remoteAddress;
+    }
+
+    protected long getRemoteHandle() {
+        return remoteHandle;
+    }
+
+    public Set getOfferedCapabilities() {
+        return offeredCapabilities;
+    }
+
+    public void setOfferedCapabilities(Set offeredCapabilities) {
+        this.offeredCapabilities = offeredCapabilities;
+    }
+
+    public Set getDesiredCapabilities() {
+        return desiredCapabilities;
+    }
+
+    public void setDesiredCapabilities(Set desiredCapabilities) {
+        this.desiredCapabilities = desiredCapabilities;
+    }
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void setLocalAddress(AddressIF localAddress) {
+        this.localAddress = localAddress;
+    }
+
+    public AddressIF getLocalAddress() {
+        return localAddress;
+    }
+
+    public Destination getLocalDestination() {
+        return localDestination;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+    }
+
+    public SessionHandler getMySessionHandler() {
+        return mySessionHandler;
+    }
+
+    public POObject getWaitingPO() {
+        return waitingPO;
+    }
+
+    public void setWaitingPO(POObject waitingPO) {
+        this.waitingPO = waitingPO;
+    }
+
+    public abstract void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache);
+
+    public abstract void removeCollector();
+
+    public abstract DestinationCollector getCollector();
+
+    public void verifyLocalAddress() throws AuthenticationException, QueueException, TopicException, InvalidSelectorException {
+        if (localAddress == null)
+            throw new QueueException("Local address not set!");
+        localAddress.accept(new AddressVisitor() {
+            public void visit(AddressString addressString) {
+                try {
+                    String s = SwiftUtilities.extractAMQPName(addressString.getValue());
+                    if (!ctx.queueManager.isQueueRunning(s)) {
+                        if (!ctx.topicManager.isTopicDefined(s))
+                            exception = "Neither a queue nor a topic is defined with that name: " + addressString.getValue();
+                        else {
+                            localDestination = new TopicImpl(ctx.topicManager.getQueueForTopic(s), s);
+                        }
+                    } else {
+                        if (!ctx.queueManager.isTemporaryQueue(s) && ctx.queueManager.isSystemQueue(s))
+                            exception = "Tried to access a system queue: " + s;
+                        else {
+                            if (s.indexOf('@') == -1)
+                                s += '@' + SwiftletManager.getInstance().getRouterName();
+                            localDestination = new QueueImpl(s);
+                            isQueue = true;
+                        }
+                    }
+                } catch (MalformedURLException e) {
+                    exception = e.toString() + " (" + addressString.getValue() + ")";
+                }
+            }
+        });
+        if (exception != null)
+            throw new QueueException(exception);
+    }
+
+    public abstract void settle(long deliveryId, DeliveryStateIF deliveryState) throws EndWithErrorException;
+
+    public abstract void setUsage(Entity usage);
+
+    public abstract void fillUsage();
+
+    public void close() {
+        closed = true;
+        if (waitingPO != null) {
+            waitingPO.setSuccess(false);
+            waitingPO.setException("ServerLink closed");
+            Semaphore sem = waitingPO.getSemaphore();
+            if (sem != null)
+                sem.notifySingleWaiter();
+            waitingPO = null;
+        }
+    }
 }

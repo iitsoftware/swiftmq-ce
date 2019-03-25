@@ -22,43 +22,47 @@ import java.util.Map;
 /**
  * An AccountingSinkFactory specifies the interface for classes which creates
  * AccountingSinks.
- *
+ * <p>
  * An AccountingSinkFactory always belongs to a group (usually a Swiftlet) and
  * a name (usually the class name of the factory).
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2010, All Rights Reserved
  */
-public interface AccountingSinkFactory
-{
-  /**
-   * Returns whether there can only be one AccountingSink created and active at a time.
-   * @return singleton or not
-   */
-  public boolean isSingleton();
+public interface AccountingSinkFactory {
+    /**
+     * Returns whether there can only be one AccountingSink created and active at a time.
+     *
+     * @return singleton or not
+     */
+    public boolean isSingleton();
 
-  /**
-   * Returns the group name.
-   * @return group name
-   */
-  public String getGroup();
+    /**
+     * Returns the group name.
+     *
+     * @return group name
+     */
+    public String getGroup();
 
-  /**
-   * Returns the name of this factory
-   * @return factory name
-   */
-  public String getName();
+    /**
+     * Returns the name of this factory
+     *
+     * @return factory name
+     */
+    public String getName();
 
-  /**
-   * Returns a map of Parameter objects required or optional, passed to the create method.
-   * @return map of Parameter objects
-   */
-  public Map getParameters();
+    /**
+     * Returns a map of Parameter objects required or optional, passed to the create method.
+     *
+     * @return map of Parameter objects
+     */
+    public Map getParameters();
 
-  /**
-   * Create a AccountingSink object.
-   * @param parameters parameter map of name/value pairs (both String)
-   * @return  AccountingSink object
-   * @throws Exception if anything goes wrong
-   */
-  public AccountingSink create(Map parameters) throws Exception;
+    /**
+     * Create a AccountingSink object.
+     *
+     * @param parameters parameter map of name/value pairs (both String)
+     * @return AccountingSink object
+     * @throws Exception if anything goes wrong
+     */
+    public AccountingSink create(Map parameters) throws Exception;
 }

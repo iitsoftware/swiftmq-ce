@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: KeepAliveRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: KeepAliveRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -28,46 +29,38 @@ import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestRetryValidator;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class KeepAliveRequest extends Request
-{
+public class KeepAliveRequest extends Request {
 
-  public KeepAliveRequest()
-  {
-    super(0, false);
-  }
+    public KeepAliveRequest() {
+        super(0, false);
+    }
 
-  public KeepAliveRequest(int dispatchId)
-  {
-    super(dispatchId, false);
-  }
+    public KeepAliveRequest(int dispatchId) {
+        super(dispatchId, false);
+    }
 
-  public KeepAliveRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, false, validator);
-  }
+    public KeepAliveRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, false, validator);
+    }
 
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_KEEPALIVE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_KEEPALIVE_REQ;
+    }
 
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/KeepAliveRequest, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/KeepAliveRequest, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

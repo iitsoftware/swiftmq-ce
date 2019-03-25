@@ -17,146 +17,130 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class GetOk extends BasicMethod
-{
-  long deliveryTag;
-  boolean redelivered;
-  String exchange;
-  String routingKey;
-  int messageCount;
+import java.io.IOException;
 
-  public GetOk()
-  {
-    _classId = 60;
-    _methodId = 71;
-  }
+public class GetOk extends BasicMethod {
+    long deliveryTag;
+    boolean redelivered;
+    String exchange;
+    String routingKey;
+    int messageCount;
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public GetOk() {
+        _classId = 60;
+        _methodId = 71;
+    }
 
-  public long getDeliveryTag()
-  {
-    return deliveryTag;
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setDeliveryTag(long deliveryTag)
-  {
-    this.deliveryTag = deliveryTag;
-  }
+    public long getDeliveryTag() {
+        return deliveryTag;
+    }
 
-  public boolean getRedelivered()
-  {
-    return redelivered;
-  }
+    public void setDeliveryTag(long deliveryTag) {
+        this.deliveryTag = deliveryTag;
+    }
 
-  public void setRedelivered(boolean redelivered)
-  {
-    this.redelivered = redelivered;
-  }
+    public boolean getRedelivered() {
+        return redelivered;
+    }
 
-  public String getExchange()
-  {
-    return exchange;
-  }
+    public void setRedelivered(boolean redelivered) {
+        this.redelivered = redelivered;
+    }
 
-  public void setExchange(String exchange)
-  {
-    this.exchange = exchange;
-  }
+    public String getExchange() {
+        return exchange;
+    }
 
-  public String getRoutingKey()
-  {
-    return routingKey;
-  }
+    public void setExchange(String exchange) {
+        this.exchange = exchange;
+    }
 
-  public void setRoutingKey(String routingKey)
-  {
-    this.routingKey = routingKey;
-  }
+    public String getRoutingKey() {
+        return routingKey;
+    }
 
-  public int getMessageCount()
-  {
-    return messageCount;
-  }
+    public void setRoutingKey(String routingKey) {
+        this.routingKey = routingKey;
+    }
 
-  public void setMessageCount(int messageCount)
-  {
-    this.messageCount = messageCount;
-  }
+    public int getMessageCount() {
+        return messageCount;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    deliveryTag = Coder.readLong(in);
-    redelivered = Coder.readBit(in);
-    exchange = Coder.readShortString(in);
-    routingKey = Coder.readShortString(in);
-    messageCount = Coder.readInt(in);
-  }
+    public void setMessageCount(int messageCount) {
+        this.messageCount = messageCount;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeLong(deliveryTag, out);
-    Coder.writeBit(redelivered, out);
-    Coder.writeShortString(exchange, out);
-    Coder.writeShortString(routingKey, out);
-    Coder.writeInt(messageCount, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        deliveryTag = Coder.readLong(in);
+        redelivered = Coder.readBit(in);
+        exchange = Coder.readShortString(in);
+        routingKey = Coder.readShortString(in);
+        messageCount = Coder.readInt(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("deliveryTag=");
-    b.append(deliveryTag);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("redelivered=");
-    b.append(redelivered);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("exchange=");
-    b.append(exchange);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("routingKey=");
-    b.append(routingKey);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("messageCount=");
-    b.append(messageCount);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeLong(deliveryTag, out);
+        Coder.writeBit(redelivered, out);
+        Coder.writeShortString(exchange, out);
+        Coder.writeShortString(routingKey, out);
+        Coder.writeInt(messageCount, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[GetOk " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("deliveryTag=");
+        b.append(deliveryTag);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("redelivered=");
+        b.append(redelivered);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("exchange=");
+        b.append(exchange);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("routingKey=");
+        b.append(routingKey);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("messageCount=");
+        b.append(messageCount);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[GetOk " + super.toString() + getDisplayString() + "]";
+    }
 }

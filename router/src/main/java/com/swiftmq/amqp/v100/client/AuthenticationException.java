@@ -21,17 +21,15 @@ package com.swiftmq.amqp.v100.client;
  * Authentication exception thrown when a user cannot authenticated during connect or is not
  * granted to access/create a specific resource.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AuthenticationException extends Exception
-{
-  /**
-   * Constructs an Authentication exception.
-   *
-   * @param s exception message
-   */
-  public AuthenticationException(String s)
-  {
-    super(s);
-  }
+public class AuthenticationException extends Exception {
+    /**
+     * Constructs an Authentication exception.
+     *
+     * @param s exception message
+     */
+    public AuthenticationException(String s) {
+        super(s);
+    }
 }

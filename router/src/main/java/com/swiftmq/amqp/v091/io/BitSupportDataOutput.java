@@ -20,9 +20,8 @@ package com.swiftmq.amqp.v091.io;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public interface BitSupportDataOutput extends DataOutput
-{
-  public void writeBit(boolean b) throws IOException;
+public interface BitSupportDataOutput extends DataOutput {
+    public void writeBit(boolean b) throws IOException;
 
-  public void bitFlush() throws IOException;
+    public void bitFlush() throws IOException;
 }

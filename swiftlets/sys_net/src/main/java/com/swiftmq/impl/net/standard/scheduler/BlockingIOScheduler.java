@@ -18,56 +18,53 @@
 
 package com.swiftmq.impl.net.standard.scheduler;
 
-import com.swiftmq.swiftlet.*;
-import com.swiftmq.swiftlet.net.*;
-import com.swiftmq.swiftlet.net.event.*;
-import com.swiftmq.net.*;
-import com.swiftmq.swiftlet.*;
-import java.util.*;
+import com.swiftmq.net.SocketFactory;
+import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.swiftlet.net.ConnectorMetaData;
+import com.swiftmq.swiftlet.net.ListenerMetaData;
+import com.swiftmq.swiftlet.net.NetworkSwiftlet;
 
-public class BlockingIOScheduler extends IOScheduler
-{	
-	NetworkSwiftlet networkSwiftlet = null;
-	
-	/**
-	 * @param metaData 
-	 * @return 
-	 */
-	protected TCPListener createListenerInstance(ListenerMetaData metaData, SocketFactory socketFactory)
-		throws Exception
-	{
-		if (networkSwiftlet == null)
-			networkSwiftlet = (NetworkSwiftlet)SwiftletManager.getInstance().getSwiftlet("sys$net");
-		
-		if (networkSwiftlet.isReuseServerSocket())
-		{
-			Map serverSockets = (Map)SwiftletManager.getInstance().getSurviveData("sys$net/serversockets");
-			if (serverSockets == null)
-			{
-				serverSockets = Collections.synchronizedMap(new HashMap());
-				SwiftletManager.getInstance().addSurviveData("sys$net/serversockets",serverSockets);
-			}
-		}
-		
-		BlockingTCPListener l = new BlockingTCPListener(metaData, socketFactory); 
-		// l.start();
-		return l;
-	}
-	
-	/**
-	 * @param metaData 
-	 * @return 
-	 */
-	protected synchronized TCPConnector createConnectorInstance(ConnectorMetaData metaData, SocketFactory socketFactory)
-		throws Exception
-	{
-		BlockingTCPConnector c = new BlockingTCPConnector(metaData,socketFactory);
-		// c.start();
-		return c;
-	}
-	
-	public String toString()
-	{
-		return "BlockingIOScheduler";
-	}
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+public class BlockingIOScheduler extends IOScheduler {
+    NetworkSwiftlet networkSwiftlet = null;
+
+    /**
+     * @param metaData
+     * @return
+     */
+    protected TCPListener createListenerInstance(ListenerMetaData metaData, SocketFactory socketFactory)
+            throws Exception {
+        if (networkSwiftlet == null)
+            networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
+
+        if (networkSwiftlet.isReuseServerSocket()) {
+            Map serverSockets = (Map) SwiftletManager.getInstance().getSurviveData("sys$net/serversockets");
+            if (serverSockets == null) {
+                serverSockets = Collections.synchronizedMap(new HashMap());
+                SwiftletManager.getInstance().addSurviveData("sys$net/serversockets", serverSockets);
+            }
+        }
+
+        BlockingTCPListener l = new BlockingTCPListener(metaData, socketFactory);
+        // l.start();
+        return l;
+    }
+
+    /**
+     * @param metaData
+     * @return
+     */
+    protected synchronized TCPConnector createConnectorInstance(ConnectorMetaData metaData, SocketFactory socketFactory)
+            throws Exception {
+        BlockingTCPConnector c = new BlockingTCPConnector(metaData, socketFactory);
+        // c.start();
+        return c;
+    }
+
+    public String toString() {
+        return "BlockingIOScheduler";
+    }
 }

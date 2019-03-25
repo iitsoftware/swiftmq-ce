@@ -22,23 +22,19 @@ import com.swiftmq.tools.pipeline.POVisitor;
 
 import java.io.IOException;
 
-public class POException extends POObject
-{
-  IOException exception;
+public class POException extends POObject {
+    IOException exception;
 
-  public POException(IOException exception)
-  {
-    super(null, null);
-    this.exception = exception;
-  }
+    public POException(IOException exception) {
+        super(null, null);
+        this.exception = exception;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POException, exception=" + exception + "]";
-  }
+    public String toString() {
+        return "[POException, exception=" + exception + "]";
+    }
 }

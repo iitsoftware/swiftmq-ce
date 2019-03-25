@@ -17,203 +17,182 @@
 
 package com.swiftmq.amqp.v091.generated.queue;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Declare extends QueueMethod
-{
-  int reserved1;
-  String queue;
-  boolean passive;
-  boolean durable;
-  boolean exclusive;
-  boolean autoDelete;
-  boolean noWait;
-  Map<String, Object> arguments;
+import java.io.IOException;
+import java.util.Map;
 
-  public Declare()
-  {
-    _classId = 50;
-    _methodId = 10;
-  }
+public class Declare extends QueueMethod {
+    int reserved1;
+    String queue;
+    boolean passive;
+    boolean durable;
+    boolean exclusive;
+    boolean autoDelete;
+    boolean noWait;
+    Map<String, Object> arguments;
 
-  public void accept(QueueMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Declare() {
+        _classId = 50;
+        _methodId = 10;
+    }
 
-  public int getReserved1()
-  {
-    return reserved1;
-  }
+    public void accept(QueueMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReserved1(int reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public int getReserved1() {
+        return reserved1;
+    }
 
-  public String getQueue()
-  {
-    return queue;
-  }
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  public void setQueue(String queue)
-  {
-    this.queue = queue;
-  }
+    public String getQueue() {
+        return queue;
+    }
 
-  public boolean getPassive()
-  {
-    return passive;
-  }
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-  public void setPassive(boolean passive)
-  {
-    this.passive = passive;
-  }
+    public boolean getPassive() {
+        return passive;
+    }
 
-  public boolean getDurable()
-  {
-    return durable;
-  }
+    public void setPassive(boolean passive) {
+        this.passive = passive;
+    }
 
-  public void setDurable(boolean durable)
-  {
-    this.durable = durable;
-  }
+    public boolean getDurable() {
+        return durable;
+    }
 
-  public boolean getExclusive()
-  {
-    return exclusive;
-  }
+    public void setDurable(boolean durable) {
+        this.durable = durable;
+    }
 
-  public void setExclusive(boolean exclusive)
-  {
-    this.exclusive = exclusive;
-  }
+    public boolean getExclusive() {
+        return exclusive;
+    }
 
-  public boolean getAutoDelete()
-  {
-    return autoDelete;
-  }
+    public void setExclusive(boolean exclusive) {
+        this.exclusive = exclusive;
+    }
 
-  public void setAutoDelete(boolean autoDelete)
-  {
-    this.autoDelete = autoDelete;
-  }
+    public boolean getAutoDelete() {
+        return autoDelete;
+    }
 
-  public boolean getNoWait()
-  {
-    return noWait;
-  }
+    public void setAutoDelete(boolean autoDelete) {
+        this.autoDelete = autoDelete;
+    }
 
-  public void setNoWait(boolean noWait)
-  {
-    this.noWait = noWait;
-  }
+    public boolean getNoWait() {
+        return noWait;
+    }
 
-  public Map<String, Object> getArguments()
-  {
-    return arguments;
-  }
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
 
-  public void setArguments(Map<String, Object> arguments)
-  {
-    this.arguments = arguments;
-  }
+    public Map<String, Object> getArguments() {
+        return arguments;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    reserved1 = Coder.readShort(in);
-    queue = Coder.readShortString(in);
-    passive = Coder.readBit(in);
-    durable = Coder.readBit(in);
-    exclusive = Coder.readBit(in);
-    autoDelete = Coder.readBit(in);
-    noWait = Coder.readBit(in);
-    arguments = Coder.readTable(in);
-  }
+    public void setArguments(Map<String, Object> arguments) {
+        this.arguments = arguments;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShort(reserved1, out);
-    Coder.writeShortString(queue, out);
-    Coder.writeBit(passive, out);
-    Coder.writeBit(durable, out);
-    Coder.writeBit(exclusive, out);
-    Coder.writeBit(autoDelete, out);
-    Coder.writeBit(noWait, out);
-    Coder.writeTable(arguments, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        reserved1 = Coder.readShort(in);
+        queue = Coder.readShortString(in);
+        passive = Coder.readBit(in);
+        durable = Coder.readBit(in);
+        exclusive = Coder.readBit(in);
+        autoDelete = Coder.readBit(in);
+        noWait = Coder.readBit(in);
+        arguments = Coder.readTable(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("queue=");
-    b.append(queue);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("passive=");
-    b.append(passive);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("durable=");
-    b.append(durable);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("exclusive=");
-    b.append(exclusive);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("autoDelete=");
-    b.append(autoDelete);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noWait=");
-    b.append(noWait);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("arguments=");
-    b.append(arguments);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShort(reserved1, out);
+        Coder.writeShortString(queue, out);
+        Coder.writeBit(passive, out);
+        Coder.writeBit(durable, out);
+        Coder.writeBit(exclusive, out);
+        Coder.writeBit(autoDelete, out);
+        Coder.writeBit(noWait, out);
+        Coder.writeTable(arguments, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Declare " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("queue=");
+        b.append(queue);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("passive=");
+        b.append(passive);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("durable=");
+        b.append(durable);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("exclusive=");
+        b.append(exclusive);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("autoDelete=");
+        b.append(autoDelete);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noWait=");
+        b.append(noWait);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("arguments=");
+        b.append(arguments);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Declare " + super.toString() + getDisplayString() + "]";
+    }
 }

@@ -17,62 +17,55 @@
 
 package com.swiftmq.jndi.protocol.v400;
 
-import com.swiftmq.jms.*;
+import com.swiftmq.jms.DestinationFactory;
+import com.swiftmq.jms.QueueImpl;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class RebindRequest implements JNDIRequest
-{
-  String name;
-  QueueImpl queue;
+public class RebindRequest implements JNDIRequest {
+    String name;
+    QueueImpl queue;
 
-  public RebindRequest(String name, QueueImpl queue)
-  {
-    this.name = name;
-    this.queue = queue;
-  }
+    public RebindRequest(String name, QueueImpl queue) {
+        this.name = name;
+        this.queue = queue;
+    }
 
-  public RebindRequest()
-  {
-  }
+    public RebindRequest() {
+    }
 
-  public int getDumpId()
-  {
-    return JNDIRequestFactory.REBIND;
-  }
+    public int getDumpId() {
+        return JNDIRequestFactory.REBIND;
+    }
 
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    out.writeUTF(name);
-    DestinationFactory.dumpDestination(queue, out);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeUTF(name);
+        DestinationFactory.dumpDestination(queue, out);
+    }
 
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    name = in.readUTF();
-    queue = (QueueImpl) DestinationFactory.createDestination(in);
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        name = in.readUTF();
+        queue = (QueueImpl) DestinationFactory.createDestination(in);
+    }
 
-  public String getName()
-  {
-    return (name);
-  }
+    public String getName() {
+        return (name);
+    }
 
-  public QueueImpl getQueue()
-  {
-    return (queue);
-  }
+    public QueueImpl getQueue() {
+        return (queue);
+    }
 
-  public void accept(JNDIRequestVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public void accept(JNDIRequestVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public String toString()
-  {
-    return "[RebindRequest, name=" + name + ", queue=" + queue + "]";
-  }
+    public String toString() {
+        return "[RebindRequest, name=" + name + ", queue=" + queue + "]";
+    }
 }
 

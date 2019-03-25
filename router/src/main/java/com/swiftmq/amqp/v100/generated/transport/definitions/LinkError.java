@@ -17,69 +17,55 @@
 
 package com.swiftmq.amqp.v100.generated.transport.definitions;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.types.AMQPSymbol;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
 public class LinkError extends AMQPSymbol
-       implements ErrorConditionIF
-{
+        implements ErrorConditionIF {
 
-  public static final Set POSSIBLE_VALUES = new HashSet();
-  static {
-    POSSIBLE_VALUES.add("amqp:link:detach-forced");
-    POSSIBLE_VALUES.add("amqp:link:transfer-limit-exceeded");
-    POSSIBLE_VALUES.add("amqp:link:message-size-exceeded");
-    POSSIBLE_VALUES.add("amqp:link:redirect");
-    POSSIBLE_VALUES.add("amqp:link:stolen");
-  }
+    public static final Set POSSIBLE_VALUES = new HashSet();
 
-  public static final LinkError DETACH_FORCED = new LinkError("amqp:link:detach-forced");
-  public static final LinkError TRANSFER_LIMIT_EXCEEDED = new LinkError("amqp:link:transfer-limit-exceeded");
-  public static final LinkError MESSAGE_SIZE_EXCEEDED = new LinkError("amqp:link:message-size-exceeded");
-  public static final LinkError REDIRECT = new LinkError("amqp:link:redirect");
-  public static final LinkError STOLEN = new LinkError("amqp:link:stolen");
+    static {
+        POSSIBLE_VALUES.add("amqp:link:detach-forced");
+        POSSIBLE_VALUES.add("amqp:link:transfer-limit-exceeded");
+        POSSIBLE_VALUES.add("amqp:link:message-size-exceeded");
+        POSSIBLE_VALUES.add("amqp:link:redirect");
+        POSSIBLE_VALUES.add("amqp:link:stolen");
+    }
 
-  /**
-   * Constructs a LinkError.
-   *
-   * @param initValue initial value
-   */
-  public LinkError(String initValue) 
-  {
-    super(initValue);
-  }
+    public static final LinkError DETACH_FORCED = new LinkError("amqp:link:detach-forced");
+    public static final LinkError TRANSFER_LIMIT_EXCEEDED = new LinkError("amqp:link:transfer-limit-exceeded");
+    public static final LinkError MESSAGE_SIZE_EXCEEDED = new LinkError("amqp:link:message-size-exceeded");
+    public static final LinkError REDIRECT = new LinkError("amqp:link:redirect");
+    public static final LinkError STOLEN = new LinkError("amqp:link:stolen");
 
-  /**
-   * Accept method for a ErrorCondition visitor.
-   *
-   * @param visitor ErrorCondition visitor
-   */
-   public void accept(ErrorConditionVisitor visitor)
-   {
-     visitor.visit(this);
-   }
+    /**
+     * Constructs a LinkError.
+     *
+     * @param initValue initial value
+     */
+    public LinkError(String initValue) {
+        super(initValue);
+    }
+
+    /**
+     * Accept method for a ErrorCondition visitor.
+     *
+     * @param visitor ErrorCondition visitor
+     */
+    public void accept(ErrorConditionVisitor visitor) {
+        visitor.visit(this);
+    }
 
 
-  public String toString()
-  {
-    return "[LinkError " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[LinkError " + super.toString() + "]";
+    }
 }

@@ -21,28 +21,23 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ConnectionRemoved extends POObject
-{
-  String name = null;
+public class ConnectionRemoved extends POObject {
+    String name = null;
 
-  public ConnectionRemoved(Semaphore semaphore, String name)
-  {
-    super(null, semaphore);
-    this.name = name;
-  }
+    public ConnectionRemoved(Semaphore semaphore, String name) {
+        super(null, semaphore);
+        this.name = name;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor) poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ConnectionRemoved, name=" + name + "]";
-  }
+    public String toString() {
+        return "[ConnectionRemoved, name=" + name + "]";
+    }
 }

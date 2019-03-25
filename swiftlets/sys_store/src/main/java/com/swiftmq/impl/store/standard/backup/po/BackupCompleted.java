@@ -17,23 +17,19 @@
 
 package com.swiftmq.impl.store.standard.backup.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class BackupCompleted extends POObject
-{
-  public BackupCompleted()
-  {
-    super(null, null);
-  }
+public class BackupCompleted extends POObject {
+    public BackupCompleted() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[BackupCompleted]";
-  }
+    public String toString() {
+        return "[BackupCompleted]";
+    }
 }

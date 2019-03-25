@@ -18,42 +18,36 @@
 package com.swiftmq.impl.scheduler.standard.po;
 
 import com.swiftmq.impl.scheduler.standard.Schedule;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ScheduleAdded extends POObject
-{
-  Schedule schedule = null;
-  boolean messageSchedule = false;
+public class ScheduleAdded extends POObject {
+    Schedule schedule = null;
+    boolean messageSchedule = false;
 
-  public ScheduleAdded(Schedule schedule, boolean messageSchedule)
-  {
-    super(null,null);
-    this.schedule = schedule;
-    this.messageSchedule = messageSchedule;
-  }
+    public ScheduleAdded(Schedule schedule, boolean messageSchedule) {
+        super(null, null);
+        this.schedule = schedule;
+        this.messageSchedule = messageSchedule;
+    }
 
-  public ScheduleAdded(Schedule schedule)
-  {
-    this(schedule,false);
-  }
+    public ScheduleAdded(Schedule schedule) {
+        this(schedule, false);
+    }
 
-  public Schedule getSchedule()
-  {
-    return schedule;
-  }
+    public Schedule getSchedule() {
+        return schedule;
+    }
 
-  public boolean isMessageSchedule()
-  {
-    return messageSchedule;
-  }
+    public boolean isMessageSchedule() {
+        return messageSchedule;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ScheduleAdded, schedule="+schedule+", messageSchedule="+messageSchedule+"]";
-  }
+    public String toString() {
+        return "[ScheduleAdded, schedule=" + schedule + ", messageSchedule=" + messageSchedule + "]";
+    }
 }

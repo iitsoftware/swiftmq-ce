@@ -21,35 +21,34 @@ import com.swiftmq.net.client.Connection;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 
-public interface RecreatableConnection extends Recreatable
-{
-  public void prepareForReconnect();
+public interface RecreatableConnection extends Recreatable {
+    public void prepareForReconnect();
 
-  public Request getVersionRequest();
+    public Request getVersionRequest();
 
-  public void setVersionReply(Reply reply) throws Exception;
+    public void setVersionReply(Reply reply) throws Exception;
 
-  public Request getAuthenticateRequest();
+    public Request getAuthenticateRequest();
 
-  public void setAuthenticateReply(Reply reply) throws Exception;
+    public void setAuthenticateReply(Reply reply) throws Exception;
 
-  public Request getAuthenticateResponse();
+    public Request getAuthenticateResponse();
 
-  public void setAuthenticateResponseReply(Reply reply) throws Exception;
+    public void setAuthenticateResponseReply(Reply reply) throws Exception;
 
-  public Request getMetaDataRequest();
+    public Request getMetaDataRequest();
 
-  public void setMetaDataReply(Reply reply) throws Exception;
+    public void setMetaDataReply(Reply reply) throws Exception;
 
-  public Request getGetClientIdRequest();
+    public Request getGetClientIdRequest();
 
-  public void setGetClientIdReply(Reply reply) throws Exception;
+    public void setGetClientIdReply(Reply reply) throws Exception;
 
-  public Request getSetClientIdRequest();
+    public Request getSetClientIdRequest();
 
-  public void setSetClientIdReply(Reply reply) throws Exception;
+    public void setSetClientIdReply(Reply reply) throws Exception;
 
-  public void handOver(Connection connection);
+    public void handOver(Connection connection);
 
-  public void cancelAndNotify(Exception exception, boolean closeReconnector);
+    public void cancelAndNotify(Exception exception, boolean closeReconnector);
 }

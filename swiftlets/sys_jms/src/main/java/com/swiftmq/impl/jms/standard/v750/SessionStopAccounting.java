@@ -21,25 +21,20 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class SessionStopAccounting extends Request
-{
-  public SessionStopAccounting()
-  {
-    super(0, false);
-  }
+public class SessionStopAccounting extends Request {
+    public SessionStopAccounting() {
+        super(0, false);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor requestVisitor)
-  {
-    ((SessionVisitor) requestVisitor).visit(this);
-  }
+    public void accept(RequestVisitor requestVisitor) {
+        ((SessionVisitor) requestVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SessionStopAccounting]";
-  }
+    public String toString() {
+        return "[SessionStopAccounting]";
+    }
 }

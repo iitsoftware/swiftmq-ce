@@ -24,7 +24,7 @@ import com.swiftmq.mqtt.v311.netty.util.internal.StringUtil;
 
 import java.util.List;
 
-import static com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttCodecUtil.*;
+import static com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttCodecUtil.isValidClientId;
 
 /**
  * Encodes Mqtt messages into bytes following the protocol specification v3.1
@@ -34,7 +34,8 @@ public final class MqttEncoder {
 
     public static final MqttEncoder INSTANCE = new MqttEncoder();
 
-    private MqttEncoder() { }
+    private MqttEncoder() {
+    }
 
     protected void encode(MqttMessage msg, List<Object> out) throws Exception {
         out.add(doEncode(msg));
@@ -371,6 +372,6 @@ public final class MqttEncoder {
     }
 
     private static byte[] encodeStringUtf8(String s) {
-      return s.getBytes(StringUtil.UTF8);
+        return s.getBytes(StringUtil.UTF8);
     }
 }

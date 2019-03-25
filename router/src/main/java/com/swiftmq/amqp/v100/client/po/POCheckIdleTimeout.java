@@ -22,20 +22,16 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POCheckIdleTimeout extends POObject
-{
-  public POCheckIdleTimeout(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public class POCheckIdleTimeout extends POObject {
+    public POCheckIdleTimeout(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POCheckIdleTimeout]";
-  }
+    public String toString() {
+        return "[POCheckIdleTimeout]";
+    }
 }

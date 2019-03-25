@@ -22,88 +22,87 @@ package com.swiftmq.swiftlet.store;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class DurableStoreEntry
-{
-  String clientId;
-  String durableName;
-  String topicName;
-  String selector;
-  boolean noLocal;
+public class DurableStoreEntry {
+    String clientId;
+    String durableName;
+    String topicName;
+    String selector;
+    boolean noLocal;
 
 
-  /**
-   * Creates a DurableStoreEntry.
-   * @param clientId client id.
-   * @param durableName durable name.
-   * @param topicName topic name.
-   * @param selector selector string.
-   * @param noLocal no-local flaf.
-   * @return description.
-   */
-  public DurableStoreEntry(String clientId, String durableName, String topicName, String selector, boolean noLocal)
-  {
-    // SBgen: Assign variables
-    this.clientId = clientId;
-    this.durableName = durableName;
-    this.topicName = topicName;
-    this.selector = selector;
-    this.noLocal = noLocal;
-    // SBgen: End assign
-  }
+    /**
+     * Creates a DurableStoreEntry.
+     *
+     * @param clientId    client id.
+     * @param durableName durable name.
+     * @param topicName   topic name.
+     * @param selector    selector string.
+     * @param noLocal     no-local flaf.
+     * @return description.
+     */
+    public DurableStoreEntry(String clientId, String durableName, String topicName, String selector, boolean noLocal) {
+        // SBgen: Assign variables
+        this.clientId = clientId;
+        this.durableName = durableName;
+        this.topicName = topicName;
+        this.selector = selector;
+        this.noLocal = noLocal;
+        // SBgen: End assign
+    }
 
 
-  /**
-   * Returns the client id.
-   * @return client id.
-   */
-  public String getClientId()
-  {
-    // SBgen: Get variable
-    return (clientId);
-  }
+    /**
+     * Returns the client id.
+     *
+     * @return client id.
+     */
+    public String getClientId() {
+        // SBgen: Get variable
+        return (clientId);
+    }
 
 
-  /**
-   * Returns the durable name.
-   * @return durable name.
-   */
-  public String getDurableName()
-  {
-    // SBgen: Get variable
-    return (durableName);
-  }
+    /**
+     * Returns the durable name.
+     *
+     * @return durable name.
+     */
+    public String getDurableName() {
+        // SBgen: Get variable
+        return (durableName);
+    }
 
 
-  /**
-   * Returns the topic name.
-   * @return topic name.
-   */
-  public String getTopicName()
-  {
-    // SBgen: Get variable
-    return (topicName);
-  }
+    /**
+     * Returns the topic name.
+     *
+     * @return topic name.
+     */
+    public String getTopicName() {
+        // SBgen: Get variable
+        return (topicName);
+    }
 
 
-  /**
-   * Returns the selector string.
-   * @return selector string.
-   */
-  public String getSelector()
-  {
-    // SBgen: Get variable
-    return (selector);
-  }
+    /**
+     * Returns the selector string.
+     *
+     * @return selector string.
+     */
+    public String getSelector() {
+        // SBgen: Get variable
+        return (selector);
+    }
 
 
-  /**
-   * Returns the no-local flag.
-   * @return no-local flag.
-   */
-  public boolean isNoLocal()
-  {
-    // SBgen: Get variable
-    return (noLocal);
-  }
+    /**
+     * Returns the no-local flag.
+     *
+     * @return no-local flag.
+     */
+    public boolean isNoLocal() {
+        // SBgen: Get variable
+        return (noLocal);
+    }
 }
 

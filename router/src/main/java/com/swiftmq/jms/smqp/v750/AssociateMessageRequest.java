@@ -17,115 +17,102 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: AssociateMessageRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: AssociateMessageRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.swiftlet.queue.MessageIndex;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class AssociateMessageRequest extends Request 
-{
-  private MessageIndex messageIndex;
-  private boolean duplicateDelete;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public AssociateMessageRequest()
-  {
-    super(0,true);
-  }
+public class AssociateMessageRequest extends Request {
+    private MessageIndex messageIndex;
+    private boolean duplicateDelete;
 
-  public AssociateMessageRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public AssociateMessageRequest() {
+        super(0, true);
+    }
 
-  public AssociateMessageRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public AssociateMessageRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public AssociateMessageRequest(int dispatchId, MessageIndex messageIndex, boolean duplicateDelete)
-  {
-    super(dispatchId,true);
-    this.messageIndex = messageIndex;
-    this.duplicateDelete = duplicateDelete;
-  }
+    public AssociateMessageRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public AssociateMessageRequest(RequestRetryValidator validator, int dispatchId, MessageIndex messageIndex, boolean duplicateDelete)
-  {
-    super(dispatchId,true,validator);
-    this.messageIndex = messageIndex;
-    this.duplicateDelete = duplicateDelete;
-  }
-  
-  public void setMessageIndex(MessageIndex messageIndex)
-  {
-    this.messageIndex = messageIndex;
-  }
+    public AssociateMessageRequest(int dispatchId, MessageIndex messageIndex, boolean duplicateDelete) {
+        super(dispatchId, true);
+        this.messageIndex = messageIndex;
+        this.duplicateDelete = duplicateDelete;
+    }
 
-  public MessageIndex getMessageIndex()
-  {
-    return messageIndex;
-  }
-  
-  public void setDuplicateDelete(boolean duplicateDelete)
-  {
-    this.duplicateDelete = duplicateDelete;
-  }
+    public AssociateMessageRequest(RequestRetryValidator validator, int dispatchId, MessageIndex messageIndex, boolean duplicateDelete) {
+        super(dispatchId, true, validator);
+        this.messageIndex = messageIndex;
+        this.duplicateDelete = duplicateDelete;
+    }
 
-  public boolean isDuplicateDelete()
-  {
-    return duplicateDelete;
-  }
+    public void setMessageIndex(MessageIndex messageIndex) {
+        this.messageIndex = messageIndex;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ASSOCIATEMESSAGE_REQ;
-  }
+    public MessageIndex getMessageIndex() {
+        return messageIndex;
+    }
+
+    public void setDuplicateDelete(boolean duplicateDelete) {
+        this.duplicateDelete = duplicateDelete;
+    }
+
+    public boolean isDuplicateDelete() {
+        return duplicateDelete;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_ASSOCIATEMESSAGE_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(messageIndex,out);
-    SMQPUtil.write(duplicateDelete,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(messageIndex, out);
+        SMQPUtil.write(duplicateDelete, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    messageIndex = SMQPUtil.read(messageIndex,in);
-    duplicateDelete = SMQPUtil.read(duplicateDelete,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        messageIndex = SMQPUtil.read(messageIndex, in);
+        duplicateDelete = SMQPUtil.read(duplicateDelete, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new AssociateMessageReply();
-  }
+    protected Reply createReplyInstance() {
+        return new AssociateMessageReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/AssociateMessageRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("messageIndex=");
-    _b.append(messageIndex);
-    _b.append(", ");
-    _b.append("duplicateDelete=");
-    _b.append(duplicateDelete);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/AssociateMessageRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("messageIndex=");
+        _b.append(messageIndex);
+        _b.append(", ");
+        _b.append("duplicateDelete=");
+        _b.append(duplicateDelete);
+        _b.append("]");
+        return _b.toString();
+    }
 }

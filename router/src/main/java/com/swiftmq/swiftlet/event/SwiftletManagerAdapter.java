@@ -19,25 +19,21 @@ package com.swiftmq.swiftlet.event;
 
 /**
  * An adapter class for SwiftletManagerListener
- * @see SwiftletManager
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
+ * @see SwiftletManager
  */
-public class SwiftletManagerAdapter implements SwiftletManagerListener
-{
-  public void swiftletStartInitiated(SwiftletManagerEvent evt)
-  {
-  }
+public class SwiftletManagerAdapter implements SwiftletManagerListener {
+    public void swiftletStartInitiated(SwiftletManagerEvent evt) {
+    }
 
-  public void swiftletStarted(SwiftletManagerEvent evt)
-  {
-  }
+    public void swiftletStarted(SwiftletManagerEvent evt) {
+    }
 
-  public void swiftletStopInitiated(SwiftletManagerEvent evt)
-  {
-  }
+    public void swiftletStopInitiated(SwiftletManagerEvent evt) {
+    }
 
-  public void swiftletStopped(SwiftletManagerEvent evt)
-  {
-  }
+    public void swiftletStopped(SwiftletManagerEvent evt) {
+    }
 }
 

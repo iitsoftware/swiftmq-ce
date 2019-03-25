@@ -17,98 +17,84 @@
 
 package com.swiftmq.amqp.v100.generated.transport.performatives;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.transport.HeartbeatFrame;
 
 /**
- *  The Frame visitor.
+ * The Frame visitor.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface FrameVisitor
-{
+public interface FrameVisitor {
 
-  /**
-   * Visitor method for a OpenFrame type object.
-   *
-   * @param impl a OpenFrame type object
-   */
-  public void visit(OpenFrame impl);
+    /**
+     * Visitor method for a OpenFrame type object.
+     *
+     * @param impl a OpenFrame type object
+     */
+    public void visit(OpenFrame impl);
 
-  /**
-   * Visitor method for a BeginFrame type object.
-   *
-   * @param impl a BeginFrame type object
-   */
-  public void visit(BeginFrame impl);
+    /**
+     * Visitor method for a BeginFrame type object.
+     *
+     * @param impl a BeginFrame type object
+     */
+    public void visit(BeginFrame impl);
 
-  /**
-   * Visitor method for a AttachFrame type object.
-   *
-   * @param impl a AttachFrame type object
-   */
-  public void visit(AttachFrame impl);
+    /**
+     * Visitor method for a AttachFrame type object.
+     *
+     * @param impl a AttachFrame type object
+     */
+    public void visit(AttachFrame impl);
 
-  /**
-   * Visitor method for a FlowFrame type object.
-   *
-   * @param impl a FlowFrame type object
-   */
-  public void visit(FlowFrame impl);
+    /**
+     * Visitor method for a FlowFrame type object.
+     *
+     * @param impl a FlowFrame type object
+     */
+    public void visit(FlowFrame impl);
 
-  /**
-   * Visitor method for a TransferFrame type object.
-   *
-   * @param impl a TransferFrame type object
-   */
-  public void visit(TransferFrame impl);
+    /**
+     * Visitor method for a TransferFrame type object.
+     *
+     * @param impl a TransferFrame type object
+     */
+    public void visit(TransferFrame impl);
 
-  /**
-   * Visitor method for a DispositionFrame type object.
-   *
-   * @param impl a DispositionFrame type object
-   */
-  public void visit(DispositionFrame impl);
+    /**
+     * Visitor method for a DispositionFrame type object.
+     *
+     * @param impl a DispositionFrame type object
+     */
+    public void visit(DispositionFrame impl);
 
-  /**
-   * Visitor method for a DetachFrame type object.
-   *
-   * @param impl a DetachFrame type object
-   */
-  public void visit(DetachFrame impl);
+    /**
+     * Visitor method for a DetachFrame type object.
+     *
+     * @param impl a DetachFrame type object
+     */
+    public void visit(DetachFrame impl);
 
-  /**
-   * Visitor method for a EndFrame type object.
-   *
-   * @param impl a EndFrame type object
-   */
-  public void visit(EndFrame impl);
+    /**
+     * Visitor method for a EndFrame type object.
+     *
+     * @param impl a EndFrame type object
+     */
+    public void visit(EndFrame impl);
 
-  /**
-   * Visitor method for a CloseFrame type object.
-   *
-   * @param impl a CloseFrame type object
-   */
-  public void visit(CloseFrame impl);
+    /**
+     * Visitor method for a CloseFrame type object.
+     *
+     * @param impl a CloseFrame type object
+     */
+    public void visit(CloseFrame impl);
 
-  /**
-   * Visitor method for a HeartbeatFrame type object.
-   *
-   * @param impl a HeartbeatFrame type object
-   */
-  public void visit(HeartbeatFrame impl);
+    /**
+     * Visitor method for a HeartbeatFrame type object.
+     *
+     * @param impl a HeartbeatFrame type object
+     */
+    public void visit(HeartbeatFrame impl);
 }

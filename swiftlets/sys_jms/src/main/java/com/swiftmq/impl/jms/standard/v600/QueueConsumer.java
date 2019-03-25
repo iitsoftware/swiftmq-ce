@@ -19,29 +19,25 @@ package com.swiftmq.impl.jms.standard.v600;
 
 import com.swiftmq.ms.MessageSelector;
 
-public class QueueConsumer extends Consumer
-{
-  String queueName = null;
+public class QueueConsumer extends Consumer {
+    String queueName = null;
 
-  protected QueueConsumer(SessionContext ctx, String queueName, String selector)
-    throws Exception
-  {
-    super(ctx);
-    this.queueName = queueName;
-    MessageSelector msel = null;
-    if (selector != null)
-    {
-      msel = new MessageSelector(selector);
-      msel.compile();
+    protected QueueConsumer(SessionContext ctx, String queueName, String selector)
+            throws Exception {
+        super(ctx);
+        this.queueName = queueName;
+        MessageSelector msel = null;
+        if (selector != null) {
+            msel = new MessageSelector(selector);
+            msel.compile();
+        }
+        setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, msel));
+        setSelector(msel);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
     }
-    setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, msel));
-    setSelector(msel);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-  }
 
-  public String toString()
-  {
-    return "QueueConsumer, queue=" + queueName;
-  }
+    public String toString() {
+        return "QueueConsumer, queue=" + queueName;
+    }
 }
 

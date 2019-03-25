@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CreateBrowserReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CreateBrowserReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,54 +30,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreateBrowserReply extends ReplyNE
-{
-  private int queueBrowserId;
+public class CreateBrowserReply extends ReplyNE {
+    private int queueBrowserId;
 
-  public CreateBrowserReply(int queueBrowserId)
-  {
-    this.queueBrowserId = queueBrowserId;
-  }
+    public CreateBrowserReply(int queueBrowserId) {
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  protected CreateBrowserReply()
-  {
-  }
+    protected CreateBrowserReply() {
+    }
 
-  public void setQueueBrowserId(int queueBrowserId)
-  {
-    this.queueBrowserId = queueBrowserId;
-  }
+    public void setQueueBrowserId(int queueBrowserId) {
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  public int getQueueBrowserId()
-  {
-    return queueBrowserId;
-  }
+    public int getQueueBrowserId() {
+        return queueBrowserId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEBROWSER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEBROWSER_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueBrowserId, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueBrowserId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueBrowserId = SMQPUtil.read(queueBrowserId, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueBrowserId = SMQPUtil.read(queueBrowserId, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CreateBrowserReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueBrowserId=");
-    _b.append(queueBrowserId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CreateBrowserReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueBrowserId=");
+        _b.append(queueBrowserId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

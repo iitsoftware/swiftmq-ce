@@ -17,31 +17,27 @@
 
 package com.swiftmq.impl.routing.single.smqpr;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class KeepAliveRequest extends Request
-{
-  public KeepAliveRequest()
-  {
-    super(0,false);
-  }
+public class KeepAliveRequest extends Request {
+    public KeepAliveRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.KEEPALIVE_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.KEEPALIVE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-  }
+    public void accept(RequestVisitor visitor) {
+    }
 
-  public String toString()
-  {
-    return "[KeepAliveRequest "+super.toString()+"]";
-  }
+    public String toString() {
+        return "[KeepAliveRequest " + super.toString() + "]";
+    }
 }

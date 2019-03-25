@@ -20,56 +20,47 @@ package com.swiftmq.filetransfer.protocol;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public abstract class MessageBasedRequest implements MessageBased
-{
-  public static final String REPLYREQ_PROP = "JMS_SWIFTMQ_FT_REPLYREQUIRED";
+public abstract class MessageBasedRequest implements MessageBased {
+    public static final String REPLYREQ_PROP = "JMS_SWIFTMQ_FT_REPLYREQUIRED";
 
-  boolean replyRequired = false;
-  transient Message message = null;
+    boolean replyRequired = false;
+    transient Message message = null;
 
-  protected MessageBasedRequest()
-  {
-  }
+    protected MessageBasedRequest() {
+    }
 
-  protected MessageBasedRequest(Message message) throws JMSException
-  {
-    if (message.propertyExists(REPLYREQ_PROP))
-      replyRequired = message.getBooleanProperty(REPLYREQ_PROP);
-  }
+    protected MessageBasedRequest(Message message) throws JMSException {
+        if (message.propertyExists(REPLYREQ_PROP))
+            replyRequired = message.getBooleanProperty(REPLYREQ_PROP);
+    }
 
-  public boolean isReplyRequired()
-  {
-    return replyRequired;
-  }
+    public boolean isReplyRequired() {
+        return replyRequired;
+    }
 
-  public void setReplyRequired(boolean replyRequired)
-  {
-    this.replyRequired = replyRequired;
-  }
+    public void setReplyRequired(boolean replyRequired) {
+        this.replyRequired = replyRequired;
+    }
 
-  public Message getMessage()
-  {
-    return message;
-  }
+    public Message getMessage() {
+        return message;
+    }
 
-  public void setMessage(Message message)
-  {
-    this.message = message;
-  }
+    public void setMessage(Message message) {
+        this.message = message;
+    }
 
-  public Message fillMessage(Message message) throws JMSException
-  {
-    message.setBooleanProperty(REPLYREQ_PROP, replyRequired);
-    return message;
+    public Message fillMessage(Message message) throws JMSException {
+        message.setBooleanProperty(REPLYREQ_PROP, replyRequired);
+        return message;
 
-  }
+    }
 
-  public abstract MessageBasedReply createReplyInstance();
+    public abstract MessageBasedReply createReplyInstance();
 
-  public abstract void accept(MessageBasedRequestVisitor visitor);
+    public abstract void accept(MessageBasedRequestVisitor visitor);
 
-  public String toString()
-  {
-    return new StringBuffer(" replyRequired=").append(replyRequired).toString();
-  }
+    public String toString() {
+        return new StringBuffer(" replyRequired=").append(replyRequired).toString();
+    }
 }

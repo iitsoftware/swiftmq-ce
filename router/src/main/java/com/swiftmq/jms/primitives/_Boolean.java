@@ -23,53 +23,43 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class _Boolean implements Dumpable, Primitive
-{
-  Boolean value = null;
+public class _Boolean implements Dumpable, Primitive {
+    Boolean value = null;
 
-  public _Boolean()
-  {
-  }
+    public _Boolean() {
+    }
 
-  public _Boolean(boolean value)
-  {
-    this.value = new Boolean(value);
-  }
+    public _Boolean(boolean value) {
+        this.value = new Boolean(value);
+    }
 
-  public _Boolean(String s)
-  {
-    this.value = Boolean.valueOf(s);
-  }
+    public _Boolean(String s) {
+        this.value = Boolean.valueOf(s);
+    }
 
-  public boolean booleanValue()
-  {
-    return value.booleanValue();
-  }
+    public boolean booleanValue() {
+        return value.booleanValue();
+    }
 
-  public Object getObject()
-  {
-    return value;
-  }
+    public Object getObject() {
+        return value;
+    }
 
-  public int getDumpId()
-  {
-    return BOOLEAN;
-  }
+    public int getDumpId() {
+        return BOOLEAN;
+    }
 
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeBoolean(value.booleanValue());
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeBoolean(value.booleanValue());
+    }
 
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    value = new Boolean(in.readBoolean());
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        value = new Boolean(in.readBoolean());
+    }
 
-  public String toString()
-  {
-    return value.toString();
-  }
+    public String toString() {
+        return value.toString();
+    }
 }

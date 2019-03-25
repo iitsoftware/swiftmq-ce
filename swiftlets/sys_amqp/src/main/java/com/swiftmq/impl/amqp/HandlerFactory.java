@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.amqp;
 
-public interface HandlerFactory
-{
-  public Handler createHandler(VersionedConnection versionedConnection);
+public interface HandlerFactory {
+    public Handler createHandler(VersionedConnection versionedConnection);
 }

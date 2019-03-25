@@ -19,7 +19,6 @@ package com.swiftmq.swiftlet.threadpool.event;
 
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
-public interface FreezeCompletionListener
-{
-  public void freezed(ThreadPool pool);
+public interface FreezeCompletionListener {
+    public void freezed(ThreadPool pool);
 }

@@ -18,68 +18,52 @@
 package com.swiftmq.amqp.v100.generated.messaging.message_format;
 
 import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
 
 /**
- *  Factory class to create MessageIdIF objects out of a bare AMQPType
+ * Factory class to create MessageIdIF objects out of a bare AMQPType
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public class MessageIdFactory
-{
+public class MessageIdFactory {
 
-  /**
-   * Creates a MessageIdIF object.
-   *
-   * @param bare the bare AMQP type
-   * @return MessageIdIF
-   */
-  public static MessageIdIF create(AMQPType bare) throws Exception
-  {
-    if (bare.getCode() == AMQPTypeDecoder.NULL)
-      return null;
-    int type = bare.getCode();
-    if (AMQPTypeDecoder.isULong(type))
-      return new MessageIdUlong(((AMQPUnsignedLong)bare).getValue());
-    if (type == AMQPTypeDecoder.UUID)
-      return new MessageIdUuid(((AMQPUuid)bare).getValue());
-    if (AMQPTypeDecoder.isBinary(type))
-      return new MessageIdBinary(((AMQPBinary)bare).getValue());
-    if (AMQPTypeDecoder.isString(type))
-      return new MessageIdString(((AMQPString)bare).getValue());
-    throw new Exception("Invalid type: " + type + ", bare=" + bare);
-  }
+    /**
+     * Creates a MessageIdIF object.
+     *
+     * @param bare the bare AMQP type
+     * @return MessageIdIF
+     */
+    public static MessageIdIF create(AMQPType bare) throws Exception {
+        if (bare.getCode() == AMQPTypeDecoder.NULL)
+            return null;
+        int type = bare.getCode();
+        if (AMQPTypeDecoder.isULong(type))
+            return new MessageIdUlong(((AMQPUnsignedLong) bare).getValue());
+        if (type == AMQPTypeDecoder.UUID)
+            return new MessageIdUuid(((AMQPUuid) bare).getValue());
+        if (AMQPTypeDecoder.isBinary(type))
+            return new MessageIdBinary(((AMQPBinary) bare).getValue());
+        if (AMQPTypeDecoder.isString(type))
+            return new MessageIdString(((AMQPString) bare).getValue());
+        throw new Exception("Invalid type: " + type + ", bare=" + bare);
+    }
 
-  /**
-   * Converts an AMQP array of type MessageIdIF into a native array
-   *
-   * @param array AMQP array
-   * @return native array
-   */
-  public static MessageIdIF[] toNativeArray(AMQPArray array) throws Exception
-  {
-    if (array == null)
-      return null;
-    AMQPType[] value = array.getValue();
-    if (value == null)
-      return null;
-    MessageIdIF[] n = new MessageIdIF[value.length];
-    for (int i=0;i<value.length;i++)
-      n[i] = create(value[i]);
-    return n;
-  }
+    /**
+     * Converts an AMQP array of type MessageIdIF into a native array
+     *
+     * @param array AMQP array
+     * @return native array
+     */
+    public static MessageIdIF[] toNativeArray(AMQPArray array) throws Exception {
+        if (array == null)
+            return null;
+        AMQPType[] value = array.getValue();
+        if (value == null)
+            return null;
+        MessageIdIF[] n = new MessageIdIF[value.length];
+        for (int i = 0; i < value.length; i++)
+            n[i] = create(value[i]);
+        return n;
+    }
 }

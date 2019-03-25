@@ -17,152 +17,137 @@
 
 package com.swiftmq.amqp.v091.generated.connection;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Start extends ConnectionMethod
-{
-  byte versionMajor;
-  byte versionMinor;
-  Map<String, Object> serverProperties;
-  byte[] mechanisms;
-  byte[] locales;
+import java.io.IOException;
+import java.util.Map;
 
-  public Start()
-  {
-    _classId = 10;
-    _methodId = 10;
-  }
+public class Start extends ConnectionMethod {
+    byte versionMajor;
+    byte versionMinor;
+    Map<String, Object> serverProperties;
+    byte[] mechanisms;
+    byte[] locales;
 
-  public void accept(ConnectionMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Start() {
+        _classId = 10;
+        _methodId = 10;
+    }
 
-  public byte getVersionMajor()
-  {
-    return versionMajor;
-  }
+    public void accept(ConnectionMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setVersionMajor(byte versionMajor)
-  {
-    this.versionMajor = versionMajor;
-  }
+    public byte getVersionMajor() {
+        return versionMajor;
+    }
 
-  public byte getVersionMinor()
-  {
-    return versionMinor;
-  }
+    public void setVersionMajor(byte versionMajor) {
+        this.versionMajor = versionMajor;
+    }
 
-  public void setVersionMinor(byte versionMinor)
-  {
-    this.versionMinor = versionMinor;
-  }
+    public byte getVersionMinor() {
+        return versionMinor;
+    }
 
-  public Map<String, Object> getServerProperties()
-  {
-    return serverProperties;
-  }
+    public void setVersionMinor(byte versionMinor) {
+        this.versionMinor = versionMinor;
+    }
 
-  public void setServerProperties(Map<String, Object> serverProperties)
-  {
-    this.serverProperties = serverProperties;
-  }
+    public Map<String, Object> getServerProperties() {
+        return serverProperties;
+    }
 
-  public byte[] getMechanisms()
-  {
-    return mechanisms;
-  }
+    public void setServerProperties(Map<String, Object> serverProperties) {
+        this.serverProperties = serverProperties;
+    }
 
-  public void setMechanisms(byte[] mechanisms)
-  {
-    this.mechanisms = mechanisms;
-  }
+    public byte[] getMechanisms() {
+        return mechanisms;
+    }
 
-  public byte[] getLocales()
-  {
-    return locales;
-  }
+    public void setMechanisms(byte[] mechanisms) {
+        this.mechanisms = mechanisms;
+    }
 
-  public void setLocales(byte[] locales)
-  {
-    this.locales = locales;
-  }
+    public byte[] getLocales() {
+        return locales;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    versionMajor = Coder.readByte(in);
-    versionMinor = Coder.readByte(in);
-    serverProperties = Coder.readTable(in);
-    mechanisms = Coder.readLongString(in);
-    locales = Coder.readLongString(in);
-  }
+    public void setLocales(byte[] locales) {
+        this.locales = locales;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeByte(versionMajor, out);
-    Coder.writeByte(versionMinor, out);
-    Coder.writeTable(serverProperties, out);
-    Coder.writeLongString(mechanisms, out);
-    Coder.writeLongString(locales, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        versionMajor = Coder.readByte(in);
+        versionMinor = Coder.readByte(in);
+        serverProperties = Coder.readTable(in);
+        mechanisms = Coder.readLongString(in);
+        locales = Coder.readLongString(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("versionMajor=");
-    b.append(versionMajor);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("versionMinor=");
-    b.append(versionMinor);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("serverProperties=");
-    b.append(serverProperties);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("mechanisms=");
-    if (mechanisms != null)
-      b.append(new String(mechanisms));
-    else
-      b.append("null");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("locales=");
-    if (locales != null)
-      b.append(new String(locales));
-    else
-      b.append("null");
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeByte(versionMajor, out);
+        Coder.writeByte(versionMinor, out);
+        Coder.writeTable(serverProperties, out);
+        Coder.writeLongString(mechanisms, out);
+        Coder.writeLongString(locales, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Start " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("versionMajor=");
+        b.append(versionMajor);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("versionMinor=");
+        b.append(versionMinor);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("serverProperties=");
+        b.append(serverProperties);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("mechanisms=");
+        if (mechanisms != null)
+            b.append(new String(mechanisms));
+        else
+            b.append("null");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("locales=");
+        if (locales != null)
+            b.append(new String(locales));
+        else
+            b.append("null");
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Start " + super.toString() + getDisplayString() + "]";
+    }
 }

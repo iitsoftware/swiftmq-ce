@@ -18,13 +18,12 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-public abstract class LogOperation
-{
-  public final static int OPER_SYNC_LOG = 1;
-  public final static int OPER_LOG_REC = 2;
-  public final static int OPER_CLOSE_LOG = 3;
-  public final static int OPER_INITIATE_SYNC = 4;
+public abstract class LogOperation {
+    public final static int OPER_SYNC_LOG = 1;
+    public final static int OPER_LOG_REC = 2;
+    public final static int OPER_CLOSE_LOG = 3;
+    public final static int OPER_INITIATE_SYNC = 4;
 
-  abstract int getOperationType();
+    abstract int getOperationType();
 }
 

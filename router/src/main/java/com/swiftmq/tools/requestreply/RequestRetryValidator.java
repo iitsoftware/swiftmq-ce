@@ -17,7 +17,6 @@
 
 package com.swiftmq.tools.requestreply;
 
-public interface RequestRetryValidator
-{
-  public void validate(Request request) throws ValidationException;
+public interface RequestRetryValidator {
+    public void validate(Request request) throws ValidationException;
 }

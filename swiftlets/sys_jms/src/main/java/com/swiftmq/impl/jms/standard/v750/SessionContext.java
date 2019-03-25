@@ -29,70 +29,63 @@ import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 
-public class SessionContext
-{
-  public QueueManager queueManager = null;
-  public TopicManager topicManager = null;
-  public AuthenticationSwiftlet authSwiftlet = null;
-  public ThreadpoolSwiftlet threadpoolSwiftlet = null;
-  public LogSwiftlet logSwiftlet = null;
-  public StoreSwiftlet storeSwiftlet = null;
-  public TraceSwiftlet traceSwiftlet = null;
-  public TraceSpace traceSpace = null;
-  public String tracePrefix = null;
-  public ActiveLogin activeLogin = null;
-  public int ackMode = 0;
-  public boolean transacted = false;
-  public Entity sessionEntity = null;
-  public SingleProcessorQueue sessionQueue = null;
-  public SingleProcessorQueue connectionOutboundQueue = null;
-  public volatile int msgsReceived = 0;
-  public volatile int msgsSent = 0;
-  public volatile int totalMsgsReceived = 0;
-  public volatile int totalMsgsSent = 0;
+public class SessionContext {
+    public QueueManager queueManager = null;
+    public TopicManager topicManager = null;
+    public AuthenticationSwiftlet authSwiftlet = null;
+    public ThreadpoolSwiftlet threadpoolSwiftlet = null;
+    public LogSwiftlet logSwiftlet = null;
+    public StoreSwiftlet storeSwiftlet = null;
+    public TraceSwiftlet traceSwiftlet = null;
+    public TraceSpace traceSpace = null;
+    public String tracePrefix = null;
+    public ActiveLogin activeLogin = null;
+    public int ackMode = 0;
+    public boolean transacted = false;
+    public Entity sessionEntity = null;
+    public SingleProcessorQueue sessionQueue = null;
+    public SingleProcessorQueue connectionOutboundQueue = null;
+    public volatile int msgsReceived = 0;
+    public volatile int msgsSent = 0;
+    public volatile int totalMsgsReceived = 0;
+    public volatile int totalMsgsSent = 0;
 
-  public int getMsgsReceived()
-  {
-    int n = msgsReceived;
-    msgsReceived = 0;
-    return n;
-  }
+    public int getMsgsReceived() {
+        int n = msgsReceived;
+        msgsReceived = 0;
+        return n;
+    }
 
-  public int getMsgsSent()
-  {
-    int n = msgsSent;
-    msgsSent = 0;
-    return n;
-  }
+    public int getMsgsSent() {
+        int n = msgsSent;
+        msgsSent = 0;
+        return n;
+    }
 
-  public int getTotalMsgsReceived()
-  {
-    return totalMsgsReceived;
-  }
+    public int getTotalMsgsReceived() {
+        return totalMsgsReceived;
+    }
 
-  public int getTotalMsgsSent()
-  {
-    return totalMsgsSent;
-  }
+    public int getTotalMsgsSent() {
+        return totalMsgsSent;
+    }
 
-  public void incMsgsSent(int n)
-  {
-    if (msgsSent == Integer.MAX_VALUE)
-      msgsSent = 0;
-    msgsSent += n;
-    if (totalMsgsSent == Integer.MAX_VALUE)
-      totalMsgsSent = 0;
-    totalMsgsSent += n;
-  }
+    public void incMsgsSent(int n) {
+        if (msgsSent == Integer.MAX_VALUE)
+            msgsSent = 0;
+        msgsSent += n;
+        if (totalMsgsSent == Integer.MAX_VALUE)
+            totalMsgsSent = 0;
+        totalMsgsSent += n;
+    }
 
-  public void incMsgsReceived(int n)
-  {
-    if (msgsReceived == Integer.MAX_VALUE)
-      msgsReceived = 0;
-    msgsReceived += n;
-    if (totalMsgsReceived == Integer.MAX_VALUE)
-      totalMsgsReceived = 0;
-    totalMsgsReceived += n;
-  }
+    public void incMsgsReceived(int n) {
+        if (msgsReceived == Integer.MAX_VALUE)
+            msgsReceived = 0;
+        msgsReceived += n;
+        if (totalMsgsReceived == Integer.MAX_VALUE)
+            totalMsgsReceived = 0;
+        totalMsgsReceived += n;
+    }
 }
 

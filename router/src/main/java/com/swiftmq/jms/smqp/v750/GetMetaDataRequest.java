@@ -17,62 +17,50 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: GetMetaDataRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: GetMetaDataRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class GetMetaDataRequest extends Request 
-{
+public class GetMetaDataRequest extends Request {
 
-  public GetMetaDataRequest()
-  {
-    super(0,true);
-  }
+    public GetMetaDataRequest() {
+        super(0, true);
+    }
 
-  public GetMetaDataRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public GetMetaDataRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public GetMetaDataRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public GetMetaDataRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
 
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_GETMETADATA_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_GETMETADATA_REQ;
+    }
 
 
+    protected Reply createReplyInstance() {
+        return new GetMetaDataReply();
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new GetMetaDataReply();
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
-
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/GetMetaDataRequest, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/GetMetaDataRequest, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

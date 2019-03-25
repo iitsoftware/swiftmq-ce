@@ -17,24 +17,21 @@
 
 package com.swiftmq.impl.routing.single.manager.po;
 
-import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POCallback;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class PORemoveAllObject extends POObject
-{
-  public PORemoveAllObject(POCallback callback, Semaphore semaphore)
-  {
-    super(callback, semaphore);
-  }
+public class PORemoveAllObject extends POObject {
+    public PORemoveAllObject(POCallback callback, Semaphore semaphore) {
+        super(callback, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POCMVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POCMVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[PORemoveAllObject]";
-  }
+    public String toString() {
+        return "[PORemoveAllObject]";
+    }
 }

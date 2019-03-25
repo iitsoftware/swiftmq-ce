@@ -17,27 +17,25 @@
 
 package com.swiftmq.impl.jms.standard.v630;
 
-import com.swiftmq.jms.*;
+import com.swiftmq.jms.DestinationFactory;
+import com.swiftmq.jms.TopicImpl;
 
-public class TopicProducer extends Producer
-{
-  TopicImpl topic;
+public class TopicProducer extends Producer {
+    TopicImpl topic;
 
-  protected TopicProducer(SessionContext ctx, TopicImpl topic)
-    throws Exception
-  {
-    super(ctx);
-    this.topic = topic;
-    if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
-      this.topic = ctx.topicManager.verifyTopic(topic);
-    String queueName = topic.getQueueName();
-    setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-  }
+    protected TopicProducer(SessionContext ctx, TopicImpl topic)
+            throws Exception {
+        super(ctx);
+        this.topic = topic;
+        if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
+            this.topic = ctx.topicManager.verifyTopic(topic);
+        String queueName = topic.getQueueName();
+        setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
+    }
 
-  public String toString()
-  {
-    return "TopicProducer, topic=" + topic;
-  }
+    public String toString() {
+        return "TopicProducer, topic=" + topic;
+    }
 }
 

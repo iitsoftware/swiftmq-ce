@@ -17,54 +17,47 @@
 
 package com.swiftmq.impl.net.standard;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class CountableMultiInputStream extends InputStream
-	implements Countable
-{
-	volatile long byteCount = 0;
-	InputStream in = null;
-	
-	protected void setInputStream(InputStream in)
-	{
-		this.in = in;
-	}
+        implements Countable {
+    volatile long byteCount = 0;
+    InputStream in = null;
 
-	private void checkIn() throws IOException
-	{
-		if (in == null)
-			throw new IOException("CountableMultiInputStream, not input stream set");
-	}
+    protected void setInputStream(InputStream in) {
+        this.in = in;
+    }
 
-	public int read() throws IOException
-	{
-		checkIn();
-		byteCount++;
-		return in.read();
-	}
+    private void checkIn() throws IOException {
+        if (in == null)
+            throw new IOException("CountableMultiInputStream, not input stream set");
+    }
 
-	public int read(byte[] b, int offset, int len) throws IOException
-	{
-		checkIn();
-		int rc = in.read(b,offset,len);
-		if (rc != -1)
-			byteCount += rc;
-		return rc;
-	}
-	
-	public void addByteCount(long cnt)
-	{
-		byteCount += cnt;
-	}
+    public int read() throws IOException {
+        checkIn();
+        byteCount++;
+        return in.read();
+    }
 
-	public long getByteCount()
-	{
-		return byteCount;
-	}
-	
-	public void resetByteCount()
-	{
-		byteCount = 0;
-	}
+    public int read(byte[] b, int offset, int len) throws IOException {
+        checkIn();
+        int rc = in.read(b, offset, len);
+        if (rc != -1)
+            byteCount += rc;
+        return rc;
+    }
+
+    public void addByteCount(long cnt) {
+        byteCount += cnt;
+    }
+
+    public long getByteCount() {
+        return byteCount;
+    }
+
+    public void resetByteCount() {
+        byteCount = 0;
+    }
 }
 

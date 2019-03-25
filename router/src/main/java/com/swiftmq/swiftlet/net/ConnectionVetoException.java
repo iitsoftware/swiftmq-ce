@@ -25,16 +25,15 @@ package com.swiftmq.swiftlet.net;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  * @see com.swiftmq.swiftlet.net.event.ConnectionListener
  */
-public class ConnectionVetoException extends Exception
-{
+public class ConnectionVetoException extends Exception {
 
-  /**
-   * Constructs a new ConnectionVetoException.
-   * @param message exception message.
-   */
-  public ConnectionVetoException(String message)
-  {
-    super(message);
-  }
+    /**
+     * Constructs a new ConnectionVetoException.
+     *
+     * @param message exception message.
+     */
+    public ConnectionVetoException(String message) {
+        super(message);
+    }
 }
 

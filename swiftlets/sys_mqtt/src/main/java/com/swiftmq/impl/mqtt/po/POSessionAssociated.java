@@ -21,27 +21,23 @@ import com.swiftmq.impl.mqtt.session.MQTTSession;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSessionAssociated extends POObject
-{
-  MQTTSession session;
+public class POSessionAssociated extends POObject {
+    MQTTSession session;
 
-  public POSessionAssociated(MQTTSession session)
-  {
-    super(null, null);
-    this.session = session;
-  }
+    public POSessionAssociated(MQTTSession session) {
+        super(null, null);
+        this.session = session;
+    }
 
-  public MQTTSession getSession() {
-    return session;
-  }
+    public MQTTSession getSession() {
+        return session;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((MQTTVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((MQTTVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSessionAssociated, session="+session+"]";
-  }
+    public String toString() {
+        return "[POSessionAssociated, session=" + session + "]";
+    }
 }

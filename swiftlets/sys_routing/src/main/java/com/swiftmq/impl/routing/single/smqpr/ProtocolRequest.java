@@ -27,65 +27,54 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProtocolRequest extends Request
-{
-  List protocolVersions = null;
+public class ProtocolRequest extends Request {
+    List protocolVersions = null;
 
-  ProtocolRequest()
-  {
-    this(null);
-  }
+    ProtocolRequest() {
+        this(null);
+    }
 
-  public ProtocolRequest(List protocolVersions)
-  {
-    super(0, false);
-    this.protocolVersions = protocolVersions;
-  }
+    public ProtocolRequest(List protocolVersions) {
+        super(0, false);
+        this.protocolVersions = protocolVersions;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.PROTOCOL_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.PROTOCOL_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeInt(protocolVersions.size());
-    for (int i = 0; i < protocolVersions.size(); i++)
-      output.writeUTF((String) protocolVersions.get(i));
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeInt(protocolVersions.size());
+        for (int i = 0; i < protocolVersions.size(); i++)
+            output.writeUTF((String) protocolVersions.get(i));
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    protocolVersions = new ArrayList();
-    int size = input.readInt();
-    for (int i = 0; i < size; i++)
-      protocolVersions.add(input.readUTF());
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        protocolVersions = new ArrayList();
+        int size = input.readInt();
+        for (int i = 0; i < size; i++)
+            protocolVersions.add(input.readUTF());
+    }
 
-  public List getProtocolVersions()
-  {
-    return protocolVersions;
-  }
+    public List getProtocolVersions() {
+        return protocolVersions;
+    }
 
-  public void setProtocolVersions(List protocolVersions)
-  {
-    this.protocolVersions = protocolVersions;
-  }
+    public void setProtocolVersions(List protocolVersions) {
+        this.protocolVersions = protocolVersions;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[ProtocolRequest " + super.toString() + ", protocolVersions=" + protocolVersions + "]";
-  }
+    public String toString() {
+        return "[ProtocolRequest " + super.toString() + ", protocolVersions=" + protocolVersions + "]";
+    }
 }

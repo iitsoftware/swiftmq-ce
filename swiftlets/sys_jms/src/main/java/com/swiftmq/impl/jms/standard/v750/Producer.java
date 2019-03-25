@@ -24,70 +24,60 @@ import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 
-public class Producer implements TransactionFactory
-{
-  protected SessionContext ctx = null;
-  protected QueueSender sender = null;
-  protected QueuePushTransaction transaction = null;
-  protected boolean markedForClose = false;
-  protected DestinationCollector collector = null;
+public class Producer implements TransactionFactory {
+    protected SessionContext ctx = null;
+    protected QueueSender sender = null;
+    protected QueuePushTransaction transaction = null;
+    protected boolean markedForClose = false;
+    protected DestinationCollector collector = null;
 
-  protected Producer(SessionContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    protected Producer(SessionContext ctx) {
+        this.ctx = ctx;
+    }
 
-  protected void setQueueSender(QueueSender sender)
-  {
-    this.sender = sender;
-  }
+    protected void setQueueSender(QueueSender sender) {
+        this.sender = sender;
+    }
 
-  public void createCollector(AccountingProfile accoutingProfile, DestinationCollectorCache cache)
-  {
-    // Needs to be overwritten
-  }
+    public void createCollector(AccountingProfile accoutingProfile, DestinationCollectorCache cache) {
+        // Needs to be overwritten
+    }
 
-  protected void removeCollector()
-  {
-    collector = null;
-  }
+    protected void removeCollector() {
+        collector = null;
+    }
 
-  public DestinationCollector getCollector()
-  {
-    return collector;
-  }
+    public DestinationCollector getCollector() {
+        return collector;
+    }
 
-  public QueueTransaction createTransaction() throws Exception
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
-    transaction = sender.createTransaction();
-    return transaction;
-  }
+    public QueueTransaction createTransaction() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
+        transaction = sender.createTransaction();
+        return transaction;
+    }
 
-  public QueuePushTransaction getTransaction()
-  {
-    return transaction;
-  }
+    public QueuePushTransaction getTransaction() {
+        return transaction;
+    }
 
-  public void markForClose()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
-    markedForClose = true;
-    collector = null;
-  }
+    public void markForClose() {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
+        markedForClose = true;
+        collector = null;
+    }
 
-  public boolean isMarkedForClose()
-  {
-    return markedForClose;
-  }
+    public boolean isMarkedForClose() {
+        return markedForClose;
+    }
 
-  public void close() throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
-    transaction = null;
-    collector = null;
-    sender.close();
-  }
+    public void close() throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
+        transaction = null;
+        collector = null;
+        sender.close();
+    }
 }
 

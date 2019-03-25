@@ -19,39 +19,32 @@ package com.swiftmq.tools.versioning;
 
 import com.swiftmq.tools.dump.Dumpable;
 
-public class VersionedDumpable
-{
-  int version = 0;
-  Dumpable dumpable = null;
+public class VersionedDumpable {
+    int version = 0;
+    Dumpable dumpable = null;
 
-  public VersionedDumpable(int version, Dumpable dumpable)
-  {
-    this.version = version;
-    this.dumpable = dumpable;
-  }
+    public VersionedDumpable(int version, Dumpable dumpable) {
+        this.version = version;
+        this.dumpable = dumpable;
+    }
 
-  public int getVersion()
-  {
-    return version;
-  }
+    public int getVersion() {
+        return version;
+    }
 
-  public void setVersion(int version)
-  {
-    this.version = version;
-  }
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
-  public Dumpable getDumpable()
-  {
-    return dumpable;
-  }
+    public Dumpable getDumpable() {
+        return dumpable;
+    }
 
-  public void setDumpable(Dumpable dumpable)
-  {
-    this.dumpable = dumpable;
-  }
+    public void setDumpable(Dumpable dumpable) {
+        this.dumpable = dumpable;
+    }
 
-  public String toString()
-  {
-    return "[VersionedDumpable, version="+version+", dumpable="+dumpable+"]";
-  }
+    public String toString() {
+        return "[VersionedDumpable, version=" + version + ", dumpable=" + dumpable + "]";
+    }
 }

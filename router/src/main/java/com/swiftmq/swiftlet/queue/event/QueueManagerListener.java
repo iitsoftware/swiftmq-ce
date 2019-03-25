@@ -24,30 +24,33 @@ import java.util.EventListener;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface QueueManagerListener extends EventListener
-{
-  /**
-   * Will be called from the QueueManager before queue start.
-   * @param evt queue manager event
-   */
-  public void queueStartInitiated(QueueManagerEvent evt);
+public interface QueueManagerListener extends EventListener {
+    /**
+     * Will be called from the QueueManager before queue start.
+     *
+     * @param evt queue manager event
+     */
+    public void queueStartInitiated(QueueManagerEvent evt);
 
-  /**
-   * Will be called from the QueueManager after queue start.
-   * @param evt queue manager event
-   */
-  public void queueStarted(QueueManagerEvent evt);
+    /**
+     * Will be called from the QueueManager after queue start.
+     *
+     * @param evt queue manager event
+     */
+    public void queueStarted(QueueManagerEvent evt);
 
-  /**
-   * Will be called from the QueueManager before queue stop.
-   * @param evt queue manager event
-   */
-  public void queueStopInitiated(QueueManagerEvent evt);
+    /**
+     * Will be called from the QueueManager before queue stop.
+     *
+     * @param evt queue manager event
+     */
+    public void queueStopInitiated(QueueManagerEvent evt);
 
-  /**
-   * Will be called from the QueueManager after queue stop.
-   * @param evt queue manager event
-   */
-  public void queueStopped(QueueManagerEvent evt);
+    /**
+     * Will be called from the QueueManager after queue stop.
+     *
+     * @param evt queue manager event
+     */
+    public void queueStopped(QueueManagerEvent evt);
 }
 

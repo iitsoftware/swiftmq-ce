@@ -22,23 +22,20 @@ import com.swiftmq.tools.requestreply.TransportException;
 
 import javax.jms.JMSException;
 
-public class ExceptionConverter
-{
-  public static JMSException convert(Exception exception)
-  {
-    if (exception instanceof JMSException)
-      return (JMSException) exception;
-    else if (exception instanceof TimeoutException)
-      return new RequestTimeoutException(exception.getMessage(), exception);
-    else if (exception instanceof TransportException)
-      return new ConnectionLostException(exception.getMessage(), exception);
-    else
-    {
-      JMSException e = new JMSException(exception.getMessage());
-      e.setLinkedException(exception);
-      return e;
+public class ExceptionConverter {
+    public static JMSException convert(Exception exception) {
+        if (exception instanceof JMSException)
+            return (JMSException) exception;
+        else if (exception instanceof TimeoutException)
+            return new RequestTimeoutException(exception.getMessage(), exception);
+        else if (exception instanceof TransportException)
+            return new ConnectionLostException(exception.getMessage(), exception);
+        else {
+            JMSException e = new JMSException(exception.getMessage());
+            e.setLinkedException(exception);
+            return e;
+        }
     }
-  }
 }
 
 

@@ -23,43 +23,35 @@ import com.swiftmq.tools.pipeline.POVisitor;
 
 import java.io.IOException;
 
-public class PODataAvailable extends POObject
-{
-  Dumpable dumpable = null;
-  IOException ioException = null;
+public class PODataAvailable extends POObject {
+    Dumpable dumpable = null;
+    IOException ioException = null;
 
-  public PODataAvailable()
-  {
-    super(null, null);
-  }
+    public PODataAvailable() {
+        super(null, null);
+    }
 
-  public Dumpable getDumpable()
-  {
-    return dumpable;
-  }
+    public Dumpable getDumpable() {
+        return dumpable;
+    }
 
-  public void setDumpable(Dumpable dumpable)
-  {
-    this.dumpable = dumpable;
-  }
+    public void setDumpable(Dumpable dumpable) {
+        this.dumpable = dumpable;
+    }
 
-  public IOException getIoException()
-  {
-    return ioException;
-  }
+    public IOException getIoException() {
+        return ioException;
+    }
 
-  public void setIoException(IOException ioException)
-  {
-    this.ioException = ioException;
-  }
+    public void setIoException(IOException ioException) {
+        this.ioException = ioException;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[PODataAvailable, dumpable=" + dumpable + ", ioException=" + ioException + "]";
-  }
+    public String toString() {
+        return "[PODataAvailable, dumpable=" + dumpable + ", ioException=" + ioException + "]";
+    }
 }

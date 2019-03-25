@@ -30,100 +30,83 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransactionRequest extends Request
-{
-  int sequenceNo = 0;
-  XidImpl xid = null;
-  List messageList = null;
+public class TransactionRequest extends Request {
+    int sequenceNo = 0;
+    XidImpl xid = null;
+    List messageList = null;
 
-  TransactionRequest()
-  {
-    this(0, null, null);
-  }
-
-  public TransactionRequest(int sequenceNo, XidImpl xid, List messageList)
-  {
-    super(0, false);
-    this.sequenceNo = sequenceNo;
-    this.xid = xid;
-    this.messageList = messageList;
-  }
-
-  public int getDumpId()
-  {
-    return SMQRFactory.TRANSACTION_REQ;
-  }
-
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeInt(sequenceNo);
-    xid.writeContent(output);
-    output.writeInt(messageList.size());
-    for (int i = 0; i < messageList.size(); i++)
-    {
-      ((MessageImpl) messageList.get(i)).writeContent(output);
+    TransactionRequest() {
+        this(0, null, null);
     }
-  }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    sequenceNo = input.readInt();
-    xid = new XidImpl();
-    xid.readContent(input);
-    int size = input.readInt();
-    messageList = new ArrayList();
-    for (int i = 0; i < size; i++)
-    {
-      MessageImpl msg = MessageImpl.createInstance(input.readInt());
-      msg.readContent(input);
-      messageList.add(msg);
+    public TransactionRequest(int sequenceNo, XidImpl xid, List messageList) {
+        super(0, false);
+        this.sequenceNo = sequenceNo;
+        this.xid = xid;
+        this.messageList = messageList;
     }
-  }
 
-  public int getSequenceNo()
-  {
-    return sequenceNo;
-  }
+    public int getDumpId() {
+        return SMQRFactory.TRANSACTION_REQ;
+    }
 
-  public void setSequenceNo(int sequenceNo)
-  {
-    this.sequenceNo = sequenceNo;
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeInt(sequenceNo);
+        xid.writeContent(output);
+        output.writeInt(messageList.size());
+        for (int i = 0; i < messageList.size(); i++) {
+            ((MessageImpl) messageList.get(i)).writeContent(output);
+        }
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        sequenceNo = input.readInt();
+        xid = new XidImpl();
+        xid.readContent(input);
+        int size = input.readInt();
+        messageList = new ArrayList();
+        for (int i = 0; i < size; i++) {
+            MessageImpl msg = MessageImpl.createInstance(input.readInt());
+            msg.readContent(input);
+            messageList.add(msg);
+        }
+    }
 
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public int getSequenceNo() {
+        return sequenceNo;
+    }
 
-  public List getMessageList()
-  {
-    return messageList;
-  }
+    public void setSequenceNo(int sequenceNo) {
+        this.sequenceNo = sequenceNo;
+    }
 
-  public void setMessageList(List messageList)
-  {
-    this.messageList = messageList;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public List getMessageList() {
+        return messageList;
+    }
 
-  public String toString()
-  {
-    return "[TransactionRequest " + super.toString() + ", sequenceNo=" + sequenceNo + ", xid=" + xid + ", nMessages=" + (messageList != null ? messageList.size() : 0) + "]";
-  }
+    public void setMessageList(List messageList) {
+        this.messageList = messageList;
+    }
+
+    protected Reply createReplyInstance() {
+        return null;
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
+
+    public String toString() {
+        return "[TransactionRequest " + super.toString() + ", sequenceNo=" + sequenceNo + ", xid=" + xid + ", nMessages=" + (messageList != null ? messageList.size() : 0) + "]";
+    }
 }

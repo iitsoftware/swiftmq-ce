@@ -18,102 +18,91 @@
 package com.swiftmq.jms.smqp.v400;
 
 import com.swiftmq.jms.MessageImpl;
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class ProduceMessageRequest extends Request
-{
-  int queueProducerId;
-  MessageImpl message = null;
-  DataByteArrayOutputStream dos = null;
-  boolean copyRequired = false;
+public class ProduceMessageRequest extends Request {
+    int queueProducerId;
+    MessageImpl message = null;
+    DataByteArrayOutputStream dos = null;
+    boolean copyRequired = false;
 
-  public ProduceMessageRequest(int dispatchId, int queueProducerId, MessageImpl message, boolean replyRequired)
-  {
-    this(dispatchId, queueProducerId, message, replyRequired, false);
-  }
-
-  public ProduceMessageRequest(int dispatchId, int queueProducerId, MessageImpl message, boolean replyRequired, boolean copyRequired)
-  {
-    super(dispatchId, replyRequired);
-
-    this.queueProducerId = queueProducerId;
-    this.copyRequired = copyRequired;
-    this.message = message;
-    if (message != null && copyRequired)
-    {
-      try
-      {
-        dos = new DataByteArrayOutputStream(2048);
-        message.writeContent(dos);
-        dos.close();
-      } catch (IOException e)
-      {
-        e.printStackTrace();
-      }
+    public ProduceMessageRequest(int dispatchId, int queueProducerId, MessageImpl message, boolean replyRequired) {
+        this(dispatchId, queueProducerId, message, replyRequired, false);
     }
-  }
+
+    public ProduceMessageRequest(int dispatchId, int queueProducerId, MessageImpl message, boolean replyRequired, boolean copyRequired) {
+        super(dispatchId, replyRequired);
+
+        this.queueProducerId = queueProducerId;
+        this.copyRequired = copyRequired;
+        this.message = message;
+        if (message != null && copyRequired) {
+            try {
+                dos = new DataByteArrayOutputStream(2048);
+                message.writeContent(dos);
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_PRODUCE_MESSAGE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_PRODUCE_MESSAGE_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-    out.writeInt(queueProducerId);
-    if (copyRequired)
-      out.write(dos.getBuffer(), 0, dos.getCount());
-    else
-      message.writeContent(out);
-  }
+        out.writeInt(queueProducerId);
+        if (copyRequired)
+            out.write(dos.getBuffer(), 0, dos.getCount());
+        else
+            message.writeContent(out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    queueProducerId = in.readInt();
-    message = MessageImpl.createInstance(in.readInt());
-    message.readContent(in);
-  }
+        queueProducerId = in.readInt();
+        message = MessageImpl.createInstance(in.readInt());
+        message.readContent(in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return isReplyRequired() ? new ProduceMessageReply() : null;
-  }
+    protected Reply createReplyInstance() {
+        return isReplyRequired() ? new ProduceMessageReply() : null;
+    }
 
-  public void setQueueProducerId(int queueProducerId)
-  {
-    this.queueProducerId = queueProducerId;
-  }
+    public void setQueueProducerId(int queueProducerId) {
+        this.queueProducerId = queueProducerId;
+    }
 
-  public int getQueueProducerId()
-  {
-    return (queueProducerId);
-  }
+    public int getQueueProducerId() {
+        return (queueProducerId);
+    }
 
-  public MessageImpl getMessage()
-  {
-    return (message);
-  }
+    public MessageImpl getMessage() {
+        return (message);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitProduceMessageRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitProduceMessageRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[ProduceMessageRequest " + super.toString() +
-      " queueProducerId =" + queueProducerId +
-      " copyRequired =" + copyRequired +
-      " message=" + message + "]";
-  }
+    public String toString() {
+        return "[ProduceMessageRequest " + super.toString() +
+                " queueProducerId =" + queueProducerId +
+                " copyRequired =" + copyRequired +
+                " message=" + message + "]";
+    }
 }
 
 

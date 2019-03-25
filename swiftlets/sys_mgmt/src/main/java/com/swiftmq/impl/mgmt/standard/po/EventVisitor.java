@@ -17,12 +17,12 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.tools.pipeline.POVisitor;
+public interface EventVisitor extends EventObjectVisitor {
+    public void visit(CheckExpire event);
 
-public interface EventVisitor extends EventObjectVisitor
-{
-  public void visit(CheckExpire event);
-  public void visit(SendUpdates event);
-  public void visit(Close event);
-  public void visit(Disconnect event);
+    public void visit(SendUpdates event);
+
+    public void visit(Close event);
+
+    public void visit(Disconnect event);
 }

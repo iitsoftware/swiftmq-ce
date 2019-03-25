@@ -25,30 +25,26 @@ import com.swiftmq.tools.requestreply.Reply;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class AcknowledgeMessageReply extends Reply
-{
+public class AcknowledgeMessageReply extends Reply {
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ACKNOWLEDGE_MESSAGE_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_ACKNOWLEDGE_MESSAGE_REP;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[AcknowledgeMessageReply " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[AcknowledgeMessageReply " + super.toString() + "]";
+    }
 
 }
 

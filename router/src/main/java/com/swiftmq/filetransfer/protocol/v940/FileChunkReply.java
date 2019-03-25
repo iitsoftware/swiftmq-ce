@@ -24,62 +24,53 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
-public class FileChunkReply extends MessageBasedReply
-{
-  public static final String CHUNKNO_PROP = "JMS_SWIFTMQ_FT_CHUNKNO";
-  int chunkNo = 0;
-  String link = null;
+public class FileChunkReply extends MessageBasedReply {
+    public static final String CHUNKNO_PROP = "JMS_SWIFTMQ_FT_CHUNKNO";
+    int chunkNo = 0;
+    String link = null;
 
-  public FileChunkReply(Message message) throws JMSException
-  {
-    super(message);
-    chunkNo = message.getIntProperty(CHUNKNO_PROP);
-    link = ((TextMessage) message).getText();
-  }
+    public FileChunkReply(Message message) throws JMSException {
+        super(message);
+        chunkNo = message.getIntProperty(CHUNKNO_PROP);
+        link = ((TextMessage) message).getText();
+    }
 
-  public FileChunkReply()
-  {
-  }
+    public FileChunkReply() {
+    }
 
-  public int getChunkNo()
-  {
-    return chunkNo;
-  }
+    public int getChunkNo() {
+        return chunkNo;
+    }
 
-  public void setChunkNo(int chunkNo)
-  {
-    this.chunkNo = chunkNo;
-  }
+    public void setChunkNo(int chunkNo) {
+        this.chunkNo = chunkNo;
+    }
 
-  public void setLink(String link)
-  {
-    this.link = link;
-  }
+    public void setLink(String link) {
+        this.link = link;
+    }
 
-  public String getLink()
-  {
-    return link;
-  }
+    public String getLink() {
+        return link;
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    TextMessage message = new TextMessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILECHUNK_REP);
-    message.setIntProperty(CHUNKNO_PROP, chunkNo);
-    if (link != null)
-      message.setText(link);
-    return fillMessage(message);
+    public Message toMessage() throws JMSException {
+        TextMessage message = new TextMessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILECHUNK_REP);
+        message.setIntProperty(CHUNKNO_PROP, chunkNo);
+        if (link != null)
+            message.setText(link);
+        return fillMessage(message);
 
-  }
+    }
 
-  public String toString()
-  {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("[FileChunkReply");
-    sb.append(super.toString());
-    sb.append(" chunkNo='").append(chunkNo).append('\'');
-    sb.append(" link='").append(link).append('\'');
-    sb.append(']');
-    return sb.toString();
-  }
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("[FileChunkReply");
+        sb.append(super.toString());
+        sb.append(" chunkNo='").append(chunkNo).append('\'');
+        sb.append(" link='").append(link).append('\'');
+        sb.append(']');
+        return sb.toString();
+    }
 }

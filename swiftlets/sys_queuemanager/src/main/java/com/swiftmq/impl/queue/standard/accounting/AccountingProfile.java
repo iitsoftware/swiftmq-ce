@@ -21,54 +21,46 @@ import com.swiftmq.impl.queue.standard.SwiftletContext;
 
 import java.util.regex.Pattern;
 
-public class AccountingProfile
-{
-  SwiftletContext ctx = null;
-  String tracePrefix = "AccountingProfile";
-  QueueManagerSource source = null;
-  Pattern queueNameFilter = null;
-  boolean queueNameFilterNegate = false;
+public class AccountingProfile {
+    SwiftletContext ctx = null;
+    String tracePrefix = "AccountingProfile";
+    QueueManagerSource source = null;
+    Pattern queueNameFilter = null;
+    boolean queueNameFilterNegate = false;
 
-  public AccountingProfile(SwiftletContext ctx, Pattern queueNameFilter, boolean queueNameFilterNegate)
-  {
-    this.ctx = ctx;
-    this.queueNameFilter = queueNameFilter;
-    this.queueNameFilterNegate = queueNameFilterNegate;
-  }
+    public AccountingProfile(SwiftletContext ctx, Pattern queueNameFilter, boolean queueNameFilterNegate) {
+        this.ctx = ctx;
+        this.queueNameFilter = queueNameFilter;
+        this.queueNameFilterNegate = queueNameFilterNegate;
+    }
 
-  public void setSource(QueueManagerSource source)
-  {
-    this.source = source;
-  }
+    public void setSource(QueueManagerSource source) {
+        this.source = source;
+    }
 
-  public QueueManagerSource getSource()
-  {
-    return source;
-  }
+    public QueueManagerSource getSource() {
+        return source;
+    }
 
-  private boolean checkMatch(Pattern p, boolean negate, String value)
-  {
-    if (value == null && p != null)
-      return false;
-    if (p == null)
-      return true;
-    boolean b = p.matcher(value).matches();
-    return negate ? !b : b;
-  }
+    private boolean checkMatch(Pattern p, boolean negate, String value) {
+        if (value == null && p != null)
+            return false;
+        if (p == null)
+            return true;
+        boolean b = p.matcher(value).matches();
+        return negate ? !b : b;
+    }
 
-  private boolean dbg(String s, boolean b)
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), tracePrefix + "/" + s + ": " + b);
-    return b;
-  }
+    private boolean dbg(String s, boolean b) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), tracePrefix + "/" + s + ": " + b);
+        return b;
+    }
 
-  public boolean isMatchQueueName(String queueName)
-  {
-    return dbg("isMatchQueueName", checkMatch(queueNameFilter, queueNameFilterNegate, queueName));
-  }
+    public boolean isMatchQueueName(String queueName) {
+        return dbg("isMatchQueueName", checkMatch(queueNameFilter, queueNameFilterNegate, queueName));
+    }
 
-  public String toString()
-  {
-    return "[AccountingProfile, source=" + source + ", queueNameFilter=" + queueNameFilter + ", queueNameFilterNegate=" + queueNameFilterNegate + "]";
-  }
+    public String toString() {
+        return "[AccountingProfile, source=" + source + ", queueNameFilter=" + queueNameFilter + ", queueNameFilterNegate=" + queueNameFilterNegate + "]";
+    }
 }

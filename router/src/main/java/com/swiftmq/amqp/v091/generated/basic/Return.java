@@ -17,127 +17,113 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Return extends BasicMethod
-{
-  int replyCode;
-  String replyText;
-  String exchange;
-  String routingKey;
+import java.io.IOException;
 
-  public Return()
-  {
-    _classId = 60;
-    _methodId = 50;
-  }
+public class Return extends BasicMethod {
+    int replyCode;
+    String replyText;
+    String exchange;
+    String routingKey;
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Return() {
+        _classId = 60;
+        _methodId = 50;
+    }
 
-  public int getReplyCode()
-  {
-    return replyCode;
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReplyCode(int replyCode)
-  {
-    this.replyCode = replyCode;
-  }
+    public int getReplyCode() {
+        return replyCode;
+    }
 
-  public String getReplyText()
-  {
-    return replyText;
-  }
+    public void setReplyCode(int replyCode) {
+        this.replyCode = replyCode;
+    }
 
-  public void setReplyText(String replyText)
-  {
-    this.replyText = replyText;
-  }
+    public String getReplyText() {
+        return replyText;
+    }
 
-  public String getExchange()
-  {
-    return exchange;
-  }
+    public void setReplyText(String replyText) {
+        this.replyText = replyText;
+    }
 
-  public void setExchange(String exchange)
-  {
-    this.exchange = exchange;
-  }
+    public String getExchange() {
+        return exchange;
+    }
 
-  public String getRoutingKey()
-  {
-    return routingKey;
-  }
+    public void setExchange(String exchange) {
+        this.exchange = exchange;
+    }
 
-  public void setRoutingKey(String routingKey)
-  {
-    this.routingKey = routingKey;
-  }
+    public String getRoutingKey() {
+        return routingKey;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    replyCode = Coder.readShort(in);
-    replyText = Coder.readShortString(in);
-    exchange = Coder.readShortString(in);
-    routingKey = Coder.readShortString(in);
-  }
+    public void setRoutingKey(String routingKey) {
+        this.routingKey = routingKey;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShort(replyCode, out);
-    Coder.writeShortString(replyText, out);
-    Coder.writeShortString(exchange, out);
-    Coder.writeShortString(routingKey, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        replyCode = Coder.readShort(in);
+        replyText = Coder.readShortString(in);
+        exchange = Coder.readShortString(in);
+        routingKey = Coder.readShortString(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("replyCode=");
-    b.append(replyCode);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("replyText=");
-    b.append(replyText);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("exchange=");
-    b.append(exchange);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("routingKey=");
-    b.append(routingKey);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShort(replyCode, out);
+        Coder.writeShortString(replyText, out);
+        Coder.writeShortString(exchange, out);
+        Coder.writeShortString(routingKey, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Return " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("replyCode=");
+        b.append(replyCode);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("replyText=");
+        b.append(replyText);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("exchange=");
+        b.append(exchange);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("routingKey=");
+        b.append(routingKey);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Return " + super.toString() + getDisplayString() + "]";
+    }
 }

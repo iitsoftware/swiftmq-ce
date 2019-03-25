@@ -20,20 +20,16 @@ package com.swiftmq.jms.v600.po;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POHandover extends POObject
-{
-  public POHandover()
-  {
-    super(null, null);
-  }
+public class POHandover extends POObject {
+    public POHandover() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POHandover]";
-  }
+    public String toString() {
+        return "[POHandover]";
+    }
 }

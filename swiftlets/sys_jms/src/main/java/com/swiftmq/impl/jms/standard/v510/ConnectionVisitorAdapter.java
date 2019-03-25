@@ -19,9 +19,7 @@ package com.swiftmq.impl.jms.standard.v510;
 
 import com.swiftmq.jms.smqp.v510.SMQPVisitorAdapter;
 
-public class ConnectionVisitorAdapter extends SMQPVisitorAdapter
-{
-  public void visit(CollectRequest collectRequest)
-  {
-  }
+public class ConnectionVisitorAdapter extends SMQPVisitorAdapter {
+    public void visit(CollectRequest collectRequest) {
+    }
 }

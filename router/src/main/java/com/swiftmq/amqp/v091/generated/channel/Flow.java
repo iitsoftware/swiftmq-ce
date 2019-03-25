@@ -17,70 +17,62 @@
 
 package com.swiftmq.amqp.v091.generated.channel;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Flow extends ChannelMethod
-{
-  boolean active;
+import java.io.IOException;
 
-  public Flow()
-  {
-    _classId = 20;
-    _methodId = 20;
-  }
+public class Flow extends ChannelMethod {
+    boolean active;
 
-  public void accept(ChannelMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Flow() {
+        _classId = 20;
+        _methodId = 20;
+    }
 
-  public boolean getActive()
-  {
-    return active;
-  }
+    public void accept(ChannelMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setActive(boolean active)
-  {
-    this.active = active;
-  }
+    public boolean getActive() {
+        return active;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    active = Coder.readBit(in);
-  }
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeBit(active, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        active = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("active=");
-    b.append(active);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeBit(active, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Flow " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("active=");
+        b.append(active);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Flow " + super.toString() + getDisplayString() + "]";
+    }
 }

@@ -20,46 +20,40 @@ package com.swiftmq.filetransfer.protocol;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public class ProtocolFactory implements MessageBasedFactory
-{
-  public static final String DUMPID_PROP = "JMS_SWIFTMQ_FT_DUMPID";
-  public static final int PROTOCOL_REQ = 0;
-  public static final int PROTOCOL_REP = 1;
+public class ProtocolFactory implements MessageBasedFactory {
+    public static final String DUMPID_PROP = "JMS_SWIFTMQ_FT_DUMPID";
+    public static final int PROTOCOL_REQ = 0;
+    public static final int PROTOCOL_REP = 1;
 
-  MessageBasedFactory delegatedFactory = null;
+    MessageBasedFactory delegatedFactory = null;
 
-  public ProtocolFactory()
-  {
-  }
-
-  public ProtocolFactory(MessageBasedFactory delegatedFactory)
-  {
-    this.delegatedFactory = delegatedFactory;
-  }
-
-  public void setDelegatedFactory(MessageBasedFactory delegatedFactory)
-  {
-    this.delegatedFactory = delegatedFactory;
-  }
-
-  public MessageBased create(Message message) throws JMSException
-  {
-    MessageBased messageBased = null;
-
-    int dumpId = message.getIntProperty(DUMPID_PROP);
-    switch (dumpId)
-    {
-      case PROTOCOL_REQ:
-        messageBased = new ProtocolRequest(message);
-        break;
-      case PROTOCOL_REP:
-        messageBased = new ProtocolReply(message);
-        break;
-      default:
-        if (delegatedFactory != null)
-          messageBased = delegatedFactory.create(message);
-        break;
+    public ProtocolFactory() {
     }
-    return messageBased;
-  }
+
+    public ProtocolFactory(MessageBasedFactory delegatedFactory) {
+        this.delegatedFactory = delegatedFactory;
+    }
+
+    public void setDelegatedFactory(MessageBasedFactory delegatedFactory) {
+        this.delegatedFactory = delegatedFactory;
+    }
+
+    public MessageBased create(Message message) throws JMSException {
+        MessageBased messageBased = null;
+
+        int dumpId = message.getIntProperty(DUMPID_PROP);
+        switch (dumpId) {
+            case PROTOCOL_REQ:
+                messageBased = new ProtocolRequest(message);
+                break;
+            case PROTOCOL_REP:
+                messageBased = new ProtocolReply(message);
+                break;
+            default:
+                if (delegatedFactory != null)
+                    messageBased = delegatedFactory.create(message);
+                break;
+        }
+        return messageBased;
+    }
 }

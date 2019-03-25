@@ -17,72 +17,66 @@
 
 package com.swiftmq.tools.deploy;
 
-public class BundleEvent
-{
-  final static int BUNDLE_UNCHANGED = -1;
-  public final static int BUNDLE_ADDED = 0;
-  public final static int BUNDLE_REMOVED = 1;
-  public final static int BUNDLE_CHANGED = 2;
+public class BundleEvent {
+    final static int BUNDLE_UNCHANGED = -1;
+    public final static int BUNDLE_ADDED = 0;
+    public final static int BUNDLE_REMOVED = 1;
+    public final static int BUNDLE_CHANGED = 2;
 
-  int type;
-  Bundle bundle;
+    int type;
+    Bundle bundle;
 
-  /**
-   * @param type
-   * @param bundle
-   * @SBGen Constructor assigns type, bundle
-   */
-  BundleEvent(int type, Bundle bundle)
-  {
-    // SBgen: Assign variables
-    this.type = type;
-    this.bundle = bundle;
-    // SBgen: End assign
-  }
-
-
-  /**
-   * @return
-   * @SBGen Method get type
-   */
-  public int getType()
-  {
-    // SBgen: Get variable
-    return (type);
-  }
-
-  /**
-   * @return
-   * @SBGen Method get bundle
-   */
-  public Bundle getBundle()
-  {
-    // SBgen: Get variable
-    return (bundle);
-  }
-
-  public String toString()
-  {
-    StringBuffer b = new StringBuffer("[BundleEvent, type=");
-    switch (type)
-    {
-      case BUNDLE_UNCHANGED:
-        b.append("BUNDLE_UNCHANGED");
-        break;
-      case BUNDLE_ADDED:
-        b.append("BUNDLE_ADDED");
-        break;
-      case BUNDLE_REMOVED:
-        b.append("BUNDLE_REMOVED");
-        break;
-      case BUNDLE_CHANGED:
-        b.append("BUNDLE_CHANGED");
-        break;
+    /**
+     * @param type
+     * @param bundle
+     * @SBGen Constructor assigns type, bundle
+     */
+    BundleEvent(int type, Bundle bundle) {
+        // SBgen: Assign variables
+        this.type = type;
+        this.bundle = bundle;
+        // SBgen: End assign
     }
-    b.append(", bundle=");
-    b.append(bundle.toString());
-    b.append("]");
-    return b.toString();
-  }
+
+
+    /**
+     * @return
+     * @SBGen Method get type
+     */
+    public int getType() {
+        // SBgen: Get variable
+        return (type);
+    }
+
+    /**
+     * @return
+     * @SBGen Method get bundle
+     */
+    public Bundle getBundle() {
+        // SBgen: Get variable
+        return (bundle);
+    }
+
+    public String toString() {
+        StringBuffer b = new StringBuffer("[BundleEvent, type=");
+        switch (type) {
+            case BUNDLE_UNCHANGED:
+                b.append("BUNDLE_UNCHANGED");
+                break;
+            case BUNDLE_ADDED:
+                b.append("BUNDLE_ADDED");
+                break;
+            case BUNDLE_REMOVED:
+                b.append("BUNDLE_REMOVED");
+                break;
+            case BUNDLE_CHANGED:
+                b.append("BUNDLE_CHANGED");
+                break;
+        }
+        b.append(", bundle=");
+        b.append(bundle.toString());
+        b.append("]");
+        return b.toString();
+    }
 }
 

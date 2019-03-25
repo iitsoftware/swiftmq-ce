@@ -23,32 +23,32 @@ import java.util.EventObject;
 
 /**
  * An event fired by the SwiftletManager
- * @see SwiftletManager
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
+ * @see SwiftletManager
  */
-public class SwiftletManagerEvent extends EventObject
-{
-  String swiftletName;
+public class SwiftletManagerEvent extends EventObject {
+    String swiftletName;
 
-  /**
-   * Constructs a new SwiftletManagerEvent
-   * @param swiftletName The Swiftlet name
-   * @param swiftletManager The Swiftlet manager
-   * @SBGen Constructor
-   */
-  public SwiftletManagerEvent(SwiftletManager swiftletManager, String swiftletName)
-  {
-    super(swiftletManager);
-    this.swiftletName = swiftletName;
-  }
+    /**
+     * Constructs a new SwiftletManagerEvent
+     *
+     * @param swiftletName    The Swiftlet name
+     * @param swiftletManager The Swiftlet manager
+     * @SBGen Constructor
+     */
+    public SwiftletManagerEvent(SwiftletManager swiftletManager, String swiftletName) {
+        super(swiftletManager);
+        this.swiftletName = swiftletName;
+    }
 
-  /**
-   * Returns the Swiftlet name.
-   * @return Swiftlet name
-   */
-  public String getSwiftletName()
-  {
-    return (swiftletName);
-  }
+    /**
+     * Returns the Swiftlet name.
+     *
+     * @return Swiftlet name
+     */
+    public String getSwiftletName() {
+        return (swiftletName);
+    }
 }
 

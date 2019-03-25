@@ -18,17 +18,13 @@
 package com.swiftmq.impl.jms.standard.v400;
 
 import com.swiftmq.jms.smqp.v400.SMQPVisitorAdapter;
-import com.swiftmq.jms.smqp.v400.RecoverSessionReply;
 import com.swiftmq.tools.requestreply.GenericRequest;
 
 
-public class SessionVisitor extends SMQPVisitorAdapter
-{
-  public void visitDeliveryItem(DeliveryItem item)
-  {
-  }
+public class SessionVisitor extends SMQPVisitorAdapter {
+    public void visitDeliveryItem(DeliveryItem item) {
+    }
 
-  public void visitGenericRequest(GenericRequest request)
-  {
-  }
+    public void visitGenericRequest(GenericRequest request) {
+    }
 }

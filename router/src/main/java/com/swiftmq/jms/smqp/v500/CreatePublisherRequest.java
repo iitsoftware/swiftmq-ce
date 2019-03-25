@@ -25,127 +25,114 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreatePublisherRequest extends Request
-{
-  TopicImpl topic = null;
+public class CreatePublisherRequest extends Request {
+    TopicImpl topic = null;
 
-  /**
-   * @param topic
-   * @param dispatchId
-   * @SBGen Constructor assigns topic
-   */
-  public CreatePublisherRequest(int dispatchId, TopicImpl topic)
-  {
-    super(dispatchId, true);
+    /**
+     * @param topic
+     * @param dispatchId
+     * @SBGen Constructor assigns topic
+     */
+    public CreatePublisherRequest(int dispatchId, TopicImpl topic) {
+        super(dispatchId, true);
 
-    // SBgen: Assign variable
-    this.topic = topic;
-  }
-
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_PUBLISHER_REQ;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    if (topic == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      DestinationFactory.dumpDestination(topic, out);
+        // SBgen: Assign variable
+        this.topic = topic;
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      topic = null;
-    } else
-    {
-      topic = (TopicImpl) DestinationFactory.createDestination(in);
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_PUBLISHER_REQ;
     }
-  }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CreatePublisherReply();
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * @param topic
-   * @SBGen Method set topic
-   */
-  public void setTopic(TopicImpl topic)
-  {
+        if (topic == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            DestinationFactory.dumpDestination(topic, out);
+        }
+    }
 
-    // SBgen: Assign variable
-    this.topic = topic;
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-  /**
-   * @return
-   * @SBGen Method get topic
-   */
-  public TopicImpl getTopic()
-  {
+        byte set = in.readByte();
 
-    // SBgen: Get variable
-    return (topic);
-  }
+        if (set == 0) {
+            topic = null;
+        } else {
+            topic = (TopicImpl) DestinationFactory.createDestination(in);
+        }
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCreatePublisherRequest(this);
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CreatePublisherReply();
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreatePublisherRequest " + super.toString() + " topic=" + topic
-        + "]";
-  }
+    /**
+     * @param topic
+     * @SBGen Method set topic
+     */
+    public void setTopic(TopicImpl topic) {
+
+        // SBgen: Assign variable
+        this.topic = topic;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get topic
+     */
+    public TopicImpl getTopic() {
+
+        // SBgen: Get variable
+        return (topic);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCreatePublisherRequest(this);
+    }
+
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreatePublisherRequest " + super.toString() + " topic=" + topic
+                + "]";
+    }
 
 }
 

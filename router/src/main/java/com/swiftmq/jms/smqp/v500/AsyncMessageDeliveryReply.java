@@ -21,72 +21,66 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class AsyncMessageDeliveryReply extends Reply
-{
-  int sessionDispatchId;
+public class AsyncMessageDeliveryReply extends Reply {
+    int sessionDispatchId;
 
-  AsyncMessageDeliveryReply(int sessionDispatchId)
-  {
-    this.sessionDispatchId = sessionDispatchId;
-  }
+    AsyncMessageDeliveryReply(int sessionDispatchId) {
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ASYNC_MESSAGE_DELIVERY_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_ASYNC_MESSAGE_DELIVERY_REP;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(sessionDispatchId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(sessionDispatchId);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    sessionDispatchId = in.readInt();
-  }
+        sessionDispatchId = in.readInt();
+    }
 
-  public int getSessionDispatchId()
-  {
-    return sessionDispatchId;
-  }
+    public int getSessionDispatchId() {
+        return sessionDispatchId;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[AsyncMessageDeliveryReply " + super.toString() + ", sessionDispatchId=" + sessionDispatchId + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[AsyncMessageDeliveryReply " + super.toString() + ", sessionDispatchId=" + sessionDispatchId + "]";
+    }
 
 }
 

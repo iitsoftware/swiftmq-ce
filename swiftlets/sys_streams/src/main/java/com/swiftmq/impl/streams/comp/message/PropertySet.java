@@ -37,41 +37,41 @@ public class PropertySet {
         this.properties = properties;
     }
 
-  /**
-   * Returns a new PropertySet that contains all Properties which name is not equals the prefix.
-   *
-   * @param prefix Prefix
-   * @return PropertySet
-   */
-  public PropertySet notEquals(final String prefix) {
-    final Map<String, Property> result = new HashMap<String, Property>();
-    forEach(new ForEachPropertyCallback() {
-      @Override
-      public void execute(Property property) {
-        if (!property.name().equals(prefix))
-          result.put(property.name(), property);
-      }
-    });
-    return new PropertySet(message, result);
-  }
+    /**
+     * Returns a new PropertySet that contains all Properties which name is not equals the prefix.
+     *
+     * @param prefix Prefix
+     * @return PropertySet
+     */
+    public PropertySet notEquals(final String prefix) {
+        final Map<String, Property> result = new HashMap<String, Property>();
+        forEach(new ForEachPropertyCallback() {
+            @Override
+            public void execute(Property property) {
+                if (!property.name().equals(prefix))
+                    result.put(property.name(), property);
+            }
+        });
+        return new PropertySet(message, result);
+    }
 
-  /**
-   * Returns a new PropertySet that contains all Properties which name starts with the prefix.
-   *
-   * @param prefix Prefix
-   * @return PropertySet
-   */
-  public PropertySet startsWith(final String prefix) {
-    final Map<String, Property> result = new HashMap<String, Property>();
-    forEach(new ForEachPropertyCallback() {
-      @Override
-      public void execute(Property property) {
-        if (property.name().startsWith(prefix))
-          result.put(property.name(), property);
-      }
-    });
-    return new PropertySet(message, result);
-  }
+    /**
+     * Returns a new PropertySet that contains all Properties which name starts with the prefix.
+     *
+     * @param prefix Prefix
+     * @return PropertySet
+     */
+    public PropertySet startsWith(final String prefix) {
+        final Map<String, Property> result = new HashMap<String, Property>();
+        forEach(new ForEachPropertyCallback() {
+            @Override
+            public void execute(Property property) {
+                if (property.name().startsWith(prefix))
+                    result.put(property.name(), property);
+            }
+        });
+        return new PropertySet(message, result);
+    }
 
     /**
      * Returns a new PropertySet that contains all Properties which name do NOT starts with the prefix.

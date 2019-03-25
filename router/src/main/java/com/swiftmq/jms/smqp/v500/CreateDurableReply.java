@@ -19,65 +19,55 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class CreateDurableReply extends Reply
-{
-  String queueName = null;
-  int topicSubscriberId = 0;
+public class CreateDurableReply extends Reply {
+    String queueName = null;
+    int topicSubscriberId = 0;
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_DURABLE_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_DURABLE_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(topicSubscriberId);
-    if (queueName != null)
-    {
-      out.writeByte(1);
-      out.writeUTF(queueName);
-    } else
-      out.write(0);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(topicSubscriberId);
+        if (queueName != null) {
+            out.writeByte(1);
+            out.writeUTF(queueName);
+        } else
+            out.write(0);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    topicSubscriberId = in.readInt();
-    if (in.readByte() == 1)
-      queueName = in.readUTF();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        topicSubscriberId = in.readInt();
+        if (in.readByte() == 1)
+            queueName = in.readUTF();
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public void setQueueName(String queueName)
-  {
-    this.queueName = queueName;
-  }
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
-  public void setTopicSubscriberId(int topicSubscriberId)
-  {
-    this.topicSubscriberId = topicSubscriberId;
-  }
+    public void setTopicSubscriberId(int topicSubscriberId) {
+        this.topicSubscriberId = topicSubscriberId;
+    }
 
-  public int getTopicSubscriberId()
-  {
-    return (topicSubscriberId);
-  }
+    public int getTopicSubscriberId() {
+        return (topicSubscriberId);
+    }
 
-  public String toString()
-  {
-    return "[CreateDurableReply " + super.toString() + " topicSubscriberId="
-        + topicSubscriberId + " queueName=" + queueName + "]";
-  }
+    public String toString() {
+        return "[CreateDurableReply " + super.toString() + " topicSubscriberId="
+                + topicSubscriberId + " queueName=" + queueName + "]";
+    }
 
 }
 

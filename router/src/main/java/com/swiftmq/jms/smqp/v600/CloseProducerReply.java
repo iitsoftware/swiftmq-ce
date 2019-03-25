@@ -17,32 +17,29 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CloseProducerReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CloseProducerReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CloseProducerReply extends ReplyNE
-{
+public class CloseProducerReply extends ReplyNE {
 
-  protected CloseProducerReply()
-  {
-  }
+    protected CloseProducerReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSEPRODUCER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSEPRODUCER_REP;
+    }
 
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CloseProducerReply, ");
-    _b.append(super.toString());
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CloseProducerReply, ");
+        _b.append(super.toString());
+        _b.append("]");
+        return _b.toString();
+    }
 }

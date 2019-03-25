@@ -23,111 +23,102 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CloseBrowserRequest extends Request
-{
-  int queueBrowserId = 0;
+public class CloseBrowserRequest extends Request {
+    int queueBrowserId = 0;
 
-  /**
-   * @param queueBrowserId
-   * @param dispatchId
-   * @SBGen Constructor assigns queueBrowserId
-   */
-  public CloseBrowserRequest(int dispatchId, int queueBrowserId)
-  {
-    super(dispatchId, true);
+    /**
+     * @param queueBrowserId
+     * @param dispatchId
+     * @SBGen Constructor assigns queueBrowserId
+     */
+    public CloseBrowserRequest(int dispatchId, int queueBrowserId) {
+        super(dispatchId, true);
 
-    // SBgen: Assign variable
-    this.queueBrowserId = queueBrowserId;
-  }
+        // SBgen: Assign variable
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSE_BROWSER_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSE_BROWSER_REQ;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueBrowserId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueBrowserId);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    queueBrowserId = in.readInt();
-  }
+        queueBrowserId = in.readInt();
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CloseBrowserReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CloseBrowserReply();
+    }
 
-  /**
-   * @param queueBrowserId
-   * @SBGen Method set queueBrowserId
-   */
-  public void setQueueBrowserId(int queueBrowserId)
-  {
+    /**
+     * @param queueBrowserId
+     * @SBGen Method set queueBrowserId
+     */
+    public void setQueueBrowserId(int queueBrowserId) {
 
-    // SBgen: Assign variable
-    this.queueBrowserId = queueBrowserId;
-  }
+        // SBgen: Assign variable
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get queueBrowserId
-   */
-  public int getQueueBrowserId()
-  {
+    /**
+     * @return
+     * @SBGen Method get queueBrowserId
+     */
+    public int getQueueBrowserId() {
 
-    // SBgen: Get variable
-    return (queueBrowserId);
-  }
+        // SBgen: Get variable
+        return (queueBrowserId);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCloseBrowserRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCloseBrowserRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CloseBrowserRequest " + super.toString() + " queueBrowserId="
-        + queueBrowserId + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CloseBrowserRequest " + super.toString() + " queueBrowserId="
+                + queueBrowserId + "]";
+    }
 
 }
 

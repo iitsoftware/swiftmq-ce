@@ -19,7 +19,7 @@ package com.swiftmq.mqtt.v311.netty.handler.codec.mqtt;
 
 /**
  * See <a href="http://public.dhe.ibm.com/software/dw/webservices/ws-mqtt/mqtt-v3r1.html#subscribe">
- *     MQTTV3.1/subscribe</a>
+ * MQTTV3.1/subscribe</a>
  */
 public final class MqttSubscribeMessage extends MqttMessage {
 

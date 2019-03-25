@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: XAResForgetRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: XAResForgetRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.jms.XidImpl;
@@ -33,100 +34,84 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class XAResForgetRequest extends Request
-{
-  private XidImpl xid;
-  private boolean retry;
+public class XAResForgetRequest extends Request {
+    private XidImpl xid;
+    private boolean retry;
 
-  public XAResForgetRequest()
-  {
-    super(0, true);
-  }
+    public XAResForgetRequest() {
+        super(0, true);
+    }
 
-  public XAResForgetRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public XAResForgetRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XAResForgetRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public XAResForgetRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public XAResForgetRequest(int dispatchId, XidImpl xid, boolean retry)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-    this.retry = retry;
-  }
+    public XAResForgetRequest(int dispatchId, XidImpl xid, boolean retry) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.retry = retry;
+    }
 
-  public XAResForgetRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, boolean retry)
-  {
-    super(dispatchId, true, validator);
-    this.xid = xid;
-    this.retry = retry;
-  }
+    public XAResForgetRequest(RequestRetryValidator validator, int dispatchId, XidImpl xid, boolean retry) {
+        super(dispatchId, true, validator);
+        this.xid = xid;
+        this.retry = retry;
+    }
 
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public void setRetry(boolean retry)
-  {
-    this.retry = retry;
-  }
+    public void setRetry(boolean retry) {
+        this.retry = retry;
+    }
 
-  public boolean isRetry()
-  {
-    return retry;
-  }
+    public boolean isRetry() {
+        return retry;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESFORGET_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESFORGET_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(xid, out);
-    SMQPUtil.write(retry, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(xid, out);
+        SMQPUtil.write(retry, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = SMQPUtil.read(xid, in);
-    retry = SMQPUtil.read(retry, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = SMQPUtil.read(xid, in);
+        retry = SMQPUtil.read(retry, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResForgetReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResForgetReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/XAResForgetRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("xid=");
-    _b.append(xid);
-    _b.append(", ");
-    _b.append("retry=");
-    _b.append(retry);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/XAResForgetRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("xid=");
+        _b.append(xid);
+        _b.append(", ");
+        _b.append("retry=");
+        _b.append(retry);
+        _b.append("]");
+        return _b.toString();
+    }
 }

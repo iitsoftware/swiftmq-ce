@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: CreatePublisherReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: CreatePublisherReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,54 +30,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreatePublisherReply extends ReplyNE
-{
-  private int topicPublisherId;
+public class CreatePublisherReply extends ReplyNE {
+    private int topicPublisherId;
 
-  public CreatePublisherReply(int topicPublisherId)
-  {
-    this.topicPublisherId = topicPublisherId;
-  }
+    public CreatePublisherReply(int topicPublisherId) {
+        this.topicPublisherId = topicPublisherId;
+    }
 
-  protected CreatePublisherReply()
-  {
-  }
+    protected CreatePublisherReply() {
+    }
 
-  public void setTopicPublisherId(int topicPublisherId)
-  {
-    this.topicPublisherId = topicPublisherId;
-  }
+    public void setTopicPublisherId(int topicPublisherId) {
+        this.topicPublisherId = topicPublisherId;
+    }
 
-  public int getTopicPublisherId()
-  {
-    return topicPublisherId;
-  }
+    public int getTopicPublisherId() {
+        return topicPublisherId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEPUBLISHER_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEPUBLISHER_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(topicPublisherId, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(topicPublisherId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    topicPublisherId = SMQPUtil.read(topicPublisherId, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        topicPublisherId = SMQPUtil.read(topicPublisherId, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/CreatePublisherReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("topicPublisherId=");
-    _b.append(topicPublisherId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/CreatePublisherReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("topicPublisherId=");
+        _b.append(topicPublisherId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

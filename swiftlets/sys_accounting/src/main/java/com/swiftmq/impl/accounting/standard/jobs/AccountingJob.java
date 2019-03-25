@@ -26,55 +26,47 @@ import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
 
 import java.util.Properties;
 
-public class AccountingJob implements Job
-{
-  SwiftletContext ctx = null;
-  Properties properties = null;
-  String name = null;
-  Property enabledProp = null;
-  JobTerminationListener termListener = null;
+public class AccountingJob implements Job {
+    SwiftletContext ctx = null;
+    Properties properties = null;
+    String name = null;
+    Property enabledProp = null;
+    JobTerminationListener termListener = null;
 
-  public AccountingJob(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  private void doAction(boolean b) throws JobException
-  {
-    Entity entity = ctx.root.getEntity("connections").getEntity(name);
-    if (entity == null)
-      throw new JobException("Accounting connection '" + name + "' is undefined!", null, false);
-    enabledProp = entity.getProperty("enabled");
-    boolean enabled = ((Boolean) enabledProp.getValue()).booleanValue();
-    try
-    {
-      if (enabled != b)
-        enabledProp.setValue(new Boolean(b));
-    } catch (Exception e)
-    {
-      throw new JobException(e.getMessage(), e, false);
+    public AccountingJob(SwiftletContext ctx) {
+        this.ctx = ctx;
     }
-  }
 
-  public void start(Properties properties, JobTerminationListener termListener) throws JobException
-  {
-    this.properties = properties;
-    this.termListener = termListener;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/start ...");
-    name = properties.getProperty("Connection Name");
-    doAction(true);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/start done");
-  }
+    private void doAction(boolean b) throws JobException {
+        Entity entity = ctx.root.getEntity("connections").getEntity(name);
+        if (entity == null)
+            throw new JobException("Accounting connection '" + name + "' is undefined!", null, false);
+        enabledProp = entity.getProperty("enabled");
+        boolean enabled = ((Boolean) enabledProp.getValue()).booleanValue();
+        try {
+            if (enabled != b)
+                enabledProp.setValue(new Boolean(b));
+        } catch (Exception e) {
+            throw new JobException(e.getMessage(), e, false);
+        }
+    }
 
-  public void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/stop ...");
-    doAction(false);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/stop done");
-  }
+    public void start(Properties properties, JobTerminationListener termListener) throws JobException {
+        this.properties = properties;
+        this.termListener = termListener;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/start ...");
+        name = properties.getProperty("Connection Name");
+        doAction(true);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/start done");
+    }
 
-  public String toString()
-  {
-    return "[AccountingJob, properties=" + properties + "]";
-  }
+    public void stop() throws JobException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/stop ...");
+        doAction(false);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/stop done");
+    }
+
+    public String toString() {
+        return "[AccountingJob, properties=" + properties + "]";
+    }
 }

@@ -17,59 +17,53 @@
 
 package com.swiftmq.impl.routing.single.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
 import com.swiftmq.impl.routing.single.SwiftletContext;
-import com.swiftmq.mgmt.*;
-import com.swiftmq.mgmt.InvalidValueException;
+import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.Property;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
 
 import java.util.Properties;
 
-public class RoutingConnectorJob implements Job
-{
-  SwiftletContext ctx = null;
-  Properties properties = null;
-  String name = null;
+public class RoutingConnectorJob implements Job {
+    SwiftletContext ctx = null;
+    Properties properties = null;
+    String name = null;
 
-  public RoutingConnectorJob(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  private void doAction(boolean b) throws JobException
-  {
-    Entity entity = ctx.root.getEntity("connectors").getEntity(name);
-    if (entity == null)
-      throw new JobException("Routing Connector '"+name+"' is undefined!",null,false);
-    Property prop = entity.getProperty("enabled");
-    boolean enabled = ((Boolean)prop.getValue()).booleanValue();
-    try
-    {
-      if (enabled != b)
-       prop.setValue(new Boolean(b));
-    } catch (Exception e)
-    {
-      throw new JobException(e.getMessage(),e,false);
+    public RoutingConnectorJob(SwiftletContext ctx) {
+        this.ctx = ctx;
     }
-  }
 
-  public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    this.properties = properties;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/start ...");
-    name = properties.getProperty("Connector Name");
-    doAction(true);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/start done");
-  }
+    private void doAction(boolean b) throws JobException {
+        Entity entity = ctx.root.getEntity("connectors").getEntity(name);
+        if (entity == null)
+            throw new JobException("Routing Connector '" + name + "' is undefined!", null, false);
+        Property prop = entity.getProperty("enabled");
+        boolean enabled = ((Boolean) prop.getValue()).booleanValue();
+        try {
+            if (enabled != b)
+                prop.setValue(new Boolean(b));
+        } catch (Exception e) {
+            throw new JobException(e.getMessage(), e, false);
+        }
+    }
 
-  public void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/stop ...");
-    doAction(false);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/stop done");
-  }
+    public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        this.properties = properties;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/start ...");
+        name = properties.getProperty("Connector Name");
+        doAction(true);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/start done");
+    }
 
-  public String toString()
-  {
-    return "[RoutingConnectorJob, properties=" + properties + "]";
-  }
+    public void stop() throws JobException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/stop ...");
+        doAction(false);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/stop done");
+    }
+
+    public String toString() {
+        return "[RoutingConnectorJob, properties=" + properties + "]";
+    }
 }

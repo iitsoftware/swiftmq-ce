@@ -20,7 +20,6 @@ package com.swiftmq.amqp.v091.io;
 import java.io.DataInput;
 import java.io.IOException;
 
-public interface BitSupportDataInput extends DataInput
-{
-  public boolean readBit() throws IOException;
+public interface BitSupportDataInput extends DataInput {
+    public boolean readBit() throws IOException;
 }

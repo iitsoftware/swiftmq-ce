@@ -22,42 +22,35 @@ import com.swiftmq.amqp.v100.transport.Packager;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.swiftlet.queue.MessageIndex;
 
-public class Delivery extends Packager
-{
-  private SourceLink sourceLink;
-  private MessageImpl message;
-  private MessageIndex messageIndex;
-  private AMQPMessage amqpMessage;
+public class Delivery extends Packager {
+    private SourceLink sourceLink;
+    private MessageImpl message;
+    private MessageIndex messageIndex;
+    private AMQPMessage amqpMessage;
 
-  public Delivery(SourceLink sourceLink, MessageImpl message, MessageIndex messageIndex)
-  {
-    this.sourceLink = sourceLink;
-    this.message = message;
-    this.messageIndex = messageIndex;
-  }
+    public Delivery(SourceLink sourceLink, MessageImpl message, MessageIndex messageIndex) {
+        this.sourceLink = sourceLink;
+        this.message = message;
+        this.messageIndex = messageIndex;
+    }
 
-  public SourceLink getSourceLink()
-  {
-    return sourceLink;
-  }
+    public SourceLink getSourceLink() {
+        return sourceLink;
+    }
 
-  public MessageImpl getMessage()
-  {
-    return message;
-  }
+    public MessageImpl getMessage() {
+        return message;
+    }
 
-  public MessageIndex getMessageIndex()
-  {
-    return messageIndex;
-  }
+    public MessageIndex getMessageIndex() {
+        return messageIndex;
+    }
 
-  public void setAmqpMessage(AMQPMessage amqpMessage)
-  {
-    this.amqpMessage = amqpMessage;
-  }
+    public void setAmqpMessage(AMQPMessage amqpMessage) {
+        this.amqpMessage = amqpMessage;
+    }
 
-  public AMQPMessage getAmqpMessage()
-  {
-    return amqpMessage;
-  }
+    public AMQPMessage getAmqpMessage() {
+        return amqpMessage;
+    }
 }

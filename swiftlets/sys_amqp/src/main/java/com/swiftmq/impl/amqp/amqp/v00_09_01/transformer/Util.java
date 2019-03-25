@@ -17,8 +17,7 @@
 
 package com.swiftmq.impl.amqp.amqp.v00_09_01.transformer;
 
-public class Util
-{
-  static final String PROP_MESSAGE_FORMAT = "MESSAGE_FORMAT";
-  static final long MESSAGE_FORMAT = 91;
+public class Util {
+    static final String PROP_MESSAGE_FORMAT = "MESSAGE_FORMAT";
+    static final long MESSAGE_FORMAT = 91;
 }

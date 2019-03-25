@@ -19,16 +19,13 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-public class AssociateMessageReply extends Reply
-{
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ASSOCIATE_MESSAGE_REP;
-  }
+public class AssociateMessageReply extends Reply {
+    public int getDumpId() {
+        return SMQPFactory.DID_ASSOCIATE_MESSAGE_REP;
+    }
 
-  public String toString()
-  {
-    return "[AssociateMessageReply " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AssociateMessageReply " + super.toString() + "]";
+    }
 
 }

@@ -17,85 +17,75 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CreateProducerRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CreateProducerRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.QueueImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CreateProducerRequest extends Request
-{
-  private QueueImpl queue;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateProducerRequest()
-  {
-    super(0,true);
-  }
+public class CreateProducerRequest extends Request {
+    private QueueImpl queue;
 
-  public CreateProducerRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public CreateProducerRequest() {
+        super(0, true);
+    }
 
-  public CreateProducerRequest(int dispatchId, QueueImpl queue)
-  {
-    super(dispatchId,true);
-    this.queue = queue;
-  }
-  
-  public void setQueue(QueueImpl queue)
-  {
-    this.queue = queue;
-  }
+    public CreateProducerRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public QueueImpl getQueue()
-  {
-    return queue;
-  }
+    public CreateProducerRequest(int dispatchId, QueueImpl queue) {
+        super(dispatchId, true);
+        this.queue = queue;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEPRODUCER_REQ;
-  }
+    public void setQueue(QueueImpl queue) {
+        this.queue = queue;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queue,out);
-  }
+    public QueueImpl getQueue() {
+        return queue;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queue = SMQPUtil.read(queue,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEPRODUCER_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreateProducerReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queue, out);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queue = SMQPUtil.read(queue, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CreateProducerRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queue=");
-    _b.append(queue);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new CreateProducerReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CreateProducerRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queue=");
+        _b.append(queue);
+        _b.append("]");
+        return _b.toString();
+    }
 }

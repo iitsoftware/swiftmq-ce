@@ -19,77 +19,58 @@ package com.swiftmq.mgmt.protocol.v750;
 
 import com.swiftmq.tools.requestreply.GenericRequest;
 
-public class ProtocolVisitorAdapter implements ProtocolVisitor
-{
-  public void visit(AuthRequest request)
-  {
-  }
+public class ProtocolVisitorAdapter implements ProtocolVisitor {
+    public void visit(AuthRequest request) {
+    }
 
-  public void visitGenericRequest(GenericRequest req)
-  {
-  }
+    public void visitGenericRequest(GenericRequest req) {
+    }
 
-  public void visit(BulkRequest request)
-  {
-  }
+    public void visit(BulkRequest request) {
+    }
 
-  public void visit(CommandRequest request)
-  {
-  }
+    public void visit(CommandRequest request) {
+    }
 
-  public void visit(ConnectRequest request)
-  {
-  }
+    public void visit(ConnectRequest request) {
+    }
 
-  public void visit(EntityAddedRequest request)
-  {
-  }
+    public void visit(EntityAddedRequest request) {
+    }
 
-  public void visit(EntityRemovedRequest request)
-  {
-  }
+    public void visit(EntityRemovedRequest request) {
+    }
 
-  public void visit(SwiftletAddedRequest request)
-  {
-  }
+    public void visit(SwiftletAddedRequest request) {
+    }
 
-  public void visit(SwiftletRemovedRequest request)
-  {
-  }
+    public void visit(SwiftletRemovedRequest request) {
+    }
 
-  public void visit(LeaseRequest request)
-  {
-  }
+    public void visit(LeaseRequest request) {
+    }
 
-  public void visit(PropertyChangedRequest request)
-  {
-  }
+    public void visit(PropertyChangedRequest request) {
+    }
 
-  public void visit(RouterAvailableRequest request)
-  {
-  }
+    public void visit(RouterAvailableRequest request) {
+    }
 
-  public void visit(RouterUnavailableRequest request)
-  {
-  }
+    public void visit(RouterUnavailableRequest request) {
+    }
 
-  public void visit(RouterConfigRequest request)
-  {
-  }
+    public void visit(RouterConfigRequest request) {
+    }
 
-  public void visit(DisconnectedRequest request)
-  {
-  }
+    public void visit(DisconnectedRequest request) {
+    }
 
-  public void visit(SetSubscriptionFilterRequest request)
-  {
-  }
+    public void visit(SetSubscriptionFilterRequest request) {
+    }
 
-  public void visit(RemoveSubscriptionFilterRequest request)
-  {
-  }
+    public void visit(RemoveSubscriptionFilterRequest request) {
+    }
 
-  public void visit(EntityListClearRequest request)
-  {
-  }
+    public void visit(EntityListClearRequest request) {
+    }
 }

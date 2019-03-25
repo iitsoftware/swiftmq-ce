@@ -17,99 +17,86 @@
 
 package com.swiftmq.mgmt.protocol.v400;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 import com.swiftmq.util.SwiftUtilities;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class EntityRemovedRequest extends Request
-{
-  String[] context = null;
-  String name = null;
+public class EntityRemovedRequest extends Request {
+    String[] context = null;
+    String name = null;
 
-  public EntityRemovedRequest(String[] context, String name)
-  {
-    super(0,false);
-    this.context = context;
-    this.name = name;
-  }
-
-  public EntityRemovedRequest()
-  {
-    this(null,null);
-  }
-
-  public String[] getContext()
-  {
-    return context;
-  }
-
-  public void setContext(String[] context)
-  {
-    this.context = context;
-  }
-
-  public String getName()
-  {
-    return name;
-  }
-
-  public void setName(String name)
-  {
-    this.name = name;
-  }
-
-  public int getDumpId()
-  {
-    return ProtocolFactory.ENTITYREMOVED_REQ;
-  }
-
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    super.writeContent(out);
-    if (context != null)
-    {
-      out.writeByte(1);
-      out.writeInt(context.length);
-      for (int i=0;i<context.length;i++)
-      {
-        out.writeUTF(context[i]);
-      }
-    } else
-      out.writeByte(0);
-    out.writeUTF(name);
-  }
-
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    super.readContent(in);
-    byte set = in.readByte();
-    if (set == 1)
-    {
-      context = new String[in.readInt()];
-      for (int i=0;i<context.length;i++)
-      {
-        context[i] = in.readUTF();
-      }
+    public EntityRemovedRequest(String[] context, String name) {
+        super(0, false);
+        this.context = context;
+        this.name = name;
     }
-    name = in.readUTF();
-  }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    public EntityRemovedRequest() {
+        this(null, null);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
+    public String[] getContext() {
+        return context;
+    }
 
-  public String toString()
-  {
-    return "[EntityRemovedRequest "+super.toString()+", context="+(context != null?SwiftUtilities.concat(context,"/"):"null")+
-          ", name="+name+"]";
-  }
+    public void setContext(String[] context) {
+        this.context = context;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getDumpId() {
+        return ProtocolFactory.ENTITYREMOVED_REQ;
+    }
+
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        if (context != null) {
+            out.writeByte(1);
+            out.writeInt(context.length);
+            for (int i = 0; i < context.length; i++) {
+                out.writeUTF(context[i]);
+            }
+        } else
+            out.writeByte(0);
+        out.writeUTF(name);
+    }
+
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        byte set = in.readByte();
+        if (set == 1) {
+            context = new String[in.readInt()];
+            for (int i = 0; i < context.length; i++) {
+                context[i] = in.readUTF();
+            }
+        }
+        name = in.readUTF();
+    }
+
+    protected Reply createReplyInstance() {
+        return null;
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        return "[EntityRemovedRequest " + super.toString() + ", context=" + (context != null ? SwiftUtilities.concat(context, "/") : "null") +
+                ", name=" + name + "]";
+    }
 }

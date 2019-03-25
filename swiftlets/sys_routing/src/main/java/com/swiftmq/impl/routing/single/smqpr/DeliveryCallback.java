@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.routing.single.smqpr;
 
-public interface DeliveryCallback
-{
-  public void delivered(DeliveryRequest deliveryRequest);
+public interface DeliveryCallback {
+    public void delivered(DeliveryRequest deliveryRequest);
 }

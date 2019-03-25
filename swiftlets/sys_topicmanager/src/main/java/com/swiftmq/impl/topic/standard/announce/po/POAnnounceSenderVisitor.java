@@ -19,17 +19,26 @@ package com.swiftmq.impl.topic.standard.announce.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface POAnnounceSenderVisitor extends POVisitor
-{
-  public void visit(PODestinationAdded po);
-  public void visit(PODestinationRemoved po);
-  public void visit(PODestinationActivated po);
-  public void visit(PODestinationDeactivated po);
-  public void visit(POTopicCreated po);
-  public void visit(POTopicRemoved po);
-  public void visit(POSubscriptionAdded po);
-  public void visit(POSubscriptionRemoved po);
-  public void visit(POVersionNoteToSend po);
-  public void visit(POVersionNoteReceived po);
-  public void visit(POAnnounceSubscriptions po);
+public interface POAnnounceSenderVisitor extends POVisitor {
+    public void visit(PODestinationAdded po);
+
+    public void visit(PODestinationRemoved po);
+
+    public void visit(PODestinationActivated po);
+
+    public void visit(PODestinationDeactivated po);
+
+    public void visit(POTopicCreated po);
+
+    public void visit(POTopicRemoved po);
+
+    public void visit(POSubscriptionAdded po);
+
+    public void visit(POSubscriptionRemoved po);
+
+    public void visit(POVersionNoteToSend po);
+
+    public void visit(POVersionNoteReceived po);
+
+    public void visit(POAnnounceSubscriptions po);
 }

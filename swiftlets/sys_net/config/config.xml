@@ -1,7 +1,7 @@
 <swiftlet name="sys$net" 
 					displayname="Network Swiftlet"
 					class="com.swiftmq.impl.net.standard.NetworkSwiftletImpl"
-					icon="/com/swiftmq/impl/net/standard/images/swiftlet.png"
+					icon="/sys_net/images/swiftlet.png"
 					description="Network Swiftlet"
 					release="${release}"
 					vendor="IIT Software GmbH" >

@@ -18,55 +18,50 @@
 package com.swiftmq.jms.v500;
 
 
-import com.swiftmq.jms.smqp.v500.*;
 import com.swiftmq.jms.ExceptionConverter;
+import com.swiftmq.jms.smqp.v500.CreateSessionReply;
+import com.swiftmq.jms.smqp.v500.CreateSessionRequest;
 
-import javax.jms.*;
-import java.net.Socket;
+import javax.jms.JMSException;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
 
 public class TopicConnectionImpl extends ConnectionImpl
-    implements TopicConnection
-{
-  protected TopicConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn)
-      throws JMSException
-  {
-    super(userName, password, conn);
-  }
-
-  public TopicSession createTopicSession(boolean transacted, int acknowledgeMode)
-      throws JMSException
-  {
-    verifyState();
-
-    SessionImpl topicSession = null;
-    CreateSessionReply reply = null;
-
-    try
-    {
-      reply =
-          (CreateSessionReply) requestRegistry.request(new CreateSessionRequest(transacted,
-              acknowledgeMode, CreateSessionRequest.TOPIC_SESSION));
-    } catch (Exception e)
-    {
-      throw ExceptionConverter.convert(e);
+        implements TopicConnection {
+    protected TopicConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn)
+            throws JMSException {
+        super(userName, password, conn);
     }
 
-    if (reply.isOk())
-    {
-      int dispatchId = reply.getSessionDispatchId();
-      String cid = clientID != null?clientID:internalCID;
-      topicSession = new SessionImpl(SessionImpl.TYPE_TOPIC_SESSION, this, transacted, acknowledgeMode,
-          dispatchId, requestRegistry,
-          myHostname, cid);
-      topicSession.setUserName(userName);
-      topicSession.setMyDispatchId(addRequestService(topicSession));
-      addSession(topicSession);
-    } else
-    {
-      throw ExceptionConverter.convert(reply.getException());
-    }
+    public TopicSession createTopicSession(boolean transacted, int acknowledgeMode)
+            throws JMSException {
+        verifyState();
 
-    return (topicSession);
-  }
+        SessionImpl topicSession = null;
+        CreateSessionReply reply = null;
+
+        try {
+            reply =
+                    (CreateSessionReply) requestRegistry.request(new CreateSessionRequest(transacted,
+                            acknowledgeMode, CreateSessionRequest.TOPIC_SESSION));
+        } catch (Exception e) {
+            throw ExceptionConverter.convert(e);
+        }
+
+        if (reply.isOk()) {
+            int dispatchId = reply.getSessionDispatchId();
+            String cid = clientID != null ? clientID : internalCID;
+            topicSession = new SessionImpl(SessionImpl.TYPE_TOPIC_SESSION, this, transacted, acknowledgeMode,
+                    dispatchId, requestRegistry,
+                    myHostname, cid);
+            topicSession.setUserName(userName);
+            topicSession.setMyDispatchId(addRequestService(topicSession));
+            addSession(topicSession);
+        } else {
+            throw ExceptionConverter.convert(reply.getException());
+        }
+
+        return (topicSession);
+    }
 }
 

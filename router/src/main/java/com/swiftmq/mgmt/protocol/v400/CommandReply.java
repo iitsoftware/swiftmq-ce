@@ -20,69 +20,58 @@ package com.swiftmq.mgmt.protocol.v400;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.util.SwiftUtilities;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class CommandReply extends Reply
-{
-  String[] result = null;
+public class CommandReply extends Reply {
+    String[] result = null;
 
-  public CommandReply(String[] result)
-  {
-    this.result = result;
-  }
-
-  public CommandReply()
-  {
-  }
-
-  public String[] getResult()
-  {
-    return result;
-  }
-
-  public void setResult(String[] result)
-  {
-    this.result = result;
-  }
-
-  public int getDumpId()
-  {
-    return ProtocolFactory.COMMAND_REP;
-  }
-
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    super.writeContent(out);
-    if (result != null)
-    {
-      out.writeByte(1);
-      out.writeInt(result.length);
-      for (int i=0;i<result.length;i++)
-      {
-        out.writeUTF(result[i]);
-      }
-    } else
-      out.writeByte(0);
-  }
-
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    super.readContent(in);
-    byte set = in.readByte();
-    if (set == 1)
-    {
-      result = new String[in.readInt()];
-      for (int i=0;i<result.length;i++)
-      {
-        result[i] = in.readUTF();
-      }
+    public CommandReply(String[] result) {
+        this.result = result;
     }
-  }
 
-  public String toString()
-  {
-    return "[CommandReply "+super.toString()+", result="+(result==null?"null":SwiftUtilities.concat(result,"\n"))+"]";
-  }
+    public CommandReply() {
+    }
+
+    public String[] getResult() {
+        return result;
+    }
+
+    public void setResult(String[] result) {
+        this.result = result;
+    }
+
+    public int getDumpId() {
+        return ProtocolFactory.COMMAND_REP;
+    }
+
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        if (result != null) {
+            out.writeByte(1);
+            out.writeInt(result.length);
+            for (int i = 0; i < result.length; i++) {
+                out.writeUTF(result[i]);
+            }
+        } else
+            out.writeByte(0);
+    }
+
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        byte set = in.readByte();
+        if (set == 1) {
+            result = new String[in.readInt()];
+            for (int i = 0; i < result.length; i++) {
+                result[i] = in.readUTF();
+            }
+        }
+    }
+
+    public String toString() {
+        return "[CommandReply " + super.toString() + ", result=" + (result == null ? "null" : SwiftUtilities.concat(result, "\n")) + "]";
+    }
 }

@@ -18,35 +18,29 @@
 package com.swiftmq.tools.deploy;
 
 
-public class BundleJar
-{
-  String filename = null;
-  long lastModified = -1;
+public class BundleJar {
+    String filename = null;
+    long lastModified = -1;
 
-  BundleJar(String filename, long lastModified)
-  {
-    this.filename = filename;
-    this.lastModified = lastModified;
-  }
+    BundleJar(String filename, long lastModified) {
+        this.filename = filename;
+        this.lastModified = lastModified;
+    }
 
-  String getFilename()
-  {
-    return filename;
-  }
+    String getFilename() {
+        return filename;
+    }
 
-  void setLastModified(long lastModified)
-  {
-    this.lastModified = lastModified;
-  }
+    void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
+    }
 
-  long getLastModified()
-  {
-    return lastModified;
-  }
+    long getLastModified() {
+        return lastModified;
+    }
 
-  public String toString()
-  {
-    return "[BundleJar, filename=" + filename + ", lastModified=" + lastModified + "]";
-  }
+    public String toString() {
+        return "[BundleJar, filename=" + filename + ", lastModified=" + lastModified + "]";
+    }
 }
 

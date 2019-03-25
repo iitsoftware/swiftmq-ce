@@ -17,94 +17,77 @@
 
 package com.swiftmq.tools.versioning;
 
-import com.swiftmq.tools.versioning.event.VersionedListener;
-import com.swiftmq.tools.dump.Dumpable;
 import com.swiftmq.tools.collection.RingBuffer;
+import com.swiftmq.tools.versioning.event.VersionedListener;
 
-public class VersionedProcessor
-{
-  int[] acceptedVersions = null;
-  VersionedListener listener = null;
-  VersionedConverter converter = null;
-  VersionedFactory factory = null;
-  RingBuffer buffer = null;
+public class VersionedProcessor {
+    int[] acceptedVersions = null;
+    VersionedListener listener = null;
+    VersionedConverter converter = null;
+    VersionedFactory factory = null;
+    RingBuffer buffer = null;
 
-  public VersionedProcessor(int[] acceptedVersions, VersionedListener listener, VersionedConverter converter, VersionedFactory factory, boolean useBuffer)
-  {
-    this.acceptedVersions = acceptedVersions;
-    this.listener = listener;
-    this.converter = converter;
-    this.factory = factory;
-    if (useBuffer && listener == null)
-      buffer = new RingBuffer(32);
-  }
-
-  public void setListener(int[] acceptedVersions, VersionedListener listener)
-  {
-    this.acceptedVersions = acceptedVersions;
-    this.listener = listener;
-  }
-
-  public void setConverter(VersionedConverter converter)
-  {
-    this.converter = converter;
-  }
-
-  public void setFactory(VersionedFactory factory)
-  {
-    this.factory = factory;
-  }
-
-  protected boolean isReady()
-  {
-    return true;
-  }
-
-  public void processBuffer()
-  {
-    if (buffer == null)
-      return;
-    int size = buffer.getSize();
-    for (int i=0;i<size;i++)
-      process((VersionedDumpable)buffer.remove());
-  }
-
-  public void process(Versioned versioned)
-  {
-    try
-    {
-      process(new VersionedDumpable(versioned.getVersion(),factory.createDumpable(versioned)));
-    } catch (VersionedException e)
-    {
-      listener.onException(e);
+    public VersionedProcessor(int[] acceptedVersions, VersionedListener listener, VersionedConverter converter, VersionedFactory factory, boolean useBuffer) {
+        this.acceptedVersions = acceptedVersions;
+        this.listener = listener;
+        this.converter = converter;
+        this.factory = factory;
+        if (useBuffer && listener == null)
+            buffer = new RingBuffer(32);
     }
-  }
 
-  public void process(VersionedDumpable vd)
-  {
-    if (listener == null || !isReady())
-    {
-      if (buffer != null)
-        buffer.add(vd);
-      return;
+    public void setListener(int[] acceptedVersions, VersionedListener listener) {
+        this.acceptedVersions = acceptedVersions;
+        this.listener = listener;
     }
-    try
-    {
-      boolean found = false;
-      for (int i=0;i<acceptedVersions.length;i++)
-      {
-        if (vd.getVersion() == acceptedVersions[i])
-        {
-          found = true;
-          break;
+
+    public void setConverter(VersionedConverter converter) {
+        this.converter = converter;
+    }
+
+    public void setFactory(VersionedFactory factory) {
+        this.factory = factory;
+    }
+
+    protected boolean isReady() {
+        return true;
+    }
+
+    public void processBuffer() {
+        if (buffer == null)
+            return;
+        int size = buffer.getSize();
+        for (int i = 0; i < size; i++)
+            process((VersionedDumpable) buffer.remove());
+    }
+
+    public void process(Versioned versioned) {
+        try {
+            process(new VersionedDumpable(versioned.getVersion(), factory.createDumpable(versioned)));
+        } catch (VersionedException e) {
+            listener.onException(e);
         }
-      }
-      if (!found)
-        converter.convert(vd,acceptedVersions);
-      listener.onAccept(vd);
-    } catch (VersionedException e)
-    {
-      listener.onException(e);
     }
-  }
+
+    public void process(VersionedDumpable vd) {
+        if (listener == null || !isReady()) {
+            if (buffer != null)
+                buffer.add(vd);
+            return;
+        }
+        try {
+            boolean found = false;
+            for (int i = 0; i < acceptedVersions.length; i++) {
+                if (vd.getVersion() == acceptedVersions[i]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                converter.convert(vd, acceptedVersions);
+            listener.onAccept(vd);
+        } catch (VersionedException e) {
+            listener.onException(e);
+        }
+    }
 }

@@ -23,38 +23,33 @@ import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StageFactory
-{
-  public static final String PROT_V400 = "04.00.00";
-  public static final String PROT_V942 = "09.04.02";
+public class StageFactory {
+    public static final String PROT_V400 = "04.00.00";
+    public static final String PROT_V942 = "09.04.02";
 
-  public static List getProtocolVersions()
-  {
-    List al = new ArrayList();
-    al.add(PROT_V942);
-    al.add(PROT_V400);
-    return al;
-  }
-
-  public static String selectProtocol(List availableProts)
-  {
-    for (int i = 0; i < availableProts.size(); i++)
-    {
-      if (((String) availableProts.get(i)).equals(PROT_V942))
-        return PROT_V942;
-      if (((String) availableProts.get(i)).equals(PROT_V400))
-        return PROT_V400;
+    public static List getProtocolVersions() {
+        List al = new ArrayList();
+        al.add(PROT_V942);
+        al.add(PROT_V400);
+        return al;
     }
-    return null;
-  }
 
-  public static Stage createFirstStage(SwiftletContext ctx, RoutingConnection routingConnection, String protocol)
-  {
-    Stage stage = null;
-    if (protocol.equals(PROT_V400))
-      stage = new com.swiftmq.impl.routing.single.connection.v400.ConnectStage(ctx, routingConnection);
-    else if (protocol.equals(PROT_V942))
-      stage = new com.swiftmq.impl.routing.single.connection.v942.ConnectStage(ctx, routingConnection);
-    return stage;
-  }
+    public static String selectProtocol(List availableProts) {
+        for (int i = 0; i < availableProts.size(); i++) {
+            if (((String) availableProts.get(i)).equals(PROT_V942))
+                return PROT_V942;
+            if (((String) availableProts.get(i)).equals(PROT_V400))
+                return PROT_V400;
+        }
+        return null;
+    }
+
+    public static Stage createFirstStage(SwiftletContext ctx, RoutingConnection routingConnection, String protocol) {
+        Stage stage = null;
+        if (protocol.equals(PROT_V400))
+            stage = new com.swiftmq.impl.routing.single.connection.v400.ConnectStage(ctx, routingConnection);
+        else if (protocol.equals(PROT_V942))
+            stage = new com.swiftmq.impl.routing.single.connection.v942.ConnectStage(ctx, routingConnection);
+        return stage;
+    }
 }

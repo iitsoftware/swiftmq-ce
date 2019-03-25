@@ -18,9 +18,9 @@
 package com.swiftmq.swiftlet.auth;
 
 public interface AuthenticationDelegate {
-  public boolean isSendGranted(String name);
+    public boolean isSendGranted(String name);
 
-  public boolean isReceiveGranted(String name);
+    public boolean isReceiveGranted(String name);
 
-  public boolean isDurableGranted(String name);
+    public boolean isDurableGranted(String name);
 }

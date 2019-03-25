@@ -17,140 +17,124 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: FetchBrowserMessageRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: FetchBrowserMessageRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.swiftlet.queue.MessageIndex;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class FetchBrowserMessageRequest extends Request 
-{
-  private int queueBrowserId;
-  private boolean resetRequired;
-  private MessageIndex lastMessageIndex;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public FetchBrowserMessageRequest()
-  {
-    super(0,true);
-  }
+public class FetchBrowserMessageRequest extends Request {
+    private int queueBrowserId;
+    private boolean resetRequired;
+    private MessageIndex lastMessageIndex;
 
-  public FetchBrowserMessageRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public FetchBrowserMessageRequest() {
+        super(0, true);
+    }
 
-  public FetchBrowserMessageRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public FetchBrowserMessageRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public FetchBrowserMessageRequest(int dispatchId, int queueBrowserId, boolean resetRequired, MessageIndex lastMessageIndex)
-  {
-    super(dispatchId,true);
-    this.queueBrowserId = queueBrowserId;
-    this.resetRequired = resetRequired;
-    this.lastMessageIndex = lastMessageIndex;
-  }
+    public FetchBrowserMessageRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public FetchBrowserMessageRequest(RequestRetryValidator validator, int dispatchId, int queueBrowserId, boolean resetRequired, MessageIndex lastMessageIndex)
-  {
-    super(dispatchId,true,validator);
-    this.queueBrowserId = queueBrowserId;
-    this.resetRequired = resetRequired;
-    this.lastMessageIndex = lastMessageIndex;
-  }
-  
-  public void setQueueBrowserId(int queueBrowserId)
-  {
-    this.queueBrowserId = queueBrowserId;
-  }
+    public FetchBrowserMessageRequest(int dispatchId, int queueBrowserId, boolean resetRequired, MessageIndex lastMessageIndex) {
+        super(dispatchId, true);
+        this.queueBrowserId = queueBrowserId;
+        this.resetRequired = resetRequired;
+        this.lastMessageIndex = lastMessageIndex;
+    }
 
-  public int getQueueBrowserId()
-  {
-    return queueBrowserId;
-  }
-  
-  public void setResetRequired(boolean resetRequired)
-  {
-    this.resetRequired = resetRequired;
-  }
+    public FetchBrowserMessageRequest(RequestRetryValidator validator, int dispatchId, int queueBrowserId, boolean resetRequired, MessageIndex lastMessageIndex) {
+        super(dispatchId, true, validator);
+        this.queueBrowserId = queueBrowserId;
+        this.resetRequired = resetRequired;
+        this.lastMessageIndex = lastMessageIndex;
+    }
 
-  public boolean isResetRequired()
-  {
-    return resetRequired;
-  }
-  
-  public void setLastMessageIndex(MessageIndex lastMessageIndex)
-  {
-    this.lastMessageIndex = lastMessageIndex;
-  }
+    public void setQueueBrowserId(int queueBrowserId) {
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  public MessageIndex getLastMessageIndex()
-  {
-    return lastMessageIndex;
-  }
+    public int getQueueBrowserId() {
+        return queueBrowserId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_FETCHBROWSERMESSAGE_REQ;
-  }
+    public void setResetRequired(boolean resetRequired) {
+        this.resetRequired = resetRequired;
+    }
+
+    public boolean isResetRequired() {
+        return resetRequired;
+    }
+
+    public void setLastMessageIndex(MessageIndex lastMessageIndex) {
+        this.lastMessageIndex = lastMessageIndex;
+    }
+
+    public MessageIndex getLastMessageIndex() {
+        return lastMessageIndex;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_FETCHBROWSERMESSAGE_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueBrowserId,out);
-    SMQPUtil.write(resetRequired,out);
-    if (lastMessageIndex != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(lastMessageIndex,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueBrowserId, out);
+        SMQPUtil.write(resetRequired, out);
+        if (lastMessageIndex != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(lastMessageIndex, out);
+        } else
+            out.writeBoolean(false);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueBrowserId = SMQPUtil.read(queueBrowserId,in);
-    resetRequired = SMQPUtil.read(resetRequired,in);
-    boolean lastMessageIndex_set = in.readBoolean();
-    if (lastMessageIndex_set)
-      lastMessageIndex = SMQPUtil.read(lastMessageIndex,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueBrowserId = SMQPUtil.read(queueBrowserId, in);
+        resetRequired = SMQPUtil.read(resetRequired, in);
+        boolean lastMessageIndex_set = in.readBoolean();
+        if (lastMessageIndex_set)
+            lastMessageIndex = SMQPUtil.read(lastMessageIndex, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new FetchBrowserMessageReply();
-  }
+    protected Reply createReplyInstance() {
+        return new FetchBrowserMessageReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/FetchBrowserMessageRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueBrowserId=");
-    _b.append(queueBrowserId);
-    _b.append(", ");
-    _b.append("resetRequired=");
-    _b.append(resetRequired);
-    _b.append(", ");
-    _b.append("lastMessageIndex=");
-    _b.append(lastMessageIndex);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/FetchBrowserMessageRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueBrowserId=");
+        _b.append(queueBrowserId);
+        _b.append(", ");
+        _b.append("resetRequired=");
+        _b.append(resetRequired);
+        _b.append(", ");
+        _b.append("lastMessageIndex=");
+        _b.append(lastMessageIndex);
+        _b.append("]");
+        return _b.toString();
+    }
 }

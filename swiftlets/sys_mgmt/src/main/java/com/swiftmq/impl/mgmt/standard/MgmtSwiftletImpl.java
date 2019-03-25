@@ -26,83 +26,67 @@ import com.swiftmq.swiftlet.mgmt.CLIExecutor;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.routing.RoutingSwiftlet;
 
-public class MgmtSwiftletImpl extends MgmtSwiftlet
-{
-  SwiftletContext ctx = null;
-  Listener listener = null;
-  MessageInterfaceController miController = null;
-  int toolCount = 0;
+public class MgmtSwiftletImpl extends MgmtSwiftlet {
+    SwiftletContext ctx = null;
+    Listener listener = null;
+    MessageInterfaceController miController = null;
+    int toolCount = 0;
 
-  public synchronized void fireEvent(boolean activated)
-  {
-    if (activated)
-    {
-      toolCount++;
-      if (toolCount == 1)
-        fireMgmtEvent(activated);
-    } else
-    {
-      toolCount--;
-      if (toolCount == 0)
-        fireMgmtEvent(activated);
-    }
-  }
-
-  public CLIExecutor createCLIExecutor()
-  {
-    return new CLIExecutorImpl(ctx);
-  }
-
-  protected void startup(Configuration config) throws SwiftletException
-  {
-    ctx = new SwiftletContext(this, config);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
-    SwiftletManager.getInstance().addSwiftletManagerListener("sys$routing", new SwiftletManagerAdapter()
-    {
-      public void swiftletStarted(SwiftletManagerEvent evt)
-      {
-        try
-        {
-          ctx.routingSwiftlet = (RoutingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$routing");
-          ctx.routingSwiftlet.addRoutingListener(ctx.dispatchQueue);
-          miController = new MessageInterfaceController(ctx);
-        } catch (Exception e)
-        {
-          if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "swiftletStartet, exception=" + e);
+    public synchronized void fireEvent(boolean activated) {
+        if (activated) {
+            toolCount++;
+            if (toolCount == 1)
+                fireMgmtEvent(activated);
+        } else {
+            toolCount--;
+            if (toolCount == 0)
+                fireMgmtEvent(activated);
         }
-      }
-    });
-    SwiftletManager.getInstance().addSwiftletManagerListener("sys$amqp", new SwiftletManagerAdapter()
-    {
-      public void swiftletStarted(SwiftletManagerEvent evt)
-      {
-        try
-        {
-          listener = new Listener(ctx);
-        } catch (Exception e)
-        {
-          if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "swiftletStartet, exception=" + e);
-        }
-      }
-    });
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done");
-  }
-
-  protected void shutdown() throws SwiftletException
-  {
-    // true when shutdown while standby
-    if (ctx == null)
-      return;
-
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
-    if (ctx.routingSwiftlet != null)
-    {
-      miController.close();
-      ctx.routingSwiftlet.removeRoutingListener(ctx.dispatchQueue);
     }
-    ctx.close();
-    listener.close();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done");
-    ctx = null;
-  }
+
+    public CLIExecutor createCLIExecutor() {
+        return new CLIExecutorImpl(ctx);
+    }
+
+    protected void startup(Configuration config) throws SwiftletException {
+        ctx = new SwiftletContext(this, config);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
+        SwiftletManager.getInstance().addSwiftletManagerListener("sys$routing", new SwiftletManagerAdapter() {
+            public void swiftletStarted(SwiftletManagerEvent evt) {
+                try {
+                    ctx.routingSwiftlet = (RoutingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$routing");
+                    ctx.routingSwiftlet.addRoutingListener(ctx.dispatchQueue);
+                    miController = new MessageInterfaceController(ctx);
+                } catch (Exception e) {
+                    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "swiftletStartet, exception=" + e);
+                }
+            }
+        });
+        SwiftletManager.getInstance().addSwiftletManagerListener("sys$amqp", new SwiftletManagerAdapter() {
+            public void swiftletStarted(SwiftletManagerEvent evt) {
+                try {
+                    listener = new Listener(ctx);
+                } catch (Exception e) {
+                    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "swiftletStartet, exception=" + e);
+                }
+            }
+        });
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done");
+    }
+
+    protected void shutdown() throws SwiftletException {
+        // true when shutdown while standby
+        if (ctx == null)
+            return;
+
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
+        if (ctx.routingSwiftlet != null) {
+            miController.close();
+            ctx.routingSwiftlet.removeRoutingListener(ctx.dispatchQueue);
+        }
+        ctx.close();
+        listener.close();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done");
+        ctx = null;
+    }
 }

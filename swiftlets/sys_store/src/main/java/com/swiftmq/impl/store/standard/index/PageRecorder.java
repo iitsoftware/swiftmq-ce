@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.store.standard.index;
 
-public interface PageRecorder
-{
-  public void recordPageNo(long pageNo);
+public interface PageRecorder {
+    public void recordPageNo(long pageNo);
 }

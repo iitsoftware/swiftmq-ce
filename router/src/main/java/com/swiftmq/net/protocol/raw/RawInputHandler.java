@@ -28,53 +28,44 @@ import java.nio.ByteBuffer;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class RawInputHandler implements ProtocolInputHandler
-{
-  ChunkListener listener = null;
-  int initialSize = 0;
-  byte[] buffer = null;
-  ByteBuffer byteBuffer = null;
+public class RawInputHandler implements ProtocolInputHandler {
+    ChunkListener listener = null;
+    int initialSize = 0;
+    byte[] buffer = null;
+    ByteBuffer byteBuffer = null;
 
-  public ProtocolInputHandler create()
-  {
-    return new RawInputHandler();
-  }
+    public ProtocolInputHandler create() {
+        return new RawInputHandler();
+    }
 
-  public void setChunkListener(ChunkListener listener)
-  {
-    this.listener = listener;
-  }
+    public void setChunkListener(ChunkListener listener) {
+        this.listener = listener;
+    }
 
-  public void createInputBuffer(int initialSize, int ensureSize)
-  {
-    this.initialSize = initialSize;
-    buffer = new byte[initialSize];
-    byteBuffer = ByteBuffer.wrap(buffer);
-  }
+    public void createInputBuffer(int initialSize, int ensureSize) {
+        this.initialSize = initialSize;
+        buffer = new byte[initialSize];
+        byteBuffer = ByteBuffer.wrap(buffer);
+    }
 
-  public ByteBuffer getByteBuffer()
-  {
-    byteBuffer.rewind();
-    return byteBuffer;
-  }
+    public ByteBuffer getByteBuffer() {
+        byteBuffer.rewind();
+        return byteBuffer;
+    }
 
-  public byte[] getBuffer()
-  {
-    return buffer;
-  }
+    public byte[] getBuffer() {
+        return buffer;
+    }
 
-  public int getOffset()
-  {
-    return 0;
-  }
+    public int getOffset() {
+        return 0;
+    }
 
-  public void setBytesWritten(int written)
-  {
-    listener.chunkCompleted(buffer, 0, written);
-  }
+    public void setBytesWritten(int written) {
+        listener.chunkCompleted(buffer, 0, written);
+    }
 
-  public String toString()
-  {
-    return "[RawInputHandler]";
-  }
+    public String toString() {
+        return "[RawInputHandler]";
+    }
 }

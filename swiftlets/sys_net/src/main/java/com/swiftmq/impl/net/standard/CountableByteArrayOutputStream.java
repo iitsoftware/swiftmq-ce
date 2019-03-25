@@ -17,51 +17,45 @@
 
 package com.swiftmq.impl.net.standard;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public abstract class CountableByteArrayOutputStream extends OutputStream
-	implements Countable
-{
-	volatile long byteCount = 0;
-	protected ByteArrayOutputStream bos = null;
-	
-	public CountableByteArrayOutputStream()
-	{
-		bos = new ByteArrayOutputStream();
-	}
+        implements Countable {
+    volatile long byteCount = 0;
+    protected ByteArrayOutputStream bos = null;
 
-	public CountableByteArrayOutputStream(int size)
-	{
-		bos = new ByteArrayOutputStream(size);
-	}
+    public CountableByteArrayOutputStream() {
+        bos = new ByteArrayOutputStream();
+    }
 
-	public void write(byte[] b, int offset, int len) throws IOException
-	{
-		byteCount += len;
-		bos.write(b,offset,len);
-	}
+    public CountableByteArrayOutputStream(int size) {
+        bos = new ByteArrayOutputStream(size);
+    }
 
-	public void write(int b) throws IOException
-	{
-		byteCount++;
-		bos.write(b);
-	}
-	
-	public void addByteCount(long cnt)
-	{
-		byteCount += cnt;
-	}
+    public void write(byte[] b, int offset, int len) throws IOException {
+        byteCount += len;
+        bos.write(b, offset, len);
+    }
 
-	public long getByteCount()
-	{
-		return byteCount;
-	}
-	
-	public void resetByteCount()
-	{
-		byteCount = 0;
-	}
-	
-	public abstract void flush() throws IOException;
+    public void write(int b) throws IOException {
+        byteCount++;
+        bos.write(b);
+    }
+
+    public void addByteCount(long cnt) {
+        byteCount += cnt;
+    }
+
+    public long getByteCount() {
+        return byteCount;
+    }
+
+    public void resetByteCount() {
+        byteCount = 0;
+    }
+
+    public abstract void flush() throws IOException;
 }
 

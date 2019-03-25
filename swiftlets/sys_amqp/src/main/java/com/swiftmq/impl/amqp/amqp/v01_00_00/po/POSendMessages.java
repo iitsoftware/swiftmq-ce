@@ -22,28 +22,23 @@ import com.swiftmq.impl.amqp.amqp.v01_00_00.SourceMessageProcessor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendMessages extends POObject
-{
-  SourceMessageProcessor sourceMessageProcessor;
+public class POSendMessages extends POObject {
+    SourceMessageProcessor sourceMessageProcessor;
 
-  public POSendMessages(SourceMessageProcessor sourceMessageProcessor)
-  {
-    super(null, null);
-    this.sourceMessageProcessor = sourceMessageProcessor;
-  }
+    public POSendMessages(SourceMessageProcessor sourceMessageProcessor) {
+        super(null, null);
+        this.sourceMessageProcessor = sourceMessageProcessor;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPSessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPSessionVisitor) visitor).visit(this);
+    }
 
-  public SourceMessageProcessor getSourceMessageProcessor()
-  {
-    return sourceMessageProcessor;
-  }
+    public SourceMessageProcessor getSourceMessageProcessor() {
+        return sourceMessageProcessor;
+    }
 
-  public String toString()
-  {
-    return "[POSendMessages, sourceMessageProcessor=" + sourceMessageProcessor + "]";
-  }
+    public String toString() {
+        return "[POSendMessages, sourceMessageProcessor=" + sourceMessageProcessor + "]";
+    }
 }

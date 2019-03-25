@@ -17,10 +17,8 @@
 
 package com.swiftmq.swiftlet.queue;
 
-public class QueueLimitException extends QueueException
-{
-  public QueueLimitException(String reason)
-  {
-    super(reason);
-  }
+public class QueueLimitException extends QueueException {
+    public QueueLimitException(String reason) {
+        super(reason);
+    }
 }

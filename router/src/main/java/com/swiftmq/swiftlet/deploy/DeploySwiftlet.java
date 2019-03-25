@@ -19,7 +19,6 @@ package com.swiftmq.swiftlet.deploy;
 
 import com.swiftmq.swiftlet.Swiftlet;
 
-public abstract class DeploySwiftlet extends Swiftlet
-{
-  public abstract DeploySpace getDeploySpace(String name);
+public abstract class DeploySwiftlet extends Swiftlet {
+    public abstract DeploySpace getDeploySpace(String name);
 }

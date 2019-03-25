@@ -21,32 +21,29 @@ import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class Compressor
-{
-  public static byte[] compress(byte[] data) throws IOException
-  {
-    int len = data.length / 2;
-    ByteArrayOutputStream aos = new ByteArrayOutputStream();
-    GZIPOutputStream gos = new GZIPOutputStream(aos, len);
-    BufferedOutputStream dos = new BufferedOutputStream(gos, len);
-    dos.write(data, 0, data.length);
-    dos.close();
-    return aos.toByteArray();
-  }
+public class Compressor {
+    public static byte[] compress(byte[] data) throws IOException {
+        int len = data.length / 2;
+        ByteArrayOutputStream aos = new ByteArrayOutputStream();
+        GZIPOutputStream gos = new GZIPOutputStream(aos, len);
+        BufferedOutputStream dos = new BufferedOutputStream(gos, len);
+        dos.write(data, 0, data.length);
+        dos.close();
+        return aos.toByteArray();
+    }
 
-  public static byte[] decompress(byte[] data) throws IOException
-  {
-    ByteArrayInputStream bis = new ByteArrayInputStream(data);
-    GZIPInputStream gis = new GZIPInputStream(bis);
-    BufferedInputStream dis = new BufferedInputStream(gis);
-    ByteArrayOutputStream aos = new ByteArrayOutputStream();
-    byte[] b = new byte[data.length];
-    int c;
-    while ((c = dis.read(b, 0, data.length)) != -1)
-      aos.write(b, 0, c);
-    dis.close();
-    aos.close();
-    return aos.toByteArray();
-  }
+    public static byte[] decompress(byte[] data) throws IOException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        GZIPInputStream gis = new GZIPInputStream(bis);
+        BufferedInputStream dis = new BufferedInputStream(gis);
+        ByteArrayOutputStream aos = new ByteArrayOutputStream();
+        byte[] b = new byte[data.length];
+        int c;
+        while ((c = dis.read(b, 0, data.length)) != -1)
+            aos.write(b, 0, c);
+        dis.close();
+        aos.close();
+        return aos.toByteArray();
+    }
 }
 

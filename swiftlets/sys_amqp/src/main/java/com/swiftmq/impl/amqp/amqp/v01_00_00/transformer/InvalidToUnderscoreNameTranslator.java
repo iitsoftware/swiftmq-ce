@@ -17,29 +17,24 @@
 
 package com.swiftmq.impl.amqp.amqp.v01_00_00.transformer;
 
-public class InvalidToUnderscoreNameTranslator implements NameTranslator
-{
-  public String translate(String source)
-  {
-    StringBuffer result = new StringBuffer();
+public class InvalidToUnderscoreNameTranslator implements NameTranslator {
+    public String translate(String source) {
+        StringBuffer result = new StringBuffer();
 
-    for (int i = 0; i < source.length(); i++)
-    {
-      char c = source.charAt(i);
-      if (i == 0)
-      {
-        if (Character.isJavaIdentifierStart(c))
-          result.append(c);
-        else
-          result.append('_');
-      } else
-      {
-        if (Character.isJavaIdentifierPart(c))
-          result.append(c);
-        else
-          result.append('_');
-      }
+        for (int i = 0; i < source.length(); i++) {
+            char c = source.charAt(i);
+            if (i == 0) {
+                if (Character.isJavaIdentifierStart(c))
+                    result.append(c);
+                else
+                    result.append('_');
+            } else {
+                if (Character.isJavaIdentifierPart(c))
+                    result.append(c);
+                else
+                    result.append('_');
+            }
+        }
+        return result.toString();
     }
-    return result.toString();
-  }
 }

@@ -18,19 +18,17 @@
 package com.swiftmq.amqp.v100.client;
 
 /**
- *  An exception thrown if a session is closed.
+ * An exception thrown if a session is closed.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class SessionClosedException extends AMQPException
-{
-  /**
-   * Create a SessionClosedException.
-   *
-   * @param s exception message
-   */
-  public SessionClosedException(String s)
-  {
-    super(s);
-  }
+public class SessionClosedException extends AMQPException {
+    /**
+     * Create a SessionClosedException.
+     *
+     * @param s exception message
+     */
+    public SessionClosedException(String s) {
+        super(s);
+    }
 }

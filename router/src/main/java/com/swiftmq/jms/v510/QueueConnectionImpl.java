@@ -21,59 +21,50 @@ import com.swiftmq.jms.ExceptionConverter;
 
 import javax.jms.*;
 import javax.jms.IllegalStateException;
-import java.net.Socket;
 
 public class QueueConnectionImpl extends ConnectionImpl
-    implements QueueConnection
-{
+        implements QueueConnection {
 
-  protected QueueConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn)
-      throws JMSException
-  {
-    super(userName, password, conn);
-  }
-
-  public QueueSession createQueueSession(boolean transacted,
-                                         int acknowledgeMode) throws JMSException
-  {
-    verifyState();
-
-    SessionImpl queueSession = null;
-    com.swiftmq.jms.smqp.v510.CreateSessionReply reply = null;
-
-    try
-    {
-      reply =
-          (com.swiftmq.jms.smqp.v510.CreateSessionReply) requestRegistry.request(new com.swiftmq.jms.smqp.v510.CreateSessionRequest(0,transacted,
-              acknowledgeMode, com.swiftmq.jms.smqp.v510.CreateSessionRequest.QUEUE_SESSION));
-    } catch (Exception e)
-    {
-      throw ExceptionConverter.convert(e);
+    protected QueueConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn)
+            throws JMSException {
+        super(userName, password, conn);
     }
 
-    if (reply.isOk())
-    {
-      int dispatchId = reply.getSessionDispatchId();
+    public QueueSession createQueueSession(boolean transacted,
+                                           int acknowledgeMode) throws JMSException {
+        verifyState();
 
-      queueSession = new SessionImpl(SessionImpl.TYPE_QUEUE_SESSION,this, transacted, acknowledgeMode,
-          dispatchId, requestRegistry,
-          myHostname,null);
-      queueSession.setUserName(getUserName());
-      queueSession.setMyDispatchId(addRequestService(queueSession));
-      addSession(queueSession);
-    } else
-    {
-      throw ExceptionConverter.convert(reply.getException());
+        SessionImpl queueSession = null;
+        com.swiftmq.jms.smqp.v510.CreateSessionReply reply = null;
+
+        try {
+            reply =
+                    (com.swiftmq.jms.smqp.v510.CreateSessionReply) requestRegistry.request(new com.swiftmq.jms.smqp.v510.CreateSessionRequest(0, transacted,
+                            acknowledgeMode, com.swiftmq.jms.smqp.v510.CreateSessionRequest.QUEUE_SESSION));
+        } catch (Exception e) {
+            throw ExceptionConverter.convert(e);
+        }
+
+        if (reply.isOk()) {
+            int dispatchId = reply.getSessionDispatchId();
+
+            queueSession = new SessionImpl(SessionImpl.TYPE_QUEUE_SESSION, this, transacted, acknowledgeMode,
+                    dispatchId, requestRegistry,
+                    myHostname, null);
+            queueSession.setUserName(getUserName());
+            queueSession.setMyDispatchId(addRequestService(queueSession));
+            addSession(queueSession);
+        } else {
+            throw ExceptionConverter.convert(reply.getException());
+        }
+
+        return (queueSession);
     }
 
-    return (queueSession);
-  }
-
-  public ConnectionConsumer createDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages)
-    throws JMSException
-  {
-    throw new IllegalStateException("Operation not allowed on this connection type");
-  }
+    public ConnectionConsumer createDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages)
+            throws JMSException {
+        throw new IllegalStateException("Operation not allowed on this connection type");
+    }
 }
 
 

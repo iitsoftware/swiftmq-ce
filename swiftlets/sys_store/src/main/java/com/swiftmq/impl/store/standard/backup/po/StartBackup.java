@@ -17,32 +17,28 @@
 
 package com.swiftmq.impl.store.standard.backup.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.impl.store.standard.backup.BackupFinishedListener;
+import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class StartBackup extends POObject
-{
-  BackupFinishedListener finishedListener = null;
+public class StartBackup extends POObject {
+    BackupFinishedListener finishedListener = null;
 
-  public StartBackup(Semaphore semaphore, BackupFinishedListener finishedListener)
-  {
-    super(null, semaphore);
-    this.finishedListener = finishedListener;
-  }
+    public StartBackup(Semaphore semaphore, BackupFinishedListener finishedListener) {
+        super(null, semaphore);
+        this.finishedListener = finishedListener;
+    }
 
-  public BackupFinishedListener getFinishedListener()
-  {
-    return finishedListener;
-  }
+    public BackupFinishedListener getFinishedListener() {
+        return finishedListener;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[StartBackup]";
-  }
+    public String toString() {
+        return "[StartBackup]";
+    }
 }

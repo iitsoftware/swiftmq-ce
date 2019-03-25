@@ -17,14 +17,14 @@
 
 package com.swiftmq.mqtt.v311;
 
-import com.swiftmq.swiftlet.net.Connection;
-import com.swiftmq.swiftlet.net.InboundHandler;
-import com.swiftmq.swiftlet.trace.TraceSpace;
-import com.swiftmq.tools.util.DataStreamInputStream;
 import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttDecoder;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttMessage;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttMessageType;
+import com.swiftmq.swiftlet.net.Connection;
+import com.swiftmq.swiftlet.net.InboundHandler;
+import com.swiftmq.swiftlet.trace.TraceSpace;
+import com.swiftmq.tools.util.DataStreamInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -155,8 +155,8 @@ public class PacketDecoder implements InboundHandler {
             byteBuf.reset();
             try {
                 mqttDecoder.decode(byteBuf, decoded);
-                    mqttListener.onMessage(decoded);
-                    decoded.clear();
+                mqttListener.onMessage(decoded);
+                decoded.clear();
             } catch (Exception e) {
                 if (traceSpace.enabled)
                     trace("PacketDecoder/finishPacket: exception=" + e);

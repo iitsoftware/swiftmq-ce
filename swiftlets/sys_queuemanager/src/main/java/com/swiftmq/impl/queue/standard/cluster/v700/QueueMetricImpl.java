@@ -23,78 +23,64 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class QueueMetricImpl implements QueueMetric
-{
-  String queueName = null;
-  boolean hasReceiver = false;
-  String routerName = null;
-  boolean redispatch = false;
+public class QueueMetricImpl implements QueueMetric {
+    String queueName = null;
+    boolean hasReceiver = false;
+    String routerName = null;
+    boolean redispatch = false;
 
-  public QueueMetricImpl(String queueName, boolean hasReceiver, boolean redispatch)
-  {
-    this.queueName = queueName;
-    this.hasReceiver = hasReceiver;
-    this.redispatch = redispatch;
-  }
+    public QueueMetricImpl(String queueName, boolean hasReceiver, boolean redispatch) {
+        this.queueName = queueName;
+        this.hasReceiver = hasReceiver;
+        this.redispatch = redispatch;
+    }
 
-  public QueueMetricImpl()
-  {
-  }
+    public QueueMetricImpl() {
+    }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public void setHasReceiver(boolean b)
-  {
-    hasReceiver = b;
-  }
+    public void setHasReceiver(boolean b) {
+        hasReceiver = b;
+    }
 
-  public boolean hasReceiver()
-  {
-    return hasReceiver;
-  }
+    public boolean hasReceiver() {
+        return hasReceiver;
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public void setRouterName(String routerName)
-  {
-    this.routerName = routerName;
-  }
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
 
-  public void setRedispatch(boolean redispatch)
-  {
-    this.redispatch = redispatch;
-  }
+    public void setRedispatch(boolean redispatch) {
+        this.redispatch = redispatch;
+    }
 
-  public boolean isRedispatch()
-  {
-    return redispatch;
-  }
+    public boolean isRedispatch() {
+        return redispatch;
+    }
 
-  public int getDumpId()
-  {
-    return MetricFactory.QUEUE_METRIC;
-  }
+    public int getDumpId() {
+        return MetricFactory.QUEUE_METRIC;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    out.writeUTF(queueName);
-    out.writeBoolean(hasReceiver);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        out.writeUTF(queueName);
+        out.writeBoolean(hasReceiver);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    queueName = in.readUTF();
-    hasReceiver = in.readBoolean();
-  }
+    public void readContent(DataInput in) throws IOException {
+        queueName = in.readUTF();
+        hasReceiver = in.readBoolean();
+    }
 
-  public String toString()
-  {
-    return "[QueueMetricImpl (v700), queueName=" + queueName + ", hasReceiver=" + hasReceiver + "]";
-  }
+    public String toString() {
+        return "[QueueMetricImpl (v700), queueName=" + queueName + ", hasReceiver=" + hasReceiver + "]";
+    }
 }

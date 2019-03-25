@@ -23,30 +23,26 @@ import com.swiftmq.tools.requestreply.Reply;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class DeleteDurableReply extends Reply
-{
+public class DeleteDurableReply extends Reply {
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DELETE_DURABLE_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_DELETE_DURABLE_REP;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[DeleteDurableReply " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[DeleteDurableReply " + super.toString() + "]";
+    }
 
 }
 

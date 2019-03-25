@@ -20,7 +20,6 @@ package com.swiftmq.filetransfer.protocol;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public interface MessageBasedFactory
-{
-  public MessageBased create(Message message) throws JMSException;
+public interface MessageBasedFactory {
+    public MessageBased create(Message message) throws JMSException;
 }

@@ -17,85 +17,73 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: XAResCommitReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: XAResCommitReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class XAResCommitReply extends ReplyNE
-{
-  private int errorCode;
-  private long delay;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public XAResCommitReply(int errorCode, long delay)
-  {
-    this.errorCode = errorCode;
-    this.delay = delay;
-  }
+public class XAResCommitReply extends ReplyNE {
+    private int errorCode;
+    private long delay;
 
-  protected XAResCommitReply()
-  {
-  }
-  
-  public void setErrorCode(int errorCode)
-  {
-    this.errorCode = errorCode;
-  }
+    public XAResCommitReply(int errorCode, long delay) {
+        this.errorCode = errorCode;
+        this.delay = delay;
+    }
 
-  public int getErrorCode()
-  {
-    return errorCode;
-  }
-  
-  public void setDelay(long delay)
-  {
-    this.delay = delay;
-  }
+    protected XAResCommitReply() {
+    }
 
-  public long getDelay()
-  {
-    return delay;
-  }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESCOMMIT_REP;
-  }
+    public int getErrorCode() {
+        return errorCode;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(errorCode,out);
-    SMQPUtil.write(delay,out);
-  }
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    errorCode = SMQPUtil.read(errorCode,in);
-    delay = SMQPUtil.read(delay,in);
-  }
+    public long getDelay() {
+        return delay;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/XAResCommitReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("errorCode=");
-    _b.append(errorCode);
-    _b.append(", ");
-    _b.append("delay=");
-    _b.append(delay);
-    _b.append("]");
-    return _b.toString();
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESCOMMIT_REP;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(errorCode, out);
+        SMQPUtil.write(delay, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        errorCode = SMQPUtil.read(errorCode, in);
+        delay = SMQPUtil.read(delay, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/XAResCommitReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("errorCode=");
+        _b.append(errorCode);
+        _b.append(", ");
+        _b.append("delay=");
+        _b.append(delay);
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -17,13 +17,13 @@
 
 package com.swiftmq.jndi.protocol.v400;
 
-import com.swiftmq.jndi.protocol.*;
+public interface JNDIRequestVisitor {
+    public void visit(LookupRequest request);
 
-public interface JNDIRequestVisitor
-{
-  public void visit(LookupRequest request);
-  public void visit(BindRequest request);
-  public void visit(RebindRequest request);
-  public void visit(UnbindRequest request);
+    public void visit(BindRequest request);
+
+    public void visit(RebindRequest request);
+
+    public void visit(UnbindRequest request);
 }
 

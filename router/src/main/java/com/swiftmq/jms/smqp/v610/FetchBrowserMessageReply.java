@@ -17,75 +17,65 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: FetchBrowserMessageReply
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:10 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: FetchBrowserMessageReply
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:10 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.swiftlet.queue.MessageEntry;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class FetchBrowserMessageReply extends ReplyNE
-{
-  private MessageEntry messageEntry;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public FetchBrowserMessageReply(MessageEntry messageEntry)
-  {
-    this.messageEntry = messageEntry;
-  }
+public class FetchBrowserMessageReply extends ReplyNE {
+    private MessageEntry messageEntry;
 
-  protected FetchBrowserMessageReply()
-  {
-  }
-  
-  public void setMessageEntry(MessageEntry messageEntry)
-  {
-    this.messageEntry = messageEntry;
-  }
+    public FetchBrowserMessageReply(MessageEntry messageEntry) {
+        this.messageEntry = messageEntry;
+    }
 
-  public MessageEntry getMessageEntry()
-  {
-    return messageEntry;
-  }
+    protected FetchBrowserMessageReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_FETCHBROWSERMESSAGE_REP;
-  }
+    public void setMessageEntry(MessageEntry messageEntry) {
+        this.messageEntry = messageEntry;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (messageEntry != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(messageEntry,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public MessageEntry getMessageEntry() {
+        return messageEntry;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean messageEntry_set = in.readBoolean();
-    if (messageEntry_set)
-      messageEntry = SMQPUtil.read(messageEntry,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_FETCHBROWSERMESSAGE_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/FetchBrowserMessageReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("messageEntry=");
-    _b.append(messageEntry);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (messageEntry != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(messageEntry, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean messageEntry_set = in.readBoolean();
+        if (messageEntry_set)
+            messageEntry = SMQPUtil.read(messageEntry, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/FetchBrowserMessageReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("messageEntry=");
+        _b.append(messageEntry);
+        _b.append("]");
+        return _b.toString();
+    }
 }

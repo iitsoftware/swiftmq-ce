@@ -17,38 +17,36 @@
 
 package com.swiftmq.net;
 
-import javax.net.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class JSSESocketFactoryFacade extends javax.net.SocketFactory
-{
-  private static final JSSESocketFactory DELEGATE = new JSSESocketFactory();
+public class JSSESocketFactoryFacade extends javax.net.SocketFactory {
+    private static final JSSESocketFactory DELEGATE = new JSSESocketFactory();
 
-  @Override
-  public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
-    return DELEGATE.createSocket(host, port);
-  }
+    @Override
+    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+        return DELEGATE.createSocket(host, port);
+    }
 
-  @Override
-  public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException, UnknownHostException {
-    return DELEGATE.createSocket(host, port);
-  }
+    @Override
+    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException, UnknownHostException {
+        return DELEGATE.createSocket(host, port);
+    }
 
-  @Override
-  public Socket createSocket(InetAddress host, int port) throws IOException {
-    return DELEGATE.createSocket(host, port);
-  }
+    @Override
+    public Socket createSocket(InetAddress host, int port) throws IOException {
+        return DELEGATE.createSocket(host, port);
+    }
 
-  @Override
-  public Socket createSocket(InetAddress host, int port, InetAddress localAddress, int localPort) throws IOException {
-    return DELEGATE.createSocket(host, port);
-  }
+    @Override
+    public Socket createSocket(InetAddress host, int port, InetAddress localAddress, int localPort) throws IOException {
+        return DELEGATE.createSocket(host, port);
+    }
 
-  @Override
-  public Socket createSocket() throws IOException {
-    return super.createSocket();
-  }
+    @Override
+    public Socket createSocket() throws IOException {
+        return super.createSocket();
+    }
 }

@@ -21,17 +21,17 @@ import javax.jms.JMSException;
 
 /**
  * An exception thrown by the ResourceLimitGroup
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2004, All Rights Reserved
  */
-public class ResourceLimitException extends JMSException
-{
-  /**
-   * Constructs a new ResourceLimitException
-   * @param msg the message
-   */
-  public ResourceLimitException(String msg)
-  {
-    super(msg);
-  }
+public class ResourceLimitException extends JMSException {
+    /**
+     * Constructs a new ResourceLimitException
+     *
+     * @param msg the message
+     */
+    public ResourceLimitException(String msg) {
+        super(msg);
+    }
 }
 

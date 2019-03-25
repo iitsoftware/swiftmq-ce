@@ -21,14 +21,12 @@ package com.swiftmq.tools.requestreply;
  * @Author Andreas Mueller, IIT GmbH
  * @Version 1.0
  */
-public class TimeoutException extends Exception
-{
-  /**
-   * @SBGen Constructor
-   */
-  public TimeoutException(String message)
-  {
-    super(message);
-  }
+public class TimeoutException extends Exception {
+    /**
+     * @SBGen Constructor
+     */
+    public TimeoutException(String message) {
+        super(message);
+    }
 }
 

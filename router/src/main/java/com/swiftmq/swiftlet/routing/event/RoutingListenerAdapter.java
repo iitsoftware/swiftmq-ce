@@ -19,25 +19,21 @@ package com.swiftmq.swiftlet.routing.event;
 
 /**
  * An adapter class for RoutingListener
- * @see SwiftletManager
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
+ * @see SwiftletManager
  */
-public class RoutingListenerAdapter implements RoutingListener
-{
-  public void destinationAdded(RoutingEvent evt)
-  {
-  }
+public class RoutingListenerAdapter implements RoutingListener {
+    public void destinationAdded(RoutingEvent evt) {
+    }
 
-  public void destinationRemoved(RoutingEvent evt)
-  {
-  }
+    public void destinationRemoved(RoutingEvent evt) {
+    }
 
-  public void destinationActivated(RoutingEvent evt)
-  {
-  }
+    public void destinationActivated(RoutingEvent evt) {
+    }
 
-  public void destinationDeactivated(RoutingEvent evt)
-  {
-  }
+    public void destinationDeactivated(RoutingEvent evt) {
+    }
 }
 

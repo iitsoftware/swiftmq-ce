@@ -17,23 +17,20 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class Close extends POObject
-{
-  public Close(Semaphore sem)
-  {
-    super(null, sem);
-  }
+public class Close extends POObject {
+    public Close(Semaphore sem) {
+        super(null, sem);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[Close]";
-  }
+    public String toString() {
+        return "[Close]";
+    }
 }

@@ -26,64 +26,53 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ConnectRequest extends Request
-{
-  String routerName = null;
-  boolean requestXA = true;
+public class ConnectRequest extends Request {
+    String routerName = null;
+    boolean requestXA = true;
 
-  ConnectRequest()
-  {
-    this(null, true);
-  }
+    ConnectRequest() {
+        this(null, true);
+    }
 
-  public ConnectRequest(String routerName, boolean requestXA)
-  {
-    super(0, false);
-    this.routerName = routerName;
-    this.requestXA = requestXA;
-  }
+    public ConnectRequest(String routerName, boolean requestXA) {
+        super(0, false);
+        this.routerName = routerName;
+        this.requestXA = requestXA;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.CONNECT_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.CONNECT_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeUTF(routerName);
-    output.writeBoolean(requestXA);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeUTF(routerName);
+        output.writeBoolean(requestXA);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    routerName = input.readUTF();
-    requestXA = input.readBoolean();
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        routerName = input.readUTF();
+        requestXA = input.readBoolean();
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public boolean isRequestXA()
-  {
-    return requestXA;
-  }
+    public boolean isRequestXA() {
+        return requestXA;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[ConnectRequest " + super.toString() + ", routerName=" + routerName + ", requestXA=" + requestXA + "]";
-  }
+    public String toString() {
+        return "[ConnectRequest " + super.toString() + ", routerName=" + routerName + ", requestXA=" + requestXA + "]";
+    }
 }

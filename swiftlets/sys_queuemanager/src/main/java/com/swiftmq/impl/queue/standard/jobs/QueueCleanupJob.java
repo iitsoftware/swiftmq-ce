@@ -27,83 +27,67 @@ import com.swiftmq.tools.sql.LikeComparator;
 
 import java.util.Properties;
 
-public class QueueCleanupJob implements Job
-{
-  SwiftletContext ctx = null;
-  boolean stopCalled = false;
-  Properties properties = null;
+public class QueueCleanupJob implements Job {
+    SwiftletContext ctx = null;
+    boolean stopCalled = false;
+    Properties properties = null;
 
-  public QueueCleanupJob(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
-
-  private void terminate()
-  {
-  }
-
-  public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " ...");
-    this.properties = properties;
-    if (stopCalled)
-    {
-      terminate();
-      return;
+    public QueueCleanupJob(SwiftletContext ctx) {
+        this.ctx = ctx;
     }
-    try
-    {
-      String predicate = properties.getProperty("Queue Name Predicate");
-      String[] names = ctx.queueManager.getDefinedQueueNames();
-      if (names != null)
-      {
-        for (int i = 0; i < names.length; i++)
-        {
-          if (!names[i].startsWith("tpc$"))
-          {
-            if (LikeComparator.compare(names[i], predicate, '\\'))
-            {
-              try
-              {
-                AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(names[i]);
-                if (queue != null)
-                {
-                  if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanup: " + names[i]);
-                  queue.cleanUpExpiredMessages();
-                }
-              } catch (QueueException e)
-              {
-                if (ctx.traceSpace.enabled)
-                  ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanup: " + names[i] + ", exception=" + e);
-              }
-            }
-          }
-          if (stopCalled)
-            break;
+
+    private void terminate() {
+    }
+
+    public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " ...");
+        this.properties = properties;
+        if (stopCalled) {
+            terminate();
+            return;
         }
-      }
-    } catch (Exception e)
-    {
-      terminate();
-      throw new JobException(e.toString(), e, false);
+        try {
+            String predicate = properties.getProperty("Queue Name Predicate");
+            String[] names = ctx.queueManager.getDefinedQueueNames();
+            if (names != null) {
+                for (int i = 0; i < names.length; i++) {
+                    if (!names[i].startsWith("tpc$")) {
+                        if (LikeComparator.compare(names[i], predicate, '\\')) {
+                            try {
+                                AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(names[i]);
+                                if (queue != null) {
+                                    if (ctx.traceSpace.enabled)
+                                        ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanup: " + names[i]);
+                                    queue.cleanUpExpiredMessages();
+                                }
+                            } catch (QueueException e) {
+                                if (ctx.traceSpace.enabled)
+                                    ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanup: " + names[i] + ", exception=" + e);
+                            }
+                        }
+                    }
+                    if (stopCalled)
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            terminate();
+            throw new JobException(e.toString(), e, false);
+        }
+        terminate();
+        jobTerminationListener.jobTerminated();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " done");
     }
-    terminate();
-    jobTerminationListener.jobTerminated();
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " done");
-  }
 
-  public void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop ...");
-    stopCalled = true;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop done");
-  }
+    public void stop() throws JobException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop ...");
+        stopCalled = true;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop done");
+    }
 
-  public String toString()
-  {
-    return "[QueueCleanupJob, properties=" + properties + "]";
-  }
+    public String toString() {
+        return "[QueueCleanupJob, properties=" + properties + "]";
+    }
 }

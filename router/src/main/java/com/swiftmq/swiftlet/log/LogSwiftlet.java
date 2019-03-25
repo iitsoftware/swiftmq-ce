@@ -24,38 +24,37 @@ import com.swiftmq.swiftlet.Swiftlet;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2012, All Rights Reserved
  */
-public abstract class LogSwiftlet extends Swiftlet
-{
-  /**
-   * Log an information message
-   *
-   * @param source  usually the Swiftlet name
-   * @param message the message to log
-   */
-  public abstract void logInformation(String source, String message);
+public abstract class LogSwiftlet extends Swiftlet {
+    /**
+     * Log an information message
+     *
+     * @param source  usually the Swiftlet name
+     * @param message the message to log
+     */
+    public abstract void logInformation(String source, String message);
 
-  /**
-   * Log a warning message
-   *
-   * @param source  usually the Swiftlet name
-   * @param message the message to log
-   */
-  public abstract void logWarning(String source, String message);
+    /**
+     * Log a warning message
+     *
+     * @param source  usually the Swiftlet name
+     * @param message the message to log
+     */
+    public abstract void logWarning(String source, String message);
 
-  /**
-   * Log an error message
-   *
-   * @param source  usually the Swiftlet name
-   * @param message the message to log
-   */
-  public abstract void logError(String source, String message);
+    /**
+     * Log an error message
+     *
+     * @param source  usually the Swiftlet name
+     * @param message the message to log
+     */
+    public abstract void logError(String source, String message);
 
-  /**
-   * Creates a log sink under a specific name.
-   *
-   * @param name log sink name
-   * @return log sink
-   */
-  public abstract LogSink createLogSink(String name);
+    /**
+     * Creates a log sink under a specific name.
+     *
+     * @param name log sink name
+     * @return log sink
+     */
+    public abstract LogSink createLogSink(String name);
 }
 

@@ -25,31 +25,26 @@ import java.io.IOException;
 /**
  * A HeartbeatFrame is a frame without a body and used for connection keepalive.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class HeartbeatFrame extends AMQPFrame
-{
-  /**
-   * Constructs a HeartbeatFrame
-   *
-   * @param channel channel
-   */
-  public HeartbeatFrame(int channel)
-  {
-    super(channel);
-  }
+public class HeartbeatFrame extends AMQPFrame {
+    /**
+     * Constructs a HeartbeatFrame
+     *
+     * @param channel channel
+     */
+    public HeartbeatFrame(int channel) {
+        super(channel);
+    }
 
-  public void accept(FrameVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public void accept(FrameVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  protected void writeBody(DataOutput out) throws IOException
-  {
-  }
+    protected void writeBody(DataOutput out) throws IOException {
+    }
 
-  public String toString()
-  {
-    return "[HeartbeatFrame]";
-  }
+    public String toString() {
+        return "[HeartbeatFrame]";
+    }
 }

@@ -17,106 +17,89 @@
 
 package com.swiftmq.jms.smqp.v400;
 
+import com.swiftmq.jms.XidImpl;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.jms.XidImpl;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResPrepareRequest extends Request
-{
-  XidImpl xid = null;
-  Object[] messages = null;
+public class XAResPrepareRequest extends Request {
+    XidImpl xid = null;
+    Object[] messages = null;
 
-  public XAResPrepareRequest(int dispatchId, XidImpl xid, Object[] messages)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-    this.messages = messages;
-  }
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESPREPARE_REQ;
-  }
-
-  protected Reply createReplyInstance()
-  {
-    return new XAResPrepareReply();
-  }
-
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResPrepareRequest(this);
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    xid.writeContent(out);
-    if (messages == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeInt(messages.length);
-      for (int i = 0; i < messages.length; i++)
-      {
-        byte[] msg = (byte[]) messages[i];
-        out.writeInt(msg.length);
-        out.write(msg);
-      }
+    public XAResPrepareRequest(int dispatchId, XidImpl xid, Object[] messages) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.messages = messages;
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = new XidImpl();
-    xid.readContent(in);
-    byte set = in.readByte();
-    if (set == 0)
-    {
-      messages = null;
-    } else
-    {
-      int len = in.readInt();
-
-      messages = new Object[len];
-
-      for (int i = 0; i < len; i++)
-      {
-        int msglen = in.readInt();
-        byte[] arr = new byte[msglen];
-        in.readFully(arr);
-        messages[i] = arr;
-      }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESPREPARE_REQ;
     }
-  }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    protected Reply createReplyInstance() {
+        return new XAResPrepareReply();
+    }
 
-  public void setMessages(Object[] messages)
-  {
-    this.messages = messages;
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResPrepareRequest(this);
+    }
 
-  public Object[] getMessages()
-  {
-    return (messages);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        xid.writeContent(out);
+        if (messages == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeInt(messages.length);
+            for (int i = 0; i < messages.length; i++) {
+                byte[] msg = (byte[]) messages[i];
+                out.writeInt(msg.length);
+                out.write(msg);
+            }
+        }
+    }
 
-  public String toString()
-  {
-    return "[XAResPrepareRequest " + super.toString() + ", xid=" + xid + ", messages=" + messages + "]";
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = new XidImpl();
+        xid.readContent(in);
+        byte set = in.readByte();
+        if (set == 0) {
+            messages = null;
+        } else {
+            int len = in.readInt();
+
+            messages = new Object[len];
+
+            for (int i = 0; i < len; i++) {
+                int msglen = in.readInt();
+                byte[] arr = new byte[msglen];
+                in.readFully(arr);
+                messages[i] = arr;
+            }
+        }
+    }
+
+    public XidImpl getXid() {
+        return xid;
+    }
+
+    public void setMessages(Object[] messages) {
+        this.messages = messages;
+    }
+
+    public Object[] getMessages() {
+        return (messages);
+    }
+
+    public String toString() {
+        return "[XAResPrepareRequest " + super.toString() + ", xid=" + xid + ", messages=" + messages + "]";
+    }
 
 }
 

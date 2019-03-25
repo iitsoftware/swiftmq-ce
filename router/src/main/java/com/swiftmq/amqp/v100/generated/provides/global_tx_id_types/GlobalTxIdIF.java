@@ -18,33 +18,32 @@
 package com.swiftmq.amqp.v100.generated.provides.global_tx_id_types;
 
 /**
- *  The GlobalTxId interface.
+ * The GlobalTxId interface.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface GlobalTxIdIF
-{
-  /**
-   * Accept method for a GlobalTxId visitor.
-   *
-   * @param visitor GlobalTxId visitor
-   */
-  public void accept(GlobalTxIdVisitor visitor);
+public interface GlobalTxIdIF {
+    /**
+     * Accept method for a GlobalTxId visitor.
+     *
+     * @param visitor GlobalTxId visitor
+     */
+    public void accept(GlobalTxIdVisitor visitor);
 
-  /**
-   * Returns the predicted size of this GlobalTxIdIF. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize();
+    /**
+     * Returns the predicted size of this GlobalTxIdIF. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize();
 
-  /**
-   * Returns a value representation of this GlobalTxIdIF.
-   *
-   * @return value representation
-   */
-  public String getValueString();
+    /**
+     * Returns a value representation of this GlobalTxIdIF.
+     *
+     * @return value representation
+     */
+    public String getValueString();
 }

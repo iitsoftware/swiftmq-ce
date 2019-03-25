@@ -17,114 +17,96 @@
 
 package com.swiftmq.jms.smqp.v400;
 
+import com.swiftmq.jms.XidImpl;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
-import com.swiftmq.jms.XidImpl;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResCommitRequest extends Request
-{
-  XidImpl xid = null;
-  boolean onePhase = false;
-  Object[] messages = null;
+public class XAResCommitRequest extends Request {
+    XidImpl xid = null;
+    boolean onePhase = false;
+    Object[] messages = null;
 
-  public XAResCommitRequest(int dispatchId, XidImpl xid, boolean onePhase)
-  {
-    super(dispatchId, true);
-    this.xid = xid;
-    this.onePhase = onePhase;
-  }
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESCOMMIT_REQ;
-  }
-
-  protected Reply createReplyInstance()
-  {
-    return new XAResCommitReply();
-  }
-
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResCommitRequest(this);
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    xid.writeContent(out);
-    out.writeBoolean(onePhase);
-    if (messages == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeInt(messages.length);
-      for (int i = 0; i < messages.length; i++)
-      {
-        byte[] msg = (byte[]) messages[i];
-        out.writeInt(msg.length);
-        out.write(msg);
-      }
+    public XAResCommitRequest(int dispatchId, XidImpl xid, boolean onePhase) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.onePhase = onePhase;
     }
-  }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = new XidImpl();
-    xid.readContent(in);
-    onePhase = in.readBoolean();
-    byte set = in.readByte();
-    if (set == 0)
-    {
-      messages = null;
-    } else
-    {
-      int len = in.readInt();
-
-      messages = new Object[len];
-
-      for (int i = 0; i < len; i++)
-      {
-        int msglen = in.readInt();
-        byte[] arr = new byte[msglen];
-        in.readFully(arr);
-        messages[i] = arr;
-      }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESCOMMIT_REQ;
     }
-  }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    protected Reply createReplyInstance() {
+        return new XAResCommitReply();
+    }
 
-  public boolean isOnePhase()
-  {
-    return onePhase;
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResCommitRequest(this);
+    }
 
-  public void setMessages(Object[] messages)
-  {
-    this.messages = messages;
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        xid.writeContent(out);
+        out.writeBoolean(onePhase);
+        if (messages == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeInt(messages.length);
+            for (int i = 0; i < messages.length; i++) {
+                byte[] msg = (byte[]) messages[i];
+                out.writeInt(msg.length);
+                out.write(msg);
+            }
+        }
+    }
 
-  public Object[] getMessages()
-  {
-    return (messages);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = new XidImpl();
+        xid.readContent(in);
+        onePhase = in.readBoolean();
+        byte set = in.readByte();
+        if (set == 0) {
+            messages = null;
+        } else {
+            int len = in.readInt();
 
-  public String toString()
-  {
-    return "[XAResCommitRequest " + super.toString() + ", xid=" + xid + ", onePhase=" + onePhase + "]";
-  }
+            messages = new Object[len];
+
+            for (int i = 0; i < len; i++) {
+                int msglen = in.readInt();
+                byte[] arr = new byte[msglen];
+                in.readFully(arr);
+                messages[i] = arr;
+            }
+        }
+    }
+
+    public XidImpl getXid() {
+        return xid;
+    }
+
+    public boolean isOnePhase() {
+        return onePhase;
+    }
+
+    public void setMessages(Object[] messages) {
+        this.messages = messages;
+    }
+
+    public Object[] getMessages() {
+        return (messages);
+    }
+
+    public String toString() {
+        return "[XAResCommitRequest " + super.toString() + ", xid=" + xid + ", onePhase=" + onePhase + "]";
+    }
 
 }
 

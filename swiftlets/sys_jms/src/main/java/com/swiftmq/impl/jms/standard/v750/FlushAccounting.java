@@ -21,25 +21,20 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class FlushAccounting extends Request
-{
-  public FlushAccounting()
-  {
-    super(0, false);
-  }
+public class FlushAccounting extends Request {
+    public FlushAccounting() {
+        super(0, false);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor requestVisitor)
-  {
-    ((ConnectionVisitorAdapter) requestVisitor).visit(this);
-  }
+    public void accept(RequestVisitor requestVisitor) {
+        ((ConnectionVisitorAdapter) requestVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[FlushAccounting]";
-  }
+    public String toString() {
+        return "[FlushAccounting]";
+    }
 }

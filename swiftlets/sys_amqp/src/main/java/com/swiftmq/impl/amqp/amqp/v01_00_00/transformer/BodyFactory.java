@@ -23,7 +23,6 @@ import com.swiftmq.jms.MessageImpl;
 
 import javax.jms.JMSException;
 
-public interface BodyFactory
-{
-  public void createBody(MessageImpl jmsMessage, AMQPMessage amqpMessage) throws JMSException, AMQPException;
+public interface BodyFactory {
+    public void createBody(MessageImpl jmsMessage, AMQPMessage amqpMessage) throws JMSException, AMQPException;
 }

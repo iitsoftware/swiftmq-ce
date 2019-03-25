@@ -21,65 +21,57 @@ import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Map;
 
-public class TraceSpaceImpl extends TraceSpace
-{
-  static SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S/");
-  Entity spaceEntity = null;
-  EntityList predicateList = null;
+public class TraceSpaceImpl extends TraceSpace {
+    static SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S/");
+    Entity spaceEntity = null;
+    EntityList predicateList = null;
 
-  public TraceSpaceImpl(String name, boolean enabled)
-  {
-    super(name, enabled);
-  }
-
-  public TraceSpaceImpl(Entity spaceEntity, EntityList predicateList)
-  {
-    super(spaceEntity.getName(), ((Boolean) spaceEntity.getProperty("enabled").getValue()).booleanValue());
-    this.predicateList = predicateList;
-    Property prop = spaceEntity.getProperty("enabled");
-    prop.setPropertyChangeListener(new PropertyChangeListener()
-    {
-      public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException
-      {
-        enabled = ((Boolean) newValue).booleanValue();
-      }
-    });
-  }
-
-  public void trace(String subEntity, String message)
-  {
-    if (!enabled)
-      return;
-    if (predicateList == null)
-      return;
-    Calendar cal = Calendar.getInstance();
-    StringBuffer outline = new StringBuffer();
-    outline.append(fmt.format(cal.getTime()));
-    outline.append(getSpaceName());
-    outline.append("/");
-    if (subEntity != null)
-    {
-      outline.append(subEntity.toString());
-      outline.append("/");
+    public TraceSpaceImpl(String name, boolean enabled) {
+        super(name, enabled);
     }
-    outline.append(message);
-    String s = outline.toString();
-    Map entities = predicateList.getEntities();
-    if (entities != null)
-    {
-      for (Iterator iter = entities.entrySet().iterator(); iter.hasNext();)
-      {
-        Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
-        TraceDestination dest = (TraceDestination) entity.getUserObject();
-        if (dest != null)
-          dest.trace(subEntity, s);
-      }
-    }
-  }
 
-  protected void closeSpaceResources()
-  {
-  }
+    public TraceSpaceImpl(Entity spaceEntity, EntityList predicateList) {
+        super(spaceEntity.getName(), ((Boolean) spaceEntity.getProperty("enabled").getValue()).booleanValue());
+        this.predicateList = predicateList;
+        Property prop = spaceEntity.getProperty("enabled");
+        prop.setPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChanged(Property prop, Object oldValue, Object newValue) throws PropertyChangeException {
+                enabled = ((Boolean) newValue).booleanValue();
+            }
+        });
+    }
+
+    public void trace(String subEntity, String message) {
+        if (!enabled)
+            return;
+        if (predicateList == null)
+            return;
+        Calendar cal = Calendar.getInstance();
+        StringBuffer outline = new StringBuffer();
+        outline.append(fmt.format(cal.getTime()));
+        outline.append(getSpaceName());
+        outline.append("/");
+        if (subEntity != null) {
+            outline.append(subEntity.toString());
+            outline.append("/");
+        }
+        outline.append(message);
+        String s = outline.toString();
+        Map entities = predicateList.getEntities();
+        if (entities != null) {
+            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
+                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+                TraceDestination dest = (TraceDestination) entity.getUserObject();
+                if (dest != null)
+                    dest.trace(subEntity, s);
+            }
+        }
+    }
+
+    protected void closeSpaceResources() {
+    }
 }

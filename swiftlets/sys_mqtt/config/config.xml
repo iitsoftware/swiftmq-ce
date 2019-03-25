@@ -1,7 +1,7 @@
 <swiftlet name="sys$mqtt"
           displayname="MQTT Swiftlet"
           class="com.swiftmq.impl.mqtt.MQTTSwiftlet"
-          icon="/com/swiftmq/impl/mqtt/images/swiftlet.png"
+          icon="/sys_mqtt/images/swiftlet.png"
           description="MQTT Swiftlet"
           release="${release}"
           vendor="IIT Software GmbH">

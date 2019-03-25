@@ -17,108 +17,96 @@
 
 package com.swiftmq.amqp.v091.generated.queue;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class DeclareOk extends QueueMethod
-{
-  String queue;
-  int messageCount;
-  int consumerCount;
+import java.io.IOException;
 
-  public DeclareOk()
-  {
-    _classId = 50;
-    _methodId = 11;
-  }
+public class DeclareOk extends QueueMethod {
+    String queue;
+    int messageCount;
+    int consumerCount;
 
-  public void accept(QueueMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public DeclareOk() {
+        _classId = 50;
+        _methodId = 11;
+    }
 
-  public String getQueue()
-  {
-    return queue;
-  }
+    public void accept(QueueMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setQueue(String queue)
-  {
-    this.queue = queue;
-  }
+    public String getQueue() {
+        return queue;
+    }
 
-  public int getMessageCount()
-  {
-    return messageCount;
-  }
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-  public void setMessageCount(int messageCount)
-  {
-    this.messageCount = messageCount;
-  }
+    public int getMessageCount() {
+        return messageCount;
+    }
 
-  public int getConsumerCount()
-  {
-    return consumerCount;
-  }
+    public void setMessageCount(int messageCount) {
+        this.messageCount = messageCount;
+    }
 
-  public void setConsumerCount(int consumerCount)
-  {
-    this.consumerCount = consumerCount;
-  }
+    public int getConsumerCount() {
+        return consumerCount;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    queue = Coder.readShortString(in);
-    messageCount = Coder.readInt(in);
-    consumerCount = Coder.readInt(in);
-  }
+    public void setConsumerCount(int consumerCount) {
+        this.consumerCount = consumerCount;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShortString(queue, out);
-    Coder.writeInt(messageCount, out);
-    Coder.writeInt(consumerCount, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        queue = Coder.readShortString(in);
+        messageCount = Coder.readInt(in);
+        consumerCount = Coder.readInt(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("queue=");
-    b.append(queue);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("messageCount=");
-    b.append(messageCount);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("consumerCount=");
-    b.append(consumerCount);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShortString(queue, out);
+        Coder.writeInt(messageCount, out);
+        Coder.writeInt(consumerCount, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[DeclareOk " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("queue=");
+        b.append(queue);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("messageCount=");
+        b.append(messageCount);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("consumerCount=");
+        b.append(consumerCount);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[DeclareOk " + super.toString() + getDisplayString() + "]";
+    }
 }

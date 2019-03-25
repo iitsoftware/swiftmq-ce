@@ -17,97 +17,85 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: RollbackRequest
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:10 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: RollbackRequest
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:10 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class RollbackRequest extends Request 
-{
-  private int recoveryEpoche;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public RollbackRequest()
-  {
-    super(0,true);
-  }
+public class RollbackRequest extends Request {
+    private int recoveryEpoche;
 
-  public RollbackRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public RollbackRequest() {
+        super(0, true);
+    }
 
-  public RollbackRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public RollbackRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public RollbackRequest(int dispatchId, int recoveryEpoche)
-  {
-    super(dispatchId,true);
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public RollbackRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public RollbackRequest(RequestRetryValidator validator, int dispatchId, int recoveryEpoche)
-  {
-    super(dispatchId,true,validator);
-    this.recoveryEpoche = recoveryEpoche;
-  }
-  
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public RollbackRequest(int dispatchId, int recoveryEpoche) {
+        super(dispatchId, true);
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
+    public RollbackRequest(RequestRetryValidator validator, int dispatchId, int recoveryEpoche) {
+        super(dispatchId, true, validator);
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROLLBACK_REQ;
-  }
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
+
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_ROLLBACK_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(recoveryEpoche,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(recoveryEpoche, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    recoveryEpoche = SMQPUtil.read(recoveryEpoche,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new RollbackReply();
-  }
+    protected Reply createReplyInstance() {
+        return new RollbackReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/RollbackRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("recoveryEpoche=");
-    _b.append(recoveryEpoche);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/RollbackRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("recoveryEpoche=");
+        _b.append(recoveryEpoche);
+        _b.append("]");
+        return _b.toString();
+    }
 }

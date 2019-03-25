@@ -17,31 +17,27 @@
 
 package com.swiftmq.impl.store.standard.backup.po;
 
-import com.swiftmq.tools.pipeline.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ChangePath extends POObject
-{
-  String newPath = null;
+public class ChangePath extends POObject {
+    String newPath = null;
 
-  public ChangePath(Semaphore semaphore, String newPath)
-  {
-    super(null, semaphore);
-    this.newPath = newPath;
-  }
+    public ChangePath(Semaphore semaphore, String newPath) {
+        super(null, semaphore);
+        this.newPath = newPath;
+    }
 
-  public String getNewPath()
-  {
-    return newPath;
-  }
+    public String getNewPath() {
+        return newPath;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ChangePath, newPath="+newPath+"]";
-  }
+    public String toString() {
+        return "[ChangePath, newPath=" + newPath + "]";
+    }
 }

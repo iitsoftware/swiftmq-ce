@@ -31,59 +31,44 @@ import javax.jms.MessageEOFException;
 import java.io.IOException;
 import java.util.*;
 
-public class MessageTypeBodyFactory implements BodyFactory
-{
-  public void createBody(MessageImpl jmsMessage, AMQPMessage amqpMessage) throws JMSException, AMQPException
-  {
-    jmsMessage.reset();
-    if (jmsMessage instanceof TextMessageImpl)
-    {
-      amqpMessage.setAmqpValue(new AmqpValue(new AMQPString(((TextMessageImpl) jmsMessage).getText())));
-    } else if (jmsMessage instanceof MapMessageImpl)
-    {
-      MapMessageImpl msg = (MapMessageImpl) jmsMessage;
-      Map map = new HashMap();
-      for (Enumeration _enum = msg.getMapNames(); _enum.hasMoreElements(); )
-      {
-        String name = (String) _enum.nextElement();
-        map.put(new AMQPString(name), Util.convertJMStoAMQP(msg.getObject(name)));
-      }
-      try
-      {
-        amqpMessage.setAmqpValue(new AmqpValue(new AMQPMap(map)));
-      } catch (IOException e)
-      {
-        throw new AMQPException(e.toString());
-      }
-    } else if (jmsMessage instanceof BytesMessageImpl)
-    {
-      BytesMessageImpl msg = (BytesMessageImpl) jmsMessage;
-      byte[] b = new byte[(int) msg.getBodyLength()];
-      msg.readBytes(b);
-      amqpMessage.addData(new Data(b));
-    } else if (jmsMessage instanceof ObjectMessageImpl)
-    {
-      amqpMessage.setAmqpValue(new AmqpValue(Util.convertJMStoAMQP(((ObjectMessageImpl) jmsMessage).getObject())));
-    } else if (jmsMessage instanceof StreamMessageImpl)
-    {
-      List list = new ArrayList();
-      StreamMessageImpl msg = (StreamMessageImpl) jmsMessage;
-      try
-      {
-        for (; ; )
-        {
-          list.add(Util.convertJMStoAMQP(msg.readObject()));
+public class MessageTypeBodyFactory implements BodyFactory {
+    public void createBody(MessageImpl jmsMessage, AMQPMessage amqpMessage) throws JMSException, AMQPException {
+        jmsMessage.reset();
+        if (jmsMessage instanceof TextMessageImpl) {
+            amqpMessage.setAmqpValue(new AmqpValue(new AMQPString(((TextMessageImpl) jmsMessage).getText())));
+        } else if (jmsMessage instanceof MapMessageImpl) {
+            MapMessageImpl msg = (MapMessageImpl) jmsMessage;
+            Map map = new HashMap();
+            for (Enumeration _enum = msg.getMapNames(); _enum.hasMoreElements(); ) {
+                String name = (String) _enum.nextElement();
+                map.put(new AMQPString(name), Util.convertJMStoAMQP(msg.getObject(name)));
+            }
+            try {
+                amqpMessage.setAmqpValue(new AmqpValue(new AMQPMap(map)));
+            } catch (IOException e) {
+                throw new AMQPException(e.toString());
+            }
+        } else if (jmsMessage instanceof BytesMessageImpl) {
+            BytesMessageImpl msg = (BytesMessageImpl) jmsMessage;
+            byte[] b = new byte[(int) msg.getBodyLength()];
+            msg.readBytes(b);
+            amqpMessage.addData(new Data(b));
+        } else if (jmsMessage instanceof ObjectMessageImpl) {
+            amqpMessage.setAmqpValue(new AmqpValue(Util.convertJMStoAMQP(((ObjectMessageImpl) jmsMessage).getObject())));
+        } else if (jmsMessage instanceof StreamMessageImpl) {
+            List list = new ArrayList();
+            StreamMessageImpl msg = (StreamMessageImpl) jmsMessage;
+            try {
+                for (; ; ) {
+                    list.add(Util.convertJMStoAMQP(msg.readObject()));
+                }
+            } catch (MessageEOFException e) {
+            }
+            try {
+                amqpMessage.addAmqpSequence(new AmqpSequence(list));
+            } catch (IOException e) {
+                throw new AMQPException(e.toString());
+            }
         }
-      } catch (MessageEOFException e)
-      {
-      }
-      try
-      {
-        amqpMessage.addAmqpSequence(new AmqpSequence(list));
-      } catch (IOException e)
-      {
-        throw new AMQPException(e.toString());
-      }
     }
-  }
 }

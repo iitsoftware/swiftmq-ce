@@ -22,28 +22,23 @@ import com.swiftmq.impl.amqp.amqp.v01_00_00.TargetLink;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendFlow extends POObject
-{
-  TargetLink targetLink;
+public class POSendFlow extends POObject {
+    TargetLink targetLink;
 
-  public POSendFlow(TargetLink targetLink)
-  {
-    super(null, null);
-    this.targetLink = targetLink;
-  }
+    public POSendFlow(TargetLink targetLink) {
+        super(null, null);
+        this.targetLink = targetLink;
+    }
 
-  public TargetLink getTargetLink()
-  {
-    return targetLink;
-  }
+    public TargetLink getTargetLink() {
+        return targetLink;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPSessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPSessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendFlow, targetLink=" + targetLink + "]";
-  }
+    public String toString() {
+        return "[POSendFlow, targetLink=" + targetLink + "]";
+    }
 }

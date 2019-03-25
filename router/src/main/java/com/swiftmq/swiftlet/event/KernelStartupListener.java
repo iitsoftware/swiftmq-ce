@@ -17,7 +17,6 @@
 
 package com.swiftmq.swiftlet.event;
 
-public interface KernelStartupListener
-{
-  public void kernelStarted();
+public interface KernelStartupListener {
+    public void kernelStarted();
 }

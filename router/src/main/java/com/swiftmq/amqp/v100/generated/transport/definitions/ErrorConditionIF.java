@@ -18,33 +18,32 @@
 package com.swiftmq.amqp.v100.generated.transport.definitions;
 
 /**
- *  The ErrorCondition interface.
+ * The ErrorCondition interface.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface ErrorConditionIF
-{
-  /**
-   * Accept method for a ErrorCondition visitor.
-   *
-   * @param visitor ErrorCondition visitor
-   */
-  public void accept(ErrorConditionVisitor visitor);
+public interface ErrorConditionIF {
+    /**
+     * Accept method for a ErrorCondition visitor.
+     *
+     * @param visitor ErrorCondition visitor
+     */
+    public void accept(ErrorConditionVisitor visitor);
 
-  /**
-   * Returns the predicted size of this ErrorConditionIF. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize();
+    /**
+     * Returns the predicted size of this ErrorConditionIF. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize();
 
-  /**
-   * Returns a value representation of this ErrorConditionIF.
-   *
-   * @return value representation
-   */
-  public String getValueString();
+    /**
+     * Returns a value representation of this ErrorConditionIF.
+     *
+     * @return value representation
+     */
+    public String getValueString();
 }

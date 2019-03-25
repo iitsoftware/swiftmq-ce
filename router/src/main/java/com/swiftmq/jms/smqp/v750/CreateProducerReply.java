@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: CreateProducerReply
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: CreateProducerReply
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CreateProducerReply extends ReplyNE
-{
-  private int queueProducerId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateProducerReply(int queueProducerId)
-  {
-    this.queueProducerId = queueProducerId;
-  }
+public class CreateProducerReply extends ReplyNE {
+    private int queueProducerId;
 
-  protected CreateProducerReply()
-  {
-  }
-  
-  public void setQueueProducerId(int queueProducerId)
-  {
-    this.queueProducerId = queueProducerId;
-  }
+    public CreateProducerReply(int queueProducerId) {
+        this.queueProducerId = queueProducerId;
+    }
 
-  public int getQueueProducerId()
-  {
-    return queueProducerId;
-  }
+    protected CreateProducerReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATEPRODUCER_REP;
-  }
+    public void setQueueProducerId(int queueProducerId) {
+        this.queueProducerId = queueProducerId;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueProducerId,out);
-  }
+    public int getQueueProducerId() {
+        return queueProducerId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueProducerId = SMQPUtil.read(queueProducerId,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATEPRODUCER_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/CreateProducerReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueProducerId=");
-    _b.append(queueProducerId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueProducerId, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueProducerId = SMQPUtil.read(queueProducerId, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/CreateProducerReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueProducerId=");
+        _b.append(queueProducerId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

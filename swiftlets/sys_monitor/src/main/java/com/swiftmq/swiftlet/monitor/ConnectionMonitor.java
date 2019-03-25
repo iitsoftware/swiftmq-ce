@@ -24,62 +24,52 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 
 import java.util.Map;
 
-public class ConnectionMonitor implements TimerListener
-{
-  SwiftletContext ctx = null;
-  EntityList networkUsage = null;
-  Property connectionStartProp = null;
-  boolean thresholdReached = false;
+public class ConnectionMonitor implements TimerListener {
+    SwiftletContext ctx = null;
+    EntityList networkUsage = null;
+    Property connectionStartProp = null;
+    boolean thresholdReached = false;
 
-  public ConnectionMonitor(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    networkUsage = (EntityList) SwiftletManager.getInstance().getConfiguration("sys$net").getEntity("usage");
-    connectionStartProp = ctx.root.getEntity("connection").getProperty("connection-threshold");
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/created");
-  }
-
-  private boolean limitReached(int maxConnections)
-  {
-    if (maxConnections == -1)
-      return false;
-    Map entities = networkUsage.getEntities();
-    return entities != null && entities.size() > maxConnections;
-  }
-
-  public void performTimeAction()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/performTimeAction");
-    if (limitReached(((Integer) connectionStartProp.getValue()).intValue()))
-    {
-      if (!thresholdReached)
-      {
-        ctx.mailGenerator.generateMail("Connection Monitor on " + SwiftletManager.getInstance().getRouterName() + ": Number Connections CRITICAL!");
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/performTimeAction, Number Connections CRITICAL!");
-        ctx.logSwiftlet.logWarning(ctx.swiftlet.getName(), toString() + "/Number Connections CRITICAL!");
-      }
-      thresholdReached = true;
-    } else
-    {
-      if (thresholdReached)
-      {
-        ctx.mailGenerator.generateMail("Connection Monitor on " + SwiftletManager.getInstance().getRouterName() + ": Number Connections back to NORMAL!");
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/performTimeAction, Number Connections back to NORMAL!");
-        ctx.logSwiftlet.logWarning(ctx.swiftlet.getName(), toString() + "/Number Connections back to NORMAL!");
-      }
-      thresholdReached = false;
+    public ConnectionMonitor(SwiftletContext ctx) {
+        this.ctx = ctx;
+        networkUsage = (EntityList) SwiftletManager.getInstance().getConfiguration("sys$net").getEntity("usage");
+        connectionStartProp = ctx.root.getEntity("connection").getProperty("connection-threshold");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/created");
     }
-  }
 
-  public void close()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/close");
-  }
+    private boolean limitReached(int maxConnections) {
+        if (maxConnections == -1)
+            return false;
+        Map entities = networkUsage.getEntities();
+        return entities != null && entities.size() > maxConnections;
+    }
 
-  public String toString()
-  {
-    return "ConnectionMonitor";
-  }
+    public void performTimeAction() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/performTimeAction");
+        if (limitReached(((Integer) connectionStartProp.getValue()).intValue())) {
+            if (!thresholdReached) {
+                ctx.mailGenerator.generateMail("Connection Monitor on " + SwiftletManager.getInstance().getRouterName() + ": Number Connections CRITICAL!");
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/performTimeAction, Number Connections CRITICAL!");
+                ctx.logSwiftlet.logWarning(ctx.swiftlet.getName(), toString() + "/Number Connections CRITICAL!");
+            }
+            thresholdReached = true;
+        } else {
+            if (thresholdReached) {
+                ctx.mailGenerator.generateMail("Connection Monitor on " + SwiftletManager.getInstance().getRouterName() + ": Number Connections back to NORMAL!");
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/performTimeAction, Number Connections back to NORMAL!");
+                ctx.logSwiftlet.logWarning(ctx.swiftlet.getName(), toString() + "/Number Connections back to NORMAL!");
+            }
+            thresholdReached = false;
+        }
+    }
+
+    public void close() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.swiftlet.getName(), toString() + "/close");
+    }
+
+    public String toString() {
+        return "ConnectionMonitor";
+    }
 }

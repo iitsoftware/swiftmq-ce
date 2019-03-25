@@ -22,49 +22,41 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POOpen extends POObject
-{
-  String containerId;
-  long maxFrameSize;
-  int maxChannel;
-  long idleTimeout;
+public class POOpen extends POObject {
+    String containerId;
+    long maxFrameSize;
+    int maxChannel;
+    long idleTimeout;
 
-  public POOpen(Semaphore semaphore, String containerId, long maxFrameSize, int maxChannel, long idleTimeout)
-  {
-    super(null, semaphore);
-    this.containerId = containerId;
-    this.maxFrameSize = maxFrameSize;
-    this.maxChannel = maxChannel;
-    this.idleTimeout = idleTimeout;
-  }
+    public POOpen(Semaphore semaphore, String containerId, long maxFrameSize, int maxChannel, long idleTimeout) {
+        super(null, semaphore);
+        this.containerId = containerId;
+        this.maxFrameSize = maxFrameSize;
+        this.maxChannel = maxChannel;
+        this.idleTimeout = idleTimeout;
+    }
 
-  public String getContainerId()
-  {
-    return containerId;
-  }
+    public String getContainerId() {
+        return containerId;
+    }
 
-  public long getMaxFrameSize()
-  {
-    return maxFrameSize;
-  }
+    public long getMaxFrameSize() {
+        return maxFrameSize;
+    }
 
-  public int getMaxChannel()
-  {
-    return maxChannel;
-  }
+    public int getMaxChannel() {
+        return maxChannel;
+    }
 
-  public long getIdleTimeout()
-  {
-    return idleTimeout;
-  }
+    public long getIdleTimeout() {
+        return idleTimeout;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POOpen, containerId=" + containerId + ", maxFrameSize=" + maxFrameSize + ", maxChannel=" + maxChannel + ", idleTimeout=" + idleTimeout + "]";
-  }
+    public String toString() {
+        return "[POOpen, containerId=" + containerId + ", maxFrameSize=" + maxFrameSize + ", maxChannel=" + maxChannel + ", idleTimeout=" + idleTimeout + "]";
+    }
 }

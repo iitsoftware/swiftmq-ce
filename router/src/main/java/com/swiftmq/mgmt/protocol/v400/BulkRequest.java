@@ -17,73 +17,68 @@
 
 package com.swiftmq.mgmt.protocol.v400;
 
-import com.swiftmq.tools.requestreply.*;
-import com.swiftmq.tools.dump.*;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
+import com.swiftmq.tools.dump.Dumpalizer;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class BulkRequest extends Request
-{
-  public DumpableFactory factory = new ProtocolFactory();
-  public Object[] dumpables = null;
-  public int len = 0;
+public class BulkRequest extends Request {
+    public DumpableFactory factory = new ProtocolFactory();
+    public Object[] dumpables = null;
+    public int len = 0;
 
-  public BulkRequest()
-  {
-    super(0,false);
-  }
-
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(len);
-    for (int i = 0; i < len; i++)
-      Dumpalizer.dump(out, (Dumpable) dumpables[i]);
-  }
-
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    super.readContent(in);
-    len = in.readInt();
-    dumpables = new Object[len];
-    for (int i = 0; i < len; i++)
-    {
-      dumpables[i] = Dumpalizer.construct(in, factory);
+    public BulkRequest() {
+        super(0, false);
     }
-  }
 
-  public int getDumpId()
-  {
-    return ProtocolFactory.BULK_REQ;
-  }
-
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
-
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
-
-  private String dumpDumpables()
-  {
-    StringBuffer b = new StringBuffer("\n");
-    for (int i = 0; i < len; i++)
-    {
-      b.append(dumpables[i].toString());
-      b.append("\n");
+    public void writeContent(DataOutput out)
+            throws IOException {
+        super.writeContent(out);
+        out.writeInt(len);
+        for (int i = 0; i < len; i++)
+            Dumpalizer.dump(out, (Dumpable) dumpables[i]);
     }
-    return b.toString();
-  }
 
-  public String toString()
-  {
-    return "[BulkRequest " + super.toString() +
-        " len =" + len +
-        " dumpables=" + dumpDumpables() + "]";
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        super.readContent(in);
+        len = in.readInt();
+        dumpables = new Object[len];
+        for (int i = 0; i < len; i++) {
+            dumpables[i] = Dumpalizer.construct(in, factory);
+        }
+    }
+
+    public int getDumpId() {
+        return ProtocolFactory.BULK_REQ;
+    }
+
+    protected Reply createReplyInstance() {
+        return null;
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
+
+    private String dumpDumpables() {
+        StringBuffer b = new StringBuffer("\n");
+        for (int i = 0; i < len; i++) {
+            b.append(dumpables[i].toString());
+            b.append("\n");
+        }
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[BulkRequest " + super.toString() +
+                " len =" + len +
+                " dumpables=" + dumpDumpables() + "]";
+    }
 }

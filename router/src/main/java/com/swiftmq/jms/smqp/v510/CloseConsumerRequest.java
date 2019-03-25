@@ -17,126 +17,110 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CloseConsumerRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CloseConsumerRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CloseConsumerRequest extends Request
-{
-  private int sessionDispatchId;
-  private int queueConsumerId;
-  private String consumerException;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CloseConsumerRequest()
-  {
-    super(0,true);
-  }
+public class CloseConsumerRequest extends Request {
+    private int sessionDispatchId;
+    private int queueConsumerId;
+    private String consumerException;
 
-  public CloseConsumerRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public CloseConsumerRequest() {
+        super(0, true);
+    }
 
-  public CloseConsumerRequest(int dispatchId, int sessionDispatchId, int queueConsumerId, String consumerException)
-  {
-    super(dispatchId,true);
-    this.sessionDispatchId = sessionDispatchId;
-    this.queueConsumerId = queueConsumerId;
-    this.consumerException = consumerException;
-  }
-  
-  public void setSessionDispatchId(int sessionDispatchId)
-  {
-    this.sessionDispatchId = sessionDispatchId;
-  }
+    public CloseConsumerRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public int getSessionDispatchId()
-  {
-    return sessionDispatchId;
-  }
-  
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public CloseConsumerRequest(int dispatchId, int sessionDispatchId, int queueConsumerId, String consumerException) {
+        super(dispatchId, true);
+        this.sessionDispatchId = sessionDispatchId;
+        this.queueConsumerId = queueConsumerId;
+        this.consumerException = consumerException;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return queueConsumerId;
-  }
-  
-  public void setConsumerException(String consumerException)
-  {
-    this.consumerException = consumerException;
-  }
+    public void setSessionDispatchId(int sessionDispatchId) {
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  public String getConsumerException()
-  {
-    return consumerException;
-  }
+    public int getSessionDispatchId() {
+        return sessionDispatchId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSECONSUMER_REQ;
-  }
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(sessionDispatchId,out);
-    SMQPUtil.write(queueConsumerId,out);
-    if (consumerException != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(consumerException,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public int getQueueConsumerId() {
+        return queueConsumerId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    sessionDispatchId = SMQPUtil.read(sessionDispatchId,in);
-    queueConsumerId = SMQPUtil.read(queueConsumerId,in);
-    boolean consumerException_set = in.readBoolean();
-    if (consumerException_set)
-      consumerException = SMQPUtil.read(consumerException,in);
-  }
+    public void setConsumerException(String consumerException) {
+        this.consumerException = consumerException;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CloseConsumerReply();
-  }
+    public String getConsumerException() {
+        return consumerException;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSECONSUMER_REQ;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CloseConsumerRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("sessionDispatchId=");
-    _b.append(sessionDispatchId);
-    _b.append(", ");
-    _b.append("queueConsumerId=");
-    _b.append(queueConsumerId);
-    _b.append(", ");
-    _b.append("consumerException=");
-    _b.append(consumerException);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(sessionDispatchId, out);
+        SMQPUtil.write(queueConsumerId, out);
+        if (consumerException != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(consumerException, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        sessionDispatchId = SMQPUtil.read(sessionDispatchId, in);
+        queueConsumerId = SMQPUtil.read(queueConsumerId, in);
+        boolean consumerException_set = in.readBoolean();
+        if (consumerException_set)
+            consumerException = SMQPUtil.read(consumerException, in);
+    }
+
+    protected Reply createReplyInstance() {
+        return new CloseConsumerReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CloseConsumerRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("sessionDispatchId=");
+        _b.append(sessionDispatchId);
+        _b.append(", ");
+        _b.append("queueConsumerId=");
+        _b.append(queueConsumerId);
+        _b.append(", ");
+        _b.append("consumerException=");
+        _b.append(consumerException);
+        _b.append("]");
+        return _b.toString();
+    }
 }

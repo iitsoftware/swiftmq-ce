@@ -17,18 +17,15 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
 
-public abstract class EventObject extends POObject
-{
-  public EventObject(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public abstract class EventObject extends POObject {
+    public EventObject(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public EventObject()
-  {
-    this(null);
-  }
+    public EventObject() {
+        this(null);
+    }
 }

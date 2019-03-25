@@ -19,65 +19,50 @@ package com.swiftmq.tools.collection;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class RingBufferThreadsafe extends RingBuffer
-{
-  ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+public class RingBufferThreadsafe extends RingBuffer {
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-  public RingBufferThreadsafe(int extendSize)
-  {
-    super(extendSize);
-  }
-
-  public RingBufferThreadsafe(RingBuffer base)
-  {
-    super(base);
-  }
-
-  public void add(Object obj)
-  {
-    lock.writeLock().lock();
-    try
-    {
-      super.add(obj);
-    } finally
-    {
-      lock.writeLock().unlock();
+    public RingBufferThreadsafe(int extendSize) {
+        super(extendSize);
     }
-  }
 
-  public Object remove()
-  {
-    lock.writeLock().lock();
-    try
-    {
-      return super.remove();
-    } finally
-    {
-      lock.writeLock().unlock();
+    public RingBufferThreadsafe(RingBuffer base) {
+        super(base);
     }
-  }
 
-  public int getSize()
-  {
-    lock.readLock().lock();
-    try
-    {
-      return super.getSize();
-    } finally
-    {
-      lock.readLock().unlock();
+    public void add(Object obj) {
+        lock.writeLock().lock();
+        try {
+            super.add(obj);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
-  }
 
-  public void clear()
-  {
-    lock.writeLock().lock();
-    try
-    {
-      super.clear();
-    } finally
-    {
-      lock.writeLock().unlock();
+    public Object remove() {
+        lock.writeLock().lock();
+        try {
+            return super.remove();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
-  }
+
+    public int getSize() {
+        lock.readLock().lock();
+        try {
+            return super.getSize();
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public void clear() {
+        lock.writeLock().lock();
+        try {
+            super.clear();
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
 }

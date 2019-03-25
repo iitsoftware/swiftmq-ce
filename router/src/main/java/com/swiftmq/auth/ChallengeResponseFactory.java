@@ -19,18 +19,17 @@ package com.swiftmq.auth;
 
 import java.io.Serializable;
 
-public interface ChallengeResponseFactory
-{
-  public Serializable createChallenge(String password);
+public interface ChallengeResponseFactory {
+    public Serializable createChallenge(String password);
 
-  public byte[] createBytesChallenge(String password);
+    public byte[] createBytesChallenge(String password);
 
-  public Serializable createResponse(Serializable challenge, String password);
+    public Serializable createResponse(Serializable challenge, String password);
 
-  public byte[] createBytesResponse(byte[] challenge, String password);
+    public byte[] createBytesResponse(byte[] challenge, String password);
 
-  public boolean verifyResponse(Serializable challenge, Serializable response, String password);
+    public boolean verifyResponse(Serializable challenge, Serializable response, String password);
 
-  public boolean verifyBytesResponse(byte[] challenge, byte[] response, String password);
+    public boolean verifyBytesResponse(byte[] challenge, byte[] response, String password);
 }
 

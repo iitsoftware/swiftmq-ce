@@ -20,20 +20,16 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00;
 import com.swiftmq.amqp.v100.generated.transport.definitions.ErrorConditionIF;
 import com.swiftmq.amqp.v100.types.AMQPString;
 
-public class SessionEndException extends EndWithErrorException
-{
-  public SessionEndException(ErrorConditionIF condition, AMQPString description)
-  {
-    super(condition, description);
-  }
+public class SessionEndException extends EndWithErrorException {
+    public SessionEndException(ErrorConditionIF condition, AMQPString description) {
+        super(condition, description);
+    }
 
-  public void accept(EndWithErrorExceptionVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public void accept(EndWithErrorExceptionVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public String toString()
-  {
-    return "SessionEndException, " + super.toString();
-  }
+    public String toString() {
+        return "SessionEndException, " + super.toString();
+    }
 }

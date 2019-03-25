@@ -27,28 +27,28 @@ import com.swiftmq.tools.requestreply.RequestRegistry;
 import javax.jms.Topic;
 
 public class DurableTopicSubscriberImpl extends TopicSubscriberImpl {
-  String durableName = null;
+    String durableName = null;
 
-  public DurableTopicSubscriberImpl(boolean transacted, int acknowledgeMode, RequestRegistry requestRegistry, Topic topic, String messageSelector, SessionImpl session, boolean noLocal, String durableName) {
-    super(transacted, acknowledgeMode, requestRegistry, topic, messageSelector, session, noLocal);
-    this.durableName = durableName;
-  }
+    public DurableTopicSubscriberImpl(boolean transacted, int acknowledgeMode, RequestRegistry requestRegistry, Topic topic, String messageSelector, SessionImpl session, boolean noLocal, String durableName) {
+        super(transacted, acknowledgeMode, requestRegistry, topic, messageSelector, session, noLocal);
+        this.durableName = durableName;
+    }
 
-  public Request getRecreateRequest() {
-    String ms = messageSelector;
-    if (messageSelector != null && messageSelector.trim().length() == 0)
-      ms = null;
-    return new CreateDurableRequest(mySession.dispatchId, (TopicImpl) topic, ms, noLocal, durableName);
-  }
+    public Request getRecreateRequest() {
+        String ms = messageSelector;
+        if (messageSelector != null && messageSelector.trim().length() == 0)
+            ms = null;
+        return new CreateDurableRequest(mySession.dispatchId, (TopicImpl) topic, ms, noLocal, durableName);
+    }
 
-  public void setRecreateReply(Reply reply) {
-    serverQueueConsumerId = ((CreateDurableReply) reply).getTopicSubscriberId();
-  }
+    public void setRecreateReply(Reply reply) {
+        serverQueueConsumerId = ((CreateDurableReply) reply).getTopicSubscriberId();
+    }
 
-  @Override
-  public String toString() {
-    return "DurableTopicSubscriberImpl {" +
-        "durableName='" + durableName + '\'' +
-        '}';
-  }
+    @Override
+    public String toString() {
+        return "DurableTopicSubscriberImpl {" +
+                "durableName='" + durableName + '\'' +
+                '}';
+    }
 }

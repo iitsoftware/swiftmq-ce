@@ -22,35 +22,29 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ConnectionStateChanged extends POObject
-{
-  Entity entity = null;
-  boolean enabled = false;
+public class ConnectionStateChanged extends POObject {
+    Entity entity = null;
+    boolean enabled = false;
 
-  public ConnectionStateChanged(Semaphore semaphore, Entity entity, boolean enabled)
-  {
-    super(null, semaphore);
-    this.entity = entity;
-    this.enabled = enabled;
-  }
+    public ConnectionStateChanged(Semaphore semaphore, Entity entity, boolean enabled) {
+        super(null, semaphore);
+        this.entity = entity;
+        this.enabled = enabled;
+    }
 
-  public Entity getEntity()
-  {
-    return entity;
-  }
+    public Entity getEntity() {
+        return entity;
+    }
 
-  public boolean isEnabled()
-  {
-    return enabled;
-  }
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor) poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[ConnectionStateChanged, entity=" + entity.getName() + ", enabled=" + enabled + "]";
-  }
+    public String toString() {
+        return "[ConnectionStateChanged, entity=" + entity.getName() + ", enabled=" + enabled + "]";
+    }
 }

@@ -22,15 +22,13 @@ package com.swiftmq.filetransfer;
  *
  * @author IIT Software GmbH, Bremen/Germany, (c) 2013, All Rights Reserved
  */
-public class FiletransferException extends Exception
-{
-  /**
-   * Creates a FiletransferException
-   *
-   * @param s message
-   */
-  public FiletransferException(String s)
-  {
-    super(s);
-  }
+public class FiletransferException extends Exception {
+    /**
+     * Creates a FiletransferException
+     *
+     * @param s message
+     */
+    public FiletransferException(String s) {
+        super(s);
+    }
 }

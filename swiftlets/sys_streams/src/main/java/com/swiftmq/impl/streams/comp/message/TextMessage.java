@@ -37,14 +37,14 @@ public class TextMessage extends Message {
         super(ctx, _impl);
     }
 
-  /**
-   * return the type of this Message
-   *
-   * @return "text"
-   */
-  public String type() {
-    return "text";
-  }
+    /**
+     * return the type of this Message
+     *
+     * @return "text"
+     */
+    public String type() {
+        return "text";
+    }
 
     /**
      * Returns the body.

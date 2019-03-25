@@ -18,46 +18,51 @@
 package com.swiftmq.swiftlet.accounting;
 
 import java.util.Map;
+
 /**
  * An AccountingSourceFactory specifies the interface for classes which creates
  * AccountingSourses.
- *
+ * <p>
  * An AccountingSourceFactory always belongs to a group (usually a Swiftlet) and
  * a name (usually the class name of the factory).
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2010, All Rights Reserved
  */
-public interface AccountingSourceFactory
-{
-  /**
-   * Returns whether there can only be one AccountingSource created and active at a time.
-   * @return singleton or not
-   */
-  public boolean isSingleton();
-  
-  /**
-   * Returns the group name.
-   * @return group name
-   */
-  public String getGroup();
+public interface AccountingSourceFactory {
+    /**
+     * Returns whether there can only be one AccountingSource created and active at a time.
+     *
+     * @return singleton or not
+     */
+    public boolean isSingleton();
 
-  /**
-   * Returns the name of this factory
-   * @return factory name
-   */
-  public String getName();
+    /**
+     * Returns the group name.
+     *
+     * @return group name
+     */
+    public String getGroup();
 
-  /**
-   * Returns a map of Parameter objects required or optional, passed to the create method.
-   * @return map of Parameter objects
-   */
-  public Map getParameters();
+    /**
+     * Returns the name of this factory
+     *
+     * @return factory name
+     */
+    public String getName();
 
-  /**
-   * Create a AccountingSource object.
-   * @param parameters parameter map of name/value pairs (both String)
-   * @return  AccountingSource object
-   * @throws Exception if anything goes wrong
-   */
-  public AccountingSource create(Map parameters) throws Exception;
+    /**
+     * Returns a map of Parameter objects required or optional, passed to the create method.
+     *
+     * @return map of Parameter objects
+     */
+    public Map getParameters();
+
+    /**
+     * Create a AccountingSource object.
+     *
+     * @param parameters parameter map of name/value pairs (both String)
+     * @return AccountingSource object
+     * @throws Exception if anything goes wrong
+     */
+    public AccountingSource create(Map parameters) throws Exception;
 }

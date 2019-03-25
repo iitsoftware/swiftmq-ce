@@ -17,7 +17,6 @@
 
 package com.swiftmq.admin.mgmt;
 
-public interface ExceptionListener
-{
-  public void onException(Exception e);
+public interface ExceptionListener {
+    public void onException(Exception e);
 }

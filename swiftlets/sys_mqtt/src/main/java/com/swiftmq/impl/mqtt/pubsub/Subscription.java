@@ -22,11 +22,11 @@ import com.swiftmq.impl.mqtt.po.POSendMessage;
 import com.swiftmq.impl.mqtt.session.MQTTSession;
 import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttQoS;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttQoS;
 
 public class Subscription extends MessageProcessor {
     SwiftletContext ctx;

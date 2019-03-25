@@ -24,15 +24,15 @@ package com.swiftmq.net.protocol;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  * @see ProtocolInputHandler
  */
-public interface ChunkListener
-{
+public interface ChunkListener {
 
-  /**
-   * Called from a ProtocolInputHandler when a protocol-chunk has been completed.
-   * @param b byte array.
-   * @param offset offset
-   * @param len length
-   */
-  public void chunkCompleted(byte[] b, int offset, int len);
+    /**
+     * Called from a ProtocolInputHandler when a protocol-chunk has been completed.
+     *
+     * @param b      byte array.
+     * @param offset offset
+     * @param len    length
+     */
+    public void chunkCompleted(byte[] b, int offset, int len);
 }
 

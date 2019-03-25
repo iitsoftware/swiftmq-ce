@@ -17,57 +17,50 @@
 
 package com.swiftmq.jms.v750;
 
-import com.swiftmq.tools.requestreply.RequestRegistry;
-import com.swiftmq.tools.requestreply.Request;
-import com.swiftmq.tools.requestreply.Reply;
-import com.swiftmq.jms.smqp.v750.CreateConsumerRequest;
-import com.swiftmq.jms.smqp.v750.CreateConsumerReply;
-import com.swiftmq.jms.smqp.v750.CreateSubscriberRequest;
-import com.swiftmq.jms.smqp.v750.CreateSubscriberReply;
-import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.jms.TopicImpl;
+import com.swiftmq.jms.smqp.v750.CreateSubscriberReply;
+import com.swiftmq.jms.smqp.v750.CreateSubscriberRequest;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Topic;
+import javax.jms.TopicSubscriber;
 
-public class TopicSubscriberImpl extends MessageConsumerImpl implements TopicSubscriber
-{
-  Topic topic = null;
-  boolean noLocal = false;
+public class TopicSubscriberImpl extends MessageConsumerImpl implements TopicSubscriber {
+    Topic topic = null;
+    boolean noLocal = false;
 
-  public TopicSubscriberImpl(boolean transacted, int acknowledgeMode, RequestRegistry requestRegistry,
-                             Topic topic, String messageSelector,
-                             SessionImpl session, boolean noLocal)
-  {
-    super(transacted, acknowledgeMode, requestRegistry, messageSelector, session);
-    this.topic = topic;
-    this.noLocal = noLocal;
-  }
+    public TopicSubscriberImpl(boolean transacted, int acknowledgeMode, RequestRegistry requestRegistry,
+                               Topic topic, String messageSelector,
+                               SessionImpl session, boolean noLocal) {
+        super(transacted, acknowledgeMode, requestRegistry, messageSelector, session);
+        this.topic = topic;
+        this.noLocal = noLocal;
+    }
 
-  public Topic getTopic()
-    throws JMSException
-  {
-    verifyState();
-    return topic;
-  }
+    public Topic getTopic()
+            throws JMSException {
+        verifyState();
+        return topic;
+    }
 
-  public boolean getNoLocal()
-    throws JMSException
-  {
-    verifyState();
-    return noLocal;
-  }
+    public boolean getNoLocal()
+            throws JMSException {
+        verifyState();
+        return noLocal;
+    }
 
-  public Request getRecreateRequest()
-  {
-    String ms = messageSelector;
-    if (messageSelector != null && messageSelector.trim().length() == 0)
-      ms = null;
-    return new CreateSubscriberRequest(mySession, mySession.dispatchId, (TopicImpl) topic, ms, noLocal, true);
-  }
+    public Request getRecreateRequest() {
+        String ms = messageSelector;
+        if (messageSelector != null && messageSelector.trim().length() == 0)
+            ms = null;
+        return new CreateSubscriberRequest(mySession, mySession.dispatchId, (TopicImpl) topic, ms, noLocal, true);
+    }
 
-  public void setRecreateReply(Reply reply)
-  {
-    serverQueueConsumerId = ((CreateSubscriberReply)reply).getTopicSubscriberId();
-  }
+    public void setRecreateReply(Reply reply) {
+        serverQueueConsumerId = ((CreateSubscriberReply) reply).getTopicSubscriberId();
+    }
 }
 

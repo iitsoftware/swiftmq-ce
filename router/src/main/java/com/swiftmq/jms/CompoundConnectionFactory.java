@@ -17,15 +17,9 @@
 
 package com.swiftmq.jms;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XAQueueConnectionFactory;
-import javax.jms.XATopicConnectionFactory;
+import javax.jms.*;
 
 public interface CompoundConnectionFactory extends
-    ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory, 
-    XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory
-{
+        ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
+        XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory {
 }

@@ -17,43 +17,37 @@
 
 package com.swiftmq.filetransfer;
 
-public class Util
-{
-  public static String parse(String pre, String post, String source)
-  {
-    int start = source.indexOf(pre);
-    if (start == -1)
-      return null;
-    int valStart = start + pre.length();
-    int valStop = source.length();
-    int end = source.indexOf(post, start);
-    if (end != -1)
-      valStop = end;
-    return source.substring(valStart, valStop);
-  }
-
-  public static String byteArrayToHexString(byte[] b)
-  {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < b.length; i++)
-      sb.append(String.format("%02x", b[i]));
-    return sb.toString();
-  }
-
-  public static byte[] hexStringToByteArray(String s)
-  {
-    int len = s.length();
-    byte[] b = new byte[len / 2];
-    for (int i = 0; i < len; i += 2)
-    {
-      b[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-          + Character.digit(s.charAt(i + 1), 16));
+public class Util {
+    public static String parse(String pre, String post, String source) {
+        int start = source.indexOf(pre);
+        if (start == -1)
+            return null;
+        int valStart = start + pre.length();
+        int valStop = source.length();
+        int end = source.indexOf(post, start);
+        if (end != -1)
+            valStop = end;
+        return source.substring(valStart, valStop);
     }
-    return b;
-  }
 
-  public static String createCacheRequestQueueName(String cacheName, String routerName)
-  {
-    return new StringBuilder("swiftmqfcreq-").append(cacheName).append('@').append(routerName).toString();
-  }
+    public static String byteArrayToHexString(byte[] b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < b.length; i++)
+            sb.append(String.format("%02x", b[i]));
+        return sb.toString();
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] b = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            b[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return b;
+    }
+
+    public static String createCacheRequestQueueName(String cacheName, String routerName) {
+        return new StringBuilder("swiftmqfcreq-").append(cacheName).append('@').append(routerName).toString();
+    }
 }

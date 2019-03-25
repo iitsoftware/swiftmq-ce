@@ -30,157 +30,131 @@ import com.swiftmq.tools.sql.LikeComparator;
 
 import java.util.Properties;
 
-public class QueueCleanupDLQJob implements Job
-{
-  SwiftletContext ctx = null;
-  boolean stopCalled = false;
-  Properties properties = null;
-  QueueReceiver receiver = null;
-  QueuePullTransaction pullTx = null;
-  QueueSender sender = null;
-  QueuePushTransaction pushTx = null;
-  QueueImpl targetQueue = null;
+public class QueueCleanupDLQJob implements Job {
+    SwiftletContext ctx = null;
+    boolean stopCalled = false;
+    Properties properties = null;
+    QueueReceiver receiver = null;
+    QueuePullTransaction pullTx = null;
+    QueueSender sender = null;
+    QueuePushTransaction pushTx = null;
+    QueueImpl targetQueue = null;
 
-  public QueueCleanupDLQJob(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public QueueCleanupDLQJob(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  private void closeResources()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/closeResources");
-    try
-    {
-      if (pullTx != null)
-        pullTx.rollback();
-      pullTx = null;
-    } catch (Exception e)
-    {
-    }
-    try
-    {
-      if (receiver != null)
-        receiver.close();
-      receiver = null;
-    } catch (Exception e)
-    {
-    }
-    try
-    {
-      if (pushTx != null)
-        pushTx.rollback();
-      pushTx = null;
-    } catch (Exception e)
-    {
-    }
-    try
-    {
-      if (sender != null)
-        sender.close();
-      sender = null;
-    } catch (Exception e)
-    {
-    }
-  }
-
-  private int cleanupQueue(String queueName) throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue ...");
-    receiver = ctx.queueManager.createQueueReceiver(queueName, null, null);
-    pullTx = receiver.createTransaction(false);
-    targetQueue = new QueueImpl(QueueManagerImpl.DLQ + '@' + SwiftletManager.getInstance().getRouterName());
-    sender = ctx.queueManager.createQueueSender(targetQueue.getQueueName(), null);
-    pushTx = sender.createTransaction();
-    if (stopCalled)
-    {
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue, stopCalled (2)");
-      closeResources();
-      return 0;
-    }
-    int cnt = 0;
-    MessageEntry entry = null;
-    while ((entry = pullTx.getExpiredMessage(0)) != null)
-    {
-      MessageImpl msg = entry.getMessage();
-      pushTx.putMessage(msg);
-      cnt++;
-      pushTx.commit();
-      pullTx.commit();
-      if (stopCalled)
-      {
-        if (ctx.traceSpace.enabled)
-          ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue, stopCalled (2)");
-        closeResources();
-        return cnt;
-      }
-      pullTx = receiver.createTransaction(false);
-      pushTx = sender.createTransaction();
-    }
-    closeResources();
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue done, cnt=" + cnt);
-    return cnt;
-  }
-
-  public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " ...");
-    this.properties = properties;
-    StringBuffer termMsg = new StringBuffer();
-
-    try
-    {
-      String predicate = properties.getProperty("Queue Name Predicate");
-      String[] names = ctx.queueManager.getDefinedQueueNames();
-      if (names != null)
-      {
-        for (int i = 0; i < names.length; i++)
-        {
-          if (!names[i].startsWith("tpc$"))
-          {
-            if (LikeComparator.compare(names[i], predicate, '\\'))
-            {
-              if (termMsg.length() > 0)
-                termMsg.append(", ");
-              termMsg.append(names[i]);
-              termMsg.append("=");
-              try
-              {
-                termMsg.append(cleanupQueue(names[i]));
-              } catch (Exception e)
-              {
-                if (ctx.traceSpace.enabled)
-                  ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/exception=" + e);
-                termMsg.append(e.toString());
-              }
-            }
-          }
-          if (stopCalled)
-            break;
+    private void closeResources() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/closeResources");
+        try {
+            if (pullTx != null)
+                pullTx.rollback();
+            pullTx = null;
+        } catch (Exception e) {
         }
-      }
-    } catch (Exception e)
-    {
-      closeResources();
-      throw new JobException(e.toString(), e, false);
+        try {
+            if (receiver != null)
+                receiver.close();
+            receiver = null;
+        } catch (Exception e) {
+        }
+        try {
+            if (pushTx != null)
+                pushTx.rollback();
+            pushTx = null;
+        } catch (Exception e) {
+        }
+        try {
+            if (sender != null)
+                sender.close();
+            sender = null;
+        } catch (Exception e) {
+        }
     }
-    closeResources();
-    jobTerminationListener.jobTerminated(termMsg.toString());
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " done, " + termMsg);
-  }
 
-  public void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop ...");
-    stopCalled = true;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop done");
-  }
+    private int cleanupQueue(String queueName) throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue ...");
+        receiver = ctx.queueManager.createQueueReceiver(queueName, null, null);
+        pullTx = receiver.createTransaction(false);
+        targetQueue = new QueueImpl(QueueManagerImpl.DLQ + '@' + SwiftletManager.getInstance().getRouterName());
+        sender = ctx.queueManager.createQueueSender(targetQueue.getQueueName(), null);
+        pushTx = sender.createTransaction();
+        if (stopCalled) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue, stopCalled (2)");
+            closeResources();
+            return 0;
+        }
+        int cnt = 0;
+        MessageEntry entry = null;
+        while ((entry = pullTx.getExpiredMessage(0)) != null) {
+            MessageImpl msg = entry.getMessage();
+            pushTx.putMessage(msg);
+            cnt++;
+            pushTx.commit();
+            pullTx.commit();
+            if (stopCalled) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue, stopCalled (2)");
+                closeResources();
+                return cnt;
+            }
+            pullTx = receiver.createTransaction(false);
+            pushTx = sender.createTransaction();
+        }
+        closeResources();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/cleanupQueue done, cnt=" + cnt);
+        return cnt;
+    }
 
-  public String toString()
-  {
-    return "[QueueCleanupDLQJob, properties=" + properties + "]";
-  }
+    public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " ...");
+        this.properties = properties;
+        StringBuffer termMsg = new StringBuffer();
+
+        try {
+            String predicate = properties.getProperty("Queue Name Predicate");
+            String[] names = ctx.queueManager.getDefinedQueueNames();
+            if (names != null) {
+                for (int i = 0; i < names.length; i++) {
+                    if (!names[i].startsWith("tpc$")) {
+                        if (LikeComparator.compare(names[i], predicate, '\\')) {
+                            if (termMsg.length() > 0)
+                                termMsg.append(", ");
+                            termMsg.append(names[i]);
+                            termMsg.append("=");
+                            try {
+                                termMsg.append(cleanupQueue(names[i]));
+                            } catch (Exception e) {
+                                if (ctx.traceSpace.enabled)
+                                    ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/exception=" + e);
+                                termMsg.append(e.toString());
+                            }
+                        }
+                    }
+                    if (stopCalled)
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            closeResources();
+            throw new JobException(e.toString(), e, false);
+        }
+        closeResources();
+        jobTerminationListener.jobTerminated(termMsg.toString());
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/start, properties=" + properties + " done, " + termMsg);
+    }
+
+    public void stop() throws JobException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop ...");
+        stopCalled = true;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop done");
+    }
+
+    public String toString() {
+        return "[QueueCleanupDLQJob, properties=" + properties + "]";
+    }
 }

@@ -21,20 +21,16 @@ import com.swiftmq.impl.amqp.sasl.v01_00_00.SASLVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendInit extends POObject
-{
-  public POSendInit()
-  {
-    super(null, null);
-  }
+public class POSendInit extends POObject {
+    public POSendInit() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SASLVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SASLVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendInit]";
-  }
+    public String toString() {
+        return "[POSendInit]";
+    }
 }

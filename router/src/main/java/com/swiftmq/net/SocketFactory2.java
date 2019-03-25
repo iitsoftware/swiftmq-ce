@@ -17,7 +17,6 @@
 
 package com.swiftmq.net;
 
-public interface SocketFactory2 extends SocketFactory
-{
-  public void setReceiveBufferSize(int size);
+public interface SocketFactory2 extends SocketFactory {
+    public void setReceiveBufferSize(int size);
 }

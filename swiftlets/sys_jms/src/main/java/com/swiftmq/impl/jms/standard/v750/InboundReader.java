@@ -39,94 +39,83 @@ import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InboundReader extends RequestServiceRegistry
-    implements InboundHandler, TimerListener
-{
-  static final int INITIAL_KEEPALIVE_COUNT = Integer.parseInt(System.getProperty("swiftmq.jms.keepalive.missing.threshold", "5"));
-  static final DumpableFactory dumpableFactory = new SMQPFactory();
+        implements InboundHandler, TimerListener {
+    static final int INITIAL_KEEPALIVE_COUNT = Integer.parseInt(System.getProperty("swiftmq.jms.keepalive.missing.threshold", "5"));
+    static final DumpableFactory dumpableFactory = new SMQPFactory();
 
-  LogSwiftlet logSwiftlet = null;
-  NetworkSwiftlet networkSwiftlet = null;
-  TraceSwiftlet traceSwiftlet = null;
-  TraceSpace traceSpace = null;
-  String tracePrefix;
-  Connection connection = null;
-  DataStreamInputStream dis = new DataStreamInputStream();
-  volatile boolean closed = false;
-  volatile int keepaliveCount = INITIAL_KEEPALIVE_COUNT;
-  AtomicBoolean inputActiveIndicator = null;
+    LogSwiftlet logSwiftlet = null;
+    NetworkSwiftlet networkSwiftlet = null;
+    TraceSwiftlet traceSwiftlet = null;
+    TraceSpace traceSpace = null;
+    String tracePrefix;
+    Connection connection = null;
+    DataStreamInputStream dis = new DataStreamInputStream();
+    volatile boolean closed = false;
+    volatile int keepaliveCount = INITIAL_KEEPALIVE_COUNT;
+    AtomicBoolean inputActiveIndicator = null;
 
-  InboundReader(String tracePrefix, Connection connection)
-  {
-    this.tracePrefix = tracePrefix;
-    this.tracePrefix += "/InboundReader";
-    this.connection = connection;
-    inputActiveIndicator = connection.getInputActiveIndicator();
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
-  }
-
-  public void performTimeAction()
-  {
-    if (inputActiveIndicator != null && inputActiveIndicator.getAndSet(false))
-    {
-      if (traceSpace.enabled)
-        traceSpace.trace("smqp", tracePrefix + ": performTimeAction, input was active");
-      resetKeepaliveCount();
-    } else
-    {
-      keepaliveCount--;
-      if (traceSpace.enabled)
-        traceSpace.trace("smqp", tracePrefix + ": decrementing keepaliveCount to: " + keepaliveCount);
-      if (keepaliveCount == 0)
-      {
-        if (traceSpace.enabled) traceSpace.trace("smqp", tracePrefix + ": keepalive counter reaching 0, exiting!");
-        logSwiftlet.logWarning("smqp", tracePrefix + ": keepalive counter reaching 0, exiting!");
-        networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
-      }
+    InboundReader(String tracePrefix, Connection connection) {
+        this.tracePrefix = tracePrefix;
+        this.tracePrefix += "/InboundReader";
+        this.connection = connection;
+        inputActiveIndicator = connection.getInputActiveIndicator();
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
     }
-  }
 
-  public void setClosed(boolean closed)
-  {
-    this.closed = closed;
-  }
-
-  protected boolean isSendExceptionEnabled()
-  {
-    return !closed;
-  }
-
-  private void resetKeepaliveCount()
-  {
-    keepaliveCount = INITIAL_KEEPALIVE_COUNT;
-    if (traceSpace.enabled) traceSpace.trace("smqp", tracePrefix + ": setting keepaliveCount to: " + keepaliveCount);
-  }
-
-  public void dataAvailable(Connection connection, InputStream inputStream)
-      throws IOException
-  {
-    dis.setInputStream(inputStream);
-    Dumpable obj = Dumpalizer.construct(dis, dumpableFactory);
-    if (traceSpace.enabled) traceSpace.trace("smqp", "read object: " + obj);
-    if (obj.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ)
-    {
-      if (obj.getDumpId() == SMQPFactory.DID_BULK_REQ)
-      {
-        SMQPBulkRequest bulkRequest = (SMQPBulkRequest) obj;
-        for (int i = 0; i < bulkRequest.len; i++)
-        {
-          Request req = (Request) bulkRequest.dumpables[i];
-          if (req.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ)
-            dispatch(req);
-          else
+    public void performTimeAction() {
+        if (inputActiveIndicator != null && inputActiveIndicator.getAndSet(false)) {
+            if (traceSpace.enabled)
+                traceSpace.trace("smqp", tracePrefix + ": performTimeAction, input was active");
             resetKeepaliveCount();
+        } else {
+            keepaliveCount--;
+            if (traceSpace.enabled)
+                traceSpace.trace("smqp", tracePrefix + ": decrementing keepaliveCount to: " + keepaliveCount);
+            if (keepaliveCount == 0) {
+                if (traceSpace.enabled)
+                    traceSpace.trace("smqp", tracePrefix + ": keepalive counter reaching 0, exiting!");
+                logSwiftlet.logWarning("smqp", tracePrefix + ": keepalive counter reaching 0, exiting!");
+                networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
+            }
         }
-      } else
-        dispatch((Request) obj);
-    } else
-      resetKeepaliveCount();
-  }
+    }
+
+    public void setClosed(boolean closed) {
+        this.closed = closed;
+    }
+
+    protected boolean isSendExceptionEnabled() {
+        return !closed;
+    }
+
+    private void resetKeepaliveCount() {
+        keepaliveCount = INITIAL_KEEPALIVE_COUNT;
+        if (traceSpace.enabled)
+            traceSpace.trace("smqp", tracePrefix + ": setting keepaliveCount to: " + keepaliveCount);
+    }
+
+    public void dataAvailable(Connection connection, InputStream inputStream)
+            throws IOException {
+        dis.setInputStream(inputStream);
+        Dumpable obj = Dumpalizer.construct(dis, dumpableFactory);
+        if (traceSpace.enabled) traceSpace.trace("smqp", "read object: " + obj);
+        if (obj.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ) {
+            if (obj.getDumpId() == SMQPFactory.DID_BULK_REQ) {
+                SMQPBulkRequest bulkRequest = (SMQPBulkRequest) obj;
+                for (int i = 0; i < bulkRequest.len; i++) {
+                    Request req = (Request) bulkRequest.dumpables[i];
+                    if (req.getDumpId() != SMQPFactory.DID_KEEPALIVE_REQ)
+                        dispatch(req);
+                    else
+                        resetKeepaliveCount();
+                }
+            } else
+                dispatch((Request) obj);
+        } else
+            resetKeepaliveCount();
+    }
 }
 

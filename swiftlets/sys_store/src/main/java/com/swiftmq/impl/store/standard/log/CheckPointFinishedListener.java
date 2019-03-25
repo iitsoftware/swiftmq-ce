@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-public interface CheckPointFinishedListener
-{
-  public void checkpointFinished();
+public interface CheckPointFinishedListener {
+    public void checkpointFinished();
 }

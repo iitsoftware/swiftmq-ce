@@ -17,72 +17,69 @@
 
 package com.swiftmq.impl.topic.standard.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
-import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.impl.topic.standard.TopicManagerImpl;
-import com.swiftmq.mgmt.*;
+import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.EntityList;
+import com.swiftmq.mgmt.EntityRemoveException;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
+import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.tools.sql.LikeComparator;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
-public class DeleteDurableJob implements Job
-{
-  TopicManagerImpl topicManager = null;
-  TraceSpace traceSpace = null;
-  EntityList activeDurableList = null;
-  boolean stopCalled = false;
-  Properties properties = null;
+public class DeleteDurableJob implements Job {
+    TopicManagerImpl topicManager = null;
+    TraceSpace traceSpace = null;
+    EntityList activeDurableList = null;
+    boolean stopCalled = false;
+    Properties properties = null;
 
-  public DeleteDurableJob(TopicManagerImpl topicManager, TraceSpace traceSpace, EntityList activeDurableList)
-  {
-    this.topicManager = topicManager;
-    this.traceSpace = traceSpace;
-    this.activeDurableList = activeDurableList;
-  }
-
-  public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    if (traceSpace.enabled) traceSpace.trace(topicManager.getName(), toString() + "/start, properties=" + properties + " ...");
-    this.properties = properties;
-    if (stopCalled)
-      return;
-    Map entities = activeDurableList.getEntities();
-    int cnt = 0;
-    if (entities != null)
-    {
-      String cPred = properties.getProperty("Client Id Predicate");
-      String dPred = properties.getProperty("Durable Name Predicate");
-      for (Iterator iter=entities.entrySet().iterator();iter.hasNext();)
-      {
-        Entity durable = (Entity)((Map.Entry)iter.next()).getValue();
-        String clientId = (String)durable.getProperty("clientid").getValue();
-        String durableName = (String)durable.getProperty("durablename").getValue();
-        if (LikeComparator.compare(clientId, cPred, '\\') && LikeComparator.compare(durableName, dPred, '\\'))
-        {
-          try
-          {
-            activeDurableList.removeEntity(durable);
-            cnt++;
-          } catch (EntityRemoveException e)
-          {
-          }
-        }
-        if (stopCalled)
-          return;
-      }
+    public DeleteDurableJob(TopicManagerImpl topicManager, TraceSpace traceSpace, EntityList activeDurableList) {
+        this.topicManager = topicManager;
+        this.traceSpace = traceSpace;
+        this.activeDurableList = activeDurableList;
     }
-    jobTerminationListener.jobTerminated(cnt+" durable Subscribers deleted");
-  }
 
-  public void stop() throws JobException
-  {
-    if (traceSpace.enabled) traceSpace.trace(topicManager.getName(), toString() + "/stop ...");
-    stopCalled = true;
-    if (traceSpace.enabled) traceSpace.trace(topicManager.getName(), toString() + "/stop done");
-  }
+    public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        if (traceSpace.enabled)
+            traceSpace.trace(topicManager.getName(), toString() + "/start, properties=" + properties + " ...");
+        this.properties = properties;
+        if (stopCalled)
+            return;
+        Map entities = activeDurableList.getEntities();
+        int cnt = 0;
+        if (entities != null) {
+            String cPred = properties.getProperty("Client Id Predicate");
+            String dPred = properties.getProperty("Durable Name Predicate");
+            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
+                Entity durable = (Entity) ((Map.Entry) iter.next()).getValue();
+                String clientId = (String) durable.getProperty("clientid").getValue();
+                String durableName = (String) durable.getProperty("durablename").getValue();
+                if (LikeComparator.compare(clientId, cPred, '\\') && LikeComparator.compare(durableName, dPred, '\\')) {
+                    try {
+                        activeDurableList.removeEntity(durable);
+                        cnt++;
+                    } catch (EntityRemoveException e) {
+                    }
+                }
+                if (stopCalled)
+                    return;
+            }
+        }
+        jobTerminationListener.jobTerminated(cnt + " durable Subscribers deleted");
+    }
 
-  public String toString()
-  {
-    return "[DeleteDurableJob, properties=" + properties + "]";
-  }
+    public void stop() throws JobException {
+        if (traceSpace.enabled) traceSpace.trace(topicManager.getName(), toString() + "/stop ...");
+        stopCalled = true;
+        if (traceSpace.enabled) traceSpace.trace(topicManager.getName(), toString() + "/stop done");
+    }
+
+    public String toString() {
+        return "[DeleteDurableJob, properties=" + properties + "]";
+    }
 }

@@ -18,33 +18,28 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-import com.swiftmq.tools.concurrent.*;
+import com.swiftmq.tools.concurrent.Semaphore;
 
-public class CloseLogOperation extends LogOperation
-{
-	Semaphore sem = null;
-	
-	public CloseLogOperation(Semaphore sem)
-	{
-		this.sem = sem;
-	}
-	
-	/**
-	 * @return 
-	 */
-	int getOperationType()
-	{
-		return OPER_CLOSE_LOG;
-	}
-	
-	Semaphore getSemaphore()
-	{
-		return sem;
-	}
-	
-	public String toString()
-	{
-		return "[CloseLogOperation, sem="+sem+"]";
-	}
+public class CloseLogOperation extends LogOperation {
+    Semaphore sem = null;
+
+    public CloseLogOperation(Semaphore sem) {
+        this.sem = sem;
+    }
+
+    /**
+     * @return
+     */
+    int getOperationType() {
+        return OPER_CLOSE_LOG;
+    }
+
+    Semaphore getSemaphore() {
+        return sem;
+    }
+
+    public String toString() {
+        return "[CloseLogOperation, sem=" + sem + "]";
+    }
 }
 

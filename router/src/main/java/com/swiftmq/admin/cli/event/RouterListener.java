@@ -28,15 +28,14 @@ package com.swiftmq.admin.cli.event;
  * @since 1.2
  */
 
-public interface RouterListener
-{
-  /**
-   * Notification method to be invoked from CLI if a router changes
-   * his states (becomes available/unavailable).
-   *
-   * @param routerName router name
-   * @param available true/false
-   */
-  public void onRouterEvent(String routerName, boolean available);
+public interface RouterListener {
+    /**
+     * Notification method to be invoked from CLI if a router changes
+     * his states (becomes available/unavailable).
+     *
+     * @param routerName router name
+     * @param available  true/false
+     */
+    public void onRouterEvent(String routerName, boolean available);
 }
 

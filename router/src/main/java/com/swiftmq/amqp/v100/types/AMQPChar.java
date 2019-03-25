@@ -24,75 +24,65 @@ import java.io.IOException;
 /**
  * A single unicode character
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPChar extends AMQPType
-{
-  int value;
+public class AMQPChar extends AMQPType {
+    int value;
 
-  /**
-   * Constructs an AMQPChar with an undefined value
-   *
-   */
-  public AMQPChar()
-  {
-    super("char", AMQPTypeDecoder.CHAR);
-  }
+    /**
+     * Constructs an AMQPChar with an undefined value
+     */
+    public AMQPChar() {
+        super("char", AMQPTypeDecoder.CHAR);
+    }
 
-  /**
-   * Constructs an AMQPChar with a value
-   *
-   * @param value value
-   */
-  public AMQPChar(int value)
-  {
-    super("char", AMQPTypeDecoder.CHAR);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPChar with a value
+     *
+     * @param value value
+     */
+    public AMQPChar(int value) {
+        super("char", AMQPTypeDecoder.CHAR);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(int value)
-  {
-    this.value = value;
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(int value) {
+        this.value = value;
+    }
 
-  /**
-   * Returns the value
-   * @return  value
-   */
-  public int getValue()
-  {
-    return value;
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public int getValue() {
+        return value;
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+4;
-    return n;
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + 4;
+        return n;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    value = in.readInt();
-  }
+    public void readContent(DataInput in) throws IOException {
+        value = in.readInt();
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(value);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(value);
+    }
 
-  public String getValueString()
-  {
-    return String.valueOf(value);
-  }
+    public String getValueString() {
+        return String.valueOf(value);
+    }
 
-  public String toString()
-  {
-    return "[AMQPChar, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AMQPChar, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

@@ -17,9 +17,10 @@
 
 package com.swiftmq.tools.gc;
 
-public interface Recyclable
-{
-  public void setRecycleIndex(int recycleIndex);
-  public int getRecycleIndex();
-  public void reset();
+public interface Recyclable {
+    public void setRecycleIndex(int recycleIndex);
+
+    public int getRecycleIndex();
+
+    public void reset();
 }

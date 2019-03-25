@@ -23,11 +23,9 @@ import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
 import java.util.HashMap;
 
-public class MessageQueueFactoryImpl implements MessageQueueFactory
-{
-  public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP)
-  {
-    cache.setCacheTable(new HashMap(cache.getMaxMessages()));
-    return new MessageQueue(ctx, cache, pStore, nStore, cleanUpDelay, myTP);
-  }
+public class MessageQueueFactoryImpl implements MessageQueueFactory {
+    public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP) {
+        cache.setCacheTable(new HashMap(cache.getMaxMessages()));
+        return new MessageQueue(ctx, cache, pStore, nStore, cleanUpDelay, myTP);
+    }
 }

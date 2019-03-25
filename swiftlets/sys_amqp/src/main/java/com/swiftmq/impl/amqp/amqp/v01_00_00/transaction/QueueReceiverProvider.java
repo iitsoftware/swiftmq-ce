@@ -19,7 +19,6 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00.transaction;
 
 import com.swiftmq.swiftlet.queue.QueueReceiver;
 
-public interface QueueReceiverProvider extends ResourceProvider
-{
-  public QueueReceiver getQueueReceiver();
+public interface QueueReceiverProvider extends ResourceProvider {
+    public QueueReceiver getQueueReceiver();
 }

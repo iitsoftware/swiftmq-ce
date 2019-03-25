@@ -22,31 +22,33 @@ package com.swiftmq.swiftlet.net;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface ConnectionManager
-{
-  /**
-   * Returns the number of connections
-   * @return number of connections.
-   */
-  public int getNumberConnections();
+public interface ConnectionManager {
+    /**
+     * Returns the number of connections
+     *
+     * @return number of connections.
+     */
+    public int getNumberConnections();
 
-  /**
-   * Adds a connection.
-   * @param connection connection.
-   */
-  public void addConnection(Connection connection);
+    /**
+     * Adds a connection.
+     *
+     * @param connection connection.
+     */
+    public void addConnection(Connection connection);
 
-  /**
-   * Removes and closes the connection.
-   * This closes the connection asynchrounsly.
-   * @param connection connection.
-   */
-  public void removeConnection(Connection connection);
+    /**
+     * Removes and closes the connection.
+     * This closes the connection asynchrounsly.
+     *
+     * @param connection connection.
+     */
+    public void removeConnection(Connection connection);
 
 
-  /**
-   * Removes and closes all connections.
-   */
-  public void removeAllConnections();
+    /**
+     * Removes and closes all connections.
+     */
+    public void removeAllConnections();
 }
 

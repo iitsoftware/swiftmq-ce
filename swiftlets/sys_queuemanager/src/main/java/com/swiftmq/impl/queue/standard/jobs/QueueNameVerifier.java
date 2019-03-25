@@ -22,20 +22,17 @@ import com.swiftmq.swiftlet.scheduler.InvalidValueException;
 import com.swiftmq.swiftlet.scheduler.JobParameter;
 import com.swiftmq.swiftlet.scheduler.JobParameterVerifier;
 
-public class QueueNameVerifier implements JobParameterVerifier
-{
-  SwiftletContext ctx = null;
+public class QueueNameVerifier implements JobParameterVerifier {
+    SwiftletContext ctx = null;
 
-  public QueueNameVerifier(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public QueueNameVerifier(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public void verify(JobParameter jobParameter, String value) throws InvalidValueException
-  {
-    if (value == null || value.trim().length() == 0)
-      throw new InvalidValueException(jobParameter.getName()+" is mandatory!");
-    if (!ctx.queueManager.isQueueDefined(value))
-      throw new InvalidValueException("Queue '"+value+"' is unknown!");
-  }
+    public void verify(JobParameter jobParameter, String value) throws InvalidValueException {
+        if (value == null || value.trim().length() == 0)
+            throw new InvalidValueException(jobParameter.getName() + " is mandatory!");
+        if (!ctx.queueManager.isQueueDefined(value))
+            throw new InvalidValueException("Queue '" + value + "' is unknown!");
+    }
 }

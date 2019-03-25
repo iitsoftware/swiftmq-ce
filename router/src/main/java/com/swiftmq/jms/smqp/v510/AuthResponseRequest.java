@@ -17,85 +17,74 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: AuthResponseRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: AuthResponseRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class AuthResponseRequest extends Request
-{
-  private byte[] response;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public AuthResponseRequest()
-  {
-    super(0,true);
-  }
+public class AuthResponseRequest extends Request {
+    private byte[] response;
 
-  public AuthResponseRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public AuthResponseRequest() {
+        super(0, true);
+    }
 
-  public AuthResponseRequest(int dispatchId, byte[] response)
-  {
-    super(dispatchId,true);
-    this.response = response;
-  }
-  
-  public void setResponse(byte[] response)
-  {
-    this.response = response;
-  }
+    public AuthResponseRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public byte[] getResponse()
-  {
-    return response;
-  }
+    public AuthResponseRequest(int dispatchId, byte[] response) {
+        super(dispatchId, true);
+        this.response = response;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_AUTHRESPONSE_REQ;
-  }
+    public void setResponse(byte[] response) {
+        this.response = response;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(response,out);
-  }
+    public byte[] getResponse() {
+        return response;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    response = SMQPUtil.read(response,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_AUTHRESPONSE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new AuthResponseReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(response, out);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        response = SMQPUtil.read(response, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[AuthResponseRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("response=");
-    _b.append(response);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new AuthResponseReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[AuthResponseRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("response=");
+        _b.append(response);
+        _b.append("]");
+        return _b.toString();
+    }
 }

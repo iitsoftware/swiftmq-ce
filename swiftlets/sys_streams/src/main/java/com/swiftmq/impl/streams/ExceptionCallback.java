@@ -27,7 +27,8 @@ public interface ExceptionCallback {
     /**
      * Single method executed as a function call as
      * function(exception, lastStackTrace){...}
-     * @param exception The last exception occurred
+     *
+     * @param exception      The last exception occurred
      * @param lastStackTrace Formatted stack trace of this exception
      */
     public void execute(String exception, String lastStackTrace);

@@ -18,12 +18,11 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-import java.util.*;
+public interface CheckPointHandler {
+    public void lockForCheckPoint();
 
-public interface CheckPointHandler
-{
-  public void lockForCheckPoint();
-	public void performCheckPoint();
-	public void checkPointDone();
+    public void performCheckPoint();
+
+    public void checkPointDone();
 }
 

@@ -26,47 +26,39 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.Hashtable;
 
-public class QueryProperties
-{
-  static Connection connection = null;
+public class QueryProperties {
+    static Connection connection = null;
 
-  public static void main(String[] args)
-  {
-    if (args.length < 4)
-    {
-      System.out.println("Usage: QueryProperties <smqp-url> <connection-factory> <routername> <cachename> [<link>]");
-      System.exit(-1);
+    public static void main(String[] args) {
+        if (args.length < 4) {
+            System.out.println("Usage: QueryProperties <smqp-url> <connection-factory> <routername> <cachename> [<link>]");
+            System.exit(-1);
+        }
+
+        try {
+            Hashtable env = new Hashtable();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.swiftmq.jndi.InitialContextFactoryImpl");
+            env.put(Context.PROVIDER_URL, args[0]);
+            InitialContext ctx = new InitialContext(env);
+            ConnectionFactory cf = (ConnectionFactory) ctx.lookup(args[1]);
+            ctx.close();
+            connection = cf.createConnection();
+            connection.start();
+
+            Filetransfer filetransfer = Filetransfer.create(connection, args[2], args[3]).withSelector(null);
+            if (args.length == 5)
+                System.out.println(filetransfer.withLink(args[4]).queryProperties());
+            else
+                System.out.println(filetransfer.withSelector("JMS_SWIFTMQ_FT_FILENAME LIKE '%.properties'").queryProperties());
+            filetransfer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.close();
+            } catch (JMSException e) {
+            }
+        }
     }
-
-    try
-    {
-      Hashtable env = new Hashtable();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.swiftmq.jndi.InitialContextFactoryImpl");
-      env.put(Context.PROVIDER_URL, args[0]);
-      InitialContext ctx = new InitialContext(env);
-      ConnectionFactory cf = (ConnectionFactory) ctx.lookup(args[1]);
-      ctx.close();
-      connection = cf.createConnection();
-      connection.start();
-
-      Filetransfer filetransfer = Filetransfer.create(connection, args[2], args[3]).withSelector(null);
-      if (args.length == 5)
-        System.out.println(filetransfer.withLink(args[4]).queryProperties());
-      else
-        System.out.println(filetransfer.withSelector("JMS_SWIFTMQ_FT_FILENAME LIKE '%.properties'").queryProperties());
-      filetransfer.close();
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-    } finally
-    {
-      try
-      {
-        connection.close();
-      } catch (JMSException e)
-      {
-      }
-    }
-  }
 
 }

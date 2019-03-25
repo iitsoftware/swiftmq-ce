@@ -23,28 +23,24 @@ import com.swiftmq.tools.requestreply.Reply;
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class SMQPVersionReply extends Reply
-{
+public class SMQPVersionReply extends Reply {
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_SMQP_VERSION_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_SMQP_VERSION_REP;
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[SMQPVersionReply " + super.toString() + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[SMQPVersionReply " + super.toString() + "]";
+    }
 }

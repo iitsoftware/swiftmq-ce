@@ -17,92 +17,79 @@
 
 package com.swiftmq.jms.smqp.v610;
 
-/** SMQP-Protocol Version 610, Class: CreateSubscriberReply
- *  Automatically generated, don't change!
- *  Generation Date: Mon Jul 17 17:50:10 CEST 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 610, Class: CreateSubscriberReply
+ * Automatically generated, don't change!
+ * Generation Date: Mon Jul 17 17:50:10 CEST 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v610.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CreateSubscriberReply extends ReplyNE
-{
-  private String tmpQueueName;
-  private int topicSubscriberId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateSubscriberReply(String tmpQueueName, int topicSubscriberId)
-  {
-    this.tmpQueueName = tmpQueueName;
-    this.topicSubscriberId = topicSubscriberId;
-  }
+public class CreateSubscriberReply extends ReplyNE {
+    private String tmpQueueName;
+    private int topicSubscriberId;
 
-  protected CreateSubscriberReply()
-  {
-  }
-  
-  public void setTmpQueueName(String tmpQueueName)
-  {
-    this.tmpQueueName = tmpQueueName;
-  }
+    public CreateSubscriberReply(String tmpQueueName, int topicSubscriberId) {
+        this.tmpQueueName = tmpQueueName;
+        this.topicSubscriberId = topicSubscriberId;
+    }
 
-  public String getTmpQueueName()
-  {
-    return tmpQueueName;
-  }
-  
-  public void setTopicSubscriberId(int topicSubscriberId)
-  {
-    this.topicSubscriberId = topicSubscriberId;
-  }
+    protected CreateSubscriberReply() {
+    }
 
-  public int getTopicSubscriberId()
-  {
-    return topicSubscriberId;
-  }
+    public void setTmpQueueName(String tmpQueueName) {
+        this.tmpQueueName = tmpQueueName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATESUBSCRIBER_REP;
-  }
+    public String getTmpQueueName() {
+        return tmpQueueName;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (tmpQueueName != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(tmpQueueName,out);
-    } else
-      out.writeBoolean(false);
-    SMQPUtil.write(topicSubscriberId,out);
-  }
+    public void setTopicSubscriberId(int topicSubscriberId) {
+        this.topicSubscriberId = topicSubscriberId;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean tmpQueueName_set = in.readBoolean();
-    if (tmpQueueName_set)
-      tmpQueueName = SMQPUtil.read(tmpQueueName,in);
-    topicSubscriberId = SMQPUtil.read(topicSubscriberId,in);
-  }
+    public int getTopicSubscriberId() {
+        return topicSubscriberId;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v610/CreateSubscriberReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("tmpQueueName=");
-    _b.append(tmpQueueName);
-    _b.append(", ");
-    _b.append("topicSubscriberId=");
-    _b.append(topicSubscriberId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATESUBSCRIBER_REP;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (tmpQueueName != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(tmpQueueName, out);
+        } else
+            out.writeBoolean(false);
+        SMQPUtil.write(topicSubscriberId, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean tmpQueueName_set = in.readBoolean();
+        if (tmpQueueName_set)
+            tmpQueueName = SMQPUtil.read(tmpQueueName, in);
+        topicSubscriberId = SMQPUtil.read(topicSubscriberId, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v610/CreateSubscriberReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("tmpQueueName=");
+        _b.append(tmpQueueName);
+        _b.append(", ");
+        _b.append("topicSubscriberId=");
+        _b.append(topicSubscriberId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

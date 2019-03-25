@@ -42,7 +42,7 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
     long collectInterval = -1;
     boolean isStartup = false;
     boolean isShutdown = false;
-  RepositorySupport repositorySupport = new RepositorySupport();
+    RepositorySupport repositorySupport = new RepositorySupport();
 
     private void collectChanged(long oldInterval, long newInterval) {
         if (!collectOn)
@@ -159,7 +159,7 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "onEntityAdd: " + newEntity.getName() + " ...");
                 try {
-                  StreamController streamController = new StreamController(ctx, repositorySupport, newEntity, domainName, packageName);
+                    StreamController streamController = new StreamController(ctx, repositorySupport, newEntity, domainName, packageName);
                     if (!isStartup)
                         streamController.init();
                     newEntity.setUserObject(streamController);

@@ -22,20 +22,16 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendHeartBeat extends POObject
-{
-  public POSendHeartBeat(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public class POSendHeartBeat extends POObject {
+    public POSendHeartBeat(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPConnectionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPConnectionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendHeartBeat]";
-  }
+    public String toString() {
+        return "[POSendHeartBeat]";
+    }
 }

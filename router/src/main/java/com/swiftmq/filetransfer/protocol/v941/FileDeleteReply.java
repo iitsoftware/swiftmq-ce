@@ -23,26 +23,21 @@ import com.swiftmq.jms.MessageImpl;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-public class FileDeleteReply extends MessageBasedReply
-{
-  public FileDeleteReply(Message message) throws JMSException
-  {
-    super(message);
-  }
+public class FileDeleteReply extends MessageBasedReply {
+    public FileDeleteReply(Message message) throws JMSException {
+        super(message);
+    }
 
-  public FileDeleteReply()
-  {
-  }
+    public FileDeleteReply() {
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    Message message = new MessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEDELETE_REP);
-    return fillMessage(message);
-  }
+    public Message toMessage() throws JMSException {
+        Message message = new MessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEDELETE_REP);
+        return fillMessage(message);
+    }
 
-  public String toString()
-  {
-    return "[FileDeleteReply " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[FileDeleteReply " + super.toString() + "]";
+    }
 }

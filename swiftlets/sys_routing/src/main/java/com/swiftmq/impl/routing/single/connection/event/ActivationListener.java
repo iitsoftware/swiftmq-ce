@@ -19,7 +19,6 @@ package com.swiftmq.impl.routing.single.connection.event;
 
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 
-public interface ActivationListener
-{
-  public void activated(RoutingConnection routingConnection);
+public interface ActivationListener {
+    public void activated(RoutingConnection routingConnection);
 }

@@ -17,13 +17,11 @@
 
 package com.swiftmq.impl.queue.standard;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
-public class CacheTableFactoryImpl implements CacheTableFactory
-{
-  public Map createCacheTable(String queueName, int initialSize)
-  {
-    return new HashMap(initialSize);
-  }
+public class CacheTableFactoryImpl implements CacheTableFactory {
+    public Map createCacheTable(String queueName, int initialSize) {
+        return new HashMap(initialSize);
+    }
 }

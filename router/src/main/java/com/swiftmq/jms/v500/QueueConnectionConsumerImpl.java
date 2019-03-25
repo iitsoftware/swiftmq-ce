@@ -17,45 +17,42 @@
 
 package com.swiftmq.jms.v500;
 
-import com.swiftmq.jms.smqp.v500.*;
-import com.swiftmq.jms.*;
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.jms.ExceptionConverter;
+import com.swiftmq.jms.QueueImpl;
+import com.swiftmq.jms.smqp.v500.CreateConsumerRequest;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.RequestRegistry;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.ServerSessionPool;
 
-public class QueueConnectionConsumerImpl extends ConnectionConsumerImpl
-{
-  String queueName = null;
+public class QueueConnectionConsumerImpl extends ConnectionConsumerImpl {
+    String queueName = null;
 
-  public QueueConnectionConsumerImpl(ConnectionImpl myConnection, int dispatchId, RequestRegistry requestRegistry, ServerSessionPool serverSessionPool, int maxMessages)
-  {
-    super(myConnection, dispatchId, requestRegistry, serverSessionPool, maxMessages);
-  }
-
-  void createConsumer(QueueImpl queue, String messageSelector) throws JMSException
-  {
-    if (queue == null)
-      throw new NullPointerException("createConsumer, queue is null!");
-
-    queueName = queue.getQueueName();
-
-    Reply reply = null;
-    try
-    {
-      reply = requestRegistry.request(new CreateConsumerRequest(dispatchId,
-        (QueueImpl) queue,
-        messageSelector));
-    } catch (Exception e)
-    {
-      throw ExceptionConverter.convert(e);
+    public QueueConnectionConsumerImpl(ConnectionImpl myConnection, int dispatchId, RequestRegistry requestRegistry, ServerSessionPool serverSessionPool, int maxMessages) {
+        super(myConnection, dispatchId, requestRegistry, serverSessionPool, maxMessages);
     }
-    if (!reply.isOk())
-      throw ExceptionConverter.convert(reply.getException());
-    fillCache();
-  }
 
-  protected String getQueueName()
-  {
-    return queueName;
-  }
+    void createConsumer(QueueImpl queue, String messageSelector) throws JMSException {
+        if (queue == null)
+            throw new NullPointerException("createConsumer, queue is null!");
+
+        queueName = queue.getQueueName();
+
+        Reply reply = null;
+        try {
+            reply = requestRegistry.request(new CreateConsumerRequest(dispatchId,
+                    (QueueImpl) queue,
+                    messageSelector));
+        } catch (Exception e) {
+            throw ExceptionConverter.convert(e);
+        }
+        if (!reply.isOk())
+            throw ExceptionConverter.convert(reply.getException());
+        fillCache();
+    }
+
+    protected String getQueueName() {
+        return queueName;
+    }
 }

@@ -72,11 +72,11 @@ public class MqttMessage {
     @Override
     public String toString() {
         return new StringBuilder(StringUtil.simpleClassName(this))
-            .append('[')
-            .append("fixedHeader=").append(fixedHeader() != null ? fixedHeader().toString() : "")
-            .append(", variableHeader=").append(variableHeader() != null ? variableHeader.toString() : "")
-            .append(", payload=").append(payload() != null ? payload.toString() : "")
-            .append(']')
-            .toString();
+                .append('[')
+                .append("fixedHeader=").append(fixedHeader() != null ? fixedHeader().toString() : "")
+                .append(", variableHeader=").append(variableHeader() != null ? variableHeader.toString() : "")
+                .append(", payload=").append(payload() != null ? payload.toString() : "")
+                .append(']')
+                .toString();
     }
 }

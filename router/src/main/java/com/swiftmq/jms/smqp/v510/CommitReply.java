@@ -17,68 +17,58 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CommitReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CommitReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class CommitReply extends ReplyNE
-{
-  private long delay;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CommitReply(long delay)
-  {
-    this.delay = delay;
-  }
+public class CommitReply extends ReplyNE {
+    private long delay;
 
-  protected CommitReply()
-  {
-  }
-  
-  public void setDelay(long delay)
-  {
-    this.delay = delay;
-  }
+    public CommitReply(long delay) {
+        this.delay = delay;
+    }
 
-  public long getDelay()
-  {
-    return delay;
-  }
+    protected CommitReply() {
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_COMMIT_REP;
-  }
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(delay,out);
-  }
+    public long getDelay() {
+        return delay;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    delay = SMQPUtil.read(delay,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_COMMIT_REP;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CommitReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("delay=");
-    _b.append(delay);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(delay, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        delay = SMQPUtil.read(delay, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CommitReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("delay=");
+        _b.append(delay);
+        _b.append("]");
+        return _b.toString();
+    }
 }

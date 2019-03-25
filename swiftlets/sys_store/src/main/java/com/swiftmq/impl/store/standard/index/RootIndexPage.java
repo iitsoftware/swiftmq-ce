@@ -17,28 +17,20 @@
 
 package com.swiftmq.impl.store.standard.index;
 
-import com.swiftmq.impl.store.standard.*;
-import com.swiftmq.impl.store.standard.cache.*;
-import com.swiftmq.tools.gc.ObjectRecycler;
+import com.swiftmq.impl.store.standard.StoreContext;
 
-import java.util.*;
+public class RootIndexPage extends IndexPage {
 
-public class RootIndexPage extends IndexPage
-{
+    protected RootIndexPage(StoreContext ctx, int pageNo) {
+        super(ctx, pageNo);
+    }
 
-  protected RootIndexPage(StoreContext ctx, int pageNo)
-  {
-    super(ctx, pageNo);
-  }
+    protected IndexEntry createIndexEntry() {
+        return new RootIndexEntry();
+    }
 
-  protected IndexEntry createIndexEntry()
-  {
-    return new RootIndexEntry();
-  }
-
-  public String toString()
-  {
-    return "[RootIndexPage" + super.toString() + "]";
-  }
+    public String toString() {
+        return "[RootIndexPage" + super.toString() + "]";
+    }
 }
 

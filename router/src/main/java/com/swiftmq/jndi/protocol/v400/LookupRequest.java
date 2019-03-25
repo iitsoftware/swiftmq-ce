@@ -17,53 +17,44 @@
 
 package com.swiftmq.jndi.protocol.v400;
 
-import com.swiftmq.jndi.protocol.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import java.io.*;
+public class LookupRequest implements JNDIRequest {
+    String name;
 
-public class LookupRequest implements JNDIRequest
-{
-  String name;
+    public LookupRequest(String name) {
+        this.name = name;
+    }
 
-  public LookupRequest(String name)
-  {
-    this.name = name;
-  }
+    public LookupRequest() {
+    }
 
-  public LookupRequest()
-  {
-  }
+    public int getDumpId() {
+        return JNDIRequestFactory.LOOKUP;
+    }
 
-  public int getDumpId()
-  {
-    return JNDIRequestFactory.LOOKUP;
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeUTF(name);
+    }
 
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    out.writeUTF(name);
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        name = in.readUTF();
+    }
 
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    name = in.readUTF();
-  }
+    public String getName() {
+        return (name);
+    }
 
-  public String getName()
-  {
-    return (name);
-  }
+    public void accept(JNDIRequestVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void accept(JNDIRequestVisitor visitor)
-  {
-    visitor.visit(this);
-  }
-
-  public String toString()
-  {
-    return "[LookupRequest, name=" + name + "]";
-  }
+    public String toString() {
+        return "[LookupRequest, name=" + name + "]";
+    }
 }
 

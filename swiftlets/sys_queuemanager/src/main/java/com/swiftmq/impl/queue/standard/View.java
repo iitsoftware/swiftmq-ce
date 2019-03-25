@@ -23,79 +23,66 @@ import com.swiftmq.swiftlet.queue.Selector;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class View
-{
-  SwiftletContext ctx = null;
-  String queueName = null;
-  int viewId = -1;
-  Selector selector = null;
-  SortedSet viewContent = new TreeSet();
-  boolean dirty = false;
+public class View {
+    SwiftletContext ctx = null;
+    String queueName = null;
+    int viewId = -1;
+    Selector selector = null;
+    SortedSet viewContent = new TreeSet();
+    boolean dirty = false;
 
-  public View(SwiftletContext ctx, String queueName, int viewId, Selector selector)
-  {
-    this.ctx = ctx;
-    this.queueName = queueName;
-    this.viewId = viewId;
-    this.selector = selector;
-    if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/created");
-  }
-
-  public int getViewId()
-  {
-    return viewId;
-  }
-
-  public void setViewId(int viewId)
-  {
-    this.viewId = viewId;
-  }
-
-  public boolean isDirty()
-  {
-    return dirty;
-  }
-
-  public void setDirty(boolean dirty)
-  {
-    this.dirty = dirty;
-  }
-
-  public void storeOnMatch(StoreId storeId, MessageImpl message)
-  {
-    if (ctx.queueSpace.enabled)
-      ctx.queueSpace.trace(queueName, toString() + "/storeOnMatch, storeId=" + storeId + ", message=" + message);
-    if (selector.isSelected(message))
-    {
-      viewContent.add(storeId);
-      dirty = true;
-      if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/storeOnMatch, match, added");
-    } else
-    {
-      if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/storeOnMatch, no match");
+    public View(SwiftletContext ctx, String queueName, int viewId, Selector selector) {
+        this.ctx = ctx;
+        this.queueName = queueName;
+        this.viewId = viewId;
+        this.selector = selector;
+        if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/created");
     }
-  }
 
-  public void remove(StoreId storeId)
-  {
-    viewContent.remove(storeId);
-    if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/remove, storeId=" + storeId);
-  }
+    public int getViewId() {
+        return viewId;
+    }
 
-  public SortedSet getViewContent()
-  {
-    return viewContent;
-  }
+    public void setViewId(int viewId) {
+        this.viewId = viewId;
+    }
 
-  public void close()
-  {
-    if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/close");
-    selector = null;
-    viewContent = null;
-  }
+    public boolean isDirty() {
+        return dirty;
+    }
 
-  public String toString()
-  {
-    return "view, id=" + viewId + ", selector=" + selector.getConditionString() + ", size=" + viewContent.size() + ", dirty=" + dirty;
-  }
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public void storeOnMatch(StoreId storeId, MessageImpl message) {
+        if (ctx.queueSpace.enabled)
+            ctx.queueSpace.trace(queueName, toString() + "/storeOnMatch, storeId=" + storeId + ", message=" + message);
+        if (selector.isSelected(message)) {
+            viewContent.add(storeId);
+            dirty = true;
+            if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/storeOnMatch, match, added");
+        } else {
+            if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/storeOnMatch, no match");
+        }
+    }
+
+    public void remove(StoreId storeId) {
+        viewContent.remove(storeId);
+        if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/remove, storeId=" + storeId);
+    }
+
+    public SortedSet getViewContent() {
+        return viewContent;
+    }
+
+    public void close() {
+        if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/close");
+        selector = null;
+        viewContent = null;
+    }
+
+    public String toString() {
+        return "view, id=" + viewId + ", selector=" + selector.getConditionString() + ", size=" + viewContent.size() + ", dirty=" + dirty;
+    }
 }

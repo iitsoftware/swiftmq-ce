@@ -17,53 +17,44 @@
 
 package com.swiftmq.client.thread;
 
-import com.swiftmq.swiftlet.threadpool.*;
+import com.swiftmq.swiftlet.threadpool.AsyncTask;
 
 
-public class PoolExecutor extends Thread
-{
-  ThreadPoolImpl threadPool;
-  long idleTimeout;
-  AsyncTask activeTask;
-  volatile boolean shouldDie = false;
+public class PoolExecutor extends Thread {
+    ThreadPoolImpl threadPool;
+    long idleTimeout;
+    AsyncTask activeTask;
+    volatile boolean shouldDie = false;
 
-  PoolExecutor(String name, ThreadGroup threadGroup, ThreadPoolImpl threadPool, long idleTimeout)
-  {
-    super(threadGroup, name);
-    this.threadPool = threadPool;
-    this.idleTimeout = idleTimeout;
-  }
-
-  public AsyncTask getActiveTask()
-  {
-    return (activeTask);
-  }
-
-  void die()
-  {
-    shouldDie = true;
-    if (activeTask != null)
-      activeTask.stop();
-  }
-
-  public void run()
-  {
-    activeTask = threadPool.getNextTask(this, idleTimeout);
-    while (activeTask != null && !shouldDie)
-    {
-      if (activeTask.isValid())
-      {
-        try
-        {
-          activeTask.run();
-        } catch (Throwable e)
-        {
-          getThreadGroup().uncaughtException(this, e);
-        }
-      }
-      if (!shouldDie)
-        activeTask = threadPool.getNextTask(this, idleTimeout);
+    PoolExecutor(String name, ThreadGroup threadGroup, ThreadPoolImpl threadPool, long idleTimeout) {
+        super(threadGroup, name);
+        this.threadPool = threadPool;
+        this.idleTimeout = idleTimeout;
     }
-  }
+
+    public AsyncTask getActiveTask() {
+        return (activeTask);
+    }
+
+    void die() {
+        shouldDie = true;
+        if (activeTask != null)
+            activeTask.stop();
+    }
+
+    public void run() {
+        activeTask = threadPool.getNextTask(this, idleTimeout);
+        while (activeTask != null && !shouldDie) {
+            if (activeTask.isValid()) {
+                try {
+                    activeTask.run();
+                } catch (Throwable e) {
+                    getThreadGroup().uncaughtException(this, e);
+                }
+            }
+            if (!shouldDie)
+                activeTask = threadPool.getNextTask(this, idleTimeout);
+        }
+    }
 }
 

@@ -22,28 +22,23 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.AMQPChannelVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POChannelFrameReceived extends POObject
-{
-  Frame frame = null;
+public class POChannelFrameReceived extends POObject {
+    Frame frame = null;
 
-  public POChannelFrameReceived(Frame frame)
-  {
-    super(null, null);
-    this.frame = frame;
-  }
+    public POChannelFrameReceived(Frame frame) {
+        super(null, null);
+        this.frame = frame;
+    }
 
-  public Frame getFrame()
-  {
-    return frame;
-  }
+    public Frame getFrame() {
+        return frame;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPChannelVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPChannelVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POChannelFrameReceived, frame=" + frame + "]";
-  }
+    public String toString() {
+        return "[POChannelFrameReceived, frame=" + frame + "]";
+    }
 }

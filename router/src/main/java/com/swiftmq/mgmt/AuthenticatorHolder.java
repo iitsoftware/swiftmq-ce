@@ -17,7 +17,6 @@
 
 package com.swiftmq.mgmt;
 
-public class AuthenticatorHolder
-{
-  public static ThreadLocal<Authenticator> threadLocal = new ThreadLocal<Authenticator>();
+public class AuthenticatorHolder {
+    public static ThreadLocal<Authenticator> threadLocal = new ThreadLocal<Authenticator>();
 }

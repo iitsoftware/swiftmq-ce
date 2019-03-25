@@ -28,46 +28,39 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
 public class TopicConnectionImpl extends ConnectionImpl
-    implements TopicConnection
-{
-  protected TopicConnectionImpl(String userName, String password, Reconnector reconnector)
-      throws JMSException
-  {
-    super(userName, password, reconnector);
-  }
-
-  public TopicSession createTopicSession(boolean transacted, int acknowledgeMode)
-      throws JMSException
-  {
-    verifyState();
-
-    SessionImpl topicSession = null;
-    CreateSessionReply reply = null;
-
-    try
-    {
-      reply = (CreateSessionReply) requestRegistry.request(new CreateSessionRequest(0, transacted, acknowledgeMode, CreateSessionRequest.TOPIC_SESSION, 0));
-    } catch (Exception e)
-    {
-      throw ExceptionConverter.convert(e);
+        implements TopicConnection {
+    protected TopicConnectionImpl(String userName, String password, Reconnector reconnector)
+            throws JMSException {
+        super(userName, password, reconnector);
     }
 
-    if (reply.isOk())
-    {
-      int dispatchId = reply.getSessionDispatchId();
-      String cid = clientID != null ? clientID : internalCID;
-      topicSession = new SessionImpl(SessionImpl.TYPE_TOPIC_SESSION, this, transacted, acknowledgeMode,
-          dispatchId, requestRegistry,
-          myHostname, cid);
-      topicSession.setUserName(userName);
-      topicSession.setMyDispatchId(addRequestService(topicSession));
-      addSession(topicSession);
-    } else
-    {
-      throw ExceptionConverter.convert(reply.getException());
-    }
+    public TopicSession createTopicSession(boolean transacted, int acknowledgeMode)
+            throws JMSException {
+        verifyState();
 
-    return (topicSession);
-  }
+        SessionImpl topicSession = null;
+        CreateSessionReply reply = null;
+
+        try {
+            reply = (CreateSessionReply) requestRegistry.request(new CreateSessionRequest(0, transacted, acknowledgeMode, CreateSessionRequest.TOPIC_SESSION, 0));
+        } catch (Exception e) {
+            throw ExceptionConverter.convert(e);
+        }
+
+        if (reply.isOk()) {
+            int dispatchId = reply.getSessionDispatchId();
+            String cid = clientID != null ? clientID : internalCID;
+            topicSession = new SessionImpl(SessionImpl.TYPE_TOPIC_SESSION, this, transacted, acknowledgeMode,
+                    dispatchId, requestRegistry,
+                    myHostname, cid);
+            topicSession.setUserName(userName);
+            topicSession.setMyDispatchId(addRequestService(topicSession));
+            addSession(topicSession);
+        } else {
+            throw ExceptionConverter.convert(reply.getException());
+        }
+
+        return (topicSession);
+    }
 }
 

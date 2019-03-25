@@ -17,109 +17,94 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: RouterConnectReply
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: RouterConnectReply
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.ReplyNE;
 
-public class RouterConnectReply extends ReplyNE
-{
-  private String routerName;
-  private boolean authRequired;
-  private long keepaliveInterval;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public RouterConnectReply(String routerName, boolean authRequired, long keepaliveInterval)
-  {
-    this.routerName = routerName;
-    this.authRequired = authRequired;
-    this.keepaliveInterval = keepaliveInterval;
-  }
+public class RouterConnectReply extends ReplyNE {
+    private String routerName;
+    private boolean authRequired;
+    private long keepaliveInterval;
 
-  protected RouterConnectReply()
-  {
-  }
-  
-  public void setRouterName(String routerName)
-  {
-    this.routerName = routerName;
-  }
+    public RouterConnectReply(String routerName, boolean authRequired, long keepaliveInterval) {
+        this.routerName = routerName;
+        this.authRequired = authRequired;
+        this.keepaliveInterval = keepaliveInterval;
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
-  
-  public void setAuthRequired(boolean authRequired)
-  {
-    this.authRequired = authRequired;
-  }
+    protected RouterConnectReply() {
+    }
 
-  public boolean isAuthRequired()
-  {
-    return authRequired;
-  }
-  
-  public void setKeepaliveInterval(long keepaliveInterval)
-  {
-    this.keepaliveInterval = keepaliveInterval;
-  }
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
 
-  public long getKeepaliveInterval()
-  {
-    return keepaliveInterval;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ROUTERCONNECT_REP;
-  }
+    public void setAuthRequired(boolean authRequired) {
+        this.authRequired = authRequired;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    if (routerName != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(routerName,out);
-    } else
-      out.writeBoolean(false);
-    SMQPUtil.write(authRequired,out);
-    SMQPUtil.write(keepaliveInterval,out);
-  }
+    public boolean isAuthRequired() {
+        return authRequired;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    boolean routerName_set = in.readBoolean();
-    if (routerName_set)
-      routerName = SMQPUtil.read(routerName,in);
-    authRequired = SMQPUtil.read(authRequired,in);
-    keepaliveInterval = SMQPUtil.read(keepaliveInterval,in);
-  }
+    public void setKeepaliveInterval(long keepaliveInterval) {
+        this.keepaliveInterval = keepaliveInterval;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[RouterConnectReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("routerName=");
-    _b.append(routerName);
-    _b.append(", ");
-    _b.append("authRequired=");
-    _b.append(authRequired);
-    _b.append(", ");
-    _b.append("keepaliveInterval=");
-    _b.append(keepaliveInterval);
-    _b.append("]");
-    return _b.toString();
-  }
+    public long getKeepaliveInterval() {
+        return keepaliveInterval;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_ROUTERCONNECT_REP;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        if (routerName != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(routerName, out);
+        } else
+            out.writeBoolean(false);
+        SMQPUtil.write(authRequired, out);
+        SMQPUtil.write(keepaliveInterval, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        boolean routerName_set = in.readBoolean();
+        if (routerName_set)
+            routerName = SMQPUtil.read(routerName, in);
+        authRequired = SMQPUtil.read(authRequired, in);
+        keepaliveInterval = SMQPUtil.read(keepaliveInterval, in);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[RouterConnectReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("routerName=");
+        _b.append(routerName);
+        _b.append(", ");
+        _b.append("authRequired=");
+        _b.append(authRequired);
+        _b.append(", ");
+        _b.append("keepaliveInterval=");
+        _b.append(keepaliveInterval);
+        _b.append("]");
+        return _b.toString();
+    }
 }

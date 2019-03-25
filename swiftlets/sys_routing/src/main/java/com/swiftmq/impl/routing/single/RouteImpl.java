@@ -17,61 +17,51 @@
 
 package com.swiftmq.impl.routing.single;
 
-import com.swiftmq.swiftlet.routing.Route;
 import com.swiftmq.impl.routing.single.schedule.Scheduler;
+import com.swiftmq.swiftlet.routing.Route;
 
-public class RouteImpl extends Route
-{
-  String destination = null;
-  String outboundQueueName = null;
-  boolean staticRoute = false;
-  Scheduler scheduler = null;
+public class RouteImpl extends Route {
+    String destination = null;
+    String outboundQueueName = null;
+    boolean staticRoute = false;
+    Scheduler scheduler = null;
 
-  public RouteImpl(String destination, String outboundQueueName, boolean staticRoute, Scheduler scheduler)
-  {
-    this.destination = destination;
-    this.outboundQueueName = outboundQueueName;
-    this.staticRoute = staticRoute;
-    this.scheduler = scheduler;
-  }
+    public RouteImpl(String destination, String outboundQueueName, boolean staticRoute, Scheduler scheduler) {
+        this.destination = destination;
+        this.outboundQueueName = outboundQueueName;
+        this.staticRoute = staticRoute;
+        this.scheduler = scheduler;
+    }
 
-  public String getDestination()
-  {
-    return destination;
-  }
+    public String getDestination() {
+        return destination;
+    }
 
-  public String getOutboundQueueName()
-  {
-    return outboundQueueName;
-  }
+    public String getOutboundQueueName() {
+        return outboundQueueName;
+    }
 
-  public boolean isStaticRoute()
-  {
-    return staticRoute;
-  }
+    public boolean isStaticRoute() {
+        return staticRoute;
+    }
 
-  public void setStaticRoute(boolean staticRoute)
-  {
-    this.staticRoute = staticRoute;
-  }
+    public void setStaticRoute(boolean staticRoute) {
+        this.staticRoute = staticRoute;
+    }
 
-  public synchronized Scheduler getScheduler()
-  {
-    return scheduler;
-  }
+    public synchronized Scheduler getScheduler() {
+        return scheduler;
+    }
 
-  public synchronized void setScheduler(Scheduler scheduler)
-  {
-    this.scheduler = scheduler;
-  }
+    public synchronized void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
 
-  public synchronized boolean isActive()
-  {
-    return scheduler==null?false:scheduler.getNumberConnections()>0;
-  }
+    public synchronized boolean isActive() {
+        return scheduler == null ? false : scheduler.getNumberConnections() > 0;
+    }
 
-  public String toString()
-  {
-    return "[RouteImpl, destination="+destination+", outboundQueueName="+outboundQueueName+", staticRoute="+staticRoute+", active="+isActive()+"]";
-  }
+    public String toString() {
+        return "[RouteImpl, destination=" + destination + ", outboundQueueName=" + outboundQueueName + ", staticRoute=" + staticRoute + ", active=" + isActive() + "]";
+    }
 }

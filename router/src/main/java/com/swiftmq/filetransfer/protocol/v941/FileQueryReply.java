@@ -26,70 +26,58 @@ import javax.jms.Message;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileQueryReply extends MessageBasedReply
-{
-  public static final String RESULTSIZE_PROP = "JMS_SWIFTMQ_FT_RESULTSIZE";
-  public static final String RESULT_PROP = "JMS_SWIFTMQ_FT_RESULT_";
-  List<String> result = null;
+public class FileQueryReply extends MessageBasedReply {
+    public static final String RESULTSIZE_PROP = "JMS_SWIFTMQ_FT_RESULTSIZE";
+    public static final String RESULT_PROP = "JMS_SWIFTMQ_FT_RESULT_";
+    List<String> result = null;
 
-  public FileQueryReply(Message message) throws JMSException
-  {
-    super(message);
-    createResultList((MapMessage) message);
-  }
-
-  public FileQueryReply()
-  {
-  }
-
-  private void createResultList(MapMessage message) throws JMSException
-  {
-    int n = message.getInt(RESULTSIZE_PROP);
-    if (n > 0)
-    {
-      result = new ArrayList<String>(n);
-      for (int i = 0; i < n; i++)
-      {
-        result.add(message.getString(new StringBuilder(RESULT_PROP).append(i).toString()));
-      }
+    public FileQueryReply(Message message) throws JMSException {
+        super(message);
+        createResultList((MapMessage) message);
     }
-  }
 
-  public List<String> getResult()
-  {
-    return result;
-  }
-
-  public void setResult(List<String> result)
-  {
-    this.result = result;
-  }
-
-  public Message toMessage() throws JMSException
-  {
-    MapMessage message = new MapMessageImpl();
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEQUERY_REP);
-    if (result == null)
-      message.setInt(RESULTSIZE_PROP, 0);
-    else
-    {
-      message.setInt(RESULTSIZE_PROP, result.size());
-      for (int i = 0; i < result.size(); i++)
-      {
-        message.setString(new StringBuilder(RESULT_PROP).append(i).toString(), result.get(i));
-      }
+    public FileQueryReply() {
     }
-    return fillMessage(message);
 
-  }
+    private void createResultList(MapMessage message) throws JMSException {
+        int n = message.getInt(RESULTSIZE_PROP);
+        if (n > 0) {
+            result = new ArrayList<String>(n);
+            for (int i = 0; i < n; i++) {
+                result.add(message.getString(new StringBuilder(RESULT_PROP).append(i).toString()));
+            }
+        }
+    }
 
-  public String toString()
-  {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("[FileQueryReply");
-    sb.append(super.toString());
-    sb.append(" result='").append(result).append('\'');
-    sb.append(']');
-    return sb.toString();
-  }
+    public List<String> getResult() {
+        return result;
+    }
+
+    public void setResult(List<String> result) {
+        this.result = result;
+    }
+
+    public Message toMessage() throws JMSException {
+        MapMessage message = new MapMessageImpl();
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.FILEQUERY_REP);
+        if (result == null)
+            message.setInt(RESULTSIZE_PROP, 0);
+        else {
+            message.setInt(RESULTSIZE_PROP, result.size());
+            for (int i = 0; i < result.size(); i++) {
+                message.setString(new StringBuilder(RESULT_PROP).append(i).toString(), result.get(i));
+            }
+        }
+        return fillMessage(message);
+
+    }
+
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("[FileQueryReply");
+        sb.append(super.toString());
+        sb.append(" result='").append(result).append('\'');
+        sb.append(']');
+        return sb.toString();
+    }
 }

@@ -17,23 +17,21 @@
 
 package com.swiftmq.impl.routing.single.schedule.po;
 
-import com.swiftmq.tools.pipeline.*;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POCallback;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POCloseObject extends POObject
-{
-  public POCloseObject(POCallback callback, Semaphore semaphore)
-  {
-    super(callback, semaphore);
-  }
+public class POCloseObject extends POObject {
+    public POCloseObject(POCallback callback, Semaphore semaphore) {
+        super(callback, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((POSchedulerVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((POSchedulerVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POCloseObject]";
-  }
+    public String toString() {
+        return "[POCloseObject]";
+    }
 }

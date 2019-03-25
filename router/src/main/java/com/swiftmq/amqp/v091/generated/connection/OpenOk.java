@@ -17,70 +17,62 @@
 
 package com.swiftmq.amqp.v091.generated.connection;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class OpenOk extends ConnectionMethod
-{
-  String reserved1;
+import java.io.IOException;
 
-  public OpenOk()
-  {
-    _classId = 10;
-    _methodId = 41;
-  }
+public class OpenOk extends ConnectionMethod {
+    String reserved1;
 
-  public void accept(ConnectionMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public OpenOk() {
+        _classId = 10;
+        _methodId = 41;
+    }
 
-  public String getReserved1()
-  {
-    return reserved1;
-  }
+    public void accept(ConnectionMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReserved1(String reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public String getReserved1() {
+        return reserved1;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    reserved1 = Coder.readShortString(in);
-  }
+    public void setReserved1(String reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShortString(reserved1, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        reserved1 = Coder.readShortString(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShortString(reserved1, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[OpenOk " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[OpenOk " + super.toString() + getDisplayString() + "]";
+    }
 }

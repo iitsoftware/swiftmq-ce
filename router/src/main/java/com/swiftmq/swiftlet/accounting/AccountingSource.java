@@ -25,25 +25,27 @@ package com.swiftmq.swiftlet.accounting;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2010, All Rights Reserved
  */
-public interface AccountingSource
-{
-  /**
-   * Sets a StopListener which will be called if the account source is stopped internally
-   * due to an exception.
-   * @param listener StopListener
-   */
-  public void setStopListener(StopListener listener);
+public interface AccountingSource {
+    /**
+     * Sets a StopListener which will be called if the account source is stopped internally
+     * due to an exception.
+     *
+     * @param listener StopListener
+     */
+    public void setStopListener(StopListener listener);
 
-  /**
-   * Starts accounting
-   * @param sink The accounting sink
-   * @throws Exception if anything goes wrong
-   */
-  public void startAccounting(AccountingSink sink) throws Exception;
+    /**
+     * Starts accounting
+     *
+     * @param sink The accounting sink
+     * @throws Exception if anything goes wrong
+     */
+    public void startAccounting(AccountingSink sink) throws Exception;
 
-  /**
-   * Stops the accounting. The StopListener will NOT be called.
-   * @throws Exception if anything goes wrong
-   */
-  public void stopAccounting() throws Exception;
+    /**
+     * Stops the accounting. The StopListener will NOT be called.
+     *
+     * @throws Exception if anything goes wrong
+     */
+    public void stopAccounting() throws Exception;
 }

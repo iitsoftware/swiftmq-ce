@@ -17,18 +17,16 @@
 
 package com.swiftmq.jms.v510;
 
-import javax.jms.*;
-import java.net.Socket;
+import javax.jms.JMSException;
+import javax.jms.XAConnection;
+import javax.jms.XASession;
 
-public class XAConnectionImpl extends ConnectionImpl implements XAConnection
-{
-  public XAConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn) throws JMSException
-  {
-    super(userName, password, conn);
-  }
+public class XAConnectionImpl extends ConnectionImpl implements XAConnection {
+    public XAConnectionImpl(String userName, String password, com.swiftmq.net.client.Connection conn) throws JMSException {
+        super(userName, password, conn);
+    }
 
-  public XASession createXASession() throws JMSException
-  {
-    return new XASessionImpl((SessionImpl) createSession(true, 0));
-  }
+    public XASession createXASession() throws JMSException {
+        return new XASessionImpl((SessionImpl) createSession(true, 0));
+    }
 }

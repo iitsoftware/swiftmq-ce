@@ -23,15 +23,14 @@ package com.swiftmq.swiftlet.queue;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class QueueAlreadyDefinedException extends QueueException
-{
-  /**
-   * Constructs a new QueueAlreadyDefinedException
-   * @param msg the message
-   */
-  public QueueAlreadyDefinedException(String msg)
-  {
-    super(msg);
-  }
+public class QueueAlreadyDefinedException extends QueueException {
+    /**
+     * Constructs a new QueueAlreadyDefinedException
+     *
+     * @param msg the message
+     */
+    public QueueAlreadyDefinedException(String msg) {
+        super(msg);
+    }
 }
 

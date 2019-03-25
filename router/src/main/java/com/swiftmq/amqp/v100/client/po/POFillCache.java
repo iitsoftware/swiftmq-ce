@@ -23,49 +23,41 @@ import com.swiftmq.amqp.v100.generated.transactions.coordination.TxnIdIF;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POFillCache extends POObject
-{
-  Consumer consumer;
-  int linkCredit;
-  long lastDeliveryId;
-  TxnIdIF txnIdIF;
+public class POFillCache extends POObject {
+    Consumer consumer;
+    int linkCredit;
+    long lastDeliveryId;
+    TxnIdIF txnIdIF;
 
-  public POFillCache(Consumer consumer, int linkCredit, long lastDeliveryId, TxnIdIF txnIdIF)
-  {
-    super(null, null);
-    this.consumer = consumer;
-    this.linkCredit = linkCredit;
-    this.lastDeliveryId = lastDeliveryId;
-    this.txnIdIF = txnIdIF;
-  }
+    public POFillCache(Consumer consumer, int linkCredit, long lastDeliveryId, TxnIdIF txnIdIF) {
+        super(null, null);
+        this.consumer = consumer;
+        this.linkCredit = linkCredit;
+        this.lastDeliveryId = lastDeliveryId;
+        this.txnIdIF = txnIdIF;
+    }
 
-  public Consumer getConsumer()
-  {
-    return consumer;
-  }
+    public Consumer getConsumer() {
+        return consumer;
+    }
 
-  public int getLinkCredit()
-  {
-    return linkCredit;
-  }
+    public int getLinkCredit() {
+        return linkCredit;
+    }
 
-  public long getLastDeliveryId()
-  {
-    return lastDeliveryId;
-  }
+    public long getLastDeliveryId() {
+        return lastDeliveryId;
+    }
 
-  public TxnIdIF getTxnIdIF()
-  {
-    return txnIdIF;
-  }
+    public TxnIdIF getTxnIdIF() {
+        return txnIdIF;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POFillCache, consumer=" + consumer + ", linkCredit=" + linkCredit + ", lastDeliveryId=" + lastDeliveryId + ", txnid="+txnIdIF+"]";
-  }
+    public String toString() {
+        return "[POFillCache, consumer=" + consumer + ", linkCredit=" + linkCredit + ", lastDeliveryId=" + lastDeliveryId + ", txnid=" + txnIdIF + "]";
+    }
 }

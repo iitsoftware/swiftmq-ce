@@ -17,32 +17,30 @@
 
 package com.swiftmq.impl.routing.single.jobs;
 
-import com.swiftmq.swiftlet.scheduler.*;
 import com.swiftmq.impl.routing.single.SwiftletContext;
+import com.swiftmq.swiftlet.scheduler.JobFactory;
+import com.swiftmq.swiftlet.scheduler.JobGroup;
 
-public class JobRegistrar
-{
-  SwiftletContext ctx = null;
-  JobGroup jobGroup = null;
+public class JobRegistrar {
+    SwiftletContext ctx = null;
+    JobGroup jobGroup = null;
 
-  public JobRegistrar(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public JobRegistrar(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public void register()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(),toString()+"/register ...");
-    jobGroup = ctx.schedulerSwiftlet.getJobGroup("Routing");
-    JobFactory jf = new RoutingConnectorJobFactory(ctx);
-    jobGroup.addJobFactory(jf.getName(),jf);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(),toString()+"/register done");
-  }
+    public void register() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/register ...");
+        jobGroup = ctx.schedulerSwiftlet.getJobGroup("Routing");
+        JobFactory jf = new RoutingConnectorJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/register done");
+    }
 
-  public void unregister()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(),toString()+"/unregister ...");
-    jobGroup.removeAll();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(),toString()+"/unregister done");
-  }
+    public void unregister() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/unregister ...");
+        jobGroup.removeAll();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/unregister done");
+    }
 }

@@ -19,16 +19,13 @@ package com.swiftmq.jms;
 
 import javax.jms.JMSException;
 
-public class RequestTimeoutException extends JMSException
-{
-  public RequestTimeoutException(String reason)
-  {
-    super(reason);
-  }
+public class RequestTimeoutException extends JMSException {
+    public RequestTimeoutException(String reason) {
+        super(reason);
+    }
 
-  public RequestTimeoutException(String reason, Exception linkedException)
-  {
-    super(reason);
-    setLinkedException(linkedException);
-  }
+    public RequestTimeoutException(String reason, Exception linkedException) {
+        super(reason);
+        setLinkedException(linkedException);
+    }
 }

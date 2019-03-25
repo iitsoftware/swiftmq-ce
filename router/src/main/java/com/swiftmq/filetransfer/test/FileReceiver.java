@@ -28,81 +28,65 @@ import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class FileReceiver
-{
-  static Connection connection = null;
-  static File outDir = null;
-  static ExecutorService executorService = Executors.newFixedThreadPool(5);
+public class FileReceiver {
+    static Connection connection = null;
+    static File outDir = null;
+    static ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-  private static void transfer(String link) throws Exception
-  {
-    System.out.println("Transferring: " + link);
-    Filetransfer filetransfer = Filetransfer.create(connection, link).withDigestType("MD5");
-    filetransfer.withOriginalFilename(true).withOutputDirectory(outDir).withPassword("Moin!").receive(new ProgressListener()
-    {
-      public void progress(String filename, int chunksTransferred, long fileSize, long bytesTransferred, int transferredPercent)
-      {
-        System.out.println("  " + filename + ": " + chunksTransferred + " chunks, " + bytesTransferred + " of " + fileSize + " transferred (" + transferredPercent + "%)");
-      }
-    }).delete().close();
-  }
-
-  public static void main(String[] args)
-  {
-    if (args.length != 4)
-    {
-      System.out.println("Usage: FileReceiver <smqp-url> <connection-factory> <link-input-dest> <output-dir>");
-      System.exit(-1);
-    }
-
-    try
-    {
-      Hashtable env = new Hashtable();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.swiftmq.jndi.InitialContextFactoryImpl");
-      env.put(Context.PROVIDER_URL, args[0]);
-      InitialContext ctx = new InitialContext(env);
-      ConnectionFactory cf = (ConnectionFactory) ctx.lookup(args[1]);
-      Destination linkInputDest = (Destination) ctx.lookup(args[2]);
-      ctx.close();
-      connection = cf.createConnection();
-      connection.start();
-      outDir = new File(args[3]);
-      if (!outDir.exists())
-        outDir.mkdirs();
-
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer consumer = session.createConsumer(linkInputDest);
-      TextMessage msg = null;
-      while ((msg = (TextMessage) consumer.receive()) != null)
-      {
-        final String link = msg.getText();
-        executorService.execute(new Runnable()
-        {
-          public void run()
-          {
-            try
-            {
-              transfer(link);
-            } catch (Exception e)
-            {
-              e.printStackTrace();
+    private static void transfer(String link) throws Exception {
+        System.out.println("Transferring: " + link);
+        Filetransfer filetransfer = Filetransfer.create(connection, link).withDigestType("MD5");
+        filetransfer.withOriginalFilename(true).withOutputDirectory(outDir).withPassword("Moin!").receive(new ProgressListener() {
+            public void progress(String filename, int chunksTransferred, long fileSize, long bytesTransferred, int transferredPercent) {
+                System.out.println("  " + filename + ": " + chunksTransferred + " chunks, " + bytesTransferred + " of " + fileSize + " transferred (" + transferredPercent + "%)");
             }
-          }
-        });
-      }
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-    } finally
-    {
-      executorService.shutdown();
-      try
-      {
-        connection.close();
-      } catch (JMSException e)
-      {
-      }
+        }).delete().close();
     }
-  }
+
+    public static void main(String[] args) {
+        if (args.length != 4) {
+            System.out.println("Usage: FileReceiver <smqp-url> <connection-factory> <link-input-dest> <output-dir>");
+            System.exit(-1);
+        }
+
+        try {
+            Hashtable env = new Hashtable();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.swiftmq.jndi.InitialContextFactoryImpl");
+            env.put(Context.PROVIDER_URL, args[0]);
+            InitialContext ctx = new InitialContext(env);
+            ConnectionFactory cf = (ConnectionFactory) ctx.lookup(args[1]);
+            Destination linkInputDest = (Destination) ctx.lookup(args[2]);
+            ctx.close();
+            connection = cf.createConnection();
+            connection.start();
+            outDir = new File(args[3]);
+            if (!outDir.exists())
+                outDir.mkdirs();
+
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageConsumer consumer = session.createConsumer(linkInputDest);
+            TextMessage msg = null;
+            while ((msg = (TextMessage) consumer.receive()) != null) {
+                final String link = msg.getText();
+                executorService.execute(new Runnable() {
+                    public void run() {
+                        try {
+                            transfer(link);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            executorService.shutdown();
+            try {
+                connection.close();
+            } catch (JMSException e) {
+            }
+        }
+    }
 
 }

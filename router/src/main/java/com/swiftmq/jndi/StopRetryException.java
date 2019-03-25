@@ -19,10 +19,8 @@ package com.swiftmq.jndi;
 
 import javax.naming.NamingException;
 
-public class StopRetryException extends NamingException
-{
-  public StopRetryException(String s)
-  {
-    super(s);
-  }
+public class StopRetryException extends NamingException {
+    public StopRetryException(String s) {
+        super(s);
+    }
 }

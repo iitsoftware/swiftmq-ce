@@ -22,33 +22,27 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class SessionStartAccounting extends Request
-{
-  AccountingProfile accountingProfile = null;
+public class SessionStartAccounting extends Request {
+    AccountingProfile accountingProfile = null;
 
-  public SessionStartAccounting(AccountingProfile accountingProfile)
-  {
-    super(0, false);
-    this.accountingProfile = accountingProfile;
-  }
+    public SessionStartAccounting(AccountingProfile accountingProfile) {
+        super(0, false);
+        this.accountingProfile = accountingProfile;
+    }
 
-  public AccountingProfile getAccountingProfile()
-  {
-    return accountingProfile;
-  }
+    public AccountingProfile getAccountingProfile() {
+        return accountingProfile;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor requestVisitor)
-  {
-    ((SessionVisitor) requestVisitor).visit(this);
-  }
+    public void accept(RequestVisitor requestVisitor) {
+        ((SessionVisitor) requestVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SessionStartAccounting, accountingProfile=" + accountingProfile + "]";
-  }
+    public String toString() {
+        return "[SessionStartAccounting, accountingProfile=" + accountingProfile + "]";
+    }
 }

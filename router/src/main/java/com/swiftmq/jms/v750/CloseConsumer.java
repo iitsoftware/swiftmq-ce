@@ -21,33 +21,27 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CloseConsumer extends Request
-{
-  int id = 0;
+public class CloseConsumer extends Request {
+    int id = 0;
 
-  public CloseConsumer(int id)
-  {
-    super(0, false);
-    this.id = id;
-  }
+    public CloseConsumer(int id) {
+        super(0, false);
+        this.id = id;
+    }
 
-  public int getId()
-  {
-    return id;
-  }
+    public int getId() {
+        return id;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SessionVisitorAdapter) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SessionVisitorAdapter) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[CloseConsumer, id=" + id + "]";
-  }
+    public String toString() {
+        return "[CloseConsumer, id=" + id + "]";
+    }
 }

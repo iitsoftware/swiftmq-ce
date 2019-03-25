@@ -22,66 +22,62 @@ package com.swiftmq.swiftlet.trace;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public abstract class TraceSpace
-{
+public abstract class TraceSpace {
 
-  /**
-   * States whether the space is enabled or not. Swiftlets are checking this
-   * flag before calling the <code>trace()</code> method to avoid unnecessary
-   * calls and String operations.
-   */
-  public boolean enabled = false;
-  String spaceName = null;
-  boolean closed = false;
+    /**
+     * States whether the space is enabled or not. Swiftlets are checking this
+     * flag before calling the <code>trace()</code> method to avoid unnecessary
+     * calls and String operations.
+     */
+    public boolean enabled = false;
+    String spaceName = null;
+    boolean closed = false;
 
-  /**
-   * Creates a new trace space
-   *
-   * @param spaceName space name
-   * @param enabled   enabled or not
-   */
-  public TraceSpace(String spaceName, boolean enabled)
-  {
-    // SBgen: Assign variables
-    this.spaceName = spaceName;
-    this.enabled = enabled;
-    // SBgen: End assign
-  }
+    /**
+     * Creates a new trace space
+     *
+     * @param spaceName space name
+     * @param enabled   enabled or not
+     */
+    public TraceSpace(String spaceName, boolean enabled) {
+        // SBgen: Assign variables
+        this.spaceName = spaceName;
+        this.enabled = enabled;
+        // SBgen: End assign
+    }
 
-  /**
-   * Returns the space name
-   *
-   * @return space name
-   */
-  public String getSpaceName()
-  {
-    // SBgen: Get variable
-    return (spaceName);
-  }
+    /**
+     * Returns the space name
+     *
+     * @return space name
+     */
+    public String getSpaceName() {
+        // SBgen: Get variable
+        return (spaceName);
+    }
 
-  /**
-   * Trace a message to the space. The subEntity parameter specifies what kind
-   * of entity is tracing. A Extension Swiftlet would use the Swiftlet name here.
-   *
-   * @param subEntity sub entity
-   * @param message   trace message
-   */
-  public abstract void trace(String subEntity, String message);
+    /**
+     * Trace a message to the space. The subEntity parameter specifies what kind
+     * of entity is tracing. A Extension Swiftlet would use the Swiftlet name here.
+     *
+     * @param subEntity sub entity
+     * @param message   trace message
+     */
+    public abstract void trace(String subEntity, String message);
 
-  /**
-   * Abstract method which is called during <code>close</code> to close any
-   * resources associates with this space (i. e. output streams).
-   */
-  protected abstract void closeSpaceResources();
+    /**
+     * Abstract method which is called during <code>close</code> to close any
+     * resources associates with this space (i. e. output streams).
+     */
+    protected abstract void closeSpaceResources();
 
-  /**
-   * Closes the space. After that the space is unusable.
-   */
-  public void close()
-  {
-    enabled = false;
-    closed = true;
-    closeSpaceResources();
-  }
+    /**
+     * Closes the space. After that the space is unusable.
+     */
+    public void close() {
+        enabled = false;
+        closed = true;
+        closeSpaceResources();
+    }
 }
 

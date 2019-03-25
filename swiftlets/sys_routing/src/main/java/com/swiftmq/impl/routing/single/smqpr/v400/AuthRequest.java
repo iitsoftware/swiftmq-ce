@@ -26,77 +26,64 @@ import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import java.io.*;
 
-public class AuthRequest extends Request
-{
-  Serializable response = null;
+public class AuthRequest extends Request {
+    Serializable response = null;
 
-  AuthRequest()
-  {
-    this(null);
-  }
-
-  public AuthRequest(Serializable response)
-  {
-    super(0, false);
-    this.response = response;
-  }
-
-  public int getDumpId()
-  {
-    return SMQRFactory.AUTH_REQ;
-  }
-
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(dbos);
-    oos.writeObject(response);
-    oos.flush();
-    oos.close();
-    output.writeInt(dbos.getCount());
-    output.write(dbos.getBuffer(), 0, dbos.getCount());
-  }
-
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    byte b[] = new byte[input.readInt()];
-    input.readFully(b);
-    DataByteArrayInputStream dbis = new DataByteArrayInputStream(b);
-    ObjectInputStream ois = new ObjectInputStream(dbis);
-    try
-    {
-      response = (Serializable) ois.readObject();
-    } catch (ClassNotFoundException e)
-    {
-      throw new IOException(e.toString());
+    AuthRequest() {
+        this(null);
     }
-    ois.close();
-  }
 
-  public Serializable getResponse()
-  {
-    return response;
-  }
+    public AuthRequest(Serializable response) {
+        super(0, false);
+        this.response = response;
+    }
 
-  public void setResponse(Serializable response)
-  {
-    this.response = response;
-  }
+    public int getDumpId() {
+        return SMQRFactory.AUTH_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(dbos);
+        oos.writeObject(response);
+        oos.flush();
+        oos.close();
+        output.writeInt(dbos.getCount());
+        output.write(dbos.getBuffer(), 0, dbos.getCount());
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        byte b[] = new byte[input.readInt()];
+        input.readFully(b);
+        DataByteArrayInputStream dbis = new DataByteArrayInputStream(b);
+        ObjectInputStream ois = new ObjectInputStream(dbis);
+        try {
+            response = (Serializable) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException(e.toString());
+        }
+        ois.close();
+    }
 
-  public String toString()
-  {
-    return "[AuthRequest " + super.toString() + ", response=" + response + "]";
-  }
+    public Serializable getResponse() {
+        return response;
+    }
+
+    public void setResponse(Serializable response) {
+        this.response = response;
+    }
+
+    protected Reply createReplyInstance() {
+        return null;
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
+
+    public String toString() {
+        return "[AuthRequest " + super.toString() + ", response=" + response + "]";
+    }
 }

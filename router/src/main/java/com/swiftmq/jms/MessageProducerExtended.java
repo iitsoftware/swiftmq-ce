@@ -19,7 +19,6 @@ package com.swiftmq.jms;
 
 import javax.jms.MessageProducer;
 
-public interface MessageProducerExtended extends MessageProducer
-{
-  public void setSkipMessageInits(boolean skipMessageInits);
+public interface MessageProducerExtended extends MessageProducer {
+    public void setSkipMessageInits(boolean skipMessageInits);
 }

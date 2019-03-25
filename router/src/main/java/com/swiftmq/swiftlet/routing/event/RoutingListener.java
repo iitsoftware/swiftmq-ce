@@ -21,33 +21,37 @@ import java.util.EventListener;
 
 /**
  * A listener interested in routing events.
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface RoutingListener extends EventListener
-{
+public interface RoutingListener extends EventListener {
 
-  /**
-   * Called when a destination (remote router) is added.
-   * @param evt event.
-   */
-  public void destinationAdded(RoutingEvent evt);
+    /**
+     * Called when a destination (remote router) is added.
+     *
+     * @param evt event.
+     */
+    public void destinationAdded(RoutingEvent evt);
 
-  /**
-   * Called when a destination (remote router) is removed.
-   * @param evt event.
-   */
-  public void destinationRemoved(RoutingEvent evt);
+    /**
+     * Called when a destination (remote router) is removed.
+     *
+     * @param evt event.
+     */
+    public void destinationRemoved(RoutingEvent evt);
 
-  /**
-   * Called when a destination (remote router) is activated.
-   * @param evt event.
-   */
-  public void destinationActivated(RoutingEvent evt);
+    /**
+     * Called when a destination (remote router) is activated.
+     *
+     * @param evt event.
+     */
+    public void destinationActivated(RoutingEvent evt);
 
-  /**
-   * Called when a destination (remote router) is deactivated.
-   * @param evt event.
-   */
-  public void destinationDeactivated(RoutingEvent evt);
+    /**
+     * Called when a destination (remote router) is deactivated.
+     *
+     * @param evt event.
+     */
+    public void destinationDeactivated(RoutingEvent evt);
 }
 

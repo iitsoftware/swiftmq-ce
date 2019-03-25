@@ -17,17 +17,16 @@
 
 package com.swiftmq.mgmt;
 
-public class TreeCommands
-{
-  public static final String ERROR = "Error:";
-  public static final String INFO = "Information:";
-  public static final String RESULT = "Result:";
+public class TreeCommands {
+    public static final String ERROR = "Error:";
+    public static final String INFO = "Information:";
+    public static final String RESULT = "Result:";
 
-  public static final String AUTH = "authenticate";
-  public static final String DIR_CONTEXT = "lc";
-  public static final String CHANGE_CONTEXT = "cc";
-  public static final String GET_CONTEXT_PROP = "getcontextprop";
-  public static final String GET_CONTEXT_ENTITIES = "getcontextent";
-  public static final String EXPORT = "export";
-  public static final String IMPORT = "import";
+    public static final String AUTH = "authenticate";
+    public static final String DIR_CONTEXT = "lc";
+    public static final String CHANGE_CONTEXT = "cc";
+    public static final String GET_CONTEXT_PROP = "getcontextprop";
+    public static final String GET_CONTEXT_ENTITIES = "getcontextent";
+    public static final String EXPORT = "export";
+    public static final String IMPORT = "import";
 }

@@ -24,55 +24,60 @@ import java.util.List;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface PersistentStore
-{
+public interface PersistentStore {
 
-  /**
-   * Returns a list of all store entries
-   * @return list of all store entries.
-   * @exception StoreException on error.
-   */
-  public List getStoreEntries()
-      throws StoreException;
+    /**
+     * Returns a list of all store entries
+     *
+     * @return list of all store entries.
+     * @throws StoreException on error.
+     */
+    public List getStoreEntries()
+            throws StoreException;
 
-  /**
-   * Get a store entry.
-   * @param key the key.
-   * @return store entry.
-   * @exception StoreException on error.
-   */
-  public StoreEntry get(Object key)
-      throws StoreException;
+    /**
+     * Get a store entry.
+     *
+     * @param key the key.
+     * @return store entry.
+     * @throws StoreException on error.
+     */
+    public StoreEntry get(Object key)
+            throws StoreException;
 
-  /**
-   * Delete the persistent store incl. all entries.
-   * @exception StoreException on error.
-   */
-  public void delete()
-      throws StoreException;
+    /**
+     * Delete the persistent store incl. all entries.
+     *
+     * @throws StoreException on error.
+     */
+    public void delete()
+            throws StoreException;
 
-  /**
-   * Create a new read transaction.
-   * @param markRedelivered states whether messages should be marked as redelivered on rollback.
-   * @return new transaction.
-   * @exception StoreException  on error.
-   */
-  public StoreReadTransaction createReadTransaction(boolean markRedelivered)
-      throws StoreException;
+    /**
+     * Create a new read transaction.
+     *
+     * @param markRedelivered states whether messages should be marked as redelivered on rollback.
+     * @return new transaction.
+     * @throws StoreException on error.
+     */
+    public StoreReadTransaction createReadTransaction(boolean markRedelivered)
+            throws StoreException;
 
-  /**
-   * Create a new write transaction.
-   * @return new transaction.
-   * @exception StoreException  on error.
-   */
-  public StoreWriteTransaction createWriteTransaction()
-      throws StoreException;
+    /**
+     * Create a new write transaction.
+     *
+     * @return new transaction.
+     * @throws StoreException on error.
+     */
+    public StoreWriteTransaction createWriteTransaction()
+            throws StoreException;
 
-  /**
-   * Close the store.
-   * @exception StoreException on error.
-   */
-  public void close()
-      throws StoreException;
+    /**
+     * Close the store.
+     *
+     * @throws StoreException on error.
+     */
+    public void close()
+            throws StoreException;
 }
 

@@ -18,33 +18,32 @@
 package com.swiftmq.amqp.v100.generated.messaging.addressing;
 
 /**
- *  The Source interface.
+ * The Source interface.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface SourceIF
-{
-  /**
-   * Accept method for a Source visitor.
-   *
-   * @param visitor Source visitor
-   */
-  public void accept(SourceVisitor visitor);
+public interface SourceIF {
+    /**
+     * Accept method for a Source visitor.
+     *
+     * @param visitor Source visitor
+     */
+    public void accept(SourceVisitor visitor);
 
-  /**
-   * Returns the predicted size of this SourceIF. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize();
+    /**
+     * Returns the predicted size of this SourceIF. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize();
 
-  /**
-   * Returns a value representation of this SourceIF.
-   *
-   * @return value representation
-   */
-  public String getValueString();
+    /**
+     * Returns a value representation of this SourceIF.
+     *
+     * @return value representation
+     */
+    public String getValueString();
 }

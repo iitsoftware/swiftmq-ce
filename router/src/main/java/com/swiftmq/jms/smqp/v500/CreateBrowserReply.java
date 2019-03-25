@@ -21,85 +21,79 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreateBrowserReply extends Reply
-{
-  int queueBrowserId = 0;
+public class CreateBrowserReply extends Reply {
+    int queueBrowserId = 0;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_BROWSER_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_BROWSER_REP;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueBrowserId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueBrowserId);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    queueBrowserId = in.readInt();
-  }
+        queueBrowserId = in.readInt();
+    }
 
-  /**
-   * @param queueBrowserId
-   * @SBGen Method set queueBrowserId
-   */
-  public void setQueueBrowserId(int queueBrowserId)
-  {
+    /**
+     * @param queueBrowserId
+     * @SBGen Method set queueBrowserId
+     */
+    public void setQueueBrowserId(int queueBrowserId) {
 
-    // SBgen: Assign variable
-    this.queueBrowserId = queueBrowserId;
-  }
+        // SBgen: Assign variable
+        this.queueBrowserId = queueBrowserId;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get queueBrowserId
-   */
-  public int getQueueBrowserId()
-  {
+    /**
+     * @return
+     * @SBGen Method get queueBrowserId
+     */
+    public int getQueueBrowserId() {
 
-    // SBgen: Get variable
-    return (queueBrowserId);
-  }
+        // SBgen: Get variable
+        return (queueBrowserId);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreateBrowserReply " + super.toString() + " queueBrowserId="
-        + queueBrowserId + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreateBrowserReply " + super.toString() + " queueBrowserId="
+                + queueBrowserId + "]";
+    }
 
 }
 

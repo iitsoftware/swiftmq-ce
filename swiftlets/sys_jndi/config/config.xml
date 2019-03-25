@@ -1,7 +1,7 @@
 <swiftlet name="sys$jndi"
 					displayname="JNDI Swiftlet"
 					class="com.swiftmq.impl.jndi.standard.JNDISwiftletImpl"
-					icon="/com/swiftmq/impl/jndi/standard/images/swiftlet.png"
+					icon="/sys_jndi/images/swiftlet.png"
 					description="JNDI Swiftlet"
 					release="${release}"
 					vendor="IIT Software GmbH" >

@@ -17,28 +17,24 @@
 
 package com.swiftmq.client;
 
-public class Versions
-{
-  public static final int[] JNDI = {400};
-  public static final int JNDI_CURRENT = 400;
-  public static final int[] JMS = {400, 500, 510, 600, 610, 630, 750};
-  public static int JMS_CURRENT = Integer.parseInt(System.getProperty("swiftmq.smqp.version","750"));
+public class Versions {
+    public static final int[] JNDI = {400};
+    public static final int JNDI_CURRENT = 400;
+    public static final int[] JMS = {400, 500, 510, 600, 610, 630, 750};
+    public static int JMS_CURRENT = Integer.parseInt(System.getProperty("swiftmq.smqp.version", "750"));
 
-  public static int getSelectedIndex(int current, int[] set)
-  {
-    for (int i=0;i<set.length;i++)
-    {
-      if (set[i] == current)
-        return i;
+    public static int getSelectedIndex(int current, int[] set) {
+        for (int i = 0; i < set.length; i++) {
+            if (set[i] == current)
+                return i;
+        }
+        return set.length - 1;
     }
-    return set.length-1;
-  }
 
-  public static int[] cutAfterIndex(int idx, int[] set)
-  {
-    int[] newSet = new int[idx+1];
-    for (int i=0;i<newSet.length;i++)
-      newSet[i] = set[i];
-    return newSet;
-  }
+    public static int[] cutAfterIndex(int idx, int[] set) {
+        int[] newSet = new int[idx + 1];
+        for (int i = 0; i < newSet.length; i++)
+            newSet[i] = set[i];
+        return newSet;
+    }
 }

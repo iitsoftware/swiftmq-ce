@@ -19,83 +19,72 @@ package com.swiftmq.tools.versioning;
 
 import com.swiftmq.tools.dump.Dumpable;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class VersionNotification implements VersionObject, Dumpable
-{
-  String identifier = null;
-  int[] acceptedVersions = null;
+public class VersionNotification implements VersionObject, Dumpable {
+    String identifier = null;
+    int[] acceptedVersions = null;
 
-  public VersionNotification(String identifier, int[] acceptedVersions)
-  {
-    this.identifier = identifier;
-    this.acceptedVersions = acceptedVersions;
-  }
-
-  public VersionNotification()
-  {
-  }
-
-  public int getDumpId()
-  {
-    return VersionObjectFactory.VERSION_NOTIFICATION;
-  }
-
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    if (identifier != null)
-    {
-      out.writeByte(1);
-      out.writeUTF(identifier);
-    } else
-      out.writeByte(0);
-    out.writeInt(acceptedVersions.length);
-    for (int i=0;i<acceptedVersions.length;i++)
-      out.writeInt(acceptedVersions[i]);
-  }
-
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    byte set = in.readByte();
-    if (set == 1)
-      identifier = in.readUTF();
-    acceptedVersions = new int[in.readInt()];
-    for (int i=0;i<acceptedVersions.length;i++)
-      acceptedVersions[i] = in.readInt();
-  }
-
-  public String getIdentifier()
-  {
-    return identifier;
-  }
-
-  public int[] getAcceptedVersions()
-  {
-    return acceptedVersions;
-  }
-
-  public void accept(VersionVisitor visitor)
-  {
-    visitor.visit(this);
-  }
-
-  private String print(int[] a)
-  {
-    StringBuffer b = new StringBuffer("[");
-    for (int i=0;i<a.length;i++)
-    {
-      if (i>0)
-        b.append(", ");
-      b.append(a[i]);
+    public VersionNotification(String identifier, int[] acceptedVersions) {
+        this.identifier = identifier;
+        this.acceptedVersions = acceptedVersions;
     }
-    b.append("]");
-    return b.toString();
-  }
 
-  public String toString()
-  {
-    return "[VersionNotification, identifier="+identifier+", acceptedVersion="+print(acceptedVersions)+"]";
-  }
+    public VersionNotification() {
+    }
+
+    public int getDumpId() {
+        return VersionObjectFactory.VERSION_NOTIFICATION;
+    }
+
+    public void writeContent(DataOutput out)
+            throws IOException {
+        if (identifier != null) {
+            out.writeByte(1);
+            out.writeUTF(identifier);
+        } else
+            out.writeByte(0);
+        out.writeInt(acceptedVersions.length);
+        for (int i = 0; i < acceptedVersions.length; i++)
+            out.writeInt(acceptedVersions[i]);
+    }
+
+    public void readContent(DataInput in)
+            throws IOException {
+        byte set = in.readByte();
+        if (set == 1)
+            identifier = in.readUTF();
+        acceptedVersions = new int[in.readInt()];
+        for (int i = 0; i < acceptedVersions.length; i++)
+            acceptedVersions[i] = in.readInt();
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public int[] getAcceptedVersions() {
+        return acceptedVersions;
+    }
+
+    public void accept(VersionVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    private String print(int[] a) {
+        StringBuffer b = new StringBuffer("[");
+        for (int i = 0; i < a.length; i++) {
+            if (i > 0)
+                b.append(", ");
+            b.append(a[i]);
+        }
+        b.append("]");
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[VersionNotification, identifier=" + identifier + ", acceptedVersion=" + print(acceptedVersions) + "]";
+    }
 }

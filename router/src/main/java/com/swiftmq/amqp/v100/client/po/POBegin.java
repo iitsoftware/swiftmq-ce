@@ -22,21 +22,17 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POBegin extends POObject
-{
+public class POBegin extends POObject {
 
-  public POBegin(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+    public POBegin(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POBegin]";
-  }
+    public String toString() {
+        return "[POBegin]";
+    }
 }

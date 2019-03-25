@@ -17,89 +17,81 @@
 
 package com.swiftmq.impl.routing.single.route;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
-public class RouteFilter
-{
-  static final int INCLUDE_BY_HOP = 0;
-  static final int EXCLUDE_BY_HOP = 1;
-  static final int INCLUDE_BY_DEST = 2;
-  static final int EXCLUDE_BY_DEST = 3;
+public class RouteFilter {
+    static final int INCLUDE_BY_HOP = 0;
+    static final int EXCLUDE_BY_HOP = 1;
+    static final int INCLUDE_BY_DEST = 2;
+    static final int EXCLUDE_BY_DEST = 3;
 
-  int type;
-  Set routerNames = new HashSet();
+    int type;
+    Set routerNames = new HashSet();
 
-  public RouteFilter(int type)
-  {
-    this.type = type;
-  }
-
-  public synchronized void addRouterName(String routerName)
-  {
-    routerNames.add(routerName);
-  }
-
-  public synchronized void removeRouterName(String routerName)
-  {
-    routerNames.remove(routerName);
-  }
-
-  public synchronized boolean isSendable(Route route)
-  {
-    boolean rc = false;
-    switch (type)
-    {
-      case INCLUDE_BY_HOP:
-        rc = routerNames.contains(route.getLastHop());
-        break;
-      case EXCLUDE_BY_HOP:
-        rc = !routerNames.contains(route.getLastHop());
-        break;
-      case INCLUDE_BY_DEST:
-        rc = routerNames.contains(route.getDestinationRouter());
-        break;
-      case EXCLUDE_BY_DEST:
-        rc = !routerNames.contains(route.getDestinationRouter());
-        break;
+    public RouteFilter(int type) {
+        this.type = type;
     }
-    return rc;
-  }
 
-  public String toString()
-  {
-    String s = null;
-    switch (type)
-    {
-      case INCLUDE_BY_HOP:
-        s = "INCLUDE_BY_HOP";
-        break;
-      case EXCLUDE_BY_HOP:
-        s = "EXCLUDE_BY_HOP";
-        break;
-      case INCLUDE_BY_DEST:
-        s = "INCLUDE_BY_DEST";
-        break;
-      case EXCLUDE_BY_DEST:
-        s = "EXCLUDE_BY_DEST";
-        break;
+    public synchronized void addRouterName(String routerName) {
+        routerNames.add(routerName);
     }
-    StringBuffer a = new StringBuffer();
-    boolean first = true;
-    a.append("[");
-    synchronized (routerNames)
-    {
-      for (Iterator iter = routerNames.iterator(); iter.hasNext();)
-      {
-        if (first)
-          first = false;
-        else
-          a.append(", ");
-        a.append(iter.next());
-      }
-    }
-    a.append("]");
 
-    return "[RouteFilter, type=" + s + ", routerNames=" + a.toString() + "]";
-  }
+    public synchronized void removeRouterName(String routerName) {
+        routerNames.remove(routerName);
+    }
+
+    public synchronized boolean isSendable(Route route) {
+        boolean rc = false;
+        switch (type) {
+            case INCLUDE_BY_HOP:
+                rc = routerNames.contains(route.getLastHop());
+                break;
+            case EXCLUDE_BY_HOP:
+                rc = !routerNames.contains(route.getLastHop());
+                break;
+            case INCLUDE_BY_DEST:
+                rc = routerNames.contains(route.getDestinationRouter());
+                break;
+            case EXCLUDE_BY_DEST:
+                rc = !routerNames.contains(route.getDestinationRouter());
+                break;
+        }
+        return rc;
+    }
+
+    public String toString() {
+        String s = null;
+        switch (type) {
+            case INCLUDE_BY_HOP:
+                s = "INCLUDE_BY_HOP";
+                break;
+            case EXCLUDE_BY_HOP:
+                s = "EXCLUDE_BY_HOP";
+                break;
+            case INCLUDE_BY_DEST:
+                s = "INCLUDE_BY_DEST";
+                break;
+            case EXCLUDE_BY_DEST:
+                s = "EXCLUDE_BY_DEST";
+                break;
+        }
+        StringBuffer a = new StringBuffer();
+        boolean first = true;
+        a.append("[");
+        synchronized (routerNames) {
+            for (Iterator iter = routerNames.iterator(); iter.hasNext(); ) {
+                if (first)
+                    first = false;
+                else
+                    a.append(", ");
+                a.append(iter.next());
+            }
+        }
+        a.append("]");
+
+        return "[RouteFilter, type=" + s + ", routerNames=" + a.toString() + "]";
+    }
 }
 

@@ -22,43 +22,35 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class StartAccountingRequest extends Request
-{
-  AccountingProfile accountingProfile = null;
+public class StartAccountingRequest extends Request {
+    AccountingProfile accountingProfile = null;
 
-  public StartAccountingRequest()
-  {
-    this(null);
-  }
+    public StartAccountingRequest() {
+        this(null);
+    }
 
-  public StartAccountingRequest(AccountingProfile accountingProfile)
-  {
-    super(0, false);
-    this.accountingProfile = accountingProfile;
-  }
+    public StartAccountingRequest(AccountingProfile accountingProfile) {
+        super(0, false);
+        this.accountingProfile = accountingProfile;
+    }
 
-  public AccountingProfile getAccountingProfile()
-  {
-    return accountingProfile;
-  }
+    public AccountingProfile getAccountingProfile() {
+        return accountingProfile;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.START_ACCOUNTING_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.START_ACCOUNTING_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[StartAccountingRequest " + super.toString() + ", accountingProfile=" + accountingProfile + "]";
-  }
+    public String toString() {
+        return "[StartAccountingRequest " + super.toString() + ", accountingProfile=" + accountingProfile + "]";
+    }
 }

@@ -25,13 +25,13 @@ package com.swiftmq.mgmt;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  * @see PropertyChangeListener
  */
-public interface PropertyWatchListener
-{
+public interface PropertyWatchListener {
 
-  /**
-   * Called after the Property value has been changed.
-   * @param prop the Property.
-   */
-  public void propertyValueChanged(Property prop);
+    /**
+     * Called after the Property value has been changed.
+     *
+     * @param prop the Property.
+     */
+    public void propertyValueChanged(Property prop);
 }
 

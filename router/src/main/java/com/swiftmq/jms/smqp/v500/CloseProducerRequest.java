@@ -23,90 +23,82 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CloseProducerRequest extends Request
-{
-  int queueProducerId = -1;
+public class CloseProducerRequest extends Request {
+    int queueProducerId = -1;
 
-  /**
-   * @param dispatchId
-   * @SBGen Constructor
-   */
-  public CloseProducerRequest(int dispatchId, int queueProducerId)
-  {
-    super(dispatchId, true);
-    this.queueProducerId = queueProducerId;
-  }
+    /**
+     * @param dispatchId
+     * @SBGen Constructor
+     */
+    public CloseProducerRequest(int dispatchId, int queueProducerId) {
+        super(dispatchId, true);
+        this.queueProducerId = queueProducerId;
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CLOSE_PRODUCER_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CLOSE_PRODUCER_REQ;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueProducerId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueProducerId);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    queueProducerId = in.readInt();
-  }
+        queueProducerId = in.readInt();
+    }
 
-  public int getQueueProducerId()
-  {
-    return queueProducerId;
-  }
+    public int getQueueProducerId() {
+        return queueProducerId;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CloseProducerReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CloseProducerReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCloseProducerRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCloseProducerRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CloseProducerRequest " + super.toString() + ", queueProducerId=" + queueProducerId + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CloseProducerRequest " + super.toString() + ", queueProducerId=" + queueProducerId + "]";
+    }
 
 }
 

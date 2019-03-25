@@ -23,26 +23,21 @@ import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.List;
 
-public class AbortLogRecord extends LogRecord
-{
-  public AbortLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, AsyncCompletionCallback callback)
-  {
-    super(txId, semaphore, journal, cacheReleaseListener, callback, null);
-  }
+public class AbortLogRecord extends LogRecord {
+    public AbortLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener, AsyncCompletionCallback callback) {
+        super(txId, semaphore, journal, cacheReleaseListener, callback, null);
+    }
 
-  public AbortLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener)
-  {
-    super(txId, semaphore, journal, cacheReleaseListener, null, null);
-  }
+    public AbortLogRecord(long txId, Semaphore semaphore, List journal, CacheReleaseListener cacheReleaseListener) {
+        super(txId, semaphore, journal, cacheReleaseListener, null, null);
+    }
 
-  public int getLogType()
-  {
-    return ABORT;
-  }
+    public int getLogType() {
+        return ABORT;
+    }
 
-  public String toString()
-  {
-    return "[AbortLogRecord, magic=" + magic + ", txId=" + txId + ", Semaphore=" + semaphore + ", " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AbortLogRecord, magic=" + magic + ", txId=" + txId + ", Semaphore=" + semaphore + ", " + super.toString() + "]";
+    }
 }
 

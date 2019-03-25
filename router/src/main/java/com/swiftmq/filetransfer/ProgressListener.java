@@ -22,16 +22,15 @@ package com.swiftmq.filetransfer;
  *
  * @author IIT Software GmbH, Bremen/Germany, (c) 2013, All Rights Reserved
  */
-public interface ProgressListener
-{
-  /**
-   * Will be called from the Filetransfer object and informs about the progress of the transfer.
-   *
-   * @param filename           name of the file
-   * @param chunksTransferred  number of transferred chunks
-   * @param fileSize           size of the file
-   * @param bytesTransferred   number of bytes transferred
-   * @param transferredPercent percent transferred
-   */
-  public void progress(String filename, int chunksTransferred, long fileSize, long bytesTransferred, int transferredPercent);
+public interface ProgressListener {
+    /**
+     * Will be called from the Filetransfer object and informs about the progress of the transfer.
+     *
+     * @param filename           name of the file
+     * @param chunksTransferred  number of transferred chunks
+     * @param fileSize           size of the file
+     * @param bytesTransferred   number of bytes transferred
+     * @param transferredPercent percent transferred
+     */
+    public void progress(String filename, int chunksTransferred, long fileSize, long bytesTransferred, int transferredPercent);
 }

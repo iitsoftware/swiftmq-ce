@@ -19,7 +19,6 @@ package com.swiftmq.net.client;
 
 import com.swiftmq.tools.util.LengthCaptureDataInput;
 
-public interface InboundHandler
-{
-  public void dataAvailable(LengthCaptureDataInput in);
+public interface InboundHandler {
+    public void dataAvailable(LengthCaptureDataInput in);
 }

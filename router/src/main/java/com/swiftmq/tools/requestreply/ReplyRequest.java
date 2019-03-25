@@ -17,88 +17,78 @@
 
 package com.swiftmq.tools.requestreply;
 
-import com.swiftmq.tools.util.*;
+import com.swiftmq.tools.util.DataByteArrayInputStream;
+import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import java.io.*;
 
-public abstract class ReplyRequest extends Request
-{
-  boolean ok = false;
-  Exception exception = null;
+public abstract class ReplyRequest extends Request {
+    boolean ok = false;
+    Exception exception = null;
 
-  public ReplyRequest(int dispatchId, boolean replyRequired)
-  {
-    super(dispatchId, replyRequired);
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out)
-      throws IOException
-  {
-    out.writeBoolean(ok);
-    if (exception == null)
-      out.writeByte(0);
-    else
-    {
-      out.writeByte(1);
-      DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
-      (new ObjectOutputStream(dos)).writeObject(exception);
-      out.writeInt(dos.getCount());
-      out.write(dos.getBuffer(),0,dos.getCount());
+    public ReplyRequest(int dispatchId, boolean replyRequired) {
+        super(dispatchId, replyRequired);
     }
-  }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in)
-      throws IOException
-  {
-    ok = in.readBoolean();
-    byte set = in.readByte();
-    if (set == 0)
-      exception = null;
-    else
-    {
-      try
-      {
-        byte[] b = new byte[in.readInt()];
-        in.readFully(b);
-        exception = (Exception) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
-      } catch (ClassNotFoundException ignored)
-      {
-      }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeBoolean(ok);
+        if (exception == null)
+            out.writeByte(0);
+        else {
+            out.writeByte(1);
+            DataByteArrayOutputStream dos = new DataByteArrayOutputStream(256);
+            (new ObjectOutputStream(dos)).writeObject(exception);
+            out.writeInt(dos.getCount());
+            out.write(dos.getBuffer(), 0, dos.getCount());
+        }
     }
-  }
 
-  public boolean isOk()
-  {
-    return ok;
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in)
+            throws IOException {
+        ok = in.readBoolean();
+        byte set = in.readByte();
+        if (set == 0)
+            exception = null;
+        else {
+            try {
+                byte[] b = new byte[in.readInt()];
+                in.readFully(b);
+                exception = (Exception) (new ObjectInputStream(new DataByteArrayInputStream(b))).readObject();
+            } catch (ClassNotFoundException ignored) {
+            }
+        }
+    }
 
-  public void setOk(boolean ok)
-  {
-    this.ok = ok;
-  }
+    public boolean isOk() {
+        return ok;
+    }
 
-  public Exception getException()
-  {
-    return exception;
-  }
+    public void setOk(boolean ok) {
+        this.ok = ok;
+    }
 
-  public void setException(Exception exception)
-  {
-    this.exception = exception;
-  }
+    public Exception getException() {
+        return exception;
+    }
 
-  public String toString()
-  {
-    return "[ReplyRequest, ok=" + ok + " exception=" + exception  + " ]";
-  }
+    public void setException(Exception exception) {
+        this.exception = exception;
+    }
+
+    public String toString() {
+        return "[ReplyRequest, ok=" + ok + " exception=" + exception + " ]";
+    }
 }

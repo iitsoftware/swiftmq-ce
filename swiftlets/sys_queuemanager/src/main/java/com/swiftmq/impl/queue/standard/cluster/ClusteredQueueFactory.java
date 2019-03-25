@@ -23,19 +23,16 @@ import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.queue.QueueFactory;
 
-public class ClusteredQueueFactory implements QueueFactory
-{
-  SwiftletContext ctx = null;
+public class ClusteredQueueFactory implements QueueFactory {
+    SwiftletContext ctx = null;
 
-  public ClusteredQueueFactory(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-  }
+    public ClusteredQueueFactory(SwiftletContext ctx) {
+        this.ctx = ctx;
+    }
 
-  public AbstractQueue createQueue(String queueName, Entity clusteredQueueEntity) throws QueueException
-  {
-    AbstractQueue queue = new ClusteredQueue(ctx, ctx.dispatchPolicyRegistry.add(queueName, ctx.messageGroupDispatchPolicyFactory.create(ctx, clusteredQueueEntity, queueName, new RoundRobinDispatchPolicy(ctx, queueName))));
-    queue.setFlowController(new ClusteredQueueFlowController());
-    return queue;
-  }
+    public AbstractQueue createQueue(String queueName, Entity clusteredQueueEntity) throws QueueException {
+        AbstractQueue queue = new ClusteredQueue(ctx, ctx.dispatchPolicyRegistry.add(queueName, ctx.messageGroupDispatchPolicyFactory.create(ctx, clusteredQueueEntity, queueName, new RoundRobinDispatchPolicy(ctx, queueName))));
+        queue.setFlowController(new ClusteredQueueFlowController());
+        return queue;
+    }
 }

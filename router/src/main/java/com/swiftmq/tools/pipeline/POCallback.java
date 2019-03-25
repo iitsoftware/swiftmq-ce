@@ -18,8 +18,8 @@
 package com.swiftmq.tools.pipeline;
 
 
-public interface POCallback
-{
-  public void onSuccess(POObject po);
-  public void onException(POObject po);
+public interface POCallback {
+    public void onSuccess(POObject po);
+
+    public void onException(POObject po);
 }

@@ -28,51 +28,51 @@ import java.io.Serializable;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
 public abstract class JNDISwiftlet extends Swiftlet {
-  public static final String JNDI_TOPIC = "swiftmq.jndi";
-  public static final String JNDI_QUEUE = "sys$jndi";
+    public static final String JNDI_TOPIC = "swiftmq.jndi";
+    public static final String JNDI_QUEUE = "sys$jndi";
 
-  /**
-   * Registers a JNDI object.
-   * After registration, clients are able to lookup this object unter that name.
-   *
-   * @param name   lookup name.
-   * @param object the object.
-   */
-  public abstract void registerJNDIObject(String name, Serializable object);
-
-
-  /**
-   * Removes a registered JNDI object.
-   *
-   * @param name lookup name.
-   */
-  public abstract void deregisterJNDIObject(String name);
-
-  /**
-   * Removes all registered JNDI objects that matches the comparable.
-   *
-   * @param comparable comparable.
-   */
-  public abstract void deregisterJNDIObjects(Comparable comparable);
+    /**
+     * Registers a JNDI object.
+     * After registration, clients are able to lookup this object unter that name.
+     *
+     * @param name   lookup name.
+     * @param object the object.
+     */
+    public abstract void registerJNDIObject(String name, Serializable object);
 
 
-  /**
-   * Removes all JNDI entries for a registered JMS Queue.
-   * Say, there are 3 registrations in JNDI which are all pointing to the same queue name
-   * 'testqueue@router1', all registrations are deleted after calling this method with
-   * 'testqueue@router1'.
-   *
-   * @param queueName queue name.
-   */
-  public abstract void deregisterJNDIQueueObject(String queueName);
+    /**
+     * Removes a registered JNDI object.
+     *
+     * @param name lookup name.
+     */
+    public abstract void deregisterJNDIObject(String name);
 
-  /**
-   * Returns the JNDI Object with that name.
-   *
-   * @param name Name
-   * @return Object
-   */
-  public abstract Serializable getJNDIObject(String name);
+    /**
+     * Removes all registered JNDI objects that matches the comparable.
+     *
+     * @param comparable comparable.
+     */
+    public abstract void deregisterJNDIObjects(Comparable comparable);
+
+
+    /**
+     * Removes all JNDI entries for a registered JMS Queue.
+     * Say, there are 3 registrations in JNDI which are all pointing to the same queue name
+     * 'testqueue@router1', all registrations are deleted after calling this method with
+     * 'testqueue@router1'.
+     *
+     * @param queueName queue name.
+     */
+    public abstract void deregisterJNDIQueueObject(String queueName);
+
+    /**
+     * Returns the JNDI Object with that name.
+     *
+     * @param name Name
+     * @return Object
+     */
+    public abstract Serializable getJNDIObject(String name);
 
 }
 

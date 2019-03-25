@@ -20,15 +20,14 @@ package com.swiftmq.jms;
 import javax.transaction.xa.XAResource;
 import java.io.PrintWriter;
 
-public interface XAResourceExtended extends XAResource
-{
-  PrintWriter getLogWriter();
+public interface XAResourceExtended extends XAResource {
+    PrintWriter getLogWriter();
 
-  void setNeverSameRM(boolean b);
-  
-  void setLogWriter(PrintWriter logWriter);
+    void setNeverSameRM(boolean b);
 
-  void setCompletionListener(XACompletionListener completionListener);
+    void setLogWriter(PrintWriter logWriter);
 
-  String getRouterName();
+    void setCompletionListener(XACompletionListener completionListener);
+
+    String getRouterName();
 }

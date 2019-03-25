@@ -18,19 +18,17 @@
 package com.swiftmq.amqp.v100.client;
 
 /**
- *  An exception thrown if the remote server doesn't support the SASL or AMQP protocol version.
+ * An exception thrown if the remote server doesn't support the SASL or AMQP protocol version.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class UnsupportedProtocolVersionException extends Exception
-{
-  /**
-   * Creates an UnsupportedProtocolVersionException.
-   *
-   * @param s exception message
-   */
-  public UnsupportedProtocolVersionException(String s)
-  {
-    super(s);
-  }
+public class UnsupportedProtocolVersionException extends Exception {
+    /**
+     * Creates an UnsupportedProtocolVersionException.
+     *
+     * @param s exception message
+     */
+    public UnsupportedProtocolVersionException(String s) {
+        super(s);
+    }
 }

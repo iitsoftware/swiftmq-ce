@@ -23,29 +23,24 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POCallback;
 import com.swiftmq.tools.pipeline.POObject;
 
-public abstract class POAttach extends POObject
-{
-  Link link = null;
-  DeliveryMemory deliveryMemory;
+public abstract class POAttach extends POObject {
+    Link link = null;
+    DeliveryMemory deliveryMemory;
 
-  protected POAttach(POCallback poCallback, Semaphore semaphore, DeliveryMemory deliveryMemory)
-  {
-    super(poCallback, semaphore);
-    this.deliveryMemory = deliveryMemory;
-  }
+    protected POAttach(POCallback poCallback, Semaphore semaphore, DeliveryMemory deliveryMemory) {
+        super(poCallback, semaphore);
+        this.deliveryMemory = deliveryMemory;
+    }
 
-  public DeliveryMemory getDeliveryMemory()
-  {
-    return deliveryMemory;
-  }
+    public DeliveryMemory getDeliveryMemory() {
+        return deliveryMemory;
+    }
 
-  public Link getLink()
-  {
-    return link;
-  }
+    public Link getLink() {
+        return link;
+    }
 
-  public void setLink(Link link)
-  {
-    this.link = link;
-  }
+    public void setLink(Link link) {
+        this.link = link;
+    }
 }

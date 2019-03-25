@@ -19,48 +19,39 @@ package com.swiftmq.tools.versioning;
 
 import com.swiftmq.tools.dump.Dumpable;
 
-import java.util.List;
+public abstract class VersionedFactory {
+    int[] supported = null;
 
-public abstract class VersionedFactory
-{
-  int[] supported = null;
-
-  private String print(int[] a)
-  {
-    StringBuffer b = new StringBuffer("[");
-    for (int i=0;i<a.length;i++)
-    {
-      if (i>0)
-        b.append(", ");
-      b.append(a[i]);
+    private String print(int[] a) {
+        StringBuffer b = new StringBuffer("[");
+        for (int i = 0; i < a.length; i++) {
+            if (i > 0)
+                b.append(", ");
+            b.append(a[i]);
+        }
+        b.append("]");
+        return b.toString();
     }
-    b.append("]");
-    return b.toString();
-  }
 
-  protected abstract Dumpable createDumpable(Versioned versioned) throws VersionedException;
+    protected abstract Dumpable createDumpable(Versioned versioned) throws VersionedException;
 
-  public static int[] getSupportedVersions()
-  {
-    return null;
-  }
-
-  public Dumpable getDumpable(Versioned versioned) throws VersionedException
-  {
-    if (supported == null)
-      supported = getSupportedVersions();
-    boolean found = false;
-    int version = versioned.getVersion();
-    for (int i=0;i<supported.length;i++)
-    {
-      if (version == supported[i])
-      {
-        found = true;
-        break;
-      }
+    public static int[] getSupportedVersions() {
+        return null;
     }
-    if (!found)
-      throw new VersionedException("Requested version '"+version+" is not supported! Supported versions are: "+print(supported));
-    return createDumpable(versioned);
-  }
+
+    public Dumpable getDumpable(Versioned versioned) throws VersionedException {
+        if (supported == null)
+            supported = getSupportedVersions();
+        boolean found = false;
+        int version = versioned.getVersion();
+        for (int i = 0; i < supported.length; i++) {
+            if (version == supported[i]) {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            throw new VersionedException("Requested version '" + version + " is not supported! Supported versions are: " + print(supported));
+        return createDumpable(versioned);
+    }
 }

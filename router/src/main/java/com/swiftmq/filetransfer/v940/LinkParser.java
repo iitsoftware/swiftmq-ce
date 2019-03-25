@@ -19,52 +19,44 @@ package com.swiftmq.filetransfer.v940;
 
 import com.swiftmq.filetransfer.Util;
 
-public class LinkParser
-{
-  String link = null;
-  String routerName = null;
-  String cacheName = null;
-  String fileKey = null;
-  String digestType = null;
-  byte[] digest = null;
+public class LinkParser {
+    String link = null;
+    String routerName = null;
+    String cacheName = null;
+    String fileKey = null;
+    String digestType = null;
+    byte[] digest = null;
 
-  public LinkParser(String link)
-  {
-    this.link = link;
-    routerName = Util.parse("router=", ";", link);
-    cacheName = Util.parse("cache=", ";", link);
-    fileKey = Util.parse("file=", ";", link);
-    digestType = Util.parse("digesttype=", ";", link);
-    digest = Util.hexStringToByteArray(Util.parse("digest=", ";", link));
-  }
+    public LinkParser(String link) {
+        this.link = link;
+        routerName = Util.parse("router=", ";", link);
+        cacheName = Util.parse("cache=", ";", link);
+        fileKey = Util.parse("file=", ";", link);
+        digestType = Util.parse("digesttype=", ";", link);
+        digest = Util.hexStringToByteArray(Util.parse("digest=", ";", link));
+    }
 
-  public String getLink()
-  {
-    return link;
-  }
+    public String getLink() {
+        return link;
+    }
 
-  public String getRouterName()
-  {
-    return routerName;
-  }
+    public String getRouterName() {
+        return routerName;
+    }
 
-  public String getCacheName()
-  {
-    return cacheName;
-  }
+    public String getCacheName() {
+        return cacheName;
+    }
 
-  public String getFileKey()
-  {
-    return fileKey;
-  }
+    public String getFileKey() {
+        return fileKey;
+    }
 
-  public String getDigestType()
-  {
-    return digestType;
-  }
+    public String getDigestType() {
+        return digestType;
+    }
 
-  public byte[] getDigest()
-  {
-    return digest;
-  }
+    public byte[] getDigest() {
+        return digest;
+    }
 }

@@ -23,235 +23,209 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreateDurableRequest extends Request
-{
-  TopicImpl topic = null;
-  String messageSelector = null;
-  boolean noLocal = false;
-  String durableName = null;
+public class CreateDurableRequest extends Request {
+    TopicImpl topic = null;
+    String messageSelector = null;
+    boolean noLocal = false;
+    String durableName = null;
 
-  /**
-   * @param topic
-   * @param messageSelector
-   * @param noLocal
-   * @param dispatchId
-   * @param durableName
-   * @SBGen Constructor assigns topic, messageSelector
-   */
-  public CreateDurableRequest(int dispatchId, TopicImpl topic,
-                              String messageSelector, boolean noLocal,
-                              String durableName)
-  {
-    super(dispatchId, true);
+    /**
+     * @param topic
+     * @param messageSelector
+     * @param noLocal
+     * @param dispatchId
+     * @param durableName
+     * @SBGen Constructor assigns topic, messageSelector
+     */
+    public CreateDurableRequest(int dispatchId, TopicImpl topic,
+                                String messageSelector, boolean noLocal,
+                                String durableName) {
+        super(dispatchId, true);
 
-    // SBgen: Assign variables
-    this.topic = topic;
-    this.messageSelector = messageSelector;
-    this.noLocal = noLocal;
-    this.durableName = durableName;
-    // SBgen: End assign
-  }
-
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_DURABLE_REQ;
-  }
-
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-
-    out.writeBoolean(noLocal);
-
-    if (topic == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      DestinationFactory.dumpDestination(topic, out);
+        // SBgen: Assign variables
+        this.topic = topic;
+        this.messageSelector = messageSelector;
+        this.noLocal = noLocal;
+        this.durableName = durableName;
+        // SBgen: End assign
     }
 
-    if (messageSelector == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(messageSelector);
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_DURABLE_REQ;
     }
 
-    if (durableName == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeUTF(durableName);
-    }
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+        out.writeBoolean(noLocal);
 
-    noLocal = in.readBoolean();
+        if (topic == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            DestinationFactory.dumpDestination(topic, out);
+        }
 
-    byte set = in.readByte();
+        if (messageSelector == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(messageSelector);
+        }
 
-    if (set == 0)
-    {
-      topic = null;
-    } else
-    {
-      topic = (TopicImpl) DestinationFactory.createDestination(in);
-    }
-
-    set = in.readByte();
-
-    if (set == 0)
-    {
-      messageSelector = null;
-    } else
-    {
-      messageSelector = in.readUTF();
+        if (durableName == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeUTF(durableName);
+        }
     }
 
-    set = in.readByte();
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    if (set == 0)
-    {
-      durableName = null;
-    } else
-    {
-      durableName = in.readUTF();
+        noLocal = in.readBoolean();
+
+        byte set = in.readByte();
+
+        if (set == 0) {
+            topic = null;
+        } else {
+            topic = (TopicImpl) DestinationFactory.createDestination(in);
+        }
+
+        set = in.readByte();
+
+        if (set == 0) {
+            messageSelector = null;
+        } else {
+            messageSelector = in.readUTF();
+        }
+
+        set = in.readByte();
+
+        if (set == 0) {
+            durableName = null;
+        } else {
+            durableName = in.readUTF();
+        }
     }
-  }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new CreateDurableReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new CreateDurableReply();
+    }
 
-  /**
-   * @param topic
-   * @SBGen Method set topic
-   */
-  public void setTopic(TopicImpl topic)
-  {
+    /**
+     * @param topic
+     * @SBGen Method set topic
+     */
+    public void setTopic(TopicImpl topic) {
 
-    // SBgen: Assign variable
-    this.topic = topic;
-  }
+        // SBgen: Assign variable
+        this.topic = topic;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get topic
-   */
-  public TopicImpl getTopic()
-  {
+    /**
+     * @return
+     * @SBGen Method get topic
+     */
+    public TopicImpl getTopic() {
 
-    // SBgen: Get variable
-    return (topic);
-  }
+        // SBgen: Get variable
+        return (topic);
+    }
 
-  /**
-   * @param messageSelector
-   * @SBGen Method set messageSelector
-   */
-  public void setMessageSelector(String messageSelector)
-  {
+    /**
+     * @param messageSelector
+     * @SBGen Method set messageSelector
+     */
+    public void setMessageSelector(String messageSelector) {
 
-    // SBgen: Assign variable
-    this.messageSelector = messageSelector;
-  }
+        // SBgen: Assign variable
+        this.messageSelector = messageSelector;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get messageSelector
-   */
-  public String getMessageSelector()
-  {
+    /**
+     * @return
+     * @SBGen Method get messageSelector
+     */
+    public String getMessageSelector() {
 
-    // SBgen: Get variable
-    return (messageSelector);
-  }
+        // SBgen: Get variable
+        return (messageSelector);
+    }
 
-  /**
-   * @param noLocal
-   * @SBGen Method set noLocal
-   */
-  public void setNoLocal(boolean noLocal)
-  {
+    /**
+     * @param noLocal
+     * @SBGen Method set noLocal
+     */
+    public void setNoLocal(boolean noLocal) {
 
-    // SBgen: Assign variable
-    this.noLocal = noLocal;
-  }
+        // SBgen: Assign variable
+        this.noLocal = noLocal;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get noLocal
-   */
-  public boolean isNoLocal()
-  {
-    // SBgen: Get variable
-    return (noLocal);
-  }
+    /**
+     * @return
+     * @SBGen Method get noLocal
+     */
+    public boolean isNoLocal() {
+        // SBgen: Get variable
+        return (noLocal);
+    }
 
-  /**
-   * @return
-   * @SBGen Method get durableName
-   */
-  public String getDurableName()
-  {
+    /**
+     * @return
+     * @SBGen Method get durableName
+     */
+    public String getDurableName() {
 
-    // SBgen: Get variable
-    return (durableName);
-  }
+        // SBgen: Get variable
+        return (durableName);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitCreateDurableRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitCreateDurableRequest(this);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreateDurableRequest " + super.toString() + " topic=" + topic
-        + " messageSelector=" + messageSelector + " durableName=" + durableName + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreateDurableRequest " + super.toString() + " topic=" + topic
+                + " messageSelector=" + messageSelector + " durableName=" + durableName + "]";
+    }
 
 }
 

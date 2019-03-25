@@ -21,77 +21,70 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 
-public class SMQPVersionRequest extends Request
-{
-  int version = 0;
+public class SMQPVersionRequest extends Request {
+    int version = 0;
 
-  public SMQPVersionRequest(int version)
-  {
-    super(0, true);
-    this.version = version;
-  }
+    public SMQPVersionRequest(int version) {
+        super(0, true);
+        this.version = version;
+    }
 
-  public SMQPVersionRequest()
-  {
-    this(0);
-  }
+    public SMQPVersionRequest() {
+        this(0);
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(version);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(version);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    version = in.readInt();
-  }
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        version = in.readInt();
+    }
 
-  public int getVersion()
-  {
-    return version;
-  }
+    public int getVersion() {
+        return version;
+    }
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_SMQP_VERSION_REQ;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_SMQP_VERSION_REQ;
+    }
 
-  /**
-   * @return
-   */
-  protected Reply createReplyInstance()
-  {
-    return new SMQPVersionReply();
-  }
+    /**
+     * @return
+     */
+    protected Reply createReplyInstance() {
+        return new SMQPVersionReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SMQPVersionRequest " + super.toString() +
-        ", version=" + version + "]";
-  }
+    public String toString() {
+        return "[SMQPVersionRequest " + super.toString() +
+                ", version=" + version + "]";
+    }
 }

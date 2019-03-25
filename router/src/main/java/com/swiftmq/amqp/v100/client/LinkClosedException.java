@@ -18,19 +18,17 @@
 package com.swiftmq.amqp.v100.client;
 
 /**
- *  An exception thrown if a link is closed.
+ * An exception thrown if a link is closed.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class LinkClosedException extends AMQPException
-{
-  /**
-   * Create a LinkClosedException
-   *
-   * @param s exception message
-   */
-  public LinkClosedException(String s)
-  {
-    super(s);
-  }
+public class LinkClosedException extends AMQPException {
+    /**
+     * Create a LinkClosedException
+     *
+     * @param s exception message
+     */
+    public LinkClosedException(String s) {
+        super(s);
+    }
 }

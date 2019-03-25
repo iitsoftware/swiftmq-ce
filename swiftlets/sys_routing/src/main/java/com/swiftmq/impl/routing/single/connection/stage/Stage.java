@@ -19,56 +19,49 @@ package com.swiftmq.impl.routing.single.connection.stage;
 
 import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
-import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.requestreply.Request;
 
-public abstract class Stage
-{
-  protected SwiftletContext ctx = null;
-  protected RoutingConnection routingConnection = null;
-  StageQueue stageQueue = null;
-  TimerListener validTimer = null;
-  boolean stageValid = true;
+public abstract class Stage {
+    protected SwiftletContext ctx = null;
+    protected RoutingConnection routingConnection = null;
+    StageQueue stageQueue = null;
+    TimerListener validTimer = null;
+    boolean stageValid = true;
 
-  public Stage(SwiftletContext ctx, RoutingConnection routingConnection)
-  {
-    this.ctx = ctx;
-    this.routingConnection = routingConnection;
-  }
+    public Stage(SwiftletContext ctx, RoutingConnection routingConnection) {
+        this.ctx = ctx;
+        this.routingConnection = routingConnection;
+    }
 
-  protected abstract void init();
+    protected abstract void init();
 
-  public StageQueue getStageQueue()
-  {
-    return stageQueue;
-  }
+    public StageQueue getStageQueue() {
+        return stageQueue;
+    }
 
-  public void setStageQueue(StageQueue stageQueue)
-  {
-    this.stageQueue = stageQueue;
-  }
+    public void setStageQueue(StageQueue stageQueue) {
+        this.stageQueue = stageQueue;
+    }
 
-  protected void startValidTimer()
-  {
-    validTimer = new TimerListener()
-    {
-      public void performTimeAction()
-      {
-        if (!stageValid)
-          return;
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), Stage.this.toString() + "/stage valid timeout");
-        ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
-      }
-    };
-    ctx.timerSwiftlet.addInstantTimerListener(((Long)ctx.root.getProperty("stage-valid-timeout").getValue()).longValue(),validTimer);
-  }
+    protected void startValidTimer() {
+        validTimer = new TimerListener() {
+            public void performTimeAction() {
+                if (!stageValid)
+                    return;
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), Stage.this.toString() + "/stage valid timeout");
+                ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
+            }
+        };
+        ctx.timerSwiftlet.addInstantTimerListener(((Long) ctx.root.getProperty("stage-valid-timeout").getValue()).longValue(), validTimer);
+    }
 
-  public abstract void process(Request request);
+    public abstract void process(Request request);
 
-  public void close()
-  {
-    stageValid = false;
-    if (validTimer != null)
-      ctx.timerSwiftlet.removeTimerListener(validTimer);
-  }
+    public void close() {
+        stageValid = false;
+        if (validTimer != null)
+            ctx.timerSwiftlet.removeTimerListener(validTimer);
+    }
 }

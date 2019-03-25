@@ -17,12 +17,11 @@
 
 package com.swiftmq.jms.v400;
 
-import com.swiftmq.tools.dump.*;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
 
-public class CFFactory extends DumpableFactory
-{
-  public Dumpable createDumpable(int dumpId)
-  {
-    return new ConnectionFactoryImpl();
-  }
+public class CFFactory extends DumpableFactory {
+    public Dumpable createDumpable(int dumpId) {
+        return new ConnectionFactoryImpl();
+    }
 }

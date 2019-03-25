@@ -17,7 +17,6 @@
 
 package com.swiftmq.tools.util;
 
-public interface ForeignLicense
-{
-  public boolean isValid();
+public interface ForeignLicense {
+    public boolean isValid();
 }

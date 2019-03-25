@@ -24,16 +24,15 @@ package com.swiftmq.mgmt;
  * @see Entity
  * @see EntityAddListener
  */
-public class EntityAddException extends Exception
-{
+public class EntityAddException extends Exception {
 
-  /**
-   * Creates a new EntityAddException.
-   * @param msg the message.
-   */
-  public EntityAddException(String msg)
-  {
-    super(msg);
-  }
+    /**
+     * Creates a new EntityAddException.
+     *
+     * @param msg the message.
+     */
+    public EntityAddException(String msg) {
+        super(msg);
+    }
 }
 

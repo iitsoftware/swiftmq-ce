@@ -19,117 +19,93 @@ package com.swiftmq.tools.util;
 
 import java.io.*;
 
-public class LazyUTF8String implements Serializable
-{
-  String s = null;
-  byte[] buffer = null;
-  int utfLength = 0;
+public class LazyUTF8String implements Serializable {
+    String s = null;
+    byte[] buffer = null;
+    int utfLength = 0;
 
-  public LazyUTF8String(DataInput in) throws IOException
-  {
-    utfLength = in.readUnsignedShort();
-    buffer = new byte[utfLength + 2];
-    in.readFully(buffer, 2, utfLength);
-    buffer[0] = (byte) ((utfLength >>> 8) & 0xFF);
-    buffer[1] = (byte) ((utfLength) & 0xFF);
-  }
-
-  public LazyUTF8String(String s)
-  {
-    try
-    {
-      if (s == null)
-      {
-        System.out.println("s==null");
-        throw new NullPointerException();
-
-      }
-    } catch (NullPointerException e)
-    {
-      e.printStackTrace();
-      throw e;
+    public LazyUTF8String(DataInput in) throws IOException {
+        utfLength = in.readUnsignedShort();
+        buffer = new byte[utfLength + 2];
+        in.readFully(buffer, 2, utfLength);
+        buffer[0] = (byte) ((utfLength >>> 8) & 0xFF);
+        buffer[1] = (byte) ((utfLength) & 0xFF);
     }
-    this.s = s;
-  }
 
-  private String bufferToString() throws Exception
-  {
-    return UTFUtils.convertFromUTF8(buffer, 2, utfLength);
-  }
+    public LazyUTF8String(String s) {
+        try {
+            if (s == null) {
+                System.out.println("s==null");
+                throw new NullPointerException();
 
-  private byte[] stringToBuffer() throws Exception
-  {
-    utfLength = UTFUtils.countUTFBytes(s);
-    if (utfLength > 65535)
-      throw new UTFDataFormatException();
-
-    byte[] b = new byte[utfLength + 2];
-    int count = 0;
-    count = UTFUtils.writeShortToBuffer(utfLength, b, count);
-    UTFUtils.writeUTFBytesToBuffer(s, b, count);
-    return b;
-  }
-
-  public String getString()
-  {
-    return getString(false);
-  }
-
-  public String getString(boolean clear)
-  {
-    if (s == null)
-    {
-      synchronized (this)
-      {
-        if (s == null)
-        {
-          try
-          {
-            s = bufferToString();
-            if (clear)
-            {
-              buffer = null;
-              utfLength = 0;
             }
-          } catch (Exception e)
-          {
+        } catch (NullPointerException e) {
             e.printStackTrace();
-          }
+            throw e;
         }
-      }
+        this.s = s;
     }
-    return s;
-  }
 
-  public byte[] getBuffer()
-  {
-    if (buffer == null)
-    {
-      synchronized (this)
-      {
-        if (buffer == null)
-        {
-          try
-          {
-            buffer = stringToBuffer();
-          } catch (Exception e)
-          {
-            e.printStackTrace();
-          }
+    private String bufferToString() throws Exception {
+        return UTFUtils.convertFromUTF8(buffer, 2, utfLength);
+    }
+
+    private byte[] stringToBuffer() throws Exception {
+        utfLength = UTFUtils.countUTFBytes(s);
+        if (utfLength > 65535)
+            throw new UTFDataFormatException();
+
+        byte[] b = new byte[utfLength + 2];
+        int count = 0;
+        count = UTFUtils.writeShortToBuffer(utfLength, b, count);
+        UTFUtils.writeUTFBytesToBuffer(s, b, count);
+        return b;
+    }
+
+    public String getString() {
+        return getString(false);
+    }
+
+    public String getString(boolean clear) {
+        if (s == null) {
+            synchronized (this) {
+                if (s == null) {
+                    try {
+                        s = bufferToString();
+                        if (clear) {
+                            buffer = null;
+                            utfLength = 0;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
-      }
+        return s;
     }
-    return buffer;
-  }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    out.write(getBuffer());
-  }
+    public byte[] getBuffer() {
+        if (buffer == null) {
+            synchronized (this) {
+                if (buffer == null) {
+                    try {
+                        buffer = stringToBuffer();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return buffer;
+    }
 
-  public String toString()
-  {
-    return "[LazyUTF8String, s=" + s + ", buffer=" + buffer + "]";
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        out.write(getBuffer());
+    }
+
+    public String toString() {
+        return "[LazyUTF8String, s=" + s + ", buffer=" + buffer + "]";
+    }
 
 }

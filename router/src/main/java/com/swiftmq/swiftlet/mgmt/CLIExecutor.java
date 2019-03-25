@@ -24,36 +24,36 @@ package com.swiftmq.swiftlet.mgmt;
  */
 public interface CLIExecutor {
 
-  /**
-   * Sets an admin role to use in this executor
-   *
-   * @param name
-   * @throws Exception
-   */
-  public void setAdminRole(String name) throws Exception;
+    /**
+     * Sets an admin role to use in this executor
+     *
+     * @param name
+     * @throws Exception
+     */
+    public void setAdminRole(String name) throws Exception;
 
-  /**
-   * Returns the current context.
-   *
-   * @return context
-   */
-  public String getContext();
+    /**
+     * Returns the current context.
+     *
+     * @return context
+     */
+    public String getContext();
 
-  /**
-   * Execute a CLI command
-   *
-   * @param command CLI command
-   * @throws Exception on error.
-   */
-  public void execute(String command) throws Exception;
+    /**
+     * Execute a CLI command
+     *
+     * @param command CLI command
+     * @throws Exception on error.
+     */
+    public void execute(String command) throws Exception;
 
-  /**
-   * Execute a CLI command that returns a result
-   *
-   * @param command CLI command
-   * @return result
-   * @throws Exception on error.
-   */
-  public String[] executeWithResult(String command) throws Exception;
+    /**
+     * Execute a CLI command that returns a result
+     *
+     * @param command CLI command
+     * @return result
+     * @throws Exception on error.
+     */
+    public String[] executeWithResult(String command) throws Exception;
 }
 

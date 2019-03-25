@@ -26,15 +26,13 @@ import org.apache.activemq.artemis.selector.filter.Filterable;
 import org.apache.activemq.artemis.selector.impl.SelectorParser;
 
 import javax.jms.InvalidSelectorException;
-import java.io.StringReader;
 
 public class MessageSelector implements Selector, Filterable {
     String conditionString;
     MessageImpl current;
 
-    public MessageSelector(String conditionString)
-    {
-      this.conditionString = conditionString;
+    public MessageSelector(String conditionString) {
+        this.conditionString = conditionString;
     }
 
     @Override
@@ -42,18 +40,15 @@ public class MessageSelector implements Selector, Filterable {
         return conditionString;
     }
 
-    public void compile() throws InvalidSelectorException
-    {
-      try
-      {
-          SelectorParser.parse(conditionString);
-      } catch (Throwable t)
-      {
-        String s = t.getMessage();
-        if (s == null || s.length() == 0)
-          s = "Invalid selector";
-        throw new InvalidSelectorException("<"+conditionString+">: "+s);
-      }
+    public void compile() throws InvalidSelectorException {
+        try {
+            SelectorParser.parse(conditionString);
+        } catch (Throwable t) {
+            String s = t.getMessage();
+            if (s == null || s.length() == 0)
+                s = "Invalid selector";
+            throw new InvalidSelectorException("<" + conditionString + ">: " + s);
+        }
     }
 
     @Override

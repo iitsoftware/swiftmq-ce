@@ -24,93 +24,82 @@ import java.io.IOException;
 /**
  * A described type constructor.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPDescribedConstructor extends AMQPType
-{
-  AMQPType descriptor = null;
-  int formatCode = 0;
+public class AMQPDescribedConstructor extends AMQPType {
+    AMQPType descriptor = null;
+    int formatCode = 0;
 
-  /**
-   * Constructs an AMQPDescribedConstructor
-   *
-   * @param descriptor  the descriptor
-   * @param formatCode  format code
-   */
-  public AMQPDescribedConstructor(AMQPType descriptor, int formatCode)
-  {
-    this();
-    this.descriptor = descriptor;
-    this.formatCode = formatCode;
-  }
+    /**
+     * Constructs an AMQPDescribedConstructor
+     *
+     * @param descriptor the descriptor
+     * @param formatCode format code
+     */
+    public AMQPDescribedConstructor(AMQPType descriptor, int formatCode) {
+        this();
+        this.descriptor = descriptor;
+        this.formatCode = formatCode;
+    }
 
-  /**
-   * Constructs an AMQPDescribedConstructor
-   */
-  public AMQPDescribedConstructor()
-  {
-    super("describedconstructor", AMQPTypeDecoder.CONSTRUCTOR);
-  }
+    /**
+     * Constructs an AMQPDescribedConstructor
+     */
+    public AMQPDescribedConstructor() {
+        super("describedconstructor", AMQPTypeDecoder.CONSTRUCTOR);
+    }
 
-  /**
-   * Returns the descriptor
-   *
-   * @return descriptor
-   */
-  public AMQPType getDescriptor()
-  {
-    return descriptor;
-  }
+    /**
+     * Returns the descriptor
+     *
+     * @return descriptor
+     */
+    public AMQPType getDescriptor() {
+        return descriptor;
+    }
 
-  /**
-   * Returns the format code.
-   *
-   * @return format code
-   */
-  public int getFormatCode()
-  {
-    return formatCode;
-  }
+    /**
+     * Returns the format code.
+     *
+     * @return format code
+     */
+    public int getFormatCode() {
+        return formatCode;
+    }
 
-  /**
-   * Sets the format code.
-   *
-   * @param formatCode  format code
-   */
-  public void setFormatCode(int formatCode)
-  {
-    this.formatCode = formatCode;
-  }
+    /**
+     * Sets the format code.
+     *
+     * @param formatCode format code
+     */
+    public void setFormatCode(int formatCode) {
+        this.formatCode = formatCode;
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize() + 1;
-    if (descriptor != null)
-      n += descriptor.getPredictedSize();
-    return n;
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + 1;
+        if (descriptor != null)
+            n += descriptor.getPredictedSize();
+        return n;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    descriptor = AMQPTypeDecoder.decode(in);
-    formatCode = in.readUnsignedByte();
-  }
+    public void readContent(DataInput in) throws IOException {
+        descriptor = AMQPTypeDecoder.decode(in);
+        formatCode = in.readUnsignedByte();
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    descriptor.writeContent(out);
-    if (formatCode != AMQPTypeDecoder.UNKNOWN)
-      out.writeByte(formatCode);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        descriptor.writeContent(out);
+        if (formatCode != AMQPTypeDecoder.UNKNOWN)
+            out.writeByte(formatCode);
+    }
 
-  public String getValueString()
-  {
-    return descriptor.getValueString() + "/0x" + Integer.toHexString(formatCode);
-  }
+    public String getValueString() {
+        return descriptor.getValueString() + "/0x" + Integer.toHexString(formatCode);
+    }
 
-  public String toString()
-  {
-    return "[AMQPDescribedConstructor, descriptor=" + descriptor + ", formatCode=0x" + Integer.toHexString(formatCode) + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AMQPDescribedConstructor, descriptor=" + descriptor + ", formatCode=0x" + Integer.toHexString(formatCode) + super.toString() + "]";
+    }
 }

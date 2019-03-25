@@ -17,130 +17,117 @@
 
 package com.swiftmq.amqp.v091.generated.connection;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class StartOk extends ConnectionMethod
-{
-  Map<String, Object> clientProperties;
-  String mechanism;
-  byte[] response;
-  String locale;
+import java.io.IOException;
+import java.util.Map;
 
-  public StartOk()
-  {
-    _classId = 10;
-    _methodId = 11;
-  }
+public class StartOk extends ConnectionMethod {
+    Map<String, Object> clientProperties;
+    String mechanism;
+    byte[] response;
+    String locale;
 
-  public void accept(ConnectionMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public StartOk() {
+        _classId = 10;
+        _methodId = 11;
+    }
 
-  public Map<String, Object> getClientProperties()
-  {
-    return clientProperties;
-  }
+    public void accept(ConnectionMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setClientProperties(Map<String, Object> clientProperties)
-  {
-    this.clientProperties = clientProperties;
-  }
+    public Map<String, Object> getClientProperties() {
+        return clientProperties;
+    }
 
-  public String getMechanism()
-  {
-    return mechanism;
-  }
+    public void setClientProperties(Map<String, Object> clientProperties) {
+        this.clientProperties = clientProperties;
+    }
 
-  public void setMechanism(String mechanism)
-  {
-    this.mechanism = mechanism;
-  }
+    public String getMechanism() {
+        return mechanism;
+    }
 
-  public byte[] getResponse()
-  {
-    return response;
-  }
+    public void setMechanism(String mechanism) {
+        this.mechanism = mechanism;
+    }
 
-  public void setResponse(byte[] response)
-  {
-    this.response = response;
-  }
+    public byte[] getResponse() {
+        return response;
+    }
 
-  public String getLocale()
-  {
-    return locale;
-  }
+    public void setResponse(byte[] response) {
+        this.response = response;
+    }
 
-  public void setLocale(String locale)
-  {
-    this.locale = locale;
-  }
+    public String getLocale() {
+        return locale;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    clientProperties = Coder.readTable(in);
-    mechanism = Coder.readShortString(in);
-    response = Coder.readLongString(in);
-    locale = Coder.readShortString(in);
-  }
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeTable(clientProperties, out);
-    Coder.writeShortString(mechanism, out);
-    Coder.writeLongString(response, out);
-    Coder.writeShortString(locale, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        clientProperties = Coder.readTable(in);
+        mechanism = Coder.readShortString(in);
+        response = Coder.readLongString(in);
+        locale = Coder.readShortString(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("clientProperties=");
-    b.append(clientProperties);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("mechanism=");
-    b.append(mechanism);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("response=");
-    if (response != null)
-      b.append(new String(response));
-    else
-      b.append("null");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("locale=");
-    b.append(locale);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeTable(clientProperties, out);
+        Coder.writeShortString(mechanism, out);
+        Coder.writeLongString(response, out);
+        Coder.writeShortString(locale, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[StartOk " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("clientProperties=");
+        b.append(clientProperties);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("mechanism=");
+        b.append(mechanism);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("response=");
+        if (response != null)
+            b.append(new String(response));
+        else
+            b.append("null");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("locale=");
+        b.append(locale);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[StartOk " + super.toString() + getDisplayString() + "]";
+    }
 }

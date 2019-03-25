@@ -26,31 +26,30 @@ import java.util.EventObject;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class QueueManagerEvent extends EventObject
-{
-  String queueName;
+public class QueueManagerEvent extends EventObject {
+    String queueName;
 
-  /**
-   * Constructs a new QueueManagerEvent
-   * @param queueName The queue name
-   * @param queueManager The queue manager
-   * @SBGen Constructor
-   */
-  public QueueManagerEvent(QueueManager queueManager, String queueName)
-  {
-    super(queueManager);
-    this.queueName = queueName;
-  }
+    /**
+     * Constructs a new QueueManagerEvent
+     *
+     * @param queueName    The queue name
+     * @param queueManager The queue manager
+     * @SBGen Constructor
+     */
+    public QueueManagerEvent(QueueManager queueManager, String queueName) {
+        super(queueManager);
+        this.queueName = queueName;
+    }
 
-  /**
-   * Returns the queue name
-   * @return queue name
-   * @SBGen Method get queueName
-   */
-  public String getQueueName()
-  {
-    // SBgen: Get variable
-    return (queueName);
-  }
+    /**
+     * Returns the queue name
+     *
+     * @return queue name
+     * @SBGen Method get queueName
+     */
+    public String getQueueName() {
+        // SBgen: Get variable
+        return (queueName);
+    }
 }
 

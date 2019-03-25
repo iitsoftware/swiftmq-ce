@@ -24,75 +24,65 @@ import java.io.IOException;
 /**
  * 32-bit floating point number (IEEE 754-2008 binary32)
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPFloat extends AMQPType
-{
-  byte[] bytes = new byte[4];
+public class AMQPFloat extends AMQPType {
+    byte[] bytes = new byte[4];
 
-  /**
-   * Constructs an AMQPFloat with an undefined value
-   *
-   */
-  public AMQPFloat()
-  {
-    super("float", AMQPTypeDecoder.FLOAT);
-  }
+    /**
+     * Constructs an AMQPFloat with an undefined value
+     */
+    public AMQPFloat() {
+        super("float", AMQPTypeDecoder.FLOAT);
+    }
 
-  /**
-   * Constructs an AMQPFloat with a value
-   *
-   * @param value value
-   */
-  public AMQPFloat(float value)
-  {
-    super("float", AMQPTypeDecoder.FLOAT);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPFloat with a value
+     *
+     * @param value value
+     */
+    public AMQPFloat(float value) {
+        super("float", AMQPTypeDecoder.FLOAT);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(float value)
-  {
-    Util.writeFloat(value, bytes, 0);
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(float value) {
+        Util.writeFloat(value, bytes, 0);
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public float getValue()
-  {
-    return Util.readFloat(bytes, 0);
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public float getValue() {
+        return Util.readFloat(bytes, 0);
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+bytes.length;
-    return n;
-  }
- 
-  public void readContent(DataInput in) throws IOException
-  {
-    in.readFully(bytes);
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + bytes.length;
+        return n;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.write(bytes);
-  }
+    public void readContent(DataInput in) throws IOException {
+        in.readFully(bytes);
+    }
 
-  public String getValueString()
-  {
-    return Float.toString(getValue());
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.write(bytes);
+    }
 
-  public String toString()
-  {
-    return "[AMQPFloat, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String getValueString() {
+        return Float.toString(getValue());
+    }
+
+    public String toString() {
+        return "[AMQPFloat, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

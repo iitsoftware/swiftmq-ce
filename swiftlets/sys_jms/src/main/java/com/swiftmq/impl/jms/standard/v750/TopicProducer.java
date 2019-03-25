@@ -23,33 +23,29 @@ import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.jms.DestinationFactory;
 import com.swiftmq.jms.TopicImpl;
 
-public class TopicProducer extends Producer
-{
-  TopicImpl topic;
-  String topicName = null;
+public class TopicProducer extends Producer {
+    TopicImpl topic;
+    String topicName = null;
 
-  protected TopicProducer(SessionContext ctx, TopicImpl topic)
-      throws Exception
-  {
-    super(ctx);
-    this.topic = topic;
-    topicName = topic.getTopicName();
-    if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
-      this.topic = ctx.topicManager.verifyTopic(topic);
-    String queueName = topic.getQueueName();
-    setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-  }
+    protected TopicProducer(SessionContext ctx, TopicImpl topic)
+            throws Exception {
+        super(ctx);
+        this.topic = topic;
+        topicName = topic.getTopicName();
+        if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
+            this.topic = ctx.topicManager.verifyTopic(topic);
+        String queueName = topic.getQueueName();
+        setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
+    }
 
-  public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache)
-  {
-    if (accountingProfile.isMatchTopicName(topicName))
-      collector = cache.getDestinationCollector(topicName, DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_PRODUCER);
-  }
+    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
+        if (accountingProfile.isMatchTopicName(topicName))
+            collector = cache.getDestinationCollector(topicName, DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_PRODUCER);
+    }
 
-  public String toString()
-  {
-    return "TopicProducer, topic=" + topic;
-  }
+    public String toString() {
+        return "TopicProducer, topic=" + topic;
+    }
 }
 

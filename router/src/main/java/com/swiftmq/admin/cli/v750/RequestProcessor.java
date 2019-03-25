@@ -23,47 +23,37 @@ import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
 
 public class RequestProcessor extends ProtocolVisitorAdapter
-    implements RequestService
-{
-  CLI cli = null;
+        implements RequestService {
+    CLI cli = null;
 
-  public RequestProcessor(CLI cli)
-  {
-    this.cli = cli;
-  }
-
-  public void serviceRequest(Request request)
-  {
-    request.accept(this);
-  }
-
-  public void visit(BulkRequest request)
-  {
-    for (int i = 0; i < request.len; i++)
-    {
-      ((Request) request.dumpables[i]).accept(this);
+    public RequestProcessor(CLI cli) {
+        this.cli = cli;
     }
-  }
 
-  public void visit(RouterAvailableRequest request)
-  {
-    try
-    {
-      cli.markRouter(request.getRoutername(), true);
-    } catch (Exception e)
-    {
+    public void serviceRequest(Request request) {
+        request.accept(this);
     }
-  }
 
-  public void visit(RouterUnavailableRequest request)
-  {
-    cli.markRouter(request.getRoutername(), false);
-  }
+    public void visit(BulkRequest request) {
+        for (int i = 0; i < request.len; i++) {
+            ((Request) request.dumpables[i]).accept(this);
+        }
+    }
 
-  public void visit(DisconnectedRequest request)
-  {
-    if (!cli.isProgrammatic())
-      System.out.println("Router '" + request.getRouterName() + "' has been disconnected! Reason: " + request.getReason());
-    cli.markRouter(request.getRouterName(), false);
-  }
+    public void visit(RouterAvailableRequest request) {
+        try {
+            cli.markRouter(request.getRoutername(), true);
+        } catch (Exception e) {
+        }
+    }
+
+    public void visit(RouterUnavailableRequest request) {
+        cli.markRouter(request.getRoutername(), false);
+    }
+
+    public void visit(DisconnectedRequest request) {
+        if (!cli.isProgrammatic())
+            System.out.println("Router '" + request.getRouterName() + "' has been disconnected! Reason: " + request.getReason());
+        cli.markRouter(request.getRouterName(), false);
+    }
 }

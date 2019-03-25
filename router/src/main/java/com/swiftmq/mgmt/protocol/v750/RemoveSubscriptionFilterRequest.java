@@ -17,85 +17,75 @@
 
 package com.swiftmq.mgmt.protocol.v750;
 
-import com.swiftmq.tools.requestreply.*;
-import com.swiftmq.tools.util.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 import com.swiftmq.util.SwiftUtilities;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class RemoveSubscriptionFilterRequest extends Request
-{
-  String[] context = null;
-  boolean includeNextLevel = false;
+public class RemoveSubscriptionFilterRequest extends Request {
+    String[] context = null;
+    boolean includeNextLevel = false;
 
-  RemoveSubscriptionFilterRequest()
-  {
-    this(null, false);
-  }
+    RemoveSubscriptionFilterRequest() {
+        this(null, false);
+    }
 
-  public RemoveSubscriptionFilterRequest(String[] context, boolean includeNextLevel)
-  {
-    super(0, false);
-    this.context = context;
-    this.includeNextLevel = includeNextLevel;
-  }
+    public RemoveSubscriptionFilterRequest(String[] context, boolean includeNextLevel) {
+        super(0, false);
+        this.context = context;
+        this.includeNextLevel = includeNextLevel;
+    }
 
-  public int getDumpId()
-  {
-    return ProtocolFactory.REMOVESUBSCRIPTIONFILTER_REQ;
-  }
+    public int getDumpId() {
+        return ProtocolFactory.REMOVESUBSCRIPTIONFILTER_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeBoolean(includeNextLevel);
-    output.writeInt(context.length);
-    for (int i=0;i<context.length;i++)
-      output.writeUTF(context[i]);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeBoolean(includeNextLevel);
+        output.writeInt(context.length);
+        for (int i = 0; i < context.length; i++)
+            output.writeUTF(context[i]);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    includeNextLevel = input.readBoolean();
-    int len = input.readInt();
-    context = new String[len];
-    for (int i=0;i<len;i++)
-      context[i] = input.readUTF();
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        includeNextLevel = input.readBoolean();
+        int len = input.readInt();
+        context = new String[len];
+        for (int i = 0; i < len; i++)
+            context[i] = input.readUTF();
+    }
 
-  public String[] getContext()
-  {
-    return context;
-  }
+    public String[] getContext() {
+        return context;
+    }
 
-  public void setContext(String[] context)
-  {
-    this.context = context;
-  }
+    public void setContext(String[] context) {
+        this.context = context;
+    }
 
-  public boolean isIncludeNextLevel()
-  {
-    return includeNextLevel;
-  }
+    public boolean isIncludeNextLevel() {
+        return includeNextLevel;
+    }
 
-  public void setIncludeNextLevel(boolean includeNextLevel)
-  {
-    this.includeNextLevel = includeNextLevel;
-  }
+    public void setIncludeNextLevel(boolean includeNextLevel) {
+        this.includeNextLevel = includeNextLevel;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((ProtocolVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[RemoveSubscriptionFilterRequest "+super.toString()+", context="+ SwiftUtilities.concat(context, "/")+", includeNextLevel="+includeNextLevel+"]";
-  }
+    public String toString() {
+        return "[RemoveSubscriptionFilterRequest " + super.toString() + ", context=" + SwiftUtilities.concat(context, "/") + ", includeNextLevel=" + includeNextLevel + "]";
+    }
 }

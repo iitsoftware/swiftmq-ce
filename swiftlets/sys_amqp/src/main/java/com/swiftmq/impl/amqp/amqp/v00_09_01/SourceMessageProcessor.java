@@ -25,94 +25,82 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
-public class SourceMessageProcessor extends MessageProcessor
-{
-  private static final int MAX_BULKSIZE = 100;
-  SwiftletContext ctx;
-  Consumer consumer;
-  MessageEntry messageEntry = null;
-  int numberMessages = 0;
-  Exception exception = null;
-  boolean stopped = false;
-  DataByteArrayOutputStream dbos = new DataByteArrayOutputStream(8192);
-  OutboundTransformer outboundTransformer = new BasicOutboundTransformer();
+public class SourceMessageProcessor extends MessageProcessor {
+    private static final int MAX_BULKSIZE = 100;
+    SwiftletContext ctx;
+    Consumer consumer;
+    MessageEntry messageEntry = null;
+    int numberMessages = 0;
+    Exception exception = null;
+    boolean stopped = false;
+    DataByteArrayOutputStream dbos = new DataByteArrayOutputStream(8192);
+    OutboundTransformer outboundTransformer = new BasicOutboundTransformer();
 
-  public SourceMessageProcessor(SwiftletContext ctx, Consumer consumer)
-  {
-    this.ctx = ctx;
-    this.consumer = consumer;
-    setAutoCommit(false);
-    setBulkMode(true);
-    createBulkBuffer(MAX_BULKSIZE);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/created");
-  }
-
-  public void processMessages(int numberMessages)
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/processMessages, numberMessages=" + numberMessages);
-    this.numberMessages = numberMessages;
-    if (isValid())
-      consumer.getChannelHandler().dispatch(new POSendMessages(this));
-  }
-
-  public void processMessage(MessageEntry messageEntry)
-  {
-    this.messageEntry = messageEntry;
-    if (isValid())
-      consumer.getChannelHandler().dispatch(new POSendMessages(this));
-  }
-
-  public void processException(Exception e)
-  {
-    this.exception = e;
-    if (isValid())
-      consumer.getChannelHandler().dispatch(new POSendMessages(this));
-  }
-
-  public Exception getException()
-  {
-    return exception;
-  }
-
-  public Consumer getConsumer()
-  {
-    return consumer;
-  }
-
-  public Delivery[] getTransformedMessages() throws Exception
-  {
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages ...");
-    MessageEntry[] buffer = getBulkBuffer();
-    Delivery[] deliveries = new Delivery[numberMessages];
-    for (int i = 0; i < numberMessages; i++)
-    {
-      MessageEntry messageEntry = buffer[i];
-      Delivery delivery = outboundTransformer.transform(messageEntry.getMessage());
-      if (ctx.traceSpace.enabled)
-        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages, delivery=" + delivery);
-      delivery.setRedelivered(messageEntry.getMessageIndex().getDeliveryCount() > 1);
-      delivery.setMessageIndex(messageEntry.getMessageIndex());
-      deliveries[i] = delivery;
+    public SourceMessageProcessor(SwiftletContext ctx, Consumer consumer) {
+        this.ctx = ctx;
+        this.consumer = consumer;
+        setAutoCommit(false);
+        setBulkMode(true);
+        createBulkBuffer(MAX_BULKSIZE);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/created");
     }
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages, deliveries.length=" + deliveries.length);
-    return deliveries;
-  }
 
-  public void setStopped(boolean stopped)
-  {
-    this.stopped = stopped;
-  }
+    public void processMessages(int numberMessages) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/processMessages, numberMessages=" + numberMessages);
+        this.numberMessages = numberMessages;
+        if (isValid())
+            consumer.getChannelHandler().dispatch(new POSendMessages(this));
+    }
 
-  public boolean isValid()
-  {
-    return !(consumer.isClosed() || stopped);
-  }
+    public void processMessage(MessageEntry messageEntry) {
+        this.messageEntry = messageEntry;
+        if (isValid())
+            consumer.getChannelHandler().dispatch(new POSendMessages(this));
+    }
 
-  public String toString()
-  {
-    return consumer.toString() + "/SourceMessageProcessor";
-  }
+    public void processException(Exception e) {
+        this.exception = e;
+        if (isValid())
+            consumer.getChannelHandler().dispatch(new POSendMessages(this));
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public Consumer getConsumer() {
+        return consumer;
+    }
+
+    public Delivery[] getTransformedMessages() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages ...");
+        MessageEntry[] buffer = getBulkBuffer();
+        Delivery[] deliveries = new Delivery[numberMessages];
+        for (int i = 0; i < numberMessages; i++) {
+            MessageEntry messageEntry = buffer[i];
+            Delivery delivery = outboundTransformer.transform(messageEntry.getMessage());
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages, delivery=" + delivery);
+            delivery.setRedelivered(messageEntry.getMessageIndex().getDeliveryCount() > 1);
+            delivery.setMessageIndex(messageEntry.getMessageIndex());
+            deliveries[i] = delivery;
+        }
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages, deliveries.length=" + deliveries.length);
+        return deliveries;
+    }
+
+    public void setStopped(boolean stopped) {
+        this.stopped = stopped;
+    }
+
+    public boolean isValid() {
+        return !(consumer.isClosed() || stopped);
+    }
+
+    public String toString() {
+        return consumer.toString() + "/SourceMessageProcessor";
+    }
 }

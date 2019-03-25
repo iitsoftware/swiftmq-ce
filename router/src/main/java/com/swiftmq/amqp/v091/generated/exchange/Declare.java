@@ -17,222 +17,199 @@
 
 package com.swiftmq.amqp.v091.generated.exchange;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Declare extends ExchangeMethod
-{
-  int reserved1;
-  String exchange;
-  String type;
-  boolean passive;
-  boolean durable;
-  boolean autoDelete;
-  boolean internal;
-  boolean noWait;
-  Map<String, Object> arguments;
+import java.io.IOException;
+import java.util.Map;
 
-  public Declare()
-  {
-    _classId = 40;
-    _methodId = 10;
-  }
+public class Declare extends ExchangeMethod {
+    int reserved1;
+    String exchange;
+    String type;
+    boolean passive;
+    boolean durable;
+    boolean autoDelete;
+    boolean internal;
+    boolean noWait;
+    Map<String, Object> arguments;
 
-  public void accept(ExchangeMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Declare() {
+        _classId = 40;
+        _methodId = 10;
+    }
 
-  public int getReserved1()
-  {
-    return reserved1;
-  }
+    public void accept(ExchangeMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setReserved1(int reserved1)
-  {
-    this.reserved1 = reserved1;
-  }
+    public int getReserved1() {
+        return reserved1;
+    }
 
-  public String getExchange()
-  {
-    return exchange;
-  }
+    public void setReserved1(int reserved1) {
+        this.reserved1 = reserved1;
+    }
 
-  public void setExchange(String exchange)
-  {
-    this.exchange = exchange;
-  }
+    public String getExchange() {
+        return exchange;
+    }
 
-  public String getType()
-  {
-    return type;
-  }
+    public void setExchange(String exchange) {
+        this.exchange = exchange;
+    }
 
-  public void setType(String type)
-  {
-    this.type = type;
-  }
+    public String getType() {
+        return type;
+    }
 
-  public boolean getPassive()
-  {
-    return passive;
-  }
+    public void setType(String type) {
+        this.type = type;
+    }
 
-  public void setPassive(boolean passive)
-  {
-    this.passive = passive;
-  }
+    public boolean getPassive() {
+        return passive;
+    }
 
-  public boolean getDurable()
-  {
-    return durable;
-  }
+    public void setPassive(boolean passive) {
+        this.passive = passive;
+    }
 
-  public void setDurable(boolean durable)
-  {
-    this.durable = durable;
-  }
+    public boolean getDurable() {
+        return durable;
+    }
 
-  public boolean getAutoDelete()
-  {
-    return autoDelete;
-  }
+    public void setDurable(boolean durable) {
+        this.durable = durable;
+    }
 
-  public void setAutoDelete(boolean autoDelete)
-  {
-    this.autoDelete = autoDelete;
-  }
+    public boolean getAutoDelete() {
+        return autoDelete;
+    }
 
-  public boolean getInternal()
-  {
-    return internal;
-  }
+    public void setAutoDelete(boolean autoDelete) {
+        this.autoDelete = autoDelete;
+    }
 
-  public void setInternal(boolean internal)
-  {
-    this.internal = internal;
-  }
+    public boolean getInternal() {
+        return internal;
+    }
 
-  public boolean getNoWait()
-  {
-    return noWait;
-  }
+    public void setInternal(boolean internal) {
+        this.internal = internal;
+    }
 
-  public void setNoWait(boolean noWait)
-  {
-    this.noWait = noWait;
-  }
+    public boolean getNoWait() {
+        return noWait;
+    }
 
-  public Map<String, Object> getArguments()
-  {
-    return arguments;
-  }
+    public void setNoWait(boolean noWait) {
+        this.noWait = noWait;
+    }
 
-  public void setArguments(Map<String, Object> arguments)
-  {
-    this.arguments = arguments;
-  }
+    public Map<String, Object> getArguments() {
+        return arguments;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    reserved1 = Coder.readShort(in);
-    exchange = Coder.readShortString(in);
-    type = Coder.readShortString(in);
-    passive = Coder.readBit(in);
-    durable = Coder.readBit(in);
-    autoDelete = Coder.readBit(in);
-    internal = Coder.readBit(in);
-    noWait = Coder.readBit(in);
-    arguments = Coder.readTable(in);
-  }
+    public void setArguments(Map<String, Object> arguments) {
+        this.arguments = arguments;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeShort(reserved1, out);
-    Coder.writeShortString(exchange, out);
-    Coder.writeShortString(type, out);
-    Coder.writeBit(passive, out);
-    Coder.writeBit(durable, out);
-    Coder.writeBit(autoDelete, out);
-    Coder.writeBit(internal, out);
-    Coder.writeBit(noWait, out);
-    Coder.writeTable(arguments, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        reserved1 = Coder.readShort(in);
+        exchange = Coder.readShortString(in);
+        type = Coder.readShortString(in);
+        passive = Coder.readBit(in);
+        durable = Coder.readBit(in);
+        autoDelete = Coder.readBit(in);
+        internal = Coder.readBit(in);
+        noWait = Coder.readBit(in);
+        arguments = Coder.readTable(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("reserved1=");
-    b.append(reserved1);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("exchange=");
-    b.append(exchange);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("type=");
-    b.append(type);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("passive=");
-    b.append(passive);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("durable=");
-    b.append(durable);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("autoDelete=");
-    b.append(autoDelete);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("internal=");
-    b.append(internal);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("noWait=");
-    b.append(noWait);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("arguments=");
-    b.append(arguments);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeShort(reserved1, out);
+        Coder.writeShortString(exchange, out);
+        Coder.writeShortString(type, out);
+        Coder.writeBit(passive, out);
+        Coder.writeBit(durable, out);
+        Coder.writeBit(autoDelete, out);
+        Coder.writeBit(internal, out);
+        Coder.writeBit(noWait, out);
+        Coder.writeTable(arguments, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Declare " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("reserved1=");
+        b.append(reserved1);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("exchange=");
+        b.append(exchange);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("type=");
+        b.append(type);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("passive=");
+        b.append(passive);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("durable=");
+        b.append(durable);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("autoDelete=");
+        b.append(autoDelete);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("internal=");
+        b.append(internal);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("noWait=");
+        b.append(noWait);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("arguments=");
+        b.append(arguments);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Declare " + super.toString() + getDisplayString() + "]";
+    }
 }

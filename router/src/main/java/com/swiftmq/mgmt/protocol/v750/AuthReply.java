@@ -19,15 +19,12 @@ package com.swiftmq.mgmt.protocol.v750;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-public class AuthReply extends Reply
-{
-  public int getDumpId()
-  {
-    return ProtocolFactory.AUTH_REP;
-  }
+public class AuthReply extends Reply {
+    public int getDumpId() {
+        return ProtocolFactory.AUTH_REP;
+    }
 
-  public String toString()
-  {
-    return "[AuthReply "+super.toString()+"]";
-  }
+    public String toString() {
+        return "[AuthReply " + super.toString() + "]";
+    }
 }

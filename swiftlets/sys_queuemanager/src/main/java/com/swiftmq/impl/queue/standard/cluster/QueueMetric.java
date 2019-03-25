@@ -20,19 +20,18 @@ package com.swiftmq.impl.queue.standard.cluster;
 import com.swiftmq.tools.dump.Dumpable;
 
 
-public interface QueueMetric extends Dumpable
-{
-  public String getQueueName();
+public interface QueueMetric extends Dumpable {
+    public String getQueueName();
 
-  public void setHasReceiver(boolean b);
+    public void setHasReceiver(boolean b);
 
-  public boolean hasReceiver();
+    public boolean hasReceiver();
 
-  public void setRouterName(String routerName);
+    public void setRouterName(String routerName);
 
-  public String getRouterName();
+    public String getRouterName();
 
-  public void setRedispatch(boolean redispatch);
+    public void setRedispatch(boolean redispatch);
 
-  public boolean isRedispatch();
+    public boolean isRedispatch();
 }

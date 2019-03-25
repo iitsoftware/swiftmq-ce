@@ -38,91 +38,82 @@ import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.swiftlet.xa.XAResourceManagerSwiftlet;
 
-public class SwiftletContext
-{
-  public TimerSwiftlet timerSwiftlet = null;
-  public TraceSwiftlet traceSwiftlet = null;
-  public TraceSpace traceSpace = null;
-  public LogSwiftlet logSwiftlet = null;
-  public ThreadpoolSwiftlet threadpoolSwiftlet = null;
-  public NetworkSwiftlet networkSwiftlet = null;
-  public QueueManager queueManager = null;
-  public XAResourceManagerSwiftlet xaResourceManagerSwiftlet = null;
-  public RoutingSwiftletImpl routingSwiftlet = null;
-  public SchedulerSwiftlet schedulerSwiftlet = null;
-  public AccountingSwiftlet accountingSwiftlet = null;
-  public ConnectionManager connectionManager = null;
-  public Entity root = null;
-  public Entity usageList = null;
-  public String routerName = null;
-  public String unroutableQueue = null;
-  public ChallengeResponseFactory challengeResponseFactory = null;
-  public SchedulerRegistry schedulerRegistry = null;
-  public boolean roundRobinEnabled = true;
-  public boolean inboundFCEnabled = true;
-  public RouteExchanger routeExchanger = null;
+public class SwiftletContext {
+    public TimerSwiftlet timerSwiftlet = null;
+    public TraceSwiftlet traceSwiftlet = null;
+    public TraceSpace traceSpace = null;
+    public LogSwiftlet logSwiftlet = null;
+    public ThreadpoolSwiftlet threadpoolSwiftlet = null;
+    public NetworkSwiftlet networkSwiftlet = null;
+    public QueueManager queueManager = null;
+    public XAResourceManagerSwiftlet xaResourceManagerSwiftlet = null;
+    public RoutingSwiftletImpl routingSwiftlet = null;
+    public SchedulerSwiftlet schedulerSwiftlet = null;
+    public AccountingSwiftlet accountingSwiftlet = null;
+    public ConnectionManager connectionManager = null;
+    public Entity root = null;
+    public Entity usageList = null;
+    public String routerName = null;
+    public String unroutableQueue = null;
+    public ChallengeResponseFactory challengeResponseFactory = null;
+    public SchedulerRegistry schedulerRegistry = null;
+    public boolean roundRobinEnabled = true;
+    public boolean inboundFCEnabled = true;
+    public RouteExchanger routeExchanger = null;
 
-  protected SwiftletContext(RoutingSwiftletImpl routingSwiftlet, Entity root) throws SwiftletException
-  {
-    this.routingSwiftlet = routingSwiftlet;
-    this.root = root;
-    usageList = root.getEntity("usage");
-    timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
-    threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-    accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
-    queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
-    xaResourceManagerSwiftlet = (XAResourceManagerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$xa");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    routerName = SwiftletManager.getInstance().getRouterName();
-    unroutableQueue = RoutingSwiftletImpl.UNROUTABLE_QUEUE + '@' + routerName;
-    routeExchanger = new RouteExchanger(this);
-    connectionManager = createConnectionManager();
-    connectionManager.addConnectionListener(routeExchanger);
-    schedulerRegistry = new SchedulerRegistry(this);
+    protected SwiftletContext(RoutingSwiftletImpl routingSwiftlet, Entity root) throws SwiftletException {
+        this.routingSwiftlet = routingSwiftlet;
+        this.root = root;
+        usageList = root.getEntity("usage");
+        timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
+        threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
+        queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
+        xaResourceManagerSwiftlet = (XAResourceManagerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$xa");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        routerName = SwiftletManager.getInstance().getRouterName();
+        unroutableQueue = RoutingSwiftletImpl.UNROUTABLE_QUEUE + '@' + routerName;
+        routeExchanger = new RouteExchanger(this);
+        connectionManager = createConnectionManager();
+        connectionManager.addConnectionListener(routeExchanger);
+        schedulerRegistry = new SchedulerRegistry(this);
 
-    Property prop = root.getProperty("roundrobin-enabled");
-    roundRobinEnabled = ((Boolean) prop.getValue()).booleanValue();
+        Property prop = root.getProperty("roundrobin-enabled");
+        roundRobinEnabled = ((Boolean) prop.getValue()).booleanValue();
 
-    prop = root.getProperty("crfactory-class");
-    String crf = (String) root.getProperty("crfactory-class").getValue();
-    try
-    {
-      challengeResponseFactory = (ChallengeResponseFactory) Class.forName(crf).newInstance();
-    } catch (Exception e)
-    {
-      String msg = "Error creating class instance of challenge/response factory '" + crf + "', exception=" + e;
-      if (traceSpace.enabled) traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), msg);
-      throw new SwiftletException(msg);
-    }
-    prop.setPropertyChangeListener(new PropertyChangeAdapter(null)
-    {
-      public void propertyChanged(Property property, Object oldValue, Object newValue)
-          throws PropertyChangeException
-      {
-        try
-        {
-          ChallengeResponseFactory sf = (ChallengeResponseFactory) Class.forName((String) newValue).newInstance();
-        } catch (Exception e)
-        {
-          String msg = "Error creating class instance of default challenge/response factory '" + newValue + "', exception=" + e;
-          if (traceSpace.enabled) traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), msg);
-          throw new PropertyChangeException(msg);
+        prop = root.getProperty("crfactory-class");
+        String crf = (String) root.getProperty("crfactory-class").getValue();
+        try {
+            challengeResponseFactory = (ChallengeResponseFactory) Class.forName(crf).newInstance();
+        } catch (Exception e) {
+            String msg = "Error creating class instance of challenge/response factory '" + crf + "', exception=" + e;
+            if (traceSpace.enabled) traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), msg);
+            throw new SwiftletException(msg);
         }
-        if (traceSpace.enabled)
-          traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), "propertyChanged (crfactory.class): oldValue=" + oldValue + ", newValue=" + newValue);
-      }
-    });
+        prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
+            public void propertyChanged(Property property, Object oldValue, Object newValue)
+                    throws PropertyChangeException {
+                try {
+                    ChallengeResponseFactory sf = (ChallengeResponseFactory) Class.forName((String) newValue).newInstance();
+                } catch (Exception e) {
+                    String msg = "Error creating class instance of default challenge/response factory '" + newValue + "', exception=" + e;
+                    if (traceSpace.enabled) traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), msg);
+                    throw new PropertyChangeException(msg);
+                }
+                if (traceSpace.enabled)
+                    traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), "propertyChanged (crfactory.class): oldValue=" + oldValue + ", newValue=" + newValue);
+            }
+        });
 
-    prop = root.getProperty("inbound-flow-control-enabled");
-    inboundFCEnabled = ((Boolean) prop.getValue()).booleanValue();
+        prop = root.getProperty("inbound-flow-control-enabled");
+        inboundFCEnabled = ((Boolean) prop.getValue()).booleanValue();
 
-  }
+    }
 
-  protected ConnectionManager createConnectionManager()
-  {
-    return new ConnectionManager(this);
-  }
+    protected ConnectionManager createConnectionManager() {
+        return new ConnectionManager(this);
+    }
 }

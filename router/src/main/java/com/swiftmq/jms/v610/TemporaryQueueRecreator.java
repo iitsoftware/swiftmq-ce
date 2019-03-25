@@ -26,41 +26,33 @@ import com.swiftmq.tools.requestreply.Request;
 import javax.jms.JMSException;
 import java.util.List;
 
-public class TemporaryQueueRecreator implements Recreatable
-{
-  ConnectionImpl connection = null;
-  QueueImpl tempQueue = null;
+public class TemporaryQueueRecreator implements Recreatable {
+    ConnectionImpl connection = null;
+    QueueImpl tempQueue = null;
 
-  public TemporaryQueueRecreator(ConnectionImpl connection, QueueImpl tempQueue)
-  {
-    this.connection = connection;
-    this.tempQueue = tempQueue;
-  }
-
-  public Request getRecreateRequest()
-  {
-    return new CreateTmpQueueRequest();
-  }
-
-  public void setRecreateReply(Reply reply)
-  {
-    try
-    {
-      connection.removeTmpQueue(tempQueue.getQueueName());
-    } catch (JMSException e)
-    {
+    public TemporaryQueueRecreator(ConnectionImpl connection, QueueImpl tempQueue) {
+        this.connection = connection;
+        this.tempQueue = tempQueue;
     }
-    tempQueue.setQueueName(((CreateTmpQueueReply) reply).getQueueName());
-    connection.addTmpQueue(tempQueue);
-  }
 
-  public List getRecreatables()
-  {
-    return null;
-  }
+    public Request getRecreateRequest() {
+        return new CreateTmpQueueRequest();
+    }
 
-  public String toString()
-  {
-    return "TemporaryQueueRecreator, tempQueue=" + tempQueue;
-  }
+    public void setRecreateReply(Reply reply) {
+        try {
+            connection.removeTmpQueue(tempQueue.getQueueName());
+        } catch (JMSException e) {
+        }
+        tempQueue.setQueueName(((CreateTmpQueueReply) reply).getQueueName());
+        connection.addTmpQueue(tempQueue);
+    }
+
+    public List getRecreatables() {
+        return null;
+    }
+
+    public String toString() {
+        return "TemporaryQueueRecreator, tempQueue=" + tempQueue;
+    }
 }

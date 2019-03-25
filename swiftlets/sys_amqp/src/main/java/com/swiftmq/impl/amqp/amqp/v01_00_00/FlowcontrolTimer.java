@@ -20,19 +20,16 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.po.POSendFlow;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 
-public class FlowcontrolTimer implements TimerListener
-{
-  SessionHandler sessionHandler;
-  TargetLink targetLink;
+public class FlowcontrolTimer implements TimerListener {
+    SessionHandler sessionHandler;
+    TargetLink targetLink;
 
-  public FlowcontrolTimer(SessionHandler sessionHandler, TargetLink targetLink)
-  {
-    this.sessionHandler = sessionHandler;
-    this.targetLink = targetLink;
-  }
+    public FlowcontrolTimer(SessionHandler sessionHandler, TargetLink targetLink) {
+        this.sessionHandler = sessionHandler;
+        this.targetLink = targetLink;
+    }
 
-  public void performTimeAction()
-  {
-    sessionHandler.dispatch(new POSendFlow(targetLink));
-  }
+    public void performTimeAction() {
+        sessionHandler.dispatch(new POSendFlow(targetLink));
+    }
 }

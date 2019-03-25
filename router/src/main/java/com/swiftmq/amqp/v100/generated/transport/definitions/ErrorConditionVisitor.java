@@ -17,63 +17,49 @@
 
 package com.swiftmq.amqp.v100.generated.transport.definitions;
 
-import com.swiftmq.amqp.v100.types.*;
-import com.swiftmq.amqp.v100.transport.*;
-import com.swiftmq.amqp.v100.generated.*;
-import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
-import com.swiftmq.amqp.v100.generated.transport.performatives.*;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.*;
-import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
-import com.swiftmq.amqp.v100.generated.messaging.addressing.*;
-import com.swiftmq.amqp.v100.generated.security.sasl.*;
-import com.swiftmq.amqp.v100.generated.transactions.coordination.*;
-import com.swiftmq.amqp.v100.generated.provides.global_tx_id_types.*;
-import com.swiftmq.amqp.v100.generated.filter.filter_types.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v100.generated.transactions.coordination.TransactionError;
 
 /**
- *  The ErrorCondition visitor.
+ * The ErrorCondition visitor.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface ErrorConditionVisitor
-{
+public interface ErrorConditionVisitor {
 
-  /**
-   * Visitor method for a AmqpError type object.
-   *
-   * @param impl a AmqpError type object
-   */
-  public void visit(AmqpError impl);
+    /**
+     * Visitor method for a AmqpError type object.
+     *
+     * @param impl a AmqpError type object
+     */
+    public void visit(AmqpError impl);
 
-  /**
-   * Visitor method for a ConnectionError type object.
-   *
-   * @param impl a ConnectionError type object
-   */
-  public void visit(ConnectionError impl);
+    /**
+     * Visitor method for a ConnectionError type object.
+     *
+     * @param impl a ConnectionError type object
+     */
+    public void visit(ConnectionError impl);
 
-  /**
-   * Visitor method for a SessionError type object.
-   *
-   * @param impl a SessionError type object
-   */
-  public void visit(SessionError impl);
+    /**
+     * Visitor method for a SessionError type object.
+     *
+     * @param impl a SessionError type object
+     */
+    public void visit(SessionError impl);
 
-  /**
-   * Visitor method for a LinkError type object.
-   *
-   * @param impl a LinkError type object
-   */
-  public void visit(LinkError impl);
+    /**
+     * Visitor method for a LinkError type object.
+     *
+     * @param impl a LinkError type object
+     */
+    public void visit(LinkError impl);
 
-  /**
-   * Visitor method for a TransactionError type object.
-   *
-   * @param impl a TransactionError type object
-   */
-  public void visit(TransactionError impl);
+    /**
+     * Visitor method for a TransactionError type object.
+     *
+     * @param impl a TransactionError type object
+     */
+    public void visit(TransactionError impl);
 }

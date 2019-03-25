@@ -26,49 +26,43 @@ import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 
-public class QueueSink implements AccountingSink
-{
-  SwiftletContext ctx = null;
-  String queueName = null;
-  QueueSender sender = null;
-  QueueImpl dest = null;
-  int deliveryMode = 0;
+public class QueueSink implements AccountingSink {
+    SwiftletContext ctx = null;
+    String queueName = null;
+    QueueSender sender = null;
+    QueueImpl dest = null;
+    int deliveryMode = 0;
 
-  public QueueSink(SwiftletContext ctx, String queueName, int deliveryMode) throws Exception
-  {
-    this.ctx = ctx;
-    this.queueName = queueName;
-    this.deliveryMode = deliveryMode;
-    if (this.queueName.indexOf('@') == -1)
-      this.queueName = this.queueName + '@' + SwiftletManager.getInstance().getRouterName();
-    dest = new QueueImpl(this.queueName);
-    sender = ctx.queueManager.createQueueSender(this.queueName, null);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/created");
-  }
-
-  public void add(MapMessageImpl msg) throws Exception
-  {
-    msg.setJMSDestination(dest);
-    msg.setJMSDeliveryMode(deliveryMode);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/add, msg=" + msg);
-    QueuePushTransaction tx = sender.createTransaction();
-    tx.putMessage(msg);
-    tx.commit();
-  }
-
-  public void close()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/close");
-    try
-    {
-      sender.close();
-    } catch (QueueException e)
-    {
+    public QueueSink(SwiftletContext ctx, String queueName, int deliveryMode) throws Exception {
+        this.ctx = ctx;
+        this.queueName = queueName;
+        this.deliveryMode = deliveryMode;
+        if (this.queueName.indexOf('@') == -1)
+            this.queueName = this.queueName + '@' + SwiftletManager.getInstance().getRouterName();
+        dest = new QueueImpl(this.queueName);
+        sender = ctx.queueManager.createQueueSender(this.queueName, null);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/created");
     }
-  }
 
-  public String toString()
-  {
-    return "QueueSink, queue=" + queueName;
-  }
+    public void add(MapMessageImpl msg) throws Exception {
+        msg.setJMSDestination(dest);
+        msg.setJMSDeliveryMode(deliveryMode);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/add, msg=" + msg);
+        QueuePushTransaction tx = sender.createTransaction();
+        tx.putMessage(msg);
+        tx.commit();
+    }
+
+    public void close() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.accountingSwiftlet.getName(), toString() + "/close");
+        try {
+            sender.close();
+        } catch (QueueException e) {
+        }
+    }
+
+    public String toString() {
+        return "QueueSink, queue=" + queueName;
+    }
 }

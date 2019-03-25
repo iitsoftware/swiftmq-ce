@@ -17,52 +17,45 @@
 
 package com.swiftmq.jndi.protocol.v400;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class UnbindRequest implements JNDIRequest
-{
-  String name;
+public class UnbindRequest implements JNDIRequest {
+    String name;
 
-  public UnbindRequest(String name)
-  {
-    this.name = name;
-  }
+    public UnbindRequest(String name) {
+        this.name = name;
+    }
 
-  public UnbindRequest()
-  {
-  }
+    public UnbindRequest() {
+    }
 
-  public int getDumpId()
-  {
-    return JNDIRequestFactory.UNBIND;
-  }
+    public int getDumpId() {
+        return JNDIRequestFactory.UNBIND;
+    }
 
-  public void writeContent(DataOutput out)
-    throws IOException
-  {
-    out.writeUTF(name);
-  }
+    public void writeContent(DataOutput out)
+            throws IOException {
+        out.writeUTF(name);
+    }
 
-  public void readContent(DataInput in)
-    throws IOException
-  {
-    name = in.readUTF();
-  }
+    public void readContent(DataInput in)
+            throws IOException {
+        name = in.readUTF();
+    }
 
-  public String getName()
-  {
-    return (name);
-  }
+    public String getName() {
+        return (name);
+    }
 
-  public void accept(JNDIRequestVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public void accept(JNDIRequestVisitor visitor) {
+        visitor.visit(this);
+    }
 
 
-  public String toString()
-  {
-    return "[UnbindRequest, name=" + name + "]";
-  }
+    public String toString() {
+        return "[UnbindRequest, name=" + name + "]";
+    }
 }
 

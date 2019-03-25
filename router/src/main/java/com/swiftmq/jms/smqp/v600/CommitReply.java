@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: CommitReply
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: CommitReply
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.ReplyNE;
@@ -29,54 +30,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CommitReply extends ReplyNE
-{
-  private long delay;
+public class CommitReply extends ReplyNE {
+    private long delay;
 
-  public CommitReply(long delay)
-  {
-    this.delay = delay;
-  }
+    public CommitReply(long delay) {
+        this.delay = delay;
+    }
 
-  protected CommitReply()
-  {
-  }
+    protected CommitReply() {
+    }
 
-  public void setDelay(long delay)
-  {
-    this.delay = delay;
-  }
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
 
-  public long getDelay()
-  {
-    return delay;
-  }
+    public long getDelay() {
+        return delay;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_COMMIT_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_COMMIT_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(delay, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(delay, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    delay = SMQPUtil.read(delay, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        delay = SMQPUtil.read(delay, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v600/CommitReply, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("delay=");
-    _b.append(delay);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v600/CommitReply, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("delay=");
+        _b.append(delay);
+        _b.append("]");
+        return _b.toString();
+    }
 }

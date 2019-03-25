@@ -21,17 +21,17 @@ import javax.jms.JMSSecurityException;
 
 /**
  * An exception thrown by the AuthenticationSwiftlet
+ *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public class AuthenticationException extends JMSSecurityException
-{
-  /**
-   * Constructs a new AuthenticationException
-   * @param msg the message
-   */
-  public AuthenticationException(String msg)
-  {
-    super(msg);
-  }
+public class AuthenticationException extends JMSSecurityException {
+    /**
+     * Constructs a new AuthenticationException
+     *
+     * @param msg the message
+     */
+    public AuthenticationException(String msg) {
+        super(msg);
+    }
 }
 

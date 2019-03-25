@@ -19,38 +19,32 @@ package com.swiftmq.client.thread;
 
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
-public abstract class PoolManager
-{
-  private static PoolManager _instance = null;
+public abstract class PoolManager {
+    private static PoolManager _instance = null;
 
-  protected PoolManager()
-  {
-  }
-
-  public static synchronized void reset()
-  {
-    _instance = null;
-  }
-
-  public static synchronized void setIntraVM(boolean intraVM)
-  {
-    if (_instance == null)
-    {
-      if (intraVM)
-        _instance = new IntraVMPoolManager();
-      else
-        _instance = new DefaultPoolManager();
+    protected PoolManager() {
     }
-  }
 
-  public static synchronized PoolManager getInstance()
-  {
-    return _instance;
-  }
+    public static synchronized void reset() {
+        _instance = null;
+    }
 
-  public abstract ThreadPool getConnectorPool();
+    public static synchronized void setIntraVM(boolean intraVM) {
+        if (_instance == null) {
+            if (intraVM)
+                _instance = new IntraVMPoolManager();
+            else
+                _instance = new DefaultPoolManager();
+        }
+    }
 
-  public abstract ThreadPool getConnectionPool();
+    public static synchronized PoolManager getInstance() {
+        return _instance;
+    }
 
-  public abstract ThreadPool getSessionPool();
+    public abstract ThreadPool getConnectorPool();
+
+    public abstract ThreadPool getConnectionPool();
+
+    public abstract ThreadPool getSessionPool();
 }

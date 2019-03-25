@@ -17,89 +17,79 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Reject extends BasicMethod
-{
-  long deliveryTag;
-  boolean requeue;
+import java.io.IOException;
 
-  public Reject()
-  {
-    _classId = 60;
-    _methodId = 90;
-  }
+public class Reject extends BasicMethod {
+    long deliveryTag;
+    boolean requeue;
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Reject() {
+        _classId = 60;
+        _methodId = 90;
+    }
 
-  public long getDeliveryTag()
-  {
-    return deliveryTag;
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setDeliveryTag(long deliveryTag)
-  {
-    this.deliveryTag = deliveryTag;
-  }
+    public long getDeliveryTag() {
+        return deliveryTag;
+    }
 
-  public boolean getRequeue()
-  {
-    return requeue;
-  }
+    public void setDeliveryTag(long deliveryTag) {
+        this.deliveryTag = deliveryTag;
+    }
 
-  public void setRequeue(boolean requeue)
-  {
-    this.requeue = requeue;
-  }
+    public boolean getRequeue() {
+        return requeue;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    deliveryTag = Coder.readLong(in);
-    requeue = Coder.readBit(in);
-  }
+    public void setRequeue(boolean requeue) {
+        this.requeue = requeue;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeLong(deliveryTag, out);
-    Coder.writeBit(requeue, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        deliveryTag = Coder.readLong(in);
+        requeue = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("deliveryTag=");
-    b.append(deliveryTag);
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("requeue=");
-    b.append(requeue);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeLong(deliveryTag, out);
+        Coder.writeBit(requeue, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Reject " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("deliveryTag=");
+        b.append(deliveryTag);
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("requeue=");
+        b.append(requeue);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Reject " + super.toString() + getDisplayString() + "]";
+    }
 }

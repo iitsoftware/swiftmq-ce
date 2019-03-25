@@ -27,55 +27,45 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class RollbackReplyRequest extends ReplyRequest
-{
-  XidImpl xid = null;
+public class RollbackReplyRequest extends ReplyRequest {
+    XidImpl xid = null;
 
-  public RollbackReplyRequest()
-  {
-    super(0, false);
-  }
+    public RollbackReplyRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.ROLLBACK_REPREQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.ROLLBACK_REPREQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    xid.writeContent(output);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        xid.writeContent(output);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    xid = new XidImpl();
-    xid.readContent(input);
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        xid = new XidImpl();
+        xid.readContent(input);
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[RollbackReplyRequest " + super.toString() + ", xid=" + xid + "]";
-  }
+    public String toString() {
+        return "[RollbackReplyRequest " + super.toString() + ", xid=" + xid + "]";
+    }
 }

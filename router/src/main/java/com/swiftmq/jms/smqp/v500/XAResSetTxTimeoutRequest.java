@@ -17,56 +17,51 @@
 
 package com.swiftmq.jms.smqp.v500;
 
-import com.swiftmq.tools.requestreply.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResSetTxTimeoutRequest extends Request
-{
-  long txTimeout = 0;
+public class XAResSetTxTimeoutRequest extends Request {
+    long txTimeout = 0;
 
-  public XAResSetTxTimeoutRequest(int dispatchId, long txTimeout)
-  {
-    super(dispatchId, true);
-    this.txTimeout = txTimeout;
-  }
+    public XAResSetTxTimeoutRequest(int dispatchId, long txTimeout) {
+        super(dispatchId, true);
+        this.txTimeout = txTimeout;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESSETTXTIMEOUT_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESSETTXTIMEOUT_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResSetTxTimeoutReply();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResSetTxTimeoutReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitXAResSetTxTimeoutRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitXAResSetTxTimeoutRequest(this);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeLong(txTimeout);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeLong(txTimeout);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    txTimeout = in.readLong();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        txTimeout = in.readLong();
+    }
 
-  public long getTxTimeout()
-  {
-    return txTimeout;
-  }
+    public long getTxTimeout() {
+        return txTimeout;
+    }
 
-  public String toString()
-  {
-    return "[XAResSetTxTimeoutRequest " + super.toString() + ", txTimeout=" + txTimeout + "]";
-  }
+    public String toString() {
+        return "[XAResSetTxTimeoutRequest " + super.toString() + ", txTimeout=" + txTimeout + "]";
+    }
 
 }
 

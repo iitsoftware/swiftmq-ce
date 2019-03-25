@@ -22,14 +22,14 @@ package com.swiftmq.swiftlet.store;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
-public interface StoreWriteTransaction extends StoreTransaction
-{
-  /**
-   * Insert a new store entry.
-   * @param storeEntry store entry.
-   * @exception StoreException on error.
-   */
-  public void insert(StoreEntry storeEntry)
-      throws StoreException;
+public interface StoreWriteTransaction extends StoreTransaction {
+    /**
+     * Insert a new store entry.
+     *
+     * @param storeEntry store entry.
+     * @throws StoreException on error.
+     */
+    public void insert(StoreEntry storeEntry)
+            throws StoreException;
 }
 

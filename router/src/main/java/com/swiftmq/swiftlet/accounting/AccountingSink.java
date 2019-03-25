@@ -24,18 +24,17 @@ import com.swiftmq.jms.MapMessageImpl;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2010, All Rights Reserved
  */
-public interface AccountingSink
-{
-  /**
-   * Add a accounting message to this sink.
-   *
-   * @param accountingMessage  The accounting message
-   * @throws Exception if anything goes wrong
-   */
-  public void add(MapMessageImpl accountingMessage) throws Exception;
+public interface AccountingSink {
+    /**
+     * Add a accounting message to this sink.
+     *
+     * @param accountingMessage The accounting message
+     * @throws Exception if anything goes wrong
+     */
+    public void add(MapMessageImpl accountingMessage) throws Exception;
 
-  /**
-   * Close this sink.
-   */
-  public void close();
+    /**
+     * Close this sink.
+     */
+    public void close();
 }

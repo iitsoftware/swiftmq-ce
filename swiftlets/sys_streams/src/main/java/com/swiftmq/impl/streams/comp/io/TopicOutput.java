@@ -38,7 +38,7 @@ public class TopicOutput extends Output {
 
     @Override
     protected void setDestination(Destination destination) {
-        this.destination = (TopicImpl)destination;
+        this.destination = (TopicImpl) destination;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class TopicOutput extends Output {
 
     @Override
     protected QueueSender createSender() throws Exception {
-        return ctx.ctx.queueManager.createQueueSender(((TopicImpl)getDestination()).getQueueName(), null);
+        return ctx.ctx.queueManager.createQueueSender(((TopicImpl) getDestination()).getQueueName(), null);
     }
 
     @Override

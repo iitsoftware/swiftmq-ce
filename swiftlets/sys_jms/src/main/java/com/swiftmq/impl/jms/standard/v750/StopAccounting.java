@@ -21,25 +21,20 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class StopAccounting extends Request
-{
-  public StopAccounting()
-  {
-    super(0, false);
-  }
+public class StopAccounting extends Request {
+    public StopAccounting() {
+        super(0, false);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor requestVisitor)
-  {
-    ((ConnectionVisitorAdapter) requestVisitor).visit(this);
-  }
+    public void accept(RequestVisitor requestVisitor) {
+        ((ConnectionVisitorAdapter) requestVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[StopAccounting]";
-  }
+    public String toString() {
+        return "[StopAccounting]";
+    }
 }

@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: AsyncMessageDeliveryRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: AsyncMessageDeliveryRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.jms.ToClientSerializer;
@@ -34,193 +35,166 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class AsyncMessageDeliveryRequest extends Request implements ToClientSerializer
-{
-  private int listenerId;
-  private MessageEntry messageEntry;
-  private MessageEntry[] bulk;
-  private int sessionDispatchId;
-  private boolean requiresRestart;
-  private int recoveryEpoche;
-  DataOutput out = null;
+public class AsyncMessageDeliveryRequest extends Request implements ToClientSerializer {
+    private int listenerId;
+    private MessageEntry messageEntry;
+    private MessageEntry[] bulk;
+    private int sessionDispatchId;
+    private boolean requiresRestart;
+    private int recoveryEpoche;
+    DataOutput out = null;
 
-  public AsyncMessageDeliveryRequest()
-  {
-    super(0, true);
-  }
+    public AsyncMessageDeliveryRequest() {
+        super(0, true);
+    }
 
-  public AsyncMessageDeliveryRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public AsyncMessageDeliveryRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public AsyncMessageDeliveryRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public AsyncMessageDeliveryRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public AsyncMessageDeliveryRequest(int dispatchId, int listenerId, MessageEntry messageEntry, MessageEntry[] bulk, int sessionDispatchId, boolean requiresRestart, int recoveryEpoche)
-  {
-    super(dispatchId, true);
-    this.listenerId = listenerId;
-    this.messageEntry = messageEntry;
-    this.bulk = bulk;
-    this.sessionDispatchId = sessionDispatchId;
-    this.requiresRestart = requiresRestart;
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public AsyncMessageDeliveryRequest(int dispatchId, int listenerId, MessageEntry messageEntry, MessageEntry[] bulk, int sessionDispatchId, boolean requiresRestart, int recoveryEpoche) {
+        super(dispatchId, true);
+        this.listenerId = listenerId;
+        this.messageEntry = messageEntry;
+        this.bulk = bulk;
+        this.sessionDispatchId = sessionDispatchId;
+        this.requiresRestart = requiresRestart;
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public AsyncMessageDeliveryRequest(RequestRetryValidator validator, int dispatchId, int listenerId, MessageEntry messageEntry, MessageEntry[] bulk, int sessionDispatchId, boolean requiresRestart, int recoveryEpoche)
-  {
-    super(dispatchId, true, validator);
-    this.listenerId = listenerId;
-    this.messageEntry = messageEntry;
-    this.bulk = bulk;
-    this.sessionDispatchId = sessionDispatchId;
-    this.requiresRestart = requiresRestart;
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public AsyncMessageDeliveryRequest(RequestRetryValidator validator, int dispatchId, int listenerId, MessageEntry messageEntry, MessageEntry[] bulk, int sessionDispatchId, boolean requiresRestart, int recoveryEpoche) {
+        super(dispatchId, true, validator);
+        this.listenerId = listenerId;
+        this.messageEntry = messageEntry;
+        this.bulk = bulk;
+        this.sessionDispatchId = sessionDispatchId;
+        this.requiresRestart = requiresRestart;
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public void setListenerId(int listenerId)
-  {
-    this.listenerId = listenerId;
-  }
+    public void setListenerId(int listenerId) {
+        this.listenerId = listenerId;
+    }
 
-  public int getListenerId()
-  {
-    return listenerId;
-  }
+    public int getListenerId() {
+        return listenerId;
+    }
 
-  public void setMessageEntry(MessageEntry messageEntry)
-  {
-    this.messageEntry = messageEntry;
-  }
+    public void setMessageEntry(MessageEntry messageEntry) {
+        this.messageEntry = messageEntry;
+    }
 
-  public MessageEntry getMessageEntry()
-  {
-    return messageEntry;
-  }
+    public MessageEntry getMessageEntry() {
+        return messageEntry;
+    }
 
-  public void setBulk(MessageEntry[] bulk)
-  {
-    this.bulk = bulk;
-  }
+    public void setBulk(MessageEntry[] bulk) {
+        this.bulk = bulk;
+    }
 
-  public MessageEntry[] getBulk()
-  {
-    return bulk;
-  }
+    public MessageEntry[] getBulk() {
+        return bulk;
+    }
 
-  public void setSessionDispatchId(int sessionDispatchId)
-  {
-    this.sessionDispatchId = sessionDispatchId;
-  }
+    public void setSessionDispatchId(int sessionDispatchId) {
+        this.sessionDispatchId = sessionDispatchId;
+    }
 
-  public int getSessionDispatchId()
-  {
-    return sessionDispatchId;
-  }
+    public int getSessionDispatchId() {
+        return sessionDispatchId;
+    }
 
-  public void setRequiresRestart(boolean requiresRestart)
-  {
-    this.requiresRestart = requiresRestart;
-  }
+    public void setRequiresRestart(boolean requiresRestart) {
+        this.requiresRestart = requiresRestart;
+    }
 
-  public boolean isRequiresRestart()
-  {
-    return requiresRestart;
-  }
+    public boolean isRequiresRestart() {
+        return requiresRestart;
+    }
 
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
 
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ASYNCMESSAGEDELIVERY_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_ASYNCMESSAGEDELIVERY_REQ;
+    }
 
-  public DataOutput getDataOutput()
-  {
-    return out;
-  }
+    public DataOutput getDataOutput() {
+        return out;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    this.out = out;
-    super.writeContent(out);
-    SMQPUtil.write(listenerId, out);
-    if (messageEntry != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(messageEntry, (ToClientSerializer) this);
-    } else
-      out.writeBoolean(false);
-    if (bulk != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(bulk, (ToClientSerializer) this);
-    } else
-      out.writeBoolean(false);
-    SMQPUtil.write(sessionDispatchId, out);
-    SMQPUtil.write(requiresRestart, out);
-    SMQPUtil.write(recoveryEpoche, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        this.out = out;
+        super.writeContent(out);
+        SMQPUtil.write(listenerId, out);
+        if (messageEntry != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(messageEntry, (ToClientSerializer) this);
+        } else
+            out.writeBoolean(false);
+        if (bulk != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(bulk, (ToClientSerializer) this);
+        } else
+            out.writeBoolean(false);
+        SMQPUtil.write(sessionDispatchId, out);
+        SMQPUtil.write(requiresRestart, out);
+        SMQPUtil.write(recoveryEpoche, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    listenerId = SMQPUtil.read(listenerId, in);
-    boolean messageEntry_set = in.readBoolean();
-    if (messageEntry_set)
-      messageEntry = SMQPUtil.read(messageEntry, in);
-    boolean bulk_set = in.readBoolean();
-    if (bulk_set)
-      bulk = SMQPUtil.read(bulk, in);
-    sessionDispatchId = SMQPUtil.read(sessionDispatchId, in);
-    requiresRestart = SMQPUtil.read(requiresRestart, in);
-    recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        listenerId = SMQPUtil.read(listenerId, in);
+        boolean messageEntry_set = in.readBoolean();
+        if (messageEntry_set)
+            messageEntry = SMQPUtil.read(messageEntry, in);
+        boolean bulk_set = in.readBoolean();
+        if (bulk_set)
+            bulk = SMQPUtil.read(bulk, in);
+        sessionDispatchId = SMQPUtil.read(sessionDispatchId, in);
+        requiresRestart = SMQPUtil.read(requiresRestart, in);
+        recoveryEpoche = SMQPUtil.read(recoveryEpoche, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new AsyncMessageDeliveryReply();
-  }
+    protected Reply createReplyInstance() {
+        return new AsyncMessageDeliveryReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/AsyncMessageDeliveryRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("listenerId=");
-    _b.append(listenerId);
-    _b.append(", ");
-    _b.append("messageEntry=");
-    _b.append(messageEntry);
-    _b.append(", ");
-    _b.append("bulk=");
-    _b.append(bulk);
-    _b.append(", ");
-    _b.append("sessionDispatchId=");
-    _b.append(sessionDispatchId);
-    _b.append(", ");
-    _b.append("requiresRestart=");
-    _b.append(requiresRestart);
-    _b.append(", ");
-    _b.append("recoveryEpoche=");
-    _b.append(recoveryEpoche);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/AsyncMessageDeliveryRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("listenerId=");
+        _b.append(listenerId);
+        _b.append(", ");
+        _b.append("messageEntry=");
+        _b.append(messageEntry);
+        _b.append(", ");
+        _b.append("bulk=");
+        _b.append(bulk);
+        _b.append(", ");
+        _b.append("sessionDispatchId=");
+        _b.append(sessionDispatchId);
+        _b.append(", ");
+        _b.append("requiresRestart=");
+        _b.append(requiresRestart);
+        _b.append(", ");
+        _b.append("recoveryEpoche=");
+        _b.append(recoveryEpoche);
+        _b.append("]");
+        return _b.toString();
+    }
 }

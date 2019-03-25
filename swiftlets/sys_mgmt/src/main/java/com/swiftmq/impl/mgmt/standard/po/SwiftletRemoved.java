@@ -17,30 +17,24 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.util.SwiftUtilities;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class SwiftletRemoved extends EventObject
-{
-  String name = null;
+public class SwiftletRemoved extends EventObject {
+    String name = null;
 
-  public SwiftletRemoved(String name)
-  {
-    this.name = name;
-  }
+    public SwiftletRemoved(String name) {
+        this.name = name;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventObjectVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventObjectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[SwiftletRemoved, name="+name+"]";
-  }
+    public String toString() {
+        return "[SwiftletRemoved, name=" + name + "]";
+    }
 }

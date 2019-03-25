@@ -1,7 +1,7 @@
 <swiftlet name="sys$amqp"
           displayname="AMQP Swiftlet"
           class="com.swiftmq.impl.amqp.AMQPSwiftlet"
-          icon="/com/swiftmq/impl/amqp/images/swiftlet.png"
+          icon="/sys_amqp/images/swiftlet.png"
           description="AMQP Swiftlet"
           release="${release}"
           vendor="IIT Software GmbH">

@@ -51,360 +51,308 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.List;
 
-public class StoreSwiftletImpl extends StoreSwiftlet
-{
-  private static final String PREPARED_LOG_QUEUE = "sys$prepared";
-  private static boolean PRECREATE = Boolean.valueOf(System.getProperty("swiftmq.store.txlog.precreate", "true")).booleanValue();
-  StoreContext ctx = null;
-  RootIndex rootIndex = null;
-  long swapMaxLength = 0;
-  JobRegistrar jobRegistrar = null;
+public class StoreSwiftletImpl extends StoreSwiftlet {
+    private static final String PREPARED_LOG_QUEUE = "sys$prepared";
+    private static boolean PRECREATE = Boolean.valueOf(System.getProperty("swiftmq.store.txlog.precreate", "true")).booleanValue();
+    StoreContext ctx = null;
+    RootIndex rootIndex = null;
+    long swapMaxLength = 0;
+    JobRegistrar jobRegistrar = null;
 
-  public synchronized PersistentStore getPersistentStore(String queueName)
-      throws StoreException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getPersistentStore, queueName=" + queueName);
-    QueueIndex queueIndex = null;
-    try
-    {
-      queueIndex = rootIndex.getQueueIndex(queueName);
-    } catch (Exception e)
-    {
-      throw new StoreException(e.getMessage());
-    }
-    PersistentStore ps = new PersistentStoreImpl(ctx, queueIndex, rootIndex, queueName);
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$store", "getPersistentStore, queueName=" + queueName + ", ps=" + ps);
-    return ps;
-  }
-
-  public synchronized NonPersistentStore getNonPersistentStore(String queueName)
-      throws StoreException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getNonPersistentStore, queueName=" + queueName);
-    NonPersistentStore nps = createNonPersistentStore(ctx, queueName, ctx.swapPath, swapMaxLength);
-    if (ctx.traceSpace.enabled)
-      ctx.traceSpace.trace("sys$store", "getNonPersistentStore, queueName=" + queueName + ", nps=" + nps);
-    return nps;
-  }
-
-  public synchronized DurableSubscriberStore getDurableSubscriberStore()
-      throws StoreException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getDurableSubscriberStore...");
-    DurableSubscriberStore ds = ctx.durableStore;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getDurableSubscriberStore, ds=" + ds);
-    return (ds);
-  }
-
-  public synchronized List getPrepareLogRecords() throws StoreException
-  {
-    List list = null;
-    try
-    {
-      list = ctx.preparedLog.getAll();
-    } catch (IOException e)
-    {
-      throw new StoreException(e.toString());
-    }
-    return list;
-  }
-
-  public synchronized void removePrepareLogRecord(PrepareLogRecord record) throws StoreException
-  {
-    try
-    {
-      ctx.preparedLog.remove((PrepareLogRecordImpl) record);
-    } catch (IOException e)
-    {
-      throw new StoreException(e.toString());
-    }
-  }
-
-  public CompositeStoreTransaction createCompositeStoreTransaction()
-  {
-    CompositeStoreTransaction tx = new CompositeStoreTransactionImpl(ctx);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "createCompositeStoreTransaction, tx=" + tx);
-    return tx;
-  }
-
-  public void flushCache()
-  {
-    try
-    {
-      ctx.cacheManager.flush();
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-
-  protected void deleteSwaps()
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "deleteSwaps...");
-    File[] list = new File(ctx.swapPath).listFiles();
-    for (int i = 0; i < list.length; i++)
-    {
-      if (list[i].getName().endsWith(".swap"))
-        list[i].delete();
-    }
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "deleteSwaps...done");
-  }
-
-  private void checkBackupPath() throws SwiftletException
-  {
-    Property prop = ctx.backupEntity.getProperty("path");
-    String path = SwiftUtilities.addWorkingDir((String) prop.getValue());
-    File f = new File(path);
-    if (f.exists())
-    {
-      if (!f.isDirectory())
-        throw new SwiftletException("Invalid Backup Path (not a Directory): " + path + "(absolute paths must be prefixed with \"absolute:\")");
-    } else
-    {
-      if (!f.mkdirs())
-        throw new SwiftletException("Invalid Backup Path (unable to create Directory): " + path + "(absolute paths must be prefixed with \"absolute:\")");
-    }
-    ctx.backupProcessor.enqueue(new ScanSaveSets());
-    prop.setPropertyChangeListener(new PropertyChangeListener()
-    {
-      public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException
-      {
-        String s = SwiftUtilities.addWorkingDir((String) newValue);
-        File file = new File(s);
-        if (file.exists())
-        {
-          if (!file.isDirectory())
-            throw new PropertyChangeException("Invalid Backup Path (not a Directory): " + s + "(absolute paths must be prefixed with \"absolute:\")");
-        } else
-        {
-          if (!file.mkdirs())
-            throw new PropertyChangeException("Invalid Backup Path (unable to create Directory): " + s + "(absolute paths must be prefixed with \"absolute:\")");
+    public synchronized PersistentStore getPersistentStore(String queueName)
+            throws StoreException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getPersistentStore, queueName=" + queueName);
+        QueueIndex queueIndex = null;
+        try {
+            queueIndex = rootIndex.getQueueIndex(queueName);
+        } catch (Exception e) {
+            throw new StoreException(e.getMessage());
         }
-        Semaphore sem = new Semaphore();
-        ChangePath po = new ChangePath(sem, (String) newValue);
-        ctx.backupProcessor.enqueue(po);
-        sem.waitHere();
-        if (!po.isSuccess())
-          throw new PropertyChangeException(po.getException());
+        PersistentStore ps = new PersistentStoreImpl(ctx, queueIndex, rootIndex, queueName);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", "getPersistentStore, queueName=" + queueName + ", ps=" + ps);
+        return ps;
+    }
+
+    public synchronized NonPersistentStore getNonPersistentStore(String queueName)
+            throws StoreException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getNonPersistentStore, queueName=" + queueName);
+        NonPersistentStore nps = createNonPersistentStore(ctx, queueName, ctx.swapPath, swapMaxLength);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", "getNonPersistentStore, queueName=" + queueName + ", nps=" + nps);
+        return nps;
+    }
+
+    public synchronized DurableSubscriberStore getDurableSubscriberStore()
+            throws StoreException {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getDurableSubscriberStore...");
+        DurableSubscriberStore ds = ctx.durableStore;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getDurableSubscriberStore, ds=" + ds);
+        return (ds);
+    }
+
+    public synchronized List getPrepareLogRecords() throws StoreException {
+        List list = null;
+        try {
+            list = ctx.preparedLog.getAll();
+        } catch (IOException e) {
+            throw new StoreException(e.toString());
+        }
+        return list;
+    }
+
+    public synchronized void removePrepareLogRecord(PrepareLogRecord record) throws StoreException {
+        try {
+            ctx.preparedLog.remove((PrepareLogRecordImpl) record);
+        } catch (IOException e) {
+            throw new StoreException(e.toString());
+        }
+    }
+
+    public CompositeStoreTransaction createCompositeStoreTransaction() {
+        CompositeStoreTransaction tx = new CompositeStoreTransactionImpl(ctx);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "createCompositeStoreTransaction, tx=" + tx);
+        return tx;
+    }
+
+    public void flushCache() {
+        try {
+            ctx.cacheManager.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void deleteSwaps() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "deleteSwaps...");
+        File[] list = new File(ctx.swapPath).listFiles();
+        for (int i = 0; i < list.length; i++) {
+            if (list[i].getName().endsWith(".swap"))
+                list[i].delete();
+        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "deleteSwaps...done");
+    }
+
+    private void checkBackupPath() throws SwiftletException {
+        Property prop = ctx.backupEntity.getProperty("path");
+        String path = SwiftUtilities.addWorkingDir((String) prop.getValue());
+        File f = new File(path);
+        if (f.exists()) {
+            if (!f.isDirectory())
+                throw new SwiftletException("Invalid Backup Path (not a Directory): " + path + "(absolute paths must be prefixed with \"absolute:\")");
+        } else {
+            if (!f.mkdirs())
+                throw new SwiftletException("Invalid Backup Path (unable to create Directory): " + path + "(absolute paths must be prefixed with \"absolute:\")");
+        }
         ctx.backupProcessor.enqueue(new ScanSaveSets());
-      }
-    });
-    prop = ctx.backupEntity.getProperty("keep-generations");
-    prop.setPropertyChangeListener(new PropertyChangeListener()
-    {
-      public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException
-      {
-        int i = ((Integer) newValue).intValue();
-        Semaphore sem = new Semaphore();
-        ChangeGenerations po = new ChangeGenerations(sem, i);
-        ctx.backupProcessor.enqueue(po);
-        sem.waitHere();
-        if (!po.isSuccess())
-          throw new PropertyChangeException(po.getException());
-        ctx.backupProcessor.enqueue(new ScanSaveSets());
-      }
-    });
-    CommandRegistry commandRegistry = ctx.backupEntity.getCommandRegistry();
-    CommandExecutor backupExecutor = new CommandExecutor()
-    {
-      public String[] execute(String[] context, Entity entity, String[] cmd)
-      {
-        if (cmd.length != 1)
-          return new String[]{TreeCommands.ERROR, "Invalid command, please try 'backup'"};
-        Semaphore sem = new Semaphore();
-        StartBackup po = new StartBackup(sem, null);
-        ctx.backupProcessor.enqueue(po);
-        sem.waitHere();
-        String[] result = null;
-        if (po.isSuccess())
-          result = new String[]{TreeCommands.INFO, "Backup initiated. Please watch Folder 'Generated Backup Save Sets'."};
+        prop.setPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
+                String s = SwiftUtilities.addWorkingDir((String) newValue);
+                File file = new File(s);
+                if (file.exists()) {
+                    if (!file.isDirectory())
+                        throw new PropertyChangeException("Invalid Backup Path (not a Directory): " + s + "(absolute paths must be prefixed with \"absolute:\")");
+                } else {
+                    if (!file.mkdirs())
+                        throw new PropertyChangeException("Invalid Backup Path (unable to create Directory): " + s + "(absolute paths must be prefixed with \"absolute:\")");
+                }
+                Semaphore sem = new Semaphore();
+                ChangePath po = new ChangePath(sem, (String) newValue);
+                ctx.backupProcessor.enqueue(po);
+                sem.waitHere();
+                if (!po.isSuccess())
+                    throw new PropertyChangeException(po.getException());
+                ctx.backupProcessor.enqueue(new ScanSaveSets());
+            }
+        });
+        prop = ctx.backupEntity.getProperty("keep-generations");
+        prop.setPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
+                int i = ((Integer) newValue).intValue();
+                Semaphore sem = new Semaphore();
+                ChangeGenerations po = new ChangeGenerations(sem, i);
+                ctx.backupProcessor.enqueue(po);
+                sem.waitHere();
+                if (!po.isSuccess())
+                    throw new PropertyChangeException(po.getException());
+                ctx.backupProcessor.enqueue(new ScanSaveSets());
+            }
+        });
+        CommandRegistry commandRegistry = ctx.backupEntity.getCommandRegistry();
+        CommandExecutor backupExecutor = new CommandExecutor() {
+            public String[] execute(String[] context, Entity entity, String[] cmd) {
+                if (cmd.length != 1)
+                    return new String[]{TreeCommands.ERROR, "Invalid command, please try 'backup'"};
+                Semaphore sem = new Semaphore();
+                StartBackup po = new StartBackup(sem, null);
+                ctx.backupProcessor.enqueue(po);
+                sem.waitHere();
+                String[] result = null;
+                if (po.isSuccess())
+                    result = new String[]{TreeCommands.INFO, "Backup initiated. Please watch Folder 'Generated Backup Save Sets'."};
+                else
+                    result = new String[]{TreeCommands.ERROR, po.getException()};
+                return result;
+            }
+        };
+        Command backupCommand = new Command("backup", "backup", "Perform Backup Now", true, backupExecutor, true, false);
+        commandRegistry.addCommand(backupCommand);
+    }
+
+    protected NonPersistentStore createNonPersistentStore(StoreContext ctx, String queueName, String swapPath, long swapMaxLength) {
+        return new NonPersistentStoreImpl(ctx, queueName, swapPath, swapMaxLength);
+    }
+
+    protected StableStore createStableStore(StoreContext ctx, String path, int initialSize) throws Exception {
+        return new StableStore(ctx, path, initialSize);
+    }
+
+    protected DurableSubscriberStoreImpl createDurableSubscriberStore(StoreContext ctx, String path) throws StoreException {
+        return new DurableSubscriberStoreImpl(ctx, path);
+    }
+
+    public LogFile createTxLogFile(String filename, String mode) throws Exception {
+        RandomAccessFile file = new RandomAccessFile(filename, mode);
+        LogFile logFile = null;
+        if (PRECREATE)
+            logFile = new ReuseLogFile(ctx, file);
         else
-          result = new String[]{TreeCommands.ERROR, po.getException()};
-        return result;
-      }
-    };
-    Command backupCommand = new Command("backup", "backup", "Perform Backup Now", true, backupExecutor, true, false);
-    commandRegistry.addCommand(backupCommand);
-  }
+            logFile = new AppendLogFile(ctx, file);
+        return logFile;
+    }
 
-  protected NonPersistentStore createNonPersistentStore(StoreContext ctx, String queueName, String swapPath, long swapMaxLength)
-  {
-    return new NonPersistentStoreImpl(ctx, queueName, swapPath, swapMaxLength);
-  }
+    protected SwapFileFactory createSwapFileFactory() {
+        return new SwapFileFactoryImpl(ctx);
+    }
 
-  protected StableStore createStableStore(StoreContext ctx, String path, int initialSize) throws Exception
-  {
-    return new StableStore(ctx, path, initialSize);
-  }
+    protected LogManagerFactory createLogManagerFactory() {
+        return new LogManagerFactoryImpl();
+    }
 
-  protected DurableSubscriberStoreImpl createDurableSubscriberStore(StoreContext ctx, String path) throws StoreException
-  {
-    return new DurableSubscriberStoreImpl(ctx, path);
-  }
+    protected boolean isRecoverOnStartup() {
+        return true;
+    }
 
-  public LogFile createTxLogFile(String filename, String mode) throws Exception
-  {
-    RandomAccessFile file = new RandomAccessFile(filename, mode);
-    LogFile logFile = null;
-    if (PRECREATE)
-      logFile = new ReuseLogFile(ctx, file);
-    else
-      logFile = new AppendLogFile(ctx, file);
-    return logFile;
-  }
+    protected void startup(Configuration config)
+            throws SwiftletException {
+        try {
+            ctx = new StoreContext(this, config);
+            ctx.swapFileFactory = createSwapFileFactory();
+            ctx.swapPath = SwiftUtilities.addWorkingDir((String) ctx.swapEntity.getProperty("path").getValue());
+            swapMaxLength = ((Long) ctx.swapEntity.getProperty("roll-over-size").getValue()).longValue();
 
-  protected SwapFileFactory createSwapFileFactory()
-  {
-    return new SwapFileFactoryImpl(ctx);
-  }
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "startup...");
 
-  protected LogManagerFactory createLogManagerFactory()
-  {
-    return new LogManagerFactoryImpl();
-  }
+            ctx.durableStore = createDurableSubscriberStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.durableEntity.getProperty("path").getValue()));
 
-  protected boolean isRecoverOnStartup()
-  {
-    return true;
-  }
+            deleteSwaps();
 
-  protected void startup(Configuration config)
-      throws SwiftletException
-  {
-    try
-    {
-      ctx = new StoreContext(this, config);
-      ctx.swapFileFactory = createSwapFileFactory();
-      ctx.swapPath = SwiftUtilities.addWorkingDir((String) ctx.swapEntity.getProperty("path").getValue());
-      swapMaxLength = ((Long) ctx.swapEntity.getProperty("roll-over-size").getValue()).longValue();
+            ctx.recoveryManager = new RecoveryManager(ctx);
+            ctx.stableStore = createStableStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()),
+                    ((Integer) ctx.dbEntity.getProperty("initial-page-size").getValue()).intValue());
 
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "startup...");
-
-      ctx.durableStore = createDurableSubscriberStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.durableEntity.getProperty("path").getValue()));
-
-      deleteSwaps();
-
-      ctx.recoveryManager = new RecoveryManager(ctx);
-      ctx.stableStore = createStableStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()),
-          ((Integer) ctx.dbEntity.getProperty("initial-page-size").getValue()).intValue());
-
-      Property minCacheSizeProp = ctx.cacheEntity.getProperty("min-size");
-      Property maxCacheSizeProp = ctx.cacheEntity.getProperty("max-size");
-      int minCacheSize = ((Integer) minCacheSizeProp.getValue()).intValue();
-      int maxCacheSize = ((Integer) maxCacheSizeProp.getValue()).intValue();
-      if (minCacheSize > maxCacheSize)
-        throw new Exception("Cache/min-size is invalid, must be less than max-size!");
-      minCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null)
-      {
-        public void propertyChanged(Property property, Object oldValue, Object newValue)
-            throws PropertyChangeException
-        {
-          int n = ((Integer) newValue).intValue();
-          if (n > ((Integer) ctx.cacheEntity.getProperty("max-size").getValue()).intValue())
-            throw new PropertyChangeException("min-size is invalid, must be less than max-size!");
-        }
-      });
-      maxCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null)
-      {
-        public void propertyChanged(Property property, Object oldValue, Object newValue)
-            throws PropertyChangeException
-        {
-          int n = ((Integer) newValue).intValue();
-          if (n < ((Integer) ctx.cacheEntity.getProperty("min-size").getValue()).intValue())
-            throw new PropertyChangeException("max-size is invalid, must be greater than min-size!");
-        }
-      });
+            Property minCacheSizeProp = ctx.cacheEntity.getProperty("min-size");
+            Property maxCacheSizeProp = ctx.cacheEntity.getProperty("max-size");
+            int minCacheSize = ((Integer) minCacheSizeProp.getValue()).intValue();
+            int maxCacheSize = ((Integer) maxCacheSizeProp.getValue()).intValue();
+            if (minCacheSize > maxCacheSize)
+                throw new Exception("Cache/min-size is invalid, must be less than max-size!");
+            minCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
+                public void propertyChanged(Property property, Object oldValue, Object newValue)
+                        throws PropertyChangeException {
+                    int n = ((Integer) newValue).intValue();
+                    if (n > ((Integer) ctx.cacheEntity.getProperty("max-size").getValue()).intValue())
+                        throw new PropertyChangeException("min-size is invalid, must be less than max-size!");
+                }
+            });
+            maxCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
+                public void propertyChanged(Property property, Object oldValue, Object newValue)
+                        throws PropertyChangeException {
+                    int n = ((Integer) newValue).intValue();
+                    if (n < ((Integer) ctx.cacheEntity.getProperty("min-size").getValue()).intValue())
+                        throw new PropertyChangeException("max-size is invalid, must be greater than min-size!");
+                }
+            });
 
 //      ctx.preparedLog = new PreparedLogFile(ctx, SwiftUtilities.addWorkingDir((String) ctx.xaEntity.getProperty("path").getValue()),
 //                                            ((Boolean) ctx.xaEntity.getProperty("force-sync").getValue()).booleanValue());
 
-      ctx.cacheManager = new CacheManager(ctx, ctx.stableStore, minCacheSize, maxCacheSize);
-      ctx.transactionManager = new TransactionManager(ctx);
-      ctx.logManager = createLogManagerFactory().createLogManager(ctx, ctx.transactionManager,
-          SwiftUtilities.addWorkingDir((String) ctx.txEntity.getProperty("path").getValue()),
-          ((Long) ctx.txEntity.getProperty("checkpoint-size").getValue()).longValue(),
-          ((Boolean) ctx.txEntity.getProperty("force-sync").getValue()).booleanValue());
-      ctx.recoveryManager.restart(isRecoverOnStartup());
-      rootIndex = new RootIndex(ctx, 0);
-      ctx.preparedLog = new PreparedLogQueue(ctx, rootIndex.getQueueIndex(PREPARED_LOG_QUEUE));
-      ctx.backupProcessor = new BackupProcessor(ctx);
-      checkBackupPath();
-      ctx.shrinkProcessor = new ShrinkProcessor(ctx);
-      CommandRegistry commandRegistry = ctx.dbEntity.getCommandRegistry();
-      CommandExecutor shrinkExecutor = new CommandExecutor()
-      {
-        public String[] execute(String[] context, Entity entity, String[] cmd)
-        {
-          if (cmd.length != 1)
-            return new String[]{TreeCommands.ERROR, "Invalid command, please try 'shrink'"};
-          Semaphore sem = new Semaphore();
-          StartShrink po = new StartShrink(sem);
-          ctx.shrinkProcessor.enqueue(po);
-          sem.waitHere();
-          String[] result = null;
-          if (po.isSuccess())
-            result = new String[]{TreeCommands.INFO, "Shrink initiated."};
-          else
-            result = new String[]{TreeCommands.ERROR, po.getException()};
-          return result;
-        }
-      };
-      Command backupCommand = new Command("shrink", "shrink", "Perform Shrink Now", true, shrinkExecutor, true, false);
-      commandRegistry.addCommand(backupCommand);
+            ctx.cacheManager = new CacheManager(ctx, ctx.stableStore, minCacheSize, maxCacheSize);
+            ctx.transactionManager = new TransactionManager(ctx);
+            ctx.logManager = createLogManagerFactory().createLogManager(ctx, ctx.transactionManager,
+                    SwiftUtilities.addWorkingDir((String) ctx.txEntity.getProperty("path").getValue()),
+                    ((Long) ctx.txEntity.getProperty("checkpoint-size").getValue()).longValue(),
+                    ((Boolean) ctx.txEntity.getProperty("force-sync").getValue()).booleanValue());
+            ctx.recoveryManager.restart(isRecoverOnStartup());
+            rootIndex = new RootIndex(ctx, 0);
+            ctx.preparedLog = new PreparedLogQueue(ctx, rootIndex.getQueueIndex(PREPARED_LOG_QUEUE));
+            ctx.backupProcessor = new BackupProcessor(ctx);
+            checkBackupPath();
+            ctx.shrinkProcessor = new ShrinkProcessor(ctx);
+            CommandRegistry commandRegistry = ctx.dbEntity.getCommandRegistry();
+            CommandExecutor shrinkExecutor = new CommandExecutor() {
+                public String[] execute(String[] context, Entity entity, String[] cmd) {
+                    if (cmd.length != 1)
+                        return new String[]{TreeCommands.ERROR, "Invalid command, please try 'shrink'"};
+                    Semaphore sem = new Semaphore();
+                    StartShrink po = new StartShrink(sem);
+                    ctx.shrinkProcessor.enqueue(po);
+                    sem.waitHere();
+                    String[] result = null;
+                    if (po.isSuccess())
+                        result = new String[]{TreeCommands.INFO, "Shrink initiated."};
+                    else
+                        result = new String[]{TreeCommands.ERROR, po.getException()};
+                    return result;
+                }
+            };
+            Command backupCommand = new Command("shrink", "shrink", "Perform Shrink Now", true, shrinkExecutor, true, false);
+            commandRegistry.addCommand(backupCommand);
 
-      SwiftletManager.getInstance().addSwiftletManagerListener("sys$scheduler", new SwiftletManagerAdapter()
-      {
-        public void swiftletStarted(SwiftletManagerEvent event)
-        {
-          ctx.schedulerSwiftlet = (SchedulerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$scheduler");
-          jobRegistrar = new JobRegistrar(ctx);
-          jobRegistrar.register();
-        }
+            SwiftletManager.getInstance().addSwiftletManagerListener("sys$scheduler", new SwiftletManagerAdapter() {
+                public void swiftletStarted(SwiftletManagerEvent event) {
+                    ctx.schedulerSwiftlet = (SchedulerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$scheduler");
+                    jobRegistrar = new JobRegistrar(ctx);
+                    jobRegistrar.register();
+                }
 
-        public void swiftletStopInitiated(SwiftletManagerEvent event)
-        {
-          jobRegistrar.unregister();
+                public void swiftletStopInitiated(SwiftletManagerEvent event) {
+                    jobRegistrar.unregister();
+                }
+            });
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "startup...done");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new SwiftletException(e.getMessage());
         }
-      });
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "startup...done");
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      throw new SwiftletException(e.getMessage());
     }
-  }
 
-  /**
-   * Shutdown the swiftlet. Check if all shutdown conditions are met. Do shutdown work (i. e. stop working thread, close resources).
-   * If any condition prevends from shutdown fire a SwiftletException.
-   *
-   * @throws com.swiftmq.swiftlet.SwiftletException
-   *
-   */
-  protected void shutdown()
-      throws SwiftletException
-  {
-    // true if shutdown while standby
-    if (ctx == null)
-      return;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown...");
-    try
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping backup processor...");
-      ctx.backupProcessor.close();
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");
-      Semaphore sem = new Semaphore();
-      ctx.logManager.enqueue(new CloseLogOperation(sem));
-      sem.waitHere();
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...done");
-      ctx.logManager.stopQueue();
-      ctx.cacheManager.close();
-    } catch (Exception e)
-    {
-      throw new SwiftletException(e.getMessage());
+    /**
+     * Shutdown the swiftlet. Check if all shutdown conditions are met. Do shutdown work (i. e. stop working thread, close resources).
+     * If any condition prevends from shutdown fire a SwiftletException.
+     *
+     * @throws com.swiftmq.swiftlet.SwiftletException
+     */
+    protected void shutdown()
+            throws SwiftletException {
+        // true if shutdown while standby
+        if (ctx == null)
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown...");
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping backup processor...");
+            ctx.backupProcessor.close();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");
+            Semaphore sem = new Semaphore();
+            ctx.logManager.enqueue(new CloseLogOperation(sem));
+            sem.waitHere();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...done");
+            ctx.logManager.stopQueue();
+            ctx.cacheManager.close();
+        } catch (Exception e) {
+            throw new SwiftletException(e.getMessage());
+        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown...done");
+        ctx = null;
     }
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown...done");
-    ctx = null;
-  }
 }

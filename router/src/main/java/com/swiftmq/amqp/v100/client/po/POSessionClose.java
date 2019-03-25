@@ -22,20 +22,16 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSessionClose extends POObject
-{
-  public POSessionClose(Semaphore semaphore)
-  {
-    super(null, semaphore);
-  }
+public class POSessionClose extends POObject {
+    public POSessionClose(Semaphore semaphore) {
+        super(null, semaphore);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSessionClose]";
-  }
+    public String toString() {
+        return "[POSessionClose]";
+    }
 }

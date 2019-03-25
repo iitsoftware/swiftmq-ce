@@ -19,51 +19,44 @@ package com.swiftmq.tools.util;
 
 import java.io.InputStream;
 
-public class FastByteArrayInputStream extends InputStream
-{
-  byte[] buffer = null;
-  int pos = 0;
-  int count = 0;
+public class FastByteArrayInputStream extends InputStream {
+    byte[] buffer = null;
+    int pos = 0;
+    int count = 0;
 
-  public void setBuffer(byte[] buffer)
-  {
-    this.buffer = buffer;
-    pos = 0;
-    count = buffer.length;
-  }
+    public void setBuffer(byte[] buffer) {
+        this.buffer = buffer;
+        pos = 0;
+        count = buffer.length;
+    }
 
-  public void setBuffer(byte[] buffer, int pos, int len)
-  {
-    this.buffer = buffer;
-    this.pos = pos;
-    count = pos+len;
-  }
+    public void setBuffer(byte[] buffer, int pos, int len) {
+        this.buffer = buffer;
+        this.pos = pos;
+        count = pos + len;
+    }
 
-  public int read()
-  {
-    return (pos < count) ? (buffer[pos++] & 0xff) : -1;
-  }
+    public int read() {
+        return (pos < count) ? (buffer[pos++] & 0xff) : -1;
+    }
 
-  public int read(byte b[], int off, int len)
-  {
-    System.arraycopy(buffer, pos, b, off, len);
-    pos += len;
-    return len;
-  }
+    public int read(byte b[], int off, int len) {
+        System.arraycopy(buffer, pos, b, off, len);
+        pos += len;
+        return len;
+    }
 
-  public int available()
-  {
-    return count - pos;
-  }
+    public int available() {
+        return count - pos;
+    }
 
-  public long skip(long n)
-  {
-    if (pos + n > count)
-      n = count - pos;
-    if (n < 0)
-      return 0;
-    pos += n;
-    return n;
-  }
+    public long skip(long n) {
+        if (pos + n > count)
+            n = count - pos;
+        if (n < 0)
+            return 0;
+        pos += n;
+        return n;
+    }
 }
 

@@ -22,43 +22,35 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class SendRouteRequest extends Request
-{
-  Route route = null;
+public class SendRouteRequest extends Request {
+    Route route = null;
 
-  public SendRouteRequest(Route route)
-  {
-    super(0, false);
-    this.route = route;
-  }
+    public SendRouteRequest(Route route) {
+        super(0, false);
+        this.route = route;
+    }
 
-  public SendRouteRequest()
-  {
-    this(null);
-  }
+    public SendRouteRequest() {
+        this(null);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.SEND_ROUTE_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.SEND_ROUTE_REQ;
+    }
 
-  public Route getRoute()
-  {
-    return route;
-  }
+    public Route getRoute() {
+        return route;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[SendRouteRequest " + super.toString() + ", route=" + route + "]";
-  }
+    public String toString() {
+        return "[SendRouteRequest " + super.toString() + ", route=" + route + "]";
+    }
 }

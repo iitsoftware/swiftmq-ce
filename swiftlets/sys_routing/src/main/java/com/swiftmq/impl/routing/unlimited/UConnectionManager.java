@@ -17,18 +17,15 @@
 
 package com.swiftmq.impl.routing.unlimited;
 
-import com.swiftmq.impl.routing.single.manager.ConnectionManager;
 import com.swiftmq.impl.routing.single.SwiftletContext;
+import com.swiftmq.impl.routing.single.manager.ConnectionManager;
 
-public class UConnectionManager extends ConnectionManager
-{
-  public UConnectionManager(SwiftletContext context)
-  {
-    super(context);
-  }
+public class UConnectionManager extends ConnectionManager {
+    public UConnectionManager(SwiftletContext context) {
+        super(context);
+    }
 
-  protected boolean isLicenseLimit()
-  {
-    return false;
-  }
+    protected boolean isLicenseLimit() {
+        return false;
+    }
 }

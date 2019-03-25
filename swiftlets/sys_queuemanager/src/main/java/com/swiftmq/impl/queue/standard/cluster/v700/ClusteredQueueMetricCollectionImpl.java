@@ -26,58 +26,48 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClusteredQueueMetricCollectionImpl implements ClusteredQueueMetricCollection
-{
-  String routerName = null;
-  List clusteredQueueMetrics = null;
+public class ClusteredQueueMetricCollectionImpl implements ClusteredQueueMetricCollection {
+    String routerName = null;
+    List clusteredQueueMetrics = null;
 
-  public ClusteredQueueMetricCollectionImpl(String routerName, List clusteredQueueMetrics)
-  {
-    this.routerName = routerName;
-    this.clusteredQueueMetrics = clusteredQueueMetrics;
-  }
-
-  public ClusteredQueueMetricCollectionImpl()
-  {
-  }
-
-  public String getRouterName()
-  {
-    return routerName;
-  }
-
-  public List getClusteredQueueMetrics()
-  {
-    return clusteredQueueMetrics;
-  }
-
-  public int getDumpId()
-  {
-    return MetricFactory.CLUSTERED_QUEUE_METRIC_COLLECTION;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    out.writeUTF(routerName);
-    if (clusteredQueueMetrics != null)
-    {
-      out.writeBoolean(true);
-      out.writeInt(clusteredQueueMetrics.size());
-      for (int i = 0; i < clusteredQueueMetrics.size(); i++)
-        Dumpalizer.dump(out, (ClusteredQueueMetricImpl) clusteredQueueMetrics.get(i));
-    } else
-      out.writeBoolean(false);
-  }
-
-  public void readContent(DataInput in) throws IOException
-  {
-    routerName = in.readUTF();
-    if (in.readBoolean())
-    {
-      int size = in.readInt();
-      clusteredQueueMetrics = new ArrayList(size);
-      for (int i = 0; i < size; i++)
-        clusteredQueueMetrics.add(Dumpalizer.construct(in, MetricFactory.FACTORY));
+    public ClusteredQueueMetricCollectionImpl(String routerName, List clusteredQueueMetrics) {
+        this.routerName = routerName;
+        this.clusteredQueueMetrics = clusteredQueueMetrics;
     }
-  }
+
+    public ClusteredQueueMetricCollectionImpl() {
+    }
+
+    public String getRouterName() {
+        return routerName;
+    }
+
+    public List getClusteredQueueMetrics() {
+        return clusteredQueueMetrics;
+    }
+
+    public int getDumpId() {
+        return MetricFactory.CLUSTERED_QUEUE_METRIC_COLLECTION;
+    }
+
+    public void writeContent(DataOutput out) throws IOException {
+        out.writeUTF(routerName);
+        if (clusteredQueueMetrics != null) {
+            out.writeBoolean(true);
+            out.writeInt(clusteredQueueMetrics.size());
+            for (int i = 0; i < clusteredQueueMetrics.size(); i++)
+                Dumpalizer.dump(out, (ClusteredQueueMetricImpl) clusteredQueueMetrics.get(i));
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        routerName = in.readUTF();
+        if (in.readBoolean()) {
+            int size = in.readInt();
+            clusteredQueueMetrics = new ArrayList(size);
+            for (int i = 0; i < size; i++)
+                clusteredQueueMetrics.add(Dumpalizer.construct(in, MetricFactory.FACTORY));
+        }
+    }
 }

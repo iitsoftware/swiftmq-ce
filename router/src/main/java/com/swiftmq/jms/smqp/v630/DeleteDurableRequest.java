@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: DeleteDurableRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: DeleteDurableRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.Reply;
@@ -32,82 +33,68 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class DeleteDurableRequest extends Request
-{
-  private String durableName;
+public class DeleteDurableRequest extends Request {
+    private String durableName;
 
-  public DeleteDurableRequest()
-  {
-    super(0, true);
-  }
+    public DeleteDurableRequest() {
+        super(0, true);
+    }
 
-  public DeleteDurableRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public DeleteDurableRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public DeleteDurableRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public DeleteDurableRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public DeleteDurableRequest(int dispatchId, String durableName)
-  {
-    super(dispatchId, true);
-    this.durableName = durableName;
-  }
+    public DeleteDurableRequest(int dispatchId, String durableName) {
+        super(dispatchId, true);
+        this.durableName = durableName;
+    }
 
-  public DeleteDurableRequest(RequestRetryValidator validator, int dispatchId, String durableName)
-  {
-    super(dispatchId, true, validator);
-    this.durableName = durableName;
-  }
+    public DeleteDurableRequest(RequestRetryValidator validator, int dispatchId, String durableName) {
+        super(dispatchId, true, validator);
+        this.durableName = durableName;
+    }
 
-  public void setDurableName(String durableName)
-  {
-    this.durableName = durableName;
-  }
+    public void setDurableName(String durableName) {
+        this.durableName = durableName;
+    }
 
-  public String getDurableName()
-  {
-    return durableName;
-  }
+    public String getDurableName() {
+        return durableName;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_DELETEDURABLE_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_DELETEDURABLE_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(durableName, out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(durableName, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    durableName = SMQPUtil.read(durableName, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        durableName = SMQPUtil.read(durableName, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new DeleteDurableReply();
-  }
+    protected Reply createReplyInstance() {
+        return new DeleteDurableReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/DeleteDurableRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("durableName=");
-    _b.append(durableName);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/DeleteDurableRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("durableName=");
+        _b.append(durableName);
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -17,25 +17,23 @@
 
 package com.swiftmq.tools.versioning;
 
-import com.swiftmq.tools.dump.*;
+import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.tools.dump.DumpableFactory;
 
-public class VersionObjectFactory extends DumpableFactory
-{
-  public static final int VERSION_NOTIFICATION = 0;
-  public static final int VERSIONED = 1;
+public class VersionObjectFactory extends DumpableFactory {
+    public static final int VERSION_NOTIFICATION = 0;
+    public static final int VERSIONED = 1;
 
-  public Dumpable createDumpable(int dumpId)
-  {
-    Dumpable d = null;
-    switch (dumpId)
-    {
-      case VERSION_NOTIFICATION:
-        d = new VersionNotification();
-        break;
-      case VERSIONED:
-        d = new Versioned();
-        break;
+    public Dumpable createDumpable(int dumpId) {
+        Dumpable d = null;
+        switch (dumpId) {
+            case VERSION_NOTIFICATION:
+                d = new VersionNotification();
+                break;
+            case VERSIONED:
+                d = new Versioned();
+                break;
+        }
+        return d;
     }
-    return d;
-  }
 }

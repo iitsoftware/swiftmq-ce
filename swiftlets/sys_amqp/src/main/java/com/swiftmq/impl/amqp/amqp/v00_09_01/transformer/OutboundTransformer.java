@@ -23,33 +23,30 @@ import com.swiftmq.jms.MessageImpl;
 
 import java.util.Map;
 
-public abstract class OutboundTransformer
-{
-  static final String PROP_NAME_TRANSLATOR = "name-translator";
-  static final String PROP_PREFIX_VENDOR = "prefix-vendor";
+public abstract class OutboundTransformer {
+    static final String PROP_NAME_TRANSLATOR = "name-translator";
+    static final String PROP_PREFIX_VENDOR = "prefix-vendor";
 
-  Map config = null;
-  NameTranslator nameTranslator = null;
-  String prefixVendor = null;
-  String amqpNative;
-  String messageFormat;
+    Map config = null;
+    NameTranslator nameTranslator = null;
+    String prefixVendor = null;
+    String amqpNative;
+    String messageFormat;
 
-  protected String getValue(String name, String defaultValue)
-  {
-    String value = (String) config.get(name);
-    if (value == null)
-      value = defaultValue;
-    return value;
-  }
+    protected String getValue(String name, String defaultValue) {
+        String value = (String) config.get(name);
+        if (value == null)
+            value = defaultValue;
+        return value;
+    }
 
-  public void setConfiguration(Map config) throws Exception
-  {
-    this.config = config;
-    nameTranslator = (NameTranslator) Class.forName(getValue(PROP_NAME_TRANSLATOR, "com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.UnderscoreToDashNameTranslator")).newInstance();
-    prefixVendor = getValue(PROP_PREFIX_VENDOR, "JMS_AMQP_");
-    messageFormat = prefixVendor + Util.PROP_MESSAGE_FORMAT;
-  }
+    public void setConfiguration(Map config) throws Exception {
+        this.config = config;
+        nameTranslator = (NameTranslator) Class.forName(getValue(PROP_NAME_TRANSLATOR, "com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.UnderscoreToDashNameTranslator")).newInstance();
+        prefixVendor = getValue(PROP_PREFIX_VENDOR, "JMS_AMQP_");
+        messageFormat = prefixVendor + Util.PROP_MESSAGE_FORMAT;
+    }
 
-  public abstract Delivery transform(MessageImpl jmsMessage) throws Exception;
+    public abstract Delivery transform(MessageImpl jmsMessage) throws Exception;
 
 }

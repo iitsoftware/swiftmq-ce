@@ -18,10 +18,9 @@
 package com.swiftmq.swiftlet.net;
 
 import com.swiftmq.net.protocol.ChunkListener;
-import com.swiftmq.net.client.IntraVMConnection;
 
-public interface IntraVMServerEndpoint extends ChunkListener
-{
-  public boolean isClosed();
-  public void clientClose();
+public interface IntraVMServerEndpoint extends ChunkListener {
+    public boolean isClosed();
+
+    public void clientClose();
 }

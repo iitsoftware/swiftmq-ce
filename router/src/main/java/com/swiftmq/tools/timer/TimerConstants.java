@@ -19,15 +19,15 @@ package com.swiftmq.tools.timer;
 
 /**
  * This class contains constants used by timers
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class TimerConstants
-{
-  public static final byte EVERY_SECOND = 0;
-  public static final byte EVERY_MINUTE = 1;
-  public static final byte EVERY_HOUR = 2;
-  public static final byte EVERY_DAY = 3;
-  public static final byte EVERY_WEEK = 4;
-  public static final byte EVERY_MONTH = 5;
+public class TimerConstants {
+    public static final byte EVERY_SECOND = 0;
+    public static final byte EVERY_MINUTE = 1;
+    public static final byte EVERY_HOUR = 2;
+    public static final byte EVERY_DAY = 3;
+    public static final byte EVERY_WEEK = 4;
+    public static final byte EVERY_MONTH = 5;
 }

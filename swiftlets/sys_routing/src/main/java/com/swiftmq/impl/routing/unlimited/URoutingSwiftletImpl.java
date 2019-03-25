@@ -17,16 +17,15 @@
 
 package com.swiftmq.impl.routing.unlimited;
 
-import com.swiftmq.mgmt.*;
-import com.swiftmq.impl.routing.single.*;
+import com.swiftmq.impl.routing.single.RoutingSwiftletImpl;
+import com.swiftmq.impl.routing.single.SwiftletContext;
+import com.swiftmq.mgmt.Entity;
 import com.swiftmq.swiftlet.SwiftletException;
 
-public class URoutingSwiftletImpl extends RoutingSwiftletImpl
-{
-  protected SwiftletContext createSwiftletContext(RoutingSwiftletImpl routingSwiftletImpl, Entity rootEntity) throws SwiftletException
-  {
-    /*${evalstartupmark}*/
-    /*${evaltimer}*/
-    return new USwiftletContext(routingSwiftletImpl, rootEntity);
-  }
+public class URoutingSwiftletImpl extends RoutingSwiftletImpl {
+    protected SwiftletContext createSwiftletContext(RoutingSwiftletImpl routingSwiftletImpl, Entity rootEntity) throws SwiftletException {
+        /*${evalstartupmark}*/
+        /*${evaltimer}*/
+        return new USwiftletContext(routingSwiftletImpl, rootEntity);
+    }
 }

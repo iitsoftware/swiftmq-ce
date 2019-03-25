@@ -38,12 +38,11 @@ public class Parameters {
      * @param name parameter name
      * @return value or null if not defined
      */
-    public String get(String name)
-    {
+    public String get(String name) {
         Entity entity = entityList.getEntity(name);
         if (entity == null)
             return null;
-        return (String)entity.getProperty("value").getValue();
+        return (String) entity.getProperty("value").getValue();
     }
 
     /**
@@ -53,24 +52,22 @@ public class Parameters {
      * @return value
      * @throws Exception if not defined
      */
-    public String require(String name) throws Exception
-    {
+    public String require(String name) throws Exception {
         String value = get(name);
         if (value == null)
-            throw new Exception("Missing parameter: "+name);
+            throw new Exception("Missing parameter: " + name);
         return value;
     }
 
     /**
      * Returns an optional parameter. Returns the default value if not defined.
      *
-     * @param name parameter name
+     * @param name         parameter name
      * @param defaultValue default value
      * @return value
      */
-    public String optional(String name, String defaultValue)
-    {
+    public String optional(String name, String defaultValue) {
         String value = get(name);
-        return value == null?defaultValue:value;
+        return value == null ? defaultValue : value;
     }
 }

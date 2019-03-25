@@ -22,36 +22,30 @@ import com.swiftmq.amqp.v100.client.SessionVisitor;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POAttachProducer extends POAttach
-{
-  String target;
-  int qoS;
+public class POAttachProducer extends POAttach {
+    String target;
+    int qoS;
 
-  public POAttachProducer(Semaphore semaphore, String target, int qoS, DeliveryMemory deliveryMemory)
-  {
-    super(null, semaphore, deliveryMemory);
-    this.target = target;
-    this.qoS = qoS;
-    this.deliveryMemory = deliveryMemory;
-  }
+    public POAttachProducer(Semaphore semaphore, String target, int qoS, DeliveryMemory deliveryMemory) {
+        super(null, semaphore, deliveryMemory);
+        this.target = target;
+        this.qoS = qoS;
+        this.deliveryMemory = deliveryMemory;
+    }
 
-  public String getTarget()
-  {
-    return target;
-  }
+    public String getTarget() {
+        return target;
+    }
 
-  public int getQoS()
-  {
-    return qoS;
-  }
+    public int getQoS() {
+        return qoS;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POAttachProducer, target=" + target + ", link=" + link + ", qoS=" + qoS + ", deliveryMemory="+deliveryMemory+"]";
-  }
+    public String toString() {
+        return "[POAttachProducer, target=" + target + ", link=" + link + ", qoS=" + qoS + ", deliveryMemory=" + deliveryMemory + "]";
+    }
 }

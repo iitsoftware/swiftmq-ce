@@ -23,14 +23,13 @@ package com.swiftmq.swiftlet.scheduler;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2003, All Rights Reserved
  */
-public interface JobParameterVerifier
-{
-  /**
-   * Verifies the parameter value.
-   *
-   * @param jobParameter JobParameter
-   * @param value Value
-   * @throws InvalidValueException if the value is invalid
-   */
-  public void verify(JobParameter jobParameter, String value) throws InvalidValueException;
+public interface JobParameterVerifier {
+    /**
+     * Verifies the parameter value.
+     *
+     * @param jobParameter JobParameter
+     * @param value        Value
+     * @throws InvalidValueException if the value is invalid
+     */
+    public void verify(JobParameter jobParameter, String value) throws InvalidValueException;
 }

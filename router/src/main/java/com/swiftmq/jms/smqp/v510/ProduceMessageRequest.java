@@ -17,133 +17,117 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: ProduceMessageRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: ProduceMessageRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.MessageImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class ProduceMessageRequest extends Request
-{
-  private int queueProducerId;
-  private MessageImpl singleMessage;
-  private byte[] messageCopy;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public ProduceMessageRequest()
-  {
-    super(0,true);
-  }
+public class ProduceMessageRequest extends Request {
+    private int queueProducerId;
+    private MessageImpl singleMessage;
+    private byte[] messageCopy;
 
-  public ProduceMessageRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public ProduceMessageRequest() {
+        super(0, true);
+    }
 
-  public ProduceMessageRequest(int dispatchId, int queueProducerId, MessageImpl singleMessage, byte[] messageCopy)
-  {
-    super(dispatchId,true);
-    this.queueProducerId = queueProducerId;
-    this.singleMessage = singleMessage;
-    this.messageCopy = messageCopy;
-  }
-  
-  public void setQueueProducerId(int queueProducerId)
-  {
-    this.queueProducerId = queueProducerId;
-  }
+    public ProduceMessageRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public int getQueueProducerId()
-  {
-    return queueProducerId;
-  }
-  
-  public void setSingleMessage(MessageImpl singleMessage)
-  {
-    this.singleMessage = singleMessage;
-  }
+    public ProduceMessageRequest(int dispatchId, int queueProducerId, MessageImpl singleMessage, byte[] messageCopy) {
+        super(dispatchId, true);
+        this.queueProducerId = queueProducerId;
+        this.singleMessage = singleMessage;
+        this.messageCopy = messageCopy;
+    }
 
-  public MessageImpl getSingleMessage()
-  {
-    return singleMessage;
-  }
-  
-  public void setMessageCopy(byte[] messageCopy)
-  {
-    this.messageCopy = messageCopy;
-  }
+    public void setQueueProducerId(int queueProducerId) {
+        this.queueProducerId = queueProducerId;
+    }
 
-  public byte[] getMessageCopy()
-  {
-    return messageCopy;
-  }
+    public int getQueueProducerId() {
+        return queueProducerId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_PRODUCEMESSAGE_REQ;
-  }
+    public void setSingleMessage(MessageImpl singleMessage) {
+        this.singleMessage = singleMessage;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queueProducerId,out);
-    if (singleMessage != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(singleMessage,out);
-    } else
-      out.writeBoolean(false);
-    if (messageCopy != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(messageCopy,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public MessageImpl getSingleMessage() {
+        return singleMessage;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queueProducerId = SMQPUtil.read(queueProducerId,in);
-    boolean singleMessage_set = in.readBoolean();
-    if (singleMessage_set)
-      singleMessage = SMQPUtil.read(singleMessage,in);
-    boolean messageCopy_set = in.readBoolean();
-    if (messageCopy_set)
-      messageCopy = SMQPUtil.read(messageCopy,in);
-  }
+    public void setMessageCopy(byte[] messageCopy) {
+        this.messageCopy = messageCopy;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new ProduceMessageReply();
-  }
+    public byte[] getMessageCopy() {
+        return messageCopy;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_PRODUCEMESSAGE_REQ;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[ProduceMessageRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queueProducerId=");
-    _b.append(queueProducerId);
-    _b.append(", ");
-    _b.append("singleMessage=");
-    _b.append(singleMessage);
-    _b.append(", ");
-    _b.append("messageCopy=");
-    _b.append(messageCopy);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queueProducerId, out);
+        if (singleMessage != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(singleMessage, out);
+        } else
+            out.writeBoolean(false);
+        if (messageCopy != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(messageCopy, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queueProducerId = SMQPUtil.read(queueProducerId, in);
+        boolean singleMessage_set = in.readBoolean();
+        if (singleMessage_set)
+            singleMessage = SMQPUtil.read(singleMessage, in);
+        boolean messageCopy_set = in.readBoolean();
+        if (messageCopy_set)
+            messageCopy = SMQPUtil.read(messageCopy, in);
+    }
+
+    protected Reply createReplyInstance() {
+        return new ProduceMessageReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[ProduceMessageRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queueProducerId=");
+        _b.append(queueProducerId);
+        _b.append(", ");
+        _b.append("singleMessage=");
+        _b.append(singleMessage);
+        _b.append(", ");
+        _b.append("messageCopy=");
+        _b.append(messageCopy);
+        _b.append("]");
+        return _b.toString();
+    }
 }

@@ -1,7 +1,7 @@
 <swiftlet name="sys$threadpool"
           displayname="Threadpool Swiftlet"
           class="com.swiftmq.impl.threadpool.standard.ThreadpoolSwiftletImpl"
-          icon="com/swiftmq/impl/threadpool/standard/images/swiftlet.png"
+          icon="/sys_threadpool/images/swiftlet.png"
           description="Threadpool Swiftlet"
           release="${release}"
           vendor="IIT Software GmbH">

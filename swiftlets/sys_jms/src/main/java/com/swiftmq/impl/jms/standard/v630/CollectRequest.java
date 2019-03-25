@@ -17,37 +17,31 @@
 
 package com.swiftmq.impl.jms.standard.v630;
 
-import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CollectRequest extends Request
-{
-  long lastCollect = 0;
+public class CollectRequest extends Request {
+    long lastCollect = 0;
 
-  public CollectRequest(long lastCollect)
-  {
-    super(0, false);
-    this.lastCollect = lastCollect;
-  }
+    public CollectRequest(long lastCollect) {
+        super(0, false);
+        this.lastCollect = lastCollect;
+    }
 
-  public long getLastCollect()
-  {
-    return lastCollect;
-  }
+    public long getLastCollect() {
+        return lastCollect;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor requestVisitor)
-  {
-    ((ConnectionVisitorAdapter)requestVisitor).visit(this);
-  }
+    public void accept(RequestVisitor requestVisitor) {
+        ((ConnectionVisitorAdapter) requestVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[CollectRequest]";
-  }
+    public String toString() {
+        return "[CollectRequest]";
+    }
 }

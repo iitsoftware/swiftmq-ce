@@ -19,7 +19,6 @@ package com.swiftmq.impl.routing.single.smqpr;
 
 import com.swiftmq.tools.requestreply.Request;
 
-public interface RequestHandler
-{
-  public void visited(Request request);
+public interface RequestHandler {
+    public void visited(Request request);
 }

@@ -18,19 +18,18 @@
 package com.swiftmq.amqp.v100.client;
 
 /**
- *  An exception thrown if there was an error during handshake while creating a session.
+ * An exception thrown if there was an error during handshake while creating a session.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class SessionHandshakeException extends AMQPException
-{
-  /**
-   * Creates a SessionHandshakeException.
-   * +
-   * @param s exception message
-   */
-  public SessionHandshakeException(String s)
-  {
-    super(s);
-  }
+public class SessionHandshakeException extends AMQPException {
+    /**
+     * Creates a SessionHandshakeException.
+     * +
+     *
+     * @param s exception message
+     */
+    public SessionHandshakeException(String s) {
+        super(s);
+    }
 }

@@ -17,14 +17,15 @@
 
 package com.swiftmq.jms.v750;
 
-import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
 
 import java.util.List;
 
-public interface Recreatable
-{
-  public Request getRecreateRequest();
-  public void setRecreateReply(Reply reply);
-  public List getRecreatables();
+public interface Recreatable {
+    public Request getRecreateRequest();
+
+    public void setRecreateReply(Reply reply);
+
+    public List getRecreatables();
 }

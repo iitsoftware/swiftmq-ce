@@ -17,97 +17,85 @@
 
 package com.swiftmq.jms.smqp.v750;
 
-/** SMQP-Protocol Version 750, Class: SetClientIdRequest
- *  Automatically generated, don't change!
- *  Generation Date: Tue Apr 21 10:39:21 CEST 2009
- *  (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 750, Class: SetClientIdRequest
+ * Automatically generated, don't change!
+ * Generation Date: Tue Apr 21 10:39:21 CEST 2009
+ * (c) 2009, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v750.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestRetryValidator;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class SetClientIdRequest extends Request 
-{
-  private String clientId;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public SetClientIdRequest()
-  {
-    super(0,true);
-  }
+public class SetClientIdRequest extends Request {
+    private String clientId;
 
-  public SetClientIdRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public SetClientIdRequest() {
+        super(0, true);
+    }
 
-  public SetClientIdRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId,true,validator);
-  }
+    public SetClientIdRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public SetClientIdRequest(int dispatchId, String clientId)
-  {
-    super(dispatchId,true);
-    this.clientId = clientId;
-  }
+    public SetClientIdRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public SetClientIdRequest(RequestRetryValidator validator, int dispatchId, String clientId)
-  {
-    super(dispatchId,true,validator);
-    this.clientId = clientId;
-  }
-  
-  public void setClientId(String clientId)
-  {
-    this.clientId = clientId;
-  }
+    public SetClientIdRequest(int dispatchId, String clientId) {
+        super(dispatchId, true);
+        this.clientId = clientId;
+    }
 
-  public String getClientId()
-  {
-    return clientId;
-  }
+    public SetClientIdRequest(RequestRetryValidator validator, int dispatchId, String clientId) {
+        super(dispatchId, true, validator);
+        this.clientId = clientId;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_SETCLIENTID_REQ;
-  }
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public int getDumpId() {
+        return SMQPFactory.DID_SETCLIENTID_REQ;
+    }
 
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(clientId,out);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(clientId, out);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    clientId = SMQPUtil.read(clientId,in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        clientId = SMQPUtil.read(clientId, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new SetClientIdReply();
-  }
+    protected Reply createReplyInstance() {
+        return new SetClientIdReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v750/SetClientIdRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("clientId=");
-    _b.append(clientId);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v750/SetClientIdRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("clientId=");
+        _b.append(clientId);
+        _b.append("]");
+        return _b.toString();
+    }
 }

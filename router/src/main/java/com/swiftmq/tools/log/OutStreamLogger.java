@@ -22,32 +22,32 @@ import java.io.PrintWriter;
 
 /**
  * Implementation eines Loggers, der den Log-Output auf einen OutputStream schreibt
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class OutStreamLogger extends Logger
-{
-  PrintWriter writer = null;
+public class OutStreamLogger extends Logger {
+    PrintWriter writer = null;
 
-  /**
-   * Erzeugt einen OutstreamLogger mit einem Prefix und dem OutputStream
-   * @param prefix
-   * @param outstream
-   */
-  public OutStreamLogger(String prefix, OutputStream outstream)
-  {
-    super(prefix);
-    writer = new PrintWriter(outstream);
-  }
+    /**
+     * Erzeugt einen OutstreamLogger mit einem Prefix und dem OutputStream
+     *
+     * @param prefix
+     * @param outstream
+     */
+    public OutStreamLogger(String prefix, OutputStream outstream) {
+        super(prefix);
+        writer = new PrintWriter(outstream);
+    }
 
-  /**
-   * Loggt das LogValue
-   * @param logValue The log value
-   */
-  public void logMessage(LogValue logValue)
-  {
-    writer.println(prefix + ": " + logValue);
-    writer.flush();
-  }
+    /**
+     * Loggt das LogValue
+     *
+     * @param logValue The log value
+     */
+    public void logMessage(LogValue logValue) {
+        writer.println(prefix + ": " + logValue);
+        writer.flush();
+    }
 }
 

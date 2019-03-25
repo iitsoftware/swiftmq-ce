@@ -17,122 +17,107 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: CreateSessionRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: CreateSessionRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class CreateSessionRequest extends Request
-{
-  public static final int QUEUE_SESSION = 0;
-  public static final int TOPIC_SESSION = 1;
-  public static final int UNIFIED = 2;
-  private boolean transacted;
-  private int acknowledgeMode;
-  private int type;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public CreateSessionRequest()
-  {
-    super(0,true);
-  }
+public class CreateSessionRequest extends Request {
+    public static final int QUEUE_SESSION = 0;
+    public static final int TOPIC_SESSION = 1;
+    public static final int UNIFIED = 2;
+    private boolean transacted;
+    private int acknowledgeMode;
+    private int type;
 
-  public CreateSessionRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public CreateSessionRequest() {
+        super(0, true);
+    }
 
-  public CreateSessionRequest(int dispatchId, boolean transacted, int acknowledgeMode, int type)
-  {
-    super(dispatchId,true);
-    this.transacted = transacted;
-    this.acknowledgeMode = acknowledgeMode;
-    this.type = type;
-  }
-  
-  public void setTransacted(boolean transacted)
-  {
-    this.transacted = transacted;
-  }
+    public CreateSessionRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public boolean isTransacted()
-  {
-    return transacted;
-  }
-  
-  public void setAcknowledgeMode(int acknowledgeMode)
-  {
-    this.acknowledgeMode = acknowledgeMode;
-  }
+    public CreateSessionRequest(int dispatchId, boolean transacted, int acknowledgeMode, int type) {
+        super(dispatchId, true);
+        this.transacted = transacted;
+        this.acknowledgeMode = acknowledgeMode;
+        this.type = type;
+    }
 
-  public int getAcknowledgeMode()
-  {
-    return acknowledgeMode;
-  }
-  
-  public void setType(int type)
-  {
-    this.type = type;
-  }
+    public void setTransacted(boolean transacted) {
+        this.transacted = transacted;
+    }
 
-  public int getType()
-  {
-    return type;
-  }
+    public boolean isTransacted() {
+        return transacted;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATESESSION_REQ;
-  }
+    public void setAcknowledgeMode(int acknowledgeMode) {
+        this.acknowledgeMode = acknowledgeMode;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(transacted,out);
-    SMQPUtil.write(acknowledgeMode,out);
-    SMQPUtil.write(type,out);
-  }
+    public int getAcknowledgeMode() {
+        return acknowledgeMode;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    transacted = SMQPUtil.read(transacted,in);
-    acknowledgeMode = SMQPUtil.read(acknowledgeMode,in);
-    type = SMQPUtil.read(type,in);
-  }
+    public void setType(int type) {
+        this.type = type;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreateSessionReply();
-  }
+    public int getType() {
+        return type;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATESESSION_REQ;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[CreateSessionRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("transacted=");
-    _b.append(transacted);
-    _b.append(", ");
-    _b.append("acknowledgeMode=");
-    _b.append(acknowledgeMode);
-    _b.append(", ");
-    _b.append("type=");
-    _b.append(type);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(transacted, out);
+        SMQPUtil.write(acknowledgeMode, out);
+        SMQPUtil.write(type, out);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        transacted = SMQPUtil.read(transacted, in);
+        acknowledgeMode = SMQPUtil.read(acknowledgeMode, in);
+        type = SMQPUtil.read(type, in);
+    }
+
+    protected Reply createReplyInstance() {
+        return new CreateSessionReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[CreateSessionRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("transacted=");
+        _b.append(transacted);
+        _b.append(", ");
+        _b.append("acknowledgeMode=");
+        _b.append(acknowledgeMode);
+        _b.append(", ");
+        _b.append("type=");
+        _b.append(type);
+        _b.append("]");
+        return _b.toString();
+    }
 }

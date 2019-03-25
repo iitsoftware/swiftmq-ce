@@ -17,48 +17,40 @@
 
 package com.swiftmq.tools.collection;
 
-public class ByteArrayMapKey
-{
-  byte[] b;
-  int hash = 0;
+public class ByteArrayMapKey {
+    byte[] b;
+    int hash = 0;
 
-  public ByteArrayMapKey(byte[] b)
-  {
-    this.b = b;
-    for (int i = 0; i < b.length; i++)
-      hash += b[i];
-  }
-
-  public byte[] getByteArray()
-  {
-    return b;
-  }
-
-  public String getSignature()
-  {
-    StringBuffer buffer = new StringBuffer();
-    for (int i = 0; i < b.length; i++)
-    {
-      buffer.append(Integer.toHexString(b[i]));
+    public ByteArrayMapKey(byte[] b) {
+        this.b = b;
+        for (int i = 0; i < b.length; i++)
+            hash += b[i];
     }
-    return buffer.toString();
-  }
 
-  public int hashCode()
-  {
-    return hash;
-  }
-
-  public boolean equals(Object obj)
-  {
-    ByteArrayMapKey that = (ByteArrayMapKey) obj;
-    if (b.length != that.b.length)
-      return false;
-    for (int i = 0; i < b.length; i++)
-    {
-      if (b[i] != that.b[i])
-        return false;
+    public byte[] getByteArray() {
+        return b;
     }
-    return true;
-  }
+
+    public String getSignature() {
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < b.length; i++) {
+            buffer.append(Integer.toHexString(b[i]));
+        }
+        return buffer.toString();
+    }
+
+    public int hashCode() {
+        return hash;
+    }
+
+    public boolean equals(Object obj) {
+        ByteArrayMapKey that = (ByteArrayMapKey) obj;
+        if (b.length != that.b.length)
+            return false;
+        for (int i = 0; i < b.length; i++) {
+            if (b[i] != that.b[i])
+                return false;
+        }
+        return true;
+    }
 }

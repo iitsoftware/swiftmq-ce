@@ -17,63 +17,54 @@
 
 package com.swiftmq.impl.auth.standard;
 
-public class TopicResourceGrant extends ResourceGrant
-{
-  boolean subscriberGranted;
-  boolean publisherGranted;
-  boolean createDurableGranted;
+public class TopicResourceGrant extends ResourceGrant {
+    boolean subscriberGranted;
+    boolean publisherGranted;
+    boolean createDurableGranted;
 
-  public TopicResourceGrant(String resourceName, boolean subscriberGranted, boolean publisherGranted, boolean createDurableGranted)
-  {
-    super(resourceName);
-    this.subscriberGranted = subscriberGranted;
-    this.publisherGranted = publisherGranted;
-    this.createDurableGranted = createDurableGranted;
-  }
+    public TopicResourceGrant(String resourceName, boolean subscriberGranted, boolean publisherGranted, boolean createDurableGranted) {
+        super(resourceName);
+        this.subscriberGranted = subscriberGranted;
+        this.publisherGranted = publisherGranted;
+        this.createDurableGranted = createDurableGranted;
+    }
 
-  public synchronized void setSubscriberGranted(boolean subscriberGranted)
-  {
-    this.subscriberGranted = subscriberGranted;
-  }
+    public synchronized void setSubscriberGranted(boolean subscriberGranted) {
+        this.subscriberGranted = subscriberGranted;
+    }
 
-  public synchronized boolean isSubscriberGranted()
-  {
-    return (subscriberGranted);
-  }
+    public synchronized boolean isSubscriberGranted() {
+        return (subscriberGranted);
+    }
 
-  public synchronized void setPublisherGranted(boolean publisherGranted)
-  {
-    this.publisherGranted = publisherGranted;
-  }
+    public synchronized void setPublisherGranted(boolean publisherGranted) {
+        this.publisherGranted = publisherGranted;
+    }
 
-  public synchronized boolean isPublisherGranted()
-  {
-    return (publisherGranted);
-  }
+    public synchronized boolean isPublisherGranted() {
+        return (publisherGranted);
+    }
 
-  public synchronized void setCreateDurableGranted(boolean createDurableGranted)
-  {
-    this.createDurableGranted = createDurableGranted;
-  }
+    public synchronized void setCreateDurableGranted(boolean createDurableGranted) {
+        this.createDurableGranted = createDurableGranted;
+    }
 
-  public synchronized boolean isCreateDurableGranted()
-  {
-    return (createDurableGranted);
-  }
+    public synchronized boolean isCreateDurableGranted() {
+        return (createDurableGranted);
+    }
 
-  public String toString()
-  {
-    StringBuffer s = new StringBuffer();
-    s.append("[TopicResourceGrant, resourceName=");
-    s.append(resourceName);
-    s.append(", subscriberGranted=");
-    s.append(subscriberGranted);
-    s.append(", publisherGranted=");
-    s.append(publisherGranted);
-    s.append(", createDurableGranted=");
-    s.append(createDurableGranted);
-    s.append("]");
-    return s.toString();
-  }
+    public String toString() {
+        StringBuffer s = new StringBuffer();
+        s.append("[TopicResourceGrant, resourceName=");
+        s.append(resourceName);
+        s.append(", subscriberGranted=");
+        s.append(subscriberGranted);
+        s.append(", publisherGranted=");
+        s.append(publisherGranted);
+        s.append(", createDurableGranted=");
+        s.append(createDurableGranted);
+        s.append("]");
+        return s.toString();
+    }
 }
 

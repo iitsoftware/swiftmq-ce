@@ -22,104 +22,83 @@ import com.swiftmq.tools.collection.SortedDupsCollection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
-public class Analyzer
-{
-  static boolean hasSeqNo = Boolean.valueOf(System.getProperty("hasseqno", "true")).booleanValue();
-  static Map root = new TreeMap();
+public class Analyzer {
+    static boolean hasSeqNo = Boolean.valueOf(System.getProperty("hasseqno", "true")).booleanValue();
+    static Map root = new TreeMap();
 
-  private static void store(String line)
-  {
-    try
-    {
-      StringTokenizer t = new StringTokenizer(line, "-");
-      int cnt = t.countTokens();
-      if (cnt < 6)
-        return;
-      String time = t.nextToken();
-      String prefix = t.nextToken();
-      String seqNo = null;
-      if (hasSeqNo && cnt == 7)
-        seqNo = t.nextToken();
-      String destination = t.nextToken();
-      String msgId = t.nextToken();
-      String callStack = t.nextToken();
-      String operation = t.nextToken();
-      String id = seqNo != null ? seqNo + "-" + msgId : msgId;
-      Collection collection = (Collection) root.get(id);
-      if (collection == null)
-      {
-        collection = new SortedDupsCollection(new TreeSet());
-        root.put(id, collection);
-      }
-      collection.add(new Entry(time, callStack, operation));
-    } catch (Exception e)
-    {
-      System.out.println(line);
-      e.printStackTrace();
-    }
-  }
-
-  public static void main(String[] args)
-  {
-    try
-    {
-      int linesOk = -1;
-      if (args.length == 1)
-        linesOk = Integer.parseInt(args[0]);
-      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-      String line = null;
-      while ((line = reader.readLine()) != null)
-      {
-        store(line);
-      }
-      reader.close();
-      for (Iterator iter2 = root.entrySet().iterator(); iter2.hasNext();)
-      {
-        Map.Entry e2 = (Map.Entry) iter2.next();
-        Collection c = (Collection) e2.getValue();
-        if (linesOk != -1 && c.size() != linesOk)
-        {
-          System.out.println(e2.getKey());
-          for (Iterator iter3 = c.iterator(); iter3.hasNext();)
-          {
-            System.out.println("    " + iter3.next());
-          }
+    private static void store(String line) {
+        try {
+            StringTokenizer t = new StringTokenizer(line, "-");
+            int cnt = t.countTokens();
+            if (cnt < 6)
+                return;
+            String time = t.nextToken();
+            String prefix = t.nextToken();
+            String seqNo = null;
+            if (hasSeqNo && cnt == 7)
+                seqNo = t.nextToken();
+            String destination = t.nextToken();
+            String msgId = t.nextToken();
+            String callStack = t.nextToken();
+            String operation = t.nextToken();
+            String id = seqNo != null ? seqNo + "-" + msgId : msgId;
+            Collection collection = (Collection) root.get(id);
+            if (collection == null) {
+                collection = new SortedDupsCollection(new TreeSet());
+                root.put(id, collection);
+            }
+            collection.add(new Entry(time, callStack, operation));
+        } catch (Exception e) {
+            System.out.println(line);
+            e.printStackTrace();
         }
-      }
-    } catch (IOException e)
-    {
     }
 
-  }
+    public static void main(String[] args) {
+        try {
+            int linesOk = -1;
+            if (args.length == 1)
+                linesOk = Integer.parseInt(args[0]);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                store(line);
+            }
+            reader.close();
+            for (Iterator iter2 = root.entrySet().iterator(); iter2.hasNext(); ) {
+                Map.Entry e2 = (Map.Entry) iter2.next();
+                Collection c = (Collection) e2.getValue();
+                if (linesOk != -1 && c.size() != linesOk) {
+                    System.out.println(e2.getKey());
+                    for (Iterator iter3 = c.iterator(); iter3.hasNext(); ) {
+                        System.out.println("    " + iter3.next());
+                    }
+                }
+            }
+        } catch (IOException e) {
+        }
 
-  private static class Entry implements Comparable
-  {
-    String time;
-    String callStack;
-    String operation;
-
-    public Entry(String time, String callStack, String operation)
-    {
-      this.time = time;
-      this.callStack = callStack;
-      this.operation = operation;
     }
 
-    public int compareTo(Object o)
-    {
-      return time.compareTo(((Entry) o).time);
-    }
+    private static class Entry implements Comparable {
+        String time;
+        String callStack;
+        String operation;
 
-    public String toString()
-    {
-      return time + "-" + callStack + " " + operation;
+        public Entry(String time, String callStack, String operation) {
+            this.time = time;
+            this.callStack = callStack;
+            this.operation = operation;
+        }
+
+        public int compareTo(Object o) {
+            return time.compareTo(((Entry) o).time);
+        }
+
+        public String toString() {
+            return time + "-" + callStack + " " + operation;
+        }
     }
-  }
 }

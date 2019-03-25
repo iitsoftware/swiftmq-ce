@@ -17,43 +17,40 @@
 
 package com.swiftmq.impl.scheduler.standard;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-public class Util
-{
-  static public Object deepCopy(Object oldObj) throws Exception
-  {
-    ObjectOutputStream oos = null;
-    ObjectInputStream ois = null;
-    Object obj = null;
+public class Util {
+    static public Object deepCopy(Object oldObj) throws Exception {
+        ObjectOutputStream oos = null;
+        ObjectInputStream ois = null;
+        Object obj = null;
 
-    try
-    {
-      ByteArrayOutputStream bos = new ByteArrayOutputStream(); // A
-      oos = new ObjectOutputStream(bos); // B
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(); // A
+            oos = new ObjectOutputStream(bos); // B
 
-      // serialize and pass the object
-      oos.writeObject(oldObj); // C
-      oos.flush(); // D
+            // serialize and pass the object
+            oos.writeObject(oldObj); // C
+            oos.flush(); // D
 
-      ByteArrayInputStream bin = new ByteArrayInputStream(bos.toByteArray()); // E
-      ois = new ObjectInputStream(bin); // F
+            ByteArrayInputStream bin = new ByteArrayInputStream(bos.toByteArray()); // E
+            ois = new ObjectInputStream(bin); // F
 
-      // return the new object
-      obj = ois.readObject(); // G
+            // return the new object
+            obj = ois.readObject(); // G
 
-    } finally
-    {
-      try
-      {
-        oos.close();
-        ois.close();
-      } catch (Exception e1)
-      {
-      }
+        } finally {
+            try {
+                oos.close();
+                ois.close();
+            } catch (Exception e1) {
+            }
+        }
+        return obj;
     }
-    return obj;
-  }
 
 
 }

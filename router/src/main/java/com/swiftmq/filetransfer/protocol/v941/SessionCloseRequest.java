@@ -26,38 +26,31 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
-public class SessionCloseRequest extends MessageBasedRequest
-{
-  public SessionCloseRequest(Message message) throws JMSException
-  {
-    super(message);
-  }
+public class SessionCloseRequest extends MessageBasedRequest {
+    public SessionCloseRequest(Message message) throws JMSException {
+        super(message);
+    }
 
-  public SessionCloseRequest()
-  {
-    setReplyRequired(false);
-  }
+    public SessionCloseRequest() {
+        setReplyRequired(false);
+    }
 
-  public MessageBasedReply createReplyInstance()
-  {
-    return new FileDeleteReply();
-  }
+    public MessageBasedReply createReplyInstance() {
+        return new FileDeleteReply();
+    }
 
-  public void accept(MessageBasedRequestVisitor visitor)
-  {
-    ((ProtocolVisitor) visitor).visit(this);
-  }
+    public void accept(MessageBasedRequestVisitor visitor) {
+        ((ProtocolVisitor) visitor).visit(this);
+    }
 
-  public Message toMessage() throws JMSException
-  {
-    TextMessage message = new TextMessageImpl();
-    fillMessage(message);
-    message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.SESSIONCLOSE_REQ);
-    return message;
-  }
+    public Message toMessage() throws JMSException {
+        TextMessage message = new TextMessageImpl();
+        fillMessage(message);
+        message.setIntProperty(ProtocolFactory.DUMPID_PROP, ProtocolFactory.SESSIONCLOSE_REQ);
+        return message;
+    }
 
-  public String toString()
-  {
-    return "[SessionCloseRequest]";
-  }
+    public String toString() {
+        return "[SessionCloseRequest]";
+    }
 }

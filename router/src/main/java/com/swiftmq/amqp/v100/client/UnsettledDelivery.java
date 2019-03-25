@@ -26,74 +26,67 @@ import com.swiftmq.amqp.v100.messaging.AMQPMessage;
  *
  * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
  */
-public class UnsettledDelivery
-{
-  DeliveryTag deliveryTag = null;
-  DeliveryStateIF deliveryStateIF = null;
-  AMQPMessage message = null;
+public class UnsettledDelivery {
+    DeliveryTag deliveryTag = null;
+    DeliveryStateIF deliveryStateIF = null;
+    AMQPMessage message = null;
 
-  /**
-   * Create an UnsettledDelivery.
-   *
-   * @param deliveryTag     delivery tag
-   * @param deliveryStateIF delivery state
-   * @param message         AMQP message
-   */
-  public UnsettledDelivery(DeliveryTag deliveryTag, DeliveryStateIF deliveryStateIF, AMQPMessage message)
-  {
-    this.deliveryTag = deliveryTag;
-    this.deliveryStateIF = deliveryStateIF;
-    this.message = message;
-  }
+    /**
+     * Create an UnsettledDelivery.
+     *
+     * @param deliveryTag     delivery tag
+     * @param deliveryStateIF delivery state
+     * @param message         AMQP message
+     */
+    public UnsettledDelivery(DeliveryTag deliveryTag, DeliveryStateIF deliveryStateIF, AMQPMessage message) {
+        this.deliveryTag = deliveryTag;
+        this.deliveryStateIF = deliveryStateIF;
+        this.message = message;
+    }
 
-  /**
-   * Return the delivery tag
-   *
-   * @return delivery tag
-   */
-  public DeliveryTag getDeliveryTag()
-  {
-    return deliveryTag;
-  }
+    /**
+     * Return the delivery tag
+     *
+     * @return delivery tag
+     */
+    public DeliveryTag getDeliveryTag() {
+        return deliveryTag;
+    }
 
-  /**
-   * Returns the AMQP message.
-   *
-   * @return AMQP message
-   */
-  public AMQPMessage getMessage()
-  {
-    return message;
-  }
+    /**
+     * Returns the AMQP message.
+     *
+     * @return AMQP message
+     */
+    public AMQPMessage getMessage() {
+        return message;
+    }
 
-  /**
-   * Returns the delivery state.
-   *
-   * @return delivery state
-   */
-  public DeliveryStateIF getDeliveryStateIF()
-  {
-    return deliveryStateIF;
-  }
+    /**
+     * Returns the delivery state.
+     *
+     * @return delivery state
+     */
+    public DeliveryStateIF getDeliveryStateIF() {
+        return deliveryStateIF;
+    }
 
-  /**
-   * Sets the delivery state.
-   *
-   * @param deliveryStateIF delivery state
-   */
-  public void setDeliveryStateIF(DeliveryStateIF deliveryStateIF)
-  {
-    this.deliveryStateIF = deliveryStateIF;
-  }
+    /**
+     * Sets the delivery state.
+     *
+     * @param deliveryStateIF delivery state
+     */
+    public void setDeliveryStateIF(DeliveryStateIF deliveryStateIF) {
+        this.deliveryStateIF = deliveryStateIF;
+    }
 
-  public String toString()
-  {
-    final StringBuffer sb = new StringBuffer();
-    sb.append("[UnsettledDelivery");
-    sb.append(", deliveryTag=").append(deliveryTag);
-    sb.append(", deliveryStateIF=").append(deliveryStateIF);
-    sb.append(", message=").append(message);
-    sb.append(']');
-    return sb.toString();
-  }
+    public String toString() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append("[UnsettledDelivery");
+        sb.append(", deliveryTag=").append(deliveryTag);
+        sb.append(", deliveryStateIF=").append(deliveryStateIF);
+        sb.append(", message=").append(message);
+        sb.append(']');
+        return sb.toString();
+    }
 }

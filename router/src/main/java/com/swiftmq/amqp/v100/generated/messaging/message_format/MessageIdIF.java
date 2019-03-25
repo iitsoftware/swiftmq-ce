@@ -18,33 +18,32 @@
 package com.swiftmq.amqp.v100.generated.messaging.message_format;
 
 /**
- *  The MessageId interface.
+ * The MessageId interface.
  *
- *  @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
+ * @version AMQP Version v100. Generation Date: Wed Apr 18 14:09:32 CEST 2012
  **/
 
-public interface MessageIdIF
-{
-  /**
-   * Accept method for a MessageId visitor.
-   *
-   * @param visitor MessageId visitor
-   */
-  public void accept(MessageIdVisitor visitor);
+public interface MessageIdIF {
+    /**
+     * Accept method for a MessageId visitor.
+     *
+     * @param visitor MessageId visitor
+     */
+    public void accept(MessageIdVisitor visitor);
 
-  /**
-   * Returns the predicted size of this MessageIdIF. The predicted size may be greater than the actual size
-   * but it can never be less.
-   *
-   * @return predicted size
-   */
-  public int getPredictedSize();
+    /**
+     * Returns the predicted size of this MessageIdIF. The predicted size may be greater than the actual size
+     * but it can never be less.
+     *
+     * @return predicted size
+     */
+    public int getPredictedSize();
 
-  /**
-   * Returns a value representation of this MessageIdIF.
-   *
-   * @return value representation
-   */
-  public String getValueString();
+    /**
+     * Returns a value representation of this MessageIdIF.
+     *
+     * @return value representation
+     */
+    public String getValueString();
 }

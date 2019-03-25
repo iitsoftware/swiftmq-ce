@@ -30,103 +30,93 @@ import com.swiftmq.tools.gc.Recycler;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  * @see QueueManager#createQueueReceiver
  */
-public class QueueReceiver extends QueueTransactionHandler
-{
-  EntityList receiverEntityList = null;
-  Selector selector = null;
-  int viewId = -1;
-  long receiverId = -1;
+public class QueueReceiver extends QueueTransactionHandler {
+    EntityList receiverEntityList = null;
+    Selector selector = null;
+    int viewId = -1;
+    long receiverId = -1;
 
-  /**
-   * Creates a new QueueReceiver
-   *
-   * @param activeQueue the active queue
-   */
-  public QueueReceiver(ActiveQueue activeQueue, EntityList receiverEntityList)
-  {
-    super(activeQueue.getAbstractQueue().selectBaseQueue());
-    setRecycler(new PullTransactionRecycler());
-    this.receiverEntityList = receiverEntityList;
-    abstractQueue.incReceiverCount();
-  }
-
-  /**
-   * Creates a new QueueReceiver
-   *
-   * @param activeQueue the active queue
-   */
-  public QueueReceiver(ActiveQueue activeQueue, EntityList receiverEntityList, Selector selector)
-  {
-    this(activeQueue, receiverEntityList);
-    this.selector = selector;
-    if (selector != null)
-      viewId = abstractQueue.createView(selector);
-  }
-
-  public long getReceiverId()
-  {
-    return receiverId;
-  }
-
-  public void setReceiverId(long receiverId)
-  {
-    this.receiverId = receiverId;
-  }
-
-  /**
-   * Creates a new QueuePullTransaction. The flag <code>setRedeliveredOnRollback</code>
-   * specifies whether redelivery setting for all pulled messages should be processed or
-   * not. If true then all messages pulled whithin this transaction will be incremented
-   * in there delivery count header field and a redelivered flag will be set if the
-   * message is pulled again.
-   *
-   * @param setRedeliveredOnRollback flag
-   * @return QueuePullTransaction
-   * @throws QueueException              thrown by the queue
-   * @throws QueueHandlerClosedException if the handler is closed
-   */
-  public QueuePullTransaction createTransaction(boolean setRedeliveredOnRollback)
-      throws QueueException, QueueHandlerClosedException
-  {
-    verifyQueueHandlerState();
-    QueuePullTransaction t = (QueuePullTransaction) recycler.checkOut();
-    t.restart(abstractQueue,
-        abstractQueue.createPullTransaction(),
-        this,
-        setRedeliveredOnRollback);
-    t.setView(selector, viewId);
-    t.setReceiverId(receiverId);
-    return t;
-  }
-
-  /**
-   * Close the queue receiver
-   *
-   * @throws QueueException              thrown by the queue
-   * @throws QueueHandlerClosedException if the browser is already closed
-   */
-  public void close()
-      throws QueueException, QueueHandlerClosedException
-  {
-    abstractQueue.decReceiverCount();
-    abstractQueue.receiverClosed(receiverId);
-    super.close();
-    if (receiverEntityList != null)
-    {
-      receiverEntityList.removeDynamicEntity(this);
-      receiverEntityList = null;
+    /**
+     * Creates a new QueueReceiver
+     *
+     * @param activeQueue the active queue
+     */
+    public QueueReceiver(ActiveQueue activeQueue, EntityList receiverEntityList) {
+        super(activeQueue.getAbstractQueue().selectBaseQueue());
+        setRecycler(new PullTransactionRecycler());
+        this.receiverEntityList = receiverEntityList;
+        abstractQueue.incReceiverCount();
     }
-    if (viewId != -1)
-      abstractQueue.deleteView(viewId);
-    viewId = -1;
-  }
 
-  private class PullTransactionRecycler extends Recycler
-  {
-    protected Recyclable createRecyclable()
-    {
-      return new QueuePullTransaction();
+    /**
+     * Creates a new QueueReceiver
+     *
+     * @param activeQueue the active queue
+     */
+    public QueueReceiver(ActiveQueue activeQueue, EntityList receiverEntityList, Selector selector) {
+        this(activeQueue, receiverEntityList);
+        this.selector = selector;
+        if (selector != null)
+            viewId = abstractQueue.createView(selector);
     }
-  }
+
+    public long getReceiverId() {
+        return receiverId;
+    }
+
+    public void setReceiverId(long receiverId) {
+        this.receiverId = receiverId;
+    }
+
+    /**
+     * Creates a new QueuePullTransaction. The flag <code>setRedeliveredOnRollback</code>
+     * specifies whether redelivery setting for all pulled messages should be processed or
+     * not. If true then all messages pulled whithin this transaction will be incremented
+     * in there delivery count header field and a redelivered flag will be set if the
+     * message is pulled again.
+     *
+     * @param setRedeliveredOnRollback flag
+     * @return QueuePullTransaction
+     * @throws QueueException              thrown by the queue
+     * @throws QueueHandlerClosedException if the handler is closed
+     */
+    public QueuePullTransaction createTransaction(boolean setRedeliveredOnRollback)
+            throws QueueException, QueueHandlerClosedException {
+        verifyQueueHandlerState();
+        QueuePullTransaction t = (QueuePullTransaction) recycler.checkOut();
+        t.restart(abstractQueue,
+                abstractQueue.createPullTransaction(),
+                this,
+                setRedeliveredOnRollback);
+        t.setView(selector, viewId);
+        t.setReceiverId(receiverId);
+        return t;
+    }
+
+    /**
+     * Close the queue receiver
+     *
+     * @throws QueueException              thrown by the queue
+     * @throws QueueHandlerClosedException if the browser is already closed
+     */
+    public void close()
+            throws QueueException, QueueHandlerClosedException {
+        abstractQueue.decReceiverCount();
+        abstractQueue.receiverClosed(receiverId);
+        super.close();
+        if (receiverEntityList != null) {
+            receiverEntityList.removeDynamicEntity(this);
+            receiverEntityList = null;
+        }
+        if (viewId != -1)
+            abstractQueue.deleteView(viewId);
+        viewId = -1;
+    }
+
+    private class PullTransactionRecycler extends Recycler {
+        protected Recyclable createRecyclable() {
+            return new QueuePullTransaction();
+        }
+    }
 }
 

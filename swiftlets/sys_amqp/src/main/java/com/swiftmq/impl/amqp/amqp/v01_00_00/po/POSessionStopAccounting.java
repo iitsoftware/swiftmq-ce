@@ -21,20 +21,16 @@ import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPSessionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSessionStopAccounting extends POObject
-{
-  public POSessionStopAccounting()
-  {
-    super(null, null);
-  }
+public class POSessionStopAccounting extends POObject {
+    public POSessionStopAccounting() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPSessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPSessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSessionStopAccounting]";
-  }
+    public String toString() {
+        return "[POSessionStopAccounting]";
+    }
 }

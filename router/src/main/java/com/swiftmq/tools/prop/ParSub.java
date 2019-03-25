@@ -19,40 +19,35 @@ package com.swiftmq.tools.prop;
 
 /**
  * A useful class to substitute string parameters
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class ParSub
-{
-  public static final String DEFAULT_PARMFLAG = "$";
+public class ParSub {
+    public static final String DEFAULT_PARMFLAG = "$";
 
-  public static String substitute(String source, String parm)
-  {
-    return substitute(DEFAULT_PARMFLAG, source, new String[]{parm});
-  }
-
-  public static String substitute(String source, String[] parm)
-  {
-    return substitute(DEFAULT_PARMFLAG, source, parm);
-  }
-
-  public static String substitute(String pflag, String source, String[] parm)
-  {
-    String result = new String(source);
-    int oldIdx = 0;
-    int idx = 0;
-    for (int i = 0; i < parm.length; i++)
-    {
-      idx = result.indexOf(pflag + i);
-      while (idx != -1)
-      {
-        StringBuffer s = new StringBuffer(result.substring(0, idx));
-        s.append(parm[i]);
-        s.append(result.substring(idx + (new String(pflag + i)).length()));
-        result = s.toString();
-        idx = result.indexOf(pflag + i);
-      }
+    public static String substitute(String source, String parm) {
+        return substitute(DEFAULT_PARMFLAG, source, new String[]{parm});
     }
-    return result;
-  }
+
+    public static String substitute(String source, String[] parm) {
+        return substitute(DEFAULT_PARMFLAG, source, parm);
+    }
+
+    public static String substitute(String pflag, String source, String[] parm) {
+        String result = new String(source);
+        int oldIdx = 0;
+        int idx = 0;
+        for (int i = 0; i < parm.length; i++) {
+            idx = result.indexOf(pflag + i);
+            while (idx != -1) {
+                StringBuffer s = new StringBuffer(result.substring(0, idx));
+                s.append(parm[i]);
+                s.append(result.substring(idx + (new String(pflag + i)).length()));
+                result = s.toString();
+                idx = result.indexOf(pflag + i);
+            }
+        }
+        return result;
+    }
 }

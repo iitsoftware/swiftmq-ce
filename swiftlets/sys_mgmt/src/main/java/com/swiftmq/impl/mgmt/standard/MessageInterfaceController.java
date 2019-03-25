@@ -21,58 +21,48 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.mgmt.PropertyChangeAdapter;
 import com.swiftmq.mgmt.PropertyChangeException;
 
-public class MessageInterfaceController
-{
-  SwiftletContext ctx = null;
-  boolean enabled = false;
-  MessageInterfaceListener listener = null;
+public class MessageInterfaceController {
+    SwiftletContext ctx = null;
+    boolean enabled = false;
+    MessageInterfaceListener listener = null;
 
-  public MessageInterfaceController(SwiftletContext ctx) throws Exception
-  {
-    this.ctx = ctx;
-    Property prop = ctx.root.getEntity("message-interface").getProperty("enabled");
-    enabled = ((Boolean) prop.getValue()).booleanValue();
-    prop.setPropertyChangeListener(new PropertyChangeAdapter(null)
-    {
-      public void propertyChanged(Property property, Object oldValue, Object newValue)
-          throws PropertyChangeException
-      {
-        try
-        {
-          enabled = ((Boolean) newValue).booleanValue();
-          if (enabled)
+    public MessageInterfaceController(SwiftletContext ctx) throws Exception {
+        this.ctx = ctx;
+        Property prop = ctx.root.getEntity("message-interface").getProperty("enabled");
+        enabled = ((Boolean) prop.getValue()).booleanValue();
+        prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
+            public void propertyChanged(Property property, Object oldValue, Object newValue)
+                    throws PropertyChangeException {
+                try {
+                    enabled = ((Boolean) newValue).booleanValue();
+                    if (enabled)
+                        createListener();
+                    else
+                        removeListener(true);
+                } catch (Exception e) {
+                    throw new PropertyChangeException(e.toString());
+                }
+            }
+        });
+        if (enabled)
             createListener();
-          else
-            removeListener(true);
-        } catch (Exception e)
-        {
-          throw new PropertyChangeException(e.toString());
-        }
-      }
-    });
-    if (enabled)
-      createListener();
-  }
-
-  private void createListener() throws Exception
-  {
-    listener = new MessageInterfaceListener(ctx);
-    ctx.mgmtSwiftlet.fireEvent(true);
-  }
-
-  private void removeListener(boolean fire)
-  {
-    if (fire)
-      ctx.mgmtSwiftlet.fireEvent(false);
-    if (listener != null)
-    {
-      listener.close();
-      listener = null;
     }
-  }
 
-  public void close()
-  {
-    removeListener(false);
-  }
+    private void createListener() throws Exception {
+        listener = new MessageInterfaceListener(ctx);
+        ctx.mgmtSwiftlet.fireEvent(true);
+    }
+
+    private void removeListener(boolean fire) {
+        if (fire)
+            ctx.mgmtSwiftlet.fireEvent(false);
+        if (listener != null) {
+            listener.close();
+            listener = null;
+        }
+    }
+
+    public void close() {
+        removeListener(false);
+    }
 }

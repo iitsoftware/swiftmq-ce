@@ -17,122 +17,110 @@
 
 package com.swiftmq.impl.net.standard.scheduler;
 
-import com.swiftmq.swiftlet.net.*;
-import com.swiftmq.swiftlet.log.LogSwiftlet;
-import com.swiftmq.swiftlet.trace.*;
-import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.net.protocol.ChunkListener;
+import com.swiftmq.impl.net.standard.CountableBufferedInputStream;
+import com.swiftmq.impl.net.standard.CountableWrappedOutputStream;
 import com.swiftmq.net.client.IntraVMConnection;
-import com.swiftmq.tools.util.*;
-import com.swiftmq.impl.net.standard.*;
+import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.swiftlet.log.LogSwiftlet;
+import com.swiftmq.swiftlet.net.*;
+import com.swiftmq.swiftlet.trace.TraceSpace;
+import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.tools.util.DataByteArrayInputStream;
+import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class IntraVMServerEndpointImpl extends Connection
-  implements IntraVMServerEndpoint
-{
-  NetworkSwiftlet networkSwiftlet = null;
-  LogSwiftlet logSwiftlet = null;
-  TraceSwiftlet traceSwiftlet = null;
-  TraceSpace traceSpace = null;
-  ConnectionManager connectionManager = null;
-  IntraVMConnection clientConnection = null;
-  DataByteArrayInputStream dis = null;
-  DataByteArrayOutputStream dos = null;
-  InputStream in = null;
-  OutputStream out = null;
-  InboundHandler inboundHandler = null;
+        implements IntraVMServerEndpoint {
+    NetworkSwiftlet networkSwiftlet = null;
+    LogSwiftlet logSwiftlet = null;
+    TraceSwiftlet traceSwiftlet = null;
+    TraceSpace traceSpace = null;
+    ConnectionManager connectionManager = null;
+    IntraVMConnection clientConnection = null;
+    DataByteArrayInputStream dis = null;
+    DataByteArrayOutputStream dos = null;
+    InputStream in = null;
+    OutputStream out = null;
+    InboundHandler inboundHandler = null;
 
-  public IntraVMServerEndpointImpl(IntraVMConnection clientConnection)
-  {
-    super(false);
-    this.clientConnection = clientConnection;
-    init();
-    clientConnection.setEndpoint(this);
-  }
-
-  private void init()
-  {
-    networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
-    logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-    traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-    traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-    connectionManager = networkSwiftlet.getConnectionManager();
-    dis = new DataByteArrayInputStream();
-    in = new CountableBufferedInputStream(dis);
-    dos = new DataByteArrayOutputStream()
-    {
-      public void flush() throws IOException
-      {
-        if (isClosed() || clientConnection.isClosed())
-          throw new IOException("Connection is closed");
-        super.flush();
-        clientConnection.chunkCompleted(getBuffer(),0,getCount());
-        rewind();
-      }
-    };
-    out = new CountableWrappedOutputStream(dos);
-  }
-
-  public void setInboundHandler(InboundHandler handler)
-  {
-    super.setInboundHandler(handler);
-    inboundHandler = handler;
-  }
-
-  // --> ChunkListener
-  public void chunkCompleted(byte[] b, int offset, int len)
-  {
-    dis.setBuffer(b,offset,len);
-    try
-    {
-      inboundHandler.dataAvailable(this,in);
-    } catch (IOException e)
-    {
-      if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/Exception, EXITING: " + e);
-      logSwiftlet.logInformation(toString(), "Exception, EXITING: " + e);
-      if (!isClosed())
-      {
-        connectionManager.removeConnection(this);
-      }
+    public IntraVMServerEndpointImpl(IntraVMConnection clientConnection) {
+        super(false);
+        this.clientConnection = clientConnection;
+        init();
+        clientConnection.setEndpoint(this);
     }
-  }
-  // <-- ChunkListener
 
-  // --> IntraVMServerEndpoint
-  public void clientClose()
-  {
-    connectionManager.removeConnection(this);
-  }
-  // <-- IntraVMServerEndpoint
+    private void init() {
+        networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
+        logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
+        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
+        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
+        connectionManager = networkSwiftlet.getConnectionManager();
+        dis = new DataByteArrayInputStream();
+        in = new CountableBufferedInputStream(dis);
+        dos = new DataByteArrayOutputStream() {
+            public void flush() throws IOException {
+                if (isClosed() || clientConnection.isClosed())
+                    throw new IOException("Connection is closed");
+                super.flush();
+                clientConnection.chunkCompleted(getBuffer(), 0, getCount());
+                rewind();
+            }
+        };
+        out = new CountableWrappedOutputStream(dos);
+    }
 
-  // --> Connection
-  public String getHostname()
-  {
-    return clientConnection.getLocalHostname();
-  }
+    public void setInboundHandler(InboundHandler handler) {
+        super.setInboundHandler(handler);
+        inboundHandler = handler;
+    }
 
-  public InputStream getInputStream()
-  {
-    return in;
-  }
+    // --> ChunkListener
+    public void chunkCompleted(byte[] b, int offset, int len) {
+        dis.setBuffer(b, offset, len);
+        try {
+            inboundHandler.dataAvailable(this, in);
+        } catch (IOException e) {
+            if (traceSpace.enabled) traceSpace.trace("sys$net", toString() + "/Exception, EXITING: " + e);
+            logSwiftlet.logInformation(toString(), "Exception, EXITING: " + e);
+            if (!isClosed()) {
+                connectionManager.removeConnection(this);
+            }
+        }
+    }
+    // <-- ChunkListener
 
-  public OutputStream getOutputStream()
-  {
-    return out;
-  }
+    // --> IntraVMServerEndpoint
+    public void clientClose() {
+        connectionManager.removeConnection(this);
+    }
+    // <-- IntraVMServerEndpoint
 
-  public synchronized void close()
-  {
-    if (isClosed())
-      return;
-    super.close();
-    clientConnection.serverClose();
-  }
-  // <-- Connection
+    // --> Connection
+    public String getHostname() {
+        return clientConnection.getLocalHostname();
+    }
 
-  public String toString()
-  {
-    return clientConnection.getLocalHostname();
-  }
+    public InputStream getInputStream() {
+        return in;
+    }
+
+    public OutputStream getOutputStream() {
+        return out;
+    }
+
+    public synchronized void close() {
+        if (isClosed())
+            return;
+        super.close();
+        clientConnection.serverClose();
+    }
+    // <-- Connection
+
+    public String toString() {
+        return clientConnection.getLocalHostname();
+    }
 }

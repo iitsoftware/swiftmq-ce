@@ -19,48 +19,40 @@ package com.swiftmq.tools.pipeline;
 
 import com.swiftmq.tools.concurrent.Semaphore;
 
-public abstract class POObject
-{
-  POCallback callback = null;
-  Semaphore semaphore = null;
-  boolean success = false;
-  String exception = null;
+public abstract class POObject {
+    POCallback callback = null;
+    Semaphore semaphore = null;
+    boolean success = false;
+    String exception = null;
 
-  public POObject(POCallback callback, Semaphore semaphore)
-  {
-    this.callback = callback;
-    this.semaphore = semaphore;
-  }
+    public POObject(POCallback callback, Semaphore semaphore) {
+        this.callback = callback;
+        this.semaphore = semaphore;
+    }
 
-  public POCallback getCallback()
-  {
-    return callback;
-  }
+    public POCallback getCallback() {
+        return callback;
+    }
 
-  public Semaphore getSemaphore()
-  {
-    return semaphore;
-  }
+    public Semaphore getSemaphore() {
+        return semaphore;
+    }
 
-  public boolean isSuccess()
-  {
-    return success;
-  }
+    public boolean isSuccess() {
+        return success;
+    }
 
-  public void setSuccess(boolean success)
-  {
-    this.success = success;
-  }
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
 
-  public String getException()
-  {
-    return exception;
-  }
+    public String getException() {
+        return exception;
+    }
 
-  public void setException(String exception)
-  {
-    this.exception = exception;
-  }
+    public void setException(String exception) {
+        this.exception = exception;
+    }
 
-  public abstract void accept(POVisitor visitor);
+    public abstract void accept(POVisitor visitor);
 }

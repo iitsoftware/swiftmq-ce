@@ -24,11 +24,11 @@ import java.util.EventListener;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2009, All Rights Reserved
  */
-public interface SystemTimeChangeListener extends EventListener
-{
-  /**
-   * Called when a system time change has been detected
-   * @param approxDelta the approximate delta to the previous time in milliseconds
-   */
-  public void systemTimeChangeDetected(long approxDelta);
+public interface SystemTimeChangeListener extends EventListener {
+    /**
+     * Called when a system time change has been detected
+     *
+     * @param approxDelta the approximate delta to the previous time in milliseconds
+     */
+    public void systemTimeChangeDetected(long approxDelta);
 }

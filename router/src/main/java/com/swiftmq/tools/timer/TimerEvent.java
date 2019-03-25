@@ -21,38 +21,33 @@ import java.util.EventObject;
 
 /**
  * An event fired from Timers
+ *
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class TimerEvent extends EventObject
-{
-  byte timePoint = 0;
-  long delay = 0;
+public class TimerEvent extends EventObject {
+    byte timePoint = 0;
+    long delay = 0;
 
-  public TimerEvent(Object source, long delay)
-  {
-    super(source);
-    this.delay = delay;
-  }
+    public TimerEvent(Object source, long delay) {
+        super(source);
+        this.delay = delay;
+    }
 
-  public TimerEvent(Object source, byte timePoint)
-  {
-    super(source);
-    this.timePoint = timePoint;
-  }
+    public TimerEvent(Object source, byte timePoint) {
+        super(source);
+        this.timePoint = timePoint;
+    }
 
-  public long getDelay()
-  {
-    return delay;
-  }
+    public long getDelay() {
+        return delay;
+    }
 
-  public byte getTimePoint()
-  {
-    return timePoint;
-  }
+    public byte getTimePoint() {
+        return timePoint;
+    }
 
-  public String toString()
-  {
-    return "[TimerEvent, source="+source+", delay="+delay+", timePoint="+timePoint+"]";
-  }
+    public String toString() {
+        return "[TimerEvent, source=" + source + ", delay=" + delay + ", timePoint=" + timePoint + "]";
+    }
 }

@@ -21,85 +21,79 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  * @author Andreas Mueller, IIT GmbH
  * @version 1.0
  */
-public class CreateProducerReply extends Reply
-{
-  int queueProducerId = 0;
+public class CreateProducerReply extends Reply {
+    int queueProducerId = 0;
 
-  /**
-   * Returns a unique dump id for this object.
-   * @return unique dump id
-   */
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATE_PRODUCER_REP;
-  }
+    /**
+     * Returns a unique dump id for this object.
+     *
+     * @return unique dump id
+     */
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATE_PRODUCER_REP;
+    }
 
-  /**
-   * Write the content of this object to the stream.
-   * @param out output stream
-   * @exception IOException if an error occurs
-   */
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueProducerId);
-  }
+    /**
+     * Write the content of this object to the stream.
+     *
+     * @param out output stream
+     * @throws IOException if an error occurs
+     */
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueProducerId);
+    }
 
-  /**
-   * Read the content of this object from the stream.
-   * @param in input stream
-   * @exception IOException if an error occurs
-   */
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    /**
+     * Read the content of this object from the stream.
+     *
+     * @param in input stream
+     * @throws IOException if an error occurs
+     */
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    queueProducerId = in.readInt();
-  }
+        queueProducerId = in.readInt();
+    }
 
-  /**
-   * @param queueProducerId
-   * @SBGen Method set queueProducerId
-   */
-  public void setQueueProducerId(int queueProducerId)
-  {
+    /**
+     * @param queueProducerId
+     * @SBGen Method set queueProducerId
+     */
+    public void setQueueProducerId(int queueProducerId) {
 
-    // SBgen: Assign variable
-    this.queueProducerId = queueProducerId;
-  }
+        // SBgen: Assign variable
+        this.queueProducerId = queueProducerId;
+    }
 
-  /**
-   * @return
-   * @SBGen Method get queueProducerId
-   */
-  public int getQueueProducerId()
-  {
+    /**
+     * @return
+     * @SBGen Method get queueProducerId
+     */
+    public int getQueueProducerId() {
 
-    // SBgen: Get variable
-    return (queueProducerId);
-  }
+        // SBgen: Get variable
+        return (queueProducerId);
+    }
 
-  /**
-   * Method declaration
-   *
-   *
-   * @return
-   *
-   * @see
-   */
-  public String toString()
-  {
-    return "[CreateProducerReply " + super.toString() + " queueProducerId="
-        + queueProducerId + "]";
-  }
+    /**
+     * Method declaration
+     *
+     * @return
+     * @see
+     */
+    public String toString() {
+        return "[CreateProducerReply " + super.toString() + " queueProducerId="
+                + queueProducerId + "]";
+    }
 
 }
 

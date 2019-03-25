@@ -19,9 +19,8 @@ package com.swiftmq.jms;
 
 import javax.jms.JMSException;
 
-public interface SwiftMQMessageConsumer
-{
-  public boolean acknowledgeMessage(MessageImpl message) throws JMSException;
+public interface SwiftMQMessageConsumer {
+    public boolean acknowledgeMessage(MessageImpl message) throws JMSException;
 
-  public boolean isClosed();
+    public boolean isClosed();
 }

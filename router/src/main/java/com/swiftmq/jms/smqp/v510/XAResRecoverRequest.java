@@ -17,85 +17,74 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: XAResRecoverRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: XAResRecoverRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResRecoverRequest extends Request
-{
-  private int flags;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public XAResRecoverRequest()
-  {
-    super(0,true);
-  }
+public class XAResRecoverRequest extends Request {
+    private int flags;
 
-  public XAResRecoverRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public XAResRecoverRequest() {
+        super(0, true);
+    }
 
-  public XAResRecoverRequest(int dispatchId, int flags)
-  {
-    super(dispatchId,true);
-    this.flags = flags;
-  }
-  
-  public void setFlags(int flags)
-  {
-    this.flags = flags;
-  }
+    public XAResRecoverRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public int getFlags()
-  {
-    return flags;
-  }
+    public XAResRecoverRequest(int dispatchId, int flags) {
+        super(dispatchId, true);
+        this.flags = flags;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESRECOVER_REQ;
-  }
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(flags,out);
-  }
+    public int getFlags() {
+        return flags;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    flags = SMQPUtil.read(flags,in);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESRECOVER_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResRecoverReply();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(flags, out);
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        flags = SMQPUtil.read(flags, in);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[XAResRecoverRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("flags=");
-    _b.append(flags);
-    _b.append("]");
-    return _b.toString();
-  }
+    protected Reply createReplyInstance() {
+        return new XAResRecoverReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[XAResRecoverRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("flags=");
+        _b.append(flags);
+        _b.append("]");
+        return _b.toString();
+    }
 }

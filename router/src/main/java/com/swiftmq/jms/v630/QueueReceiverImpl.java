@@ -28,40 +28,34 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
 
-public class QueueReceiverImpl extends MessageConsumerImpl implements QueueReceiver
-{
-  Queue queue = null;
+public class QueueReceiverImpl extends MessageConsumerImpl implements QueueReceiver {
+    Queue queue = null;
 
-  public QueueReceiverImpl(boolean transacted, int acknowledgeMode, RequestRegistry requestRegistry,
-                           Queue queue, String messageSelector,
-                           SessionImpl session)
-  {
-    super(transacted, acknowledgeMode, requestRegistry, messageSelector, session);
-    this.queue = queue;
-  }
+    public QueueReceiverImpl(boolean transacted, int acknowledgeMode, RequestRegistry requestRegistry,
+                             Queue queue, String messageSelector,
+                             SessionImpl session) {
+        super(transacted, acknowledgeMode, requestRegistry, messageSelector, session);
+        this.queue = queue;
+    }
 
-  public Queue getQueue() throws JMSException
-  {
-    return (queue);
-  }
+    public Queue getQueue() throws JMSException {
+        return (queue);
+    }
 
-  public Request getRecreateRequest()
-  {
-    String ms = messageSelector;
-    if (messageSelector != null && messageSelector.trim().length() == 0)
-      ms = null;
-    return new CreateConsumerRequest(mySession, mySession.dispatchId, (QueueImpl) queue, ms);
-  }
+    public Request getRecreateRequest() {
+        String ms = messageSelector;
+        if (messageSelector != null && messageSelector.trim().length() == 0)
+            ms = null;
+        return new CreateConsumerRequest(mySession, mySession.dispatchId, (QueueImpl) queue, ms);
+    }
 
-  public void setRecreateReply(Reply reply)
-  {
-    serverQueueConsumerId = ((CreateConsumerReply) reply).getQueueConsumerId();
-  }
+    public void setRecreateReply(Reply reply) {
+        serverQueueConsumerId = ((CreateConsumerReply) reply).getQueueConsumerId();
+    }
 
-  public String toString()
-  {
-    return queue.toString();
-  }
+    public String toString() {
+        return queue.toString();
+    }
 }
 
 

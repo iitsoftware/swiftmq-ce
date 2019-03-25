@@ -28,58 +28,54 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import java.util.Map;
 
-public abstract class InboundTransformer
-{
-  static final String PROP_NAME_TRANSLATOR = "name-translator";
-  static final String PROP_PREFIX_VENDOR = "prefix-vendor";
-  static final String PROP_DEFAULT_DELIVERY_MODE = "default-delivery-mode";
-  static final String PROP_DEFAULT_PRIORITY = "default-priority";
-  static final String PROP_DEFAULT_TTL = "default-ttl";
+public abstract class InboundTransformer {
+    static final String PROP_NAME_TRANSLATOR = "name-translator";
+    static final String PROP_PREFIX_VENDOR = "prefix-vendor";
+    static final String PROP_DEFAULT_DELIVERY_MODE = "default-delivery-mode";
+    static final String PROP_DEFAULT_PRIORITY = "default-priority";
+    static final String PROP_DEFAULT_TTL = "default-ttl";
 
-  Map config = null;
-  NameTranslator nameTranslator = null;
-  String prefixVendor = null;
-  String amqpNative;
-  int defaultDeliveryMode;
-  int defaultPriority;
-  long defaultTtl;
-  String uniqueId = IdGenerator.getInstance().nextId('/');
-  long msgId = 0;
-  String idPrefix = null;
+    Map config = null;
+    NameTranslator nameTranslator = null;
+    String prefixVendor = null;
+    String amqpNative;
+    int defaultDeliveryMode;
+    int defaultPriority;
+    long defaultTtl;
+    String uniqueId = IdGenerator.getInstance().nextId('/');
+    long msgId = 0;
+    String idPrefix = null;
 
-  protected String nextMsgId()
-  {
-    StringBuffer b = new StringBuffer(idPrefix);
-    b.append(msgId++);
-    return b.toString();
-  }
+    protected String nextMsgId() {
+        StringBuffer b = new StringBuffer(idPrefix);
+        b.append(msgId++);
+        return b.toString();
+    }
 
-  protected String getValue(String name, String defaultValue)
-  {
-    String value = (String) config.get(name);
-    if (value == null)
-      value = defaultValue;
-    return value;
-  }
+    protected String getValue(String name, String defaultValue) {
+        String value = (String) config.get(name);
+        if (value == null)
+            value = defaultValue;
+        return value;
+    }
 
-  public void setConfiguration(Map config) throws Exception
-  {
-    this.config = config;
+    public void setConfiguration(Map config) throws Exception {
+        this.config = config;
 
-    StringBuffer b = new StringBuffer(SwiftletManager.getInstance().getRouterName());
-    b.append('/');
-    b.append(uniqueId);
-    b.append('/');
-    idPrefix = b.toString();
+        StringBuffer b = new StringBuffer(SwiftletManager.getInstance().getRouterName());
+        b.append('/');
+        b.append(uniqueId);
+        b.append('/');
+        idPrefix = b.toString();
 
-    nameTranslator = (NameTranslator) Class.forName(getValue(PROP_NAME_TRANSLATOR, "com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.InvalidToUnderscoreNameTranslator")).newInstance();
-    prefixVendor = getValue(PROP_PREFIX_VENDOR, "JMS_AMQP_");
-    amqpNative = prefixVendor + Util.PROP_AMQP_NATIVE;
-    defaultDeliveryMode = getValue(PROP_DEFAULT_DELIVERY_MODE, "PERSISTENT").toUpperCase().equals("PERSISTENT") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
-    defaultPriority = Integer.parseInt(getValue(PROP_DEFAULT_PRIORITY, String.valueOf(Message.DEFAULT_PRIORITY)));
-    defaultTtl = Long.parseLong(getValue(PROP_DEFAULT_TTL, String.valueOf(Message.DEFAULT_TIME_TO_LIVE)));
-  }
+        nameTranslator = (NameTranslator) Class.forName(getValue(PROP_NAME_TRANSLATOR, "com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.InvalidToUnderscoreNameTranslator")).newInstance();
+        prefixVendor = getValue(PROP_PREFIX_VENDOR, "JMS_AMQP_");
+        amqpNative = prefixVendor + Util.PROP_AMQP_NATIVE;
+        defaultDeliveryMode = getValue(PROP_DEFAULT_DELIVERY_MODE, "PERSISTENT").toUpperCase().equals("PERSISTENT") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
+        defaultPriority = Integer.parseInt(getValue(PROP_DEFAULT_PRIORITY, String.valueOf(Message.DEFAULT_PRIORITY)));
+        defaultTtl = Long.parseLong(getValue(PROP_DEFAULT_TTL, String.valueOf(Message.DEFAULT_TIME_TO_LIVE)));
+    }
 
-  public abstract MessageImpl transform(TransferFrame frame, DestinationFactory destinationFactory) throws AMQPException, JMSException;
+    public abstract MessageImpl transform(TransferFrame frame, DestinationFactory destinationFactory) throws AMQPException, JMSException;
 
 }

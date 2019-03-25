@@ -21,31 +21,25 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class StopAccountingRequest extends Request
-{
-  public StopAccountingRequest()
-  {
-    super(0, false);
-  }
+public class StopAccountingRequest extends Request {
+    public StopAccountingRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.STOP_ACCOUNTING_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.STOP_ACCOUNTING_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[StopAccountingRequest " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[StopAccountingRequest " + super.toString() + "]";
+    }
 
 }

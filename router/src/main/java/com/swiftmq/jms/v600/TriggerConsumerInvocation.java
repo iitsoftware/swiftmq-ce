@@ -23,25 +23,20 @@ import com.swiftmq.tools.requestreply.RequestVisitor;
 
 // This is just a dummy class to invoke consumers via the session queue
 
-public class TriggerConsumerInvocation extends Request
-{
-  public TriggerConsumerInvocation()
-  {
-    super(0, false);
-  }
+public class TriggerConsumerInvocation extends Request {
+    public TriggerConsumerInvocation() {
+        super(0, false);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SessionVisitorAdapter) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SessionVisitorAdapter) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[TriggerConsumerInvocation]";
-  }
+    public String toString() {
+        return "[TriggerConsumerInvocation]";
+    }
 }

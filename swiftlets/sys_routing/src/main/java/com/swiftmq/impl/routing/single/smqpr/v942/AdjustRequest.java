@@ -26,74 +26,61 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class AdjustRequest extends Request
-{
-  int transactionSize = 0;
-  int windowSize = 0;
+public class AdjustRequest extends Request {
+    int transactionSize = 0;
+    int windowSize = 0;
 
-  AdjustRequest()
-  {
-    this(0, 0);
-  }
+    AdjustRequest() {
+        this(0, 0);
+    }
 
-  public AdjustRequest(int transactionSize, int windowSize)
-  {
-    super(0, false);
-    this.transactionSize = transactionSize;
-    this.windowSize = windowSize;
-  }
+    public AdjustRequest(int transactionSize, int windowSize) {
+        super(0, false);
+        this.transactionSize = transactionSize;
+        this.windowSize = windowSize;
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.ADJUST_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.ADJUST_REQ;
+    }
 
-  public void writeContent(DataOutput output) throws IOException
-  {
-    super.writeContent(output);
-    output.writeInt(transactionSize);
-    output.writeInt(windowSize);
-  }
+    public void writeContent(DataOutput output) throws IOException {
+        super.writeContent(output);
+        output.writeInt(transactionSize);
+        output.writeInt(windowSize);
+    }
 
-  public void readContent(DataInput input) throws IOException
-  {
-    super.readContent(input);
-    transactionSize = input.readInt();
-    windowSize = input.readInt();
-  }
+    public void readContent(DataInput input) throws IOException {
+        super.readContent(input);
+        transactionSize = input.readInt();
+        windowSize = input.readInt();
+    }
 
-  public int getTransactionSize()
-  {
-    return transactionSize;
-  }
+    public int getTransactionSize() {
+        return transactionSize;
+    }
 
-  public void setTransactionSize(int transactionSize)
-  {
-    this.transactionSize = transactionSize;
-  }
+    public void setTransactionSize(int transactionSize) {
+        this.transactionSize = transactionSize;
+    }
 
-  public int getWindowSize()
-  {
-    return windowSize;
-  }
+    public int getWindowSize() {
+        return windowSize;
+    }
 
-  public void setWindowSize(int windowSize)
-  {
-    this.windowSize = windowSize;
-  }
+    public void setWindowSize(int windowSize) {
+        this.windowSize = windowSize;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[AdjustRequest " + super.toString() + ", transactionSize=" + transactionSize + ", windowSize=" + windowSize + "]";
-  }
+    public String toString() {
+        return "[AdjustRequest " + super.toString() + ", transactionSize=" + transactionSize + ", windowSize=" + windowSize + "]";
+    }
 }

@@ -24,75 +24,65 @@ import java.io.IOException;
 /**
  * Integer in the range -(2^15) to 2^15-1 inclusive
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class AMQPShort extends AMQPType
-{
-  byte[] bytes = new byte[2];
+public class AMQPShort extends AMQPType {
+    byte[] bytes = new byte[2];
 
-  /**
-   * Constructs an AMQPShort with an undefined value
-   *
-   */
-  public AMQPShort()
-  {
-    super("short", AMQPTypeDecoder.SHORT);
-  }
+    /**
+     * Constructs an AMQPShort with an undefined value
+     */
+    public AMQPShort() {
+        super("short", AMQPTypeDecoder.SHORT);
+    }
 
-  /**
-   * Constructs an AMQPShort with a value
-   *
-   * @param value value
-   */
-  public AMQPShort(int value)
-  {
-    super("short", AMQPTypeDecoder.SHORT);
-    setValue(value);
-  }
+    /**
+     * Constructs an AMQPShort with a value
+     *
+     * @param value value
+     */
+    public AMQPShort(int value) {
+        super("short", AMQPTypeDecoder.SHORT);
+        setValue(value);
+    }
 
-  /**
-   * Sets the value
-   *
-   * @param value value
-   */
-  public void setValue(int value)
-  {
-    Util.writeShort(value, bytes, 0);
-  }
+    /**
+     * Sets the value
+     *
+     * @param value value
+     */
+    public void setValue(int value) {
+        Util.writeShort(value, bytes, 0);
+    }
 
-  /**
-   * Returns the value
-   * @return value
-   */
-  public int getValue()
-  {
-    return Util.readShort(bytes, 0);
-  }
+    /**
+     * Returns the value
+     *
+     * @return value
+     */
+    public int getValue() {
+        return Util.readShort(bytes, 0);
+    }
 
-  public int getPredictedSize()
-  {
-    int n = super.getPredictedSize()+bytes.length;
-    return n;
-  }
+    public int getPredictedSize() {
+        int n = super.getPredictedSize() + bytes.length;
+        return n;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    in.readFully(bytes);
-  }
+    public void readContent(DataInput in) throws IOException {
+        in.readFully(bytes);
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.write(bytes);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.write(bytes);
+    }
 
-  public String getValueString()
-  {
-    return Short.toString((short)getValue());
-  }
+    public String getValueString() {
+        return Short.toString((short) getValue());
+    }
 
-  public String toString()
-  {
-    return "[AMQPShort, value=" + getValue() + " " + super.toString() + "]";
-  }
+    public String toString() {
+        return "[AMQPShort, value=" + getValue() + " " + super.toString() + "]";
+    }
 }

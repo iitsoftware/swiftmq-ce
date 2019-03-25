@@ -19,48 +19,41 @@ package com.swiftmq.tools.gc;
 
 import com.swiftmq.tools.collection.RingBuffer;
 
-public abstract class ObjectRecycler
-{
-  static final int DEFAULT_SIZE = 128;
-  RingBuffer freeList = null;
-  int maxSize = -1;
+public abstract class ObjectRecycler {
+    static final int DEFAULT_SIZE = 128;
+    RingBuffer freeList = null;
+    int maxSize = -1;
 
-  public ObjectRecycler(int maxSize)
-  {
-    this.maxSize = maxSize;
-    freeList = new RingBuffer(DEFAULT_SIZE);
-  }
+    public ObjectRecycler(int maxSize) {
+        this.maxSize = maxSize;
+        freeList = new RingBuffer(DEFAULT_SIZE);
+    }
 
-  public ObjectRecycler()
-  {
-    this(-1);
-  }
+    public ObjectRecycler() {
+        this(-1);
+    }
 
-  protected abstract Object createRecyclable();
+    protected abstract Object createRecyclable();
 
-  public Object checkOut()
-  {
-    Object recyclable = null;
-    if (freeList.getSize() > 0)
-      recyclable = freeList.remove();
-    else
-      recyclable = createRecyclable();
-    return recyclable;
-  }
+    public Object checkOut() {
+        Object recyclable = null;
+        if (freeList.getSize() > 0)
+            recyclable = freeList.remove();
+        else
+            recyclable = createRecyclable();
+        return recyclable;
+    }
 
-  public void checkIn(Object recyclable)
-  {
-    if (maxSize == -1 || freeList.getSize() < maxSize)
-      freeList.add(recyclable);
-  }
+    public void checkIn(Object recyclable) {
+        if (maxSize == -1 || freeList.getSize() < maxSize)
+            freeList.add(recyclable);
+    }
 
-  public int getSize()
-  {
-    return freeList.getSize();
-  }
+    public int getSize() {
+        return freeList.getSize();
+    }
 
-  public void clear()
-  {
-    freeList.clear();
-  }
+    public void clear() {
+        freeList.clear();
+    }
 }

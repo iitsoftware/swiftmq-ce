@@ -17,70 +17,62 @@
 
 package com.swiftmq.amqp.v091.generated.queue;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class DeleteOk extends QueueMethod
-{
-  int messageCount;
+import java.io.IOException;
 
-  public DeleteOk()
-  {
-    _classId = 50;
-    _methodId = 41;
-  }
+public class DeleteOk extends QueueMethod {
+    int messageCount;
 
-  public void accept(QueueMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public DeleteOk() {
+        _classId = 50;
+        _methodId = 41;
+    }
 
-  public int getMessageCount()
-  {
-    return messageCount;
-  }
+    public void accept(QueueMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setMessageCount(int messageCount)
-  {
-    this.messageCount = messageCount;
-  }
+    public int getMessageCount() {
+        return messageCount;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    messageCount = Coder.readInt(in);
-  }
+    public void setMessageCount(int messageCount) {
+        this.messageCount = messageCount;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeInt(messageCount, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        messageCount = Coder.readInt(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("messageCount=");
-    b.append(messageCount);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeInt(messageCount, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[DeleteOk " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("messageCount=");
+        b.append(messageCount);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[DeleteOk " + super.toString() + getDisplayString() + "]";
+    }
 }

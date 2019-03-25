@@ -57,6 +57,7 @@ public class MapValue {
 
     /**
      * Converts the value to byte[].
+     *
      * @return byte[]
      * @throws JMSException
      */
@@ -66,6 +67,7 @@ public class MapValue {
 
     /**
      * Converts the value to Short.
+     *
      * @return Short
      * @throws JMSException
      */
@@ -75,6 +77,7 @@ public class MapValue {
 
     /**
      * Converts the value to Integer.
+     *
      * @return Integer
      * @throws JMSException
      */
@@ -84,6 +87,7 @@ public class MapValue {
 
     /**
      * Converts the value to Double.
+     *
      * @return Double
      * @throws JMSException
      */
@@ -93,6 +97,7 @@ public class MapValue {
 
     /**
      * Converts the value to Float.
+     *
      * @return Float
      * @throws JMSException
      */
@@ -102,6 +107,7 @@ public class MapValue {
 
     /**
      * Converts the value to Long.
+     *
      * @return Long
      * @throws JMSException
      */
@@ -111,6 +117,7 @@ public class MapValue {
 
     /**
      * Converts the value to String.
+     *
      * @return String
      * @throws JMSException
      */

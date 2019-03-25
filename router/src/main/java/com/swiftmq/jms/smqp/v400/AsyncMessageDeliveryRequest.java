@@ -24,181 +24,152 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class AsyncMessageDeliveryRequest extends Request
-{
-  int listenerId = 0;
-  MessageEntry messageEntry = null;
-  MessageEntry[] bulk = null;
-  int sessionDispatchId = 0;
-  boolean requiresRestart = false;
-  int recoveryEpoche = 0;
+public class AsyncMessageDeliveryRequest extends Request {
+    int listenerId = 0;
+    MessageEntry messageEntry = null;
+    MessageEntry[] bulk = null;
+    int sessionDispatchId = 0;
+    boolean requiresRestart = false;
+    int recoveryEpoche = 0;
 
-  public AsyncMessageDeliveryRequest(int dispatchId, int listenerId,
-                                     MessageEntry messageEntry, int sessionDispatchId)
-  {
-    super(dispatchId, false);
+    public AsyncMessageDeliveryRequest(int dispatchId, int listenerId,
+                                       MessageEntry messageEntry, int sessionDispatchId) {
+        super(dispatchId, false);
 
-    this.listenerId = listenerId;
-    this.messageEntry = messageEntry;
-    this.sessionDispatchId = sessionDispatchId;
-  }
-
-  public AsyncMessageDeliveryRequest(int dispatchId, int listenerId,
-                                     MessageEntry[] bulk, int numberMessages, int sessionDispatchId)
-  {
-    super(dispatchId, false);
-
-    this.listenerId = listenerId;
-    this.sessionDispatchId = sessionDispatchId;
-    this.bulk = new MessageEntry[numberMessages];
-    System.arraycopy(bulk, 0, this.bulk, 0, numberMessages);
-  }
-
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_ASYNC_MESSAGE_DELIVERY_REQ;
-  }
-
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(listenerId);
-    out.writeInt(sessionDispatchId);
-    out.writeInt(recoveryEpoche);
-    out.writeBoolean(requiresRestart);
-
-    if (messageEntry == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      messageEntry.writeContent(out);
-    }
-    if (bulk == null)
-    {
-      out.writeByte(0);
-    } else
-    {
-      out.writeByte(1);
-      out.writeInt(bulk.length);
-      for (int i = 0; i < bulk.length; i++)
-        bulk[i].writeContent(out);
-    }
-  }
-
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-
-    listenerId = in.readInt();
-    sessionDispatchId = in.readInt();
-    recoveryEpoche = in.readInt();
-    requiresRestart = in.readBoolean();
-
-    byte set = in.readByte();
-
-    if (set == 0)
-    {
-      messageEntry = null;
-    } else
-    {
-      messageEntry = new MessageEntry();
-      messageEntry.readContent(in);
+        this.listenerId = listenerId;
+        this.messageEntry = messageEntry;
+        this.sessionDispatchId = sessionDispatchId;
     }
 
-    set = in.readByte();
-    if (set == 0)
-    {
-      bulk = null;
-    } else
-    {
-      bulk = new MessageEntry[in.readInt()];
-      for (int i = 0; i < bulk.length; i++)
-      {
-        MessageEntry entry = new MessageEntry();
-        entry.readContent(in);
-        bulk[i] = entry;
-      }
+    public AsyncMessageDeliveryRequest(int dispatchId, int listenerId,
+                                       MessageEntry[] bulk, int numberMessages, int sessionDispatchId) {
+        super(dispatchId, false);
+
+        this.listenerId = listenerId;
+        this.sessionDispatchId = sessionDispatchId;
+        this.bulk = new MessageEntry[numberMessages];
+        System.arraycopy(bulk, 0, this.bulk, 0, numberMessages);
     }
-  }
 
-  protected Reply createReplyInstance()
-  {
-    return isReplyRequired() ? new AsyncMessageDeliveryReply(sessionDispatchId) : null;
-  }
-
-  public void setListenerId(int listenerId)
-  {
-    this.listenerId = listenerId;
-  }
-
-  public int getListenerId()
-  {
-    return (listenerId);
-  }
-
-  public boolean isRequiresRestart()
-  {
-    return requiresRestart;
-  }
-
-  public void setRequiresRestart(boolean requiresRestart)
-  {
-    this.requiresRestart = requiresRestart;
-  }
-
-  public void setMessageEntry(MessageEntry messageEntry)
-  {
-    this.messageEntry = messageEntry;
-  }
-
-  public boolean isBulk()
-  {
-    return bulk != null;
-  }
-
-  public int getRecoveryEpoche()
-  {
-    return recoveryEpoche;
-  }
-
-  public void setRecoveryEpoche(int recoveryEpoche)
-  {
-    this.recoveryEpoche = recoveryEpoche;
-  }
-
-  public AsyncMessageDeliveryRequest[] createRequests()
-  {
-    AsyncMessageDeliveryRequest[] requests = new AsyncMessageDeliveryRequest[bulk.length];
-    for (int i = 0; i < bulk.length; i++)
-    {
-      requests[i] = new AsyncMessageDeliveryRequest(-1, listenerId, bulk[i], sessionDispatchId);
-      requests[i].setRecoveryEpoche(recoveryEpoche);
+    public int getDumpId() {
+        return SMQPFactory.DID_ASYNC_MESSAGE_DELIVERY_REQ;
     }
-    return requests;
-  }
 
-  public MessageEntry getMessageEntry()
-  {
-    return (messageEntry);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(listenerId);
+        out.writeInt(sessionDispatchId);
+        out.writeInt(recoveryEpoche);
+        out.writeBoolean(requiresRestart);
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitAsyncMessageDeliveryRequest(this);
-  }
+        if (messageEntry == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            messageEntry.writeContent(out);
+        }
+        if (bulk == null) {
+            out.writeByte(0);
+        } else {
+            out.writeByte(1);
+            out.writeInt(bulk.length);
+            for (int i = 0; i < bulk.length; i++)
+                bulk[i].writeContent(out);
+        }
+    }
 
-  public String toString()
-  {
-    return "[AsyncMessageDeliveryRequest " + super.toString()
-        + " listenerId=" + listenerId + " sessionDispatchId=" + sessionDispatchId + " recoveryEpoche=" + recoveryEpoche
-        + " requiresRestart=" + requiresRestart + " messageEntry=" + messageEntry + " bulk=" + bulk + "]";
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+
+        listenerId = in.readInt();
+        sessionDispatchId = in.readInt();
+        recoveryEpoche = in.readInt();
+        requiresRestart = in.readBoolean();
+
+        byte set = in.readByte();
+
+        if (set == 0) {
+            messageEntry = null;
+        } else {
+            messageEntry = new MessageEntry();
+            messageEntry.readContent(in);
+        }
+
+        set = in.readByte();
+        if (set == 0) {
+            bulk = null;
+        } else {
+            bulk = new MessageEntry[in.readInt()];
+            for (int i = 0; i < bulk.length; i++) {
+                MessageEntry entry = new MessageEntry();
+                entry.readContent(in);
+                bulk[i] = entry;
+            }
+        }
+    }
+
+    protected Reply createReplyInstance() {
+        return isReplyRequired() ? new AsyncMessageDeliveryReply(sessionDispatchId) : null;
+    }
+
+    public void setListenerId(int listenerId) {
+        this.listenerId = listenerId;
+    }
+
+    public int getListenerId() {
+        return (listenerId);
+    }
+
+    public boolean isRequiresRestart() {
+        return requiresRestart;
+    }
+
+    public void setRequiresRestart(boolean requiresRestart) {
+        this.requiresRestart = requiresRestart;
+    }
+
+    public void setMessageEntry(MessageEntry messageEntry) {
+        this.messageEntry = messageEntry;
+    }
+
+    public boolean isBulk() {
+        return bulk != null;
+    }
+
+    public int getRecoveryEpoche() {
+        return recoveryEpoche;
+    }
+
+    public void setRecoveryEpoche(int recoveryEpoche) {
+        this.recoveryEpoche = recoveryEpoche;
+    }
+
+    public AsyncMessageDeliveryRequest[] createRequests() {
+        AsyncMessageDeliveryRequest[] requests = new AsyncMessageDeliveryRequest[bulk.length];
+        for (int i = 0; i < bulk.length; i++) {
+            requests[i] = new AsyncMessageDeliveryRequest(-1, listenerId, bulk[i], sessionDispatchId);
+            requests[i].setRecoveryEpoche(recoveryEpoche);
+        }
+        return requests;
+    }
+
+    public MessageEntry getMessageEntry() {
+        return (messageEntry);
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitAsyncMessageDeliveryRequest(this);
+    }
+
+    public String toString() {
+        return "[AsyncMessageDeliveryRequest " + super.toString()
+                + " listenerId=" + listenerId + " sessionDispatchId=" + sessionDispatchId + " recoveryEpoche=" + recoveryEpoche
+                + " requiresRestart=" + requiresRestart + " messageEntry=" + messageEntry + " bulk=" + bulk + "]";
+    }
 
 }
 

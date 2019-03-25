@@ -17,126 +17,112 @@
 
 package com.swiftmq.jms.smqp.v510;
 
-/** SMQP-Protocol Version 510, Class: XAResEndRequest
- *  Automatically generated, don't change!
- *  Generation Date: Fri Aug 13 16:00:44 CEST 2004
- *  (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 510, Class: XAResEndRequest
+ * Automatically generated, don't change!
+ * Generation Date: Fri Aug 13 16:00:44 CEST 2004
+ * (c) 2004, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
-import com.swiftmq.jms.*;
-import com.swiftmq.jms.v510.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.tools.requestreply.*;
-import java.io.*;
-import java.util.*;
-import javax.jms.*;
+import com.swiftmq.jms.XidImpl;
+import com.swiftmq.tools.requestreply.Reply;
+import com.swiftmq.tools.requestreply.Request;
+import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class XAResEndRequest extends Request
-{
-  private XidImpl xid;
-  private int flags;
-  private List messages;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
-  public XAResEndRequest()
-  {
-    super(0,true);
-  }
+public class XAResEndRequest extends Request {
+    private XidImpl xid;
+    private int flags;
+    private List messages;
 
-  public XAResEndRequest(int dispatchId)
-  {
-    super(dispatchId,true);
-  }
+    public XAResEndRequest() {
+        super(0, true);
+    }
 
-  public XAResEndRequest(int dispatchId, XidImpl xid, int flags, List messages)
-  {
-    super(dispatchId,true);
-    this.xid = xid;
-    this.flags = flags;
-    this.messages = messages;
-  }
-  
-  public void setXid(XidImpl xid)
-  {
-    this.xid = xid;
-  }
+    public XAResEndRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public XidImpl getXid()
-  {
-    return xid;
-  }
-  
-  public void setFlags(int flags)
-  {
-    this.flags = flags;
-  }
+    public XAResEndRequest(int dispatchId, XidImpl xid, int flags, List messages) {
+        super(dispatchId, true);
+        this.xid = xid;
+        this.flags = flags;
+        this.messages = messages;
+    }
 
-  public int getFlags()
-  {
-    return flags;
-  }
-  
-  public void setMessages(List messages)
-  {
-    this.messages = messages;
-  }
+    public void setXid(XidImpl xid) {
+        this.xid = xid;
+    }
 
-  public List getMessages()
-  {
-    return messages;
-  }
+    public XidImpl getXid() {
+        return xid;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESEND_REQ;
-  }
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(xid,out);
-    SMQPUtil.write(flags,out);
-    if (messages != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.writebytearray(messages,out);
-    } else
-      out.writeBoolean(false);
-  }
+    public int getFlags() {
+        return flags;
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    xid = SMQPUtil.read(xid,in);
-    flags = SMQPUtil.read(flags,in);
-    boolean messages_set = in.readBoolean();
-    if (messages_set)
-      messages = SMQPUtil.readbytearray(messages,in);
-  }
+    public void setMessages(List messages) {
+        this.messages = messages;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new XAResEndReply();
-  }
+    public List getMessages() {
+        return messages;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor)visitor).visit(this);
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESEND_REQ;
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[XAResEndRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("xid=");
-    _b.append(xid);
-    _b.append(", ");
-    _b.append("flags=");
-    _b.append(flags);
-    _b.append(", ");
-    _b.append("messages=");
-    _b.append(messages);
-    _b.append("]");
-    return _b.toString();
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(xid, out);
+        SMQPUtil.write(flags, out);
+        if (messages != null) {
+            out.writeBoolean(true);
+            SMQPUtil.writebytearray(messages, out);
+        } else
+            out.writeBoolean(false);
+    }
+
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        xid = SMQPUtil.read(xid, in);
+        flags = SMQPUtil.read(flags, in);
+        boolean messages_set = in.readBoolean();
+        if (messages_set)
+            messages = SMQPUtil.readbytearray(messages, in);
+    }
+
+    protected Reply createReplyInstance() {
+        return new XAResEndReply();
+    }
+
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
+
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[XAResEndRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("xid=");
+        _b.append(xid);
+        _b.append(", ");
+        _b.append("flags=");
+        _b.append(flags);
+        _b.append(", ");
+        _b.append("messages=");
+        _b.append(messages);
+        _b.append("]");
+        return _b.toString();
+    }
 }

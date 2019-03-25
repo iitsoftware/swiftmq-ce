@@ -19,10 +19,8 @@ package com.swiftmq.impl.store.standard.log;
 
 import com.swiftmq.impl.store.standard.StoreContext;
 
-public class LogManagerFactoryImpl implements LogManagerFactory
-{
-  public LogManager createLogManager(StoreContext ctx, CheckPointHandler checkPointHandler, String path, long maxLogSize, boolean forceSync) throws Exception
-  {
-    return new LogManager(ctx, checkPointHandler, path, maxLogSize, forceSync);
-  }
+public class LogManagerFactoryImpl implements LogManagerFactory {
+    public LogManager createLogManager(StoreContext ctx, CheckPointHandler checkPointHandler, String path, long maxLogSize, boolean forceSync) throws Exception {
+        return new LogManager(ctx, checkPointHandler, path, maxLogSize, forceSync);
+    }
 }

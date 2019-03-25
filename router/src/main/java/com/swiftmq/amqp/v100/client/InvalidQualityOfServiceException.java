@@ -18,19 +18,17 @@
 package com.swiftmq.amqp.v100.client;
 
 /**
- *  An exception thrown if a quality of service value is invalid.
+ * An exception thrown if a quality of service value is invalid.
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public class InvalidQualityOfServiceException extends AMQPException
-{
-  /**
-   * Creates an InvalidQualityOfServiceException.
-   *
-   * @param s exception message
-   */
-  public InvalidQualityOfServiceException(String s)
-  {
-    super(s);
-  }
+public class InvalidQualityOfServiceException extends AMQPException {
+    /**
+     * Creates an InvalidQualityOfServiceException.
+     *
+     * @param s exception message
+     */
+    public InvalidQualityOfServiceException(String s) {
+        super(s);
+    }
 }

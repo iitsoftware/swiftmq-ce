@@ -17,51 +17,44 @@
 
 package com.swiftmq.amqp.v091.generated.basic;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
 
-public class RecoverOk extends BasicMethod
-{
+import java.io.IOException;
 
-  public RecoverOk()
-  {
-    _classId = 60;
-    _methodId = 111;
-  }
+public class RecoverOk extends BasicMethod {
 
-  public void accept(BasicMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public RecoverOk() {
+        _classId = 60;
+        _methodId = 111;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-  }
+    public void accept(BasicMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[RecoverOk " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[RecoverOk " + super.toString() + getDisplayString() + "]";
+    }
 }

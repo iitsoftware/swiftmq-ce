@@ -20,20 +20,16 @@ package com.swiftmq.jms.v600.po;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POGetClientIdRequest extends POObject
-{
-  public POGetClientIdRequest()
-  {
-    super(null, null);
-  }
+public class POGetClientIdRequest extends POObject {
+    public POGetClientIdRequest() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POGetClientIdRequest]";
-  }
+    public String toString() {
+        return "[POGetClientIdRequest]";
+    }
 }

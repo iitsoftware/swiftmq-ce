@@ -24,14 +24,13 @@ package com.swiftmq.swiftlet.accounting;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2010, All Rights Reserved
  */
-public interface ParameterVerifier
-{
-  /**
-   * Verifies the parameter value.
-   *
-   * @param parameter Parameter
-   * @param value Value
-   * @throws InvalidValueException if the value is invalid
-   */
-  public void verify(Parameter parameter, String value) throws InvalidValueException;
+public interface ParameterVerifier {
+    /**
+     * Verifies the parameter value.
+     *
+     * @param parameter Parameter
+     * @param value     Value
+     * @throws InvalidValueException if the value is invalid
+     */
+    public void verify(Parameter parameter, String value) throws InvalidValueException;
 }

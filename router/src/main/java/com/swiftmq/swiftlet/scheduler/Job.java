@@ -53,25 +53,24 @@ import java.util.Properties;
  *
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2003, All Rights Reserved
  */
-public interface Job
-{
-  /**
-   * Starts a Job. This method might block until the Job finished or it might return immediately.
-   * The Job is marked as running until the Job calls the JobTerminationListener
-   * or the Scheduler Swiftlet calles the stop method.
-   *
-   * @param parameters parameter values
-   * @param listener JobTerminationListener
-   * @throws JobException on error
-   */
-  public void start(Properties parameters, JobTerminationListener listener) throws JobException;
+public interface Job {
+    /**
+     * Starts a Job. This method might block until the Job finished or it might return immediately.
+     * The Job is marked as running until the Job calls the JobTerminationListener
+     * or the Scheduler Swiftlet calles the stop method.
+     *
+     * @param parameters parameter values
+     * @param listener   JobTerminationListener
+     * @throws JobException on error
+     */
+    public void start(Properties parameters, JobTerminationListener listener) throws JobException;
 
-  /**
-   * Stops a Job asynchronously. The Job is marked as terminated thereafter. This method must
-   * not block. The stop method is called when the maximum runtime for the Job is reached or
-   * for Scheduler Swiftlet internal reasons, e.g. a re-schedule or a router shutdown.
-   *
-   * @throws JobException on error
-   */
-  public void stop() throws JobException;
+    /**
+     * Stops a Job asynchronously. The Job is marked as terminated thereafter. This method must
+     * not block. The stop method is called when the maximum runtime for the Job is reached or
+     * for Scheduler Swiftlet internal reasons, e.g. a re-schedule or a router shutdown.
+     *
+     * @throws JobException on error
+     */
+    public void stop() throws JobException;
 }

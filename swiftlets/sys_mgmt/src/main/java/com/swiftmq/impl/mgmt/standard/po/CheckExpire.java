@@ -17,23 +17,19 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class CheckExpire extends POObject
-{
-  public CheckExpire()
-  {
-    super(null, null);
-  }
+public class CheckExpire extends POObject {
+    public CheckExpire() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[CheckExpire]";
-  }
+    public String toString() {
+        return "[CheckExpire]";
+    }
 }

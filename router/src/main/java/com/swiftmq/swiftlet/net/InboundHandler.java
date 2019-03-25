@@ -30,21 +30,20 @@ import java.io.InputStream;
  * @see Connection
  * @see com.swiftmq.swiftlet.net.event.ConnectionListener
  */
-public interface InboundHandler
-{
+public interface InboundHandler {
 
-  /**
-   * Will be called if data is available on the connection's input stream.
-   * The inbound handler must read this data out of the stream and should
-   * forward it to further processing to some async running task to return
-   * immediately. If this method throws an IOException, the connection will
-   * be closed.
-   *
-   * @param connection  connection.
-   * @param inputStream the connections's input stream.
-   * @throws IOException on error to close the connection.
-   */
-  public void dataAvailable(Connection connection, InputStream inputStream)
-      throws IOException;
+    /**
+     * Will be called if data is available on the connection's input stream.
+     * The inbound handler must read this data out of the stream and should
+     * forward it to further processing to some async running task to return
+     * immediately. If this method throws an IOException, the connection will
+     * be closed.
+     *
+     * @param connection  connection.
+     * @param inputStream the connections's input stream.
+     * @throws IOException on error to close the connection.
+     */
+    public void dataAvailable(Connection connection, InputStream inputStream)
+            throws IOException;
 }
 

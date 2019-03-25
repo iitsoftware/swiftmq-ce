@@ -21,102 +21,87 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-import java.io.IOException;
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class StartConsumerRequest extends Request
-{
-  int queueConsumerId = 0;
-  int clientDispatchId = 0;
-  int clientListenerId = 0;
-  int consumerCacheSize = 0;
+public class StartConsumerRequest extends Request {
+    int queueConsumerId = 0;
+    int clientDispatchId = 0;
+    int clientListenerId = 0;
+    int consumerCacheSize = 0;
 
-  public StartConsumerRequest(int dispatchId, int queueConsumerId,
-                                   int clientDispatchId, int clientListenerId, int consumerCacheSize)
-  {
-    super(dispatchId, false);
-    this.queueConsumerId = queueConsumerId;
-    this.clientDispatchId = clientDispatchId;
-    this.clientListenerId = clientListenerId;
-    this.consumerCacheSize = consumerCacheSize;
-  }
+    public StartConsumerRequest(int dispatchId, int queueConsumerId,
+                                int clientDispatchId, int clientListenerId, int consumerCacheSize) {
+        super(dispatchId, false);
+        this.queueConsumerId = queueConsumerId;
+        this.clientDispatchId = clientDispatchId;
+        this.clientListenerId = clientListenerId;
+        this.consumerCacheSize = consumerCacheSize;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_START_CONSUMER_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_START_CONSUMER_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeInt(queueConsumerId);
-    out.writeInt(clientDispatchId);
-    out.writeInt(clientListenerId);
-    out.writeInt(consumerCacheSize);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeInt(queueConsumerId);
+        out.writeInt(clientDispatchId);
+        out.writeInt(clientListenerId);
+        out.writeInt(consumerCacheSize);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
 
-    queueConsumerId = in.readInt();
-    clientDispatchId = in.readInt();
-    clientListenerId = in.readInt();
-    consumerCacheSize = in.readInt();
-  }
+        queueConsumerId = in.readInt();
+        clientDispatchId = in.readInt();
+        clientListenerId = in.readInt();
+        consumerCacheSize = in.readInt();
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void setQueueConsumerId(int queueConsumerId)
-  {
-    this.queueConsumerId = queueConsumerId;
-  }
+    public void setQueueConsumerId(int queueConsumerId) {
+        this.queueConsumerId = queueConsumerId;
+    }
 
-  public int getQueueConsumerId()
-  {
-    return (queueConsumerId);
-  }
+    public int getQueueConsumerId() {
+        return (queueConsumerId);
+    }
 
-  public void setClientDispatchId(int clientDispatchId)
-  {
-    this.clientDispatchId = clientDispatchId;
-  }
+    public void setClientDispatchId(int clientDispatchId) {
+        this.clientDispatchId = clientDispatchId;
+    }
 
-  public int getClientDispatchId()
-  {
-    return (clientDispatchId);
-  }
+    public int getClientDispatchId() {
+        return (clientDispatchId);
+    }
 
-  public void setClientListenerId(int clientListenerId)
-  {
-    this.clientListenerId = clientListenerId;
-  }
+    public void setClientListenerId(int clientListenerId) {
+        this.clientListenerId = clientListenerId;
+    }
 
-  public int getClientListenerId()
-  {
-    return (clientListenerId);
-  }
+    public int getClientListenerId() {
+        return (clientListenerId);
+    }
 
-  public int getConsumerCacheSize()
-  {
-    return consumerCacheSize;
-  }
+    public int getConsumerCacheSize() {
+        return consumerCacheSize;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visitStartConsumerRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visitStartConsumerRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[StartConsumerRequest " + super.toString()
-        + " queueConsumerId=" + queueConsumerId + " clientDispatchId="
-        + clientDispatchId + " clientListenerId=" + clientListenerId + " consumerCacheSize=" + consumerCacheSize + "]";
-  }
+    public String toString() {
+        return "[StartConsumerRequest " + super.toString()
+                + " queueConsumerId=" + queueConsumerId + " clientDispatchId="
+                + clientDispatchId + " clientListenerId=" + clientListenerId + " consumerCacheSize=" + consumerCacheSize + "]";
+    }
 
 }
 

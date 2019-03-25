@@ -20,9 +20,10 @@ package com.swiftmq.swiftlet.deploy;
 import com.swiftmq.swiftlet.deploy.event.DeployListener;
 import com.swiftmq.tools.deploy.Bundle;
 
-public interface DeploySpace
-{
-  public Bundle[] getInstalledBundles() throws Exception;
-  public void setDeployListener(DeployListener listener);
-  public void close();
+public interface DeploySpace {
+    public Bundle[] getInstalledBundles() throws Exception;
+
+    public void setDeployListener(DeployListener listener);
+
+    public void close();
 }

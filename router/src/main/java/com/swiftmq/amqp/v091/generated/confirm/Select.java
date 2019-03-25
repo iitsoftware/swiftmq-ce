@@ -17,70 +17,62 @@
 
 package com.swiftmq.amqp.v091.generated.confirm;
 
-/** AMQP-Protocol Version 091
- *  Automatically generated, don't change!
- *  Generation Date: Thu Apr 12 12:18:24 CEST 2012
- *  (c) 2012, IIT Software GmbH, Bremen/Germany
- *      All Rights Reserved
+/**
+ * AMQP-Protocol Version 091
+ * Automatically generated, don't change!
+ * Generation Date: Thu Apr 12 12:18:24 CEST 2012
+ * (c) 2012, IIT Software GmbH, Bremen/Germany
+ * All Rights Reserved
  **/
 
-import com.swiftmq.amqp.v091.types.*;
-import com.swiftmq.amqp.v091.io.*;
-import com.swiftmq.amqp.v091.generated.*;
-import java.io.*;
-import java.util.*;
+import com.swiftmq.amqp.v091.io.BitSupportDataInput;
+import com.swiftmq.amqp.v091.io.BitSupportDataOutput;
+import com.swiftmq.amqp.v091.types.Coder;
 
-public class Select extends ConfirmMethod
-{
-  boolean nowait;
+import java.io.IOException;
 
-  public Select()
-  {
-    _classId = 85;
-    _methodId = 10;
-  }
+public class Select extends ConfirmMethod {
+    boolean nowait;
 
-  public void accept(ConfirmMethodVisitor visitor)
-  {
-    visitor.visit(this);
-  }
+    public Select() {
+        _classId = 85;
+        _methodId = 10;
+    }
 
-  public boolean getNowait()
-  {
-    return nowait;
-  }
+    public void accept(ConfirmMethodVisitor visitor) {
+        visitor.visit(this);
+    }
 
-  public void setNowait(boolean nowait)
-  {
-    this.nowait = nowait;
-  }
+    public boolean getNowait() {
+        return nowait;
+    }
 
-  protected void readBody(BitSupportDataInput in) throws IOException
-  {
-    nowait = Coder.readBit(in);
-  }
+    public void setNowait(boolean nowait) {
+        this.nowait = nowait;
+    }
 
-  protected void writeBody(BitSupportDataOutput out) throws IOException
-  {
-    Coder.writeBit(nowait, out);
-    out.bitFlush();
-  }
+    protected void readBody(BitSupportDataInput in) throws IOException {
+        nowait = Coder.readBit(in);
+    }
 
-  private String getDisplayString()
-  {
-    boolean _first = true;
-    StringBuffer b = new StringBuffer(" ");
-    if (!_first)
-      b.append(", ");
-    else
-     _first = false;
-    b.append("nowait=");
-    b.append(nowait);
-    return b.toString();
-  }
+    protected void writeBody(BitSupportDataOutput out) throws IOException {
+        Coder.writeBit(nowait, out);
+        out.bitFlush();
+    }
 
-  public String toString()
-  {
-    return "[Select " + super.toString() + getDisplayString() + "]";
-  }
+    private String getDisplayString() {
+        boolean _first = true;
+        StringBuffer b = new StringBuffer(" ");
+        if (!_first)
+            b.append(", ");
+        else
+            _first = false;
+        b.append("nowait=");
+        b.append(nowait);
+        return b.toString();
+    }
+
+    public String toString() {
+        return "[Select " + super.toString() + getDisplayString() + "]";
+    }
 }

@@ -17,97 +17,97 @@
 
 package com.swiftmq.jms.smqp.v600;
 
-/** SMQP-Protocol Version 600, Class: SMQPVisitor
- *  Automatically generated, don't change!
- *  Generation Date: Thu Feb 09 09:59:46 CET 2006
- *  (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 600, Class: SMQPVisitor
+ * Automatically generated, don't change!
+ * Generation Date: Thu Feb 09 09:59:46 CET 2006
+ * (c) 2006, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public interface SMQPVisitor extends RequestVisitor
-{
-  void visit(AcknowledgeMessageRequest req);
+public interface SMQPVisitor extends RequestVisitor {
+    void visit(AcknowledgeMessageRequest req);
 
-  void visit(AssociateMessageRequest req);
+    void visit(AssociateMessageRequest req);
 
-  void visit(AsyncMessageDeliveryRequest req);
+    void visit(AsyncMessageDeliveryRequest req);
 
-  void visit(AuthResponseRequest req);
+    void visit(AuthResponseRequest req);
 
-  void visit(CloseBrowserRequest req);
+    void visit(CloseBrowserRequest req);
 
-  void visit(CloseConsumerRequest req);
+    void visit(CloseConsumerRequest req);
 
-  void visit(CloseProducerRequest req);
+    void visit(CloseProducerRequest req);
 
-  void visit(CloseSessionRequest req);
+    void visit(CloseSessionRequest req);
 
-  void visit(CommitRequest req);
+    void visit(CommitRequest req);
 
-  void visit(CreateBrowserRequest req);
+    void visit(CreateBrowserRequest req);
 
-  void visit(CreateConsumerRequest req);
+    void visit(CreateConsumerRequest req);
 
-  void visit(CreateDurableRequest req);
+    void visit(CreateDurableRequest req);
 
-  void visit(CreateProducerRequest req);
+    void visit(CreateProducerRequest req);
 
-  void visit(CreatePublisherRequest req);
+    void visit(CreatePublisherRequest req);
 
-  void visit(CreateSessionRequest req);
+    void visit(CreateSessionRequest req);
 
-  void visit(CreateShadowConsumerRequest req);
+    void visit(CreateShadowConsumerRequest req);
 
-  void visit(CreateSubscriberRequest req);
+    void visit(CreateSubscriberRequest req);
 
-  void visit(CreateTmpQueueRequest req);
+    void visit(CreateTmpQueueRequest req);
 
-  void visit(DeleteDurableRequest req);
+    void visit(DeleteDurableRequest req);
 
-  void visit(DeleteMessageRequest req);
+    void visit(DeleteMessageRequest req);
 
-  void visit(DeleteTmpQueueRequest req);
+    void visit(DeleteTmpQueueRequest req);
 
-  void visit(DisconnectRequest req);
+    void visit(DisconnectRequest req);
 
-  void visit(FetchBrowserMessageRequest req);
+    void visit(FetchBrowserMessageRequest req);
 
-  void visit(GetAuthChallengeRequest req);
+    void visit(GetAuthChallengeRequest req);
 
-  void visit(GetClientIdRequest req);
+    void visit(GetClientIdRequest req);
 
-  void visit(GetMetaDataRequest req);
+    void visit(GetMetaDataRequest req);
 
-  void visit(KeepAliveRequest req);
+    void visit(KeepAliveRequest req);
 
-  void visit(MessageDeliveredRequest req);
+    void visit(MessageDeliveredRequest req);
 
-  void visit(ProduceMessageRequest req);
+    void visit(ProduceMessageRequest req);
 
-  void visit(RecoverSessionRequest req);
+    void visit(RecoverSessionRequest req);
 
-  void visit(RollbackRequest req);
+    void visit(RollbackRequest req);
 
-  void visit(RouterConnectRequest req);
+    void visit(RouterConnectRequest req);
 
-  void visit(SetClientIdRequest req);
+    void visit(SetClientIdRequest req);
 
-  void visit(StartConsumerRequest req);
+    void visit(StartConsumerRequest req);
 
-  void visit(XAResCommitRequest req);
+    void visit(XAResCommitRequest req);
 
-  void visit(XAResEndRequest req);
+    void visit(XAResEndRequest req);
 
-  void visit(XAResGetTxTimeoutRequest req);
+    void visit(XAResGetTxTimeoutRequest req);
 
-  void visit(XAResPrepareRequest req);
+    void visit(XAResPrepareRequest req);
 
-  void visit(XAResRecoverRequest req);
+    void visit(XAResRecoverRequest req);
 
-  void visit(XAResRollbackRequest req);
+    void visit(XAResRollbackRequest req);
 
-  void visit(XAResSetTxTimeoutRequest req);
+    void visit(XAResSetTxTimeoutRequest req);
 
-  void visit(XAResStartRequest req);
+    void visit(XAResStartRequest req);
 }

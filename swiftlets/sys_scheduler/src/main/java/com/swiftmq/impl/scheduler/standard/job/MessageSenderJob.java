@@ -17,140 +17,139 @@
 
 package com.swiftmq.impl.scheduler.standard.job;
 
-import com.swiftmq.swiftlet.scheduler.*;
-import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.swiftlet.auth.ActiveLogin;
-import com.swiftmq.impl.scheduler.standard.*;
-import com.swiftmq.jms.*;
+import com.swiftmq.impl.scheduler.standard.SwiftletContext;
+import com.swiftmq.jms.MessageImpl;
+import com.swiftmq.jms.QueueImpl;
+import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.ms.MessageSelector;
-import com.swiftmq.tools.util.*;
+import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.swiftlet.scheduler.Job;
+import com.swiftmq.swiftlet.scheduler.JobException;
+import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
+import com.swiftmq.tools.util.DataByteArrayInputStream;
+import com.swiftmq.tools.util.DataByteArrayOutputStream;
+import com.swiftmq.tools.util.IdGenerator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
 
-public class MessageSenderJob implements Job
-{
-  private static final String PREFIX = "sys$scheduler-"+IdGenerator.getInstance().nextId('-')+'-';
-  private static long msgNo = 0;
-  SwiftletContext ctx = null;
-  String id = null;
+public class MessageSenderJob implements Job {
+    private static final String PREFIX = "sys$scheduler-" + IdGenerator.getInstance().nextId('-') + '-';
+    private static long msgNo = 0;
+    SwiftletContext ctx = null;
+    String id = null;
 
-  public MessageSenderJob(SwiftletContext ctx)
-  {
-    this.ctx = ctx;
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
-  }
-
-  private static synchronized String nextJMSMessageId()
-  {
-    if (msgNo == Long.MAX_VALUE)
-      msgNo = 0;
-    return PREFIX+(++msgNo);
-  }
-
-  private MessageImpl copyMessage(MessageImpl msg) throws Exception
-  {
-    DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
-    DataByteArrayInputStream dbis = new DataByteArrayInputStream();
-    dbos.rewind();
-    msg.writeContent(dbos);
-    dbis.reset();
-    dbis.setBuffer(dbos.getBuffer(), 0, dbos.getCount());
-    MessageImpl msgCopy = MessageImpl.createInstance(dbis.readInt());
-    msgCopy.readContent(dbis);
-    return msgCopy;
-  }
-
-  private MessageImpl getMessage() throws Exception
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/getMessage ...");
-    MessageSelector selector = new MessageSelector(ctx.PROP_SCHED_ID+" = '"+id+"'");
-    selector.compile();
-    QueueReceiver receiver = ctx.queueManager.createQueueReceiver(ctx.INTERNAL_QUEUE,null,selector);
-    QueuePullTransaction t = receiver.createTransaction(false);
-    MessageEntry entry = t.getMessage(0,selector);
-    t.rollback();
-    receiver.close();
-    if (entry == null)
-      throw new Exception("Schedule with ID '"+id+"' not found!");
-    MessageImpl msg = copyMessage(entry.getMessage());
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/getMessage done");
-    return msg;
-
-  }
-
-  private void sendToQueue(String queueName, MessageImpl msg) throws Exception
-  {
-    if (!ctx.queueManager.isQueueDefined(queueName))
-      throw new Exception("Queue '"+queueName+"' is undefined!");
-    QueueSender sender = ctx.queueManager.createQueueSender(queueName,null);
-    QueuePushTransaction t = sender.createTransaction();
-    msg.setJMSDestination(new QueueImpl(queueName));
-    msg.setJMSTimestamp(System.currentTimeMillis());
-    msg.setJMSMessageID(nextJMSMessageId());
-    t.putMessage(msg);
-    t.commit();
-    sender.close();
-  }
-
-  private void sendToTopic(String topicName, MessageImpl msg) throws Exception
-  {
-    if (!ctx.topicManager.isTopicDefined(topicName))
-      throw new Exception("Topic '"+topicName+"' is undefined!");
-    String queueName = ctx.topicManager.getQueueForTopic(topicName);
-    QueueSender sender = ctx.queueManager.createQueueSender(queueName,null);
-    QueuePushTransaction t = sender.createTransaction();
-    msg.setJMSDestination(new TopicImpl(topicName));
-    msg.setJMSTimestamp(System.currentTimeMillis());
-    msg.setJMSMessageID(nextJMSMessageId());
-    t.putMessage(msg);
-    t.commit();
-    sender.close();
-  }
-
-  public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException
-  {
-    id = properties.getProperty(ctx.PARM);
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/start ...");
-    try
-    {
-      MessageImpl msg = getMessage();
-      String type = msg.getStringProperty(ctx.PROP_SCHED_DEST_TYPE).toLowerCase();
-      String dest = msg.getStringProperty(ctx.PROP_SCHED_DEST);
-      long expiration = 0;
-      if (msg.propertyExists(ctx.PROP_SCHED_EXPIRATION))
-        expiration = msg.getLongProperty(ctx.PROP_SCHED_EXPIRATION);
-      List list = new ArrayList();
-      for (Enumeration _enum=msg.getPropertyNames();_enum.hasMoreElements();)
-      {
-        String name = (String)_enum.nextElement();
-        if (name.startsWith("JMS_SWIFTMQ_SCHEDULER"))
-          list.add(name);
-      }
-      for (int i=0;i<list.size();i++)
-        msg.removeProperty((String)list.get(i));
-      if (expiration > 0)
-        msg.setJMSExpiration(System.currentTimeMillis()+expiration);
-      msg.setJMSReplyTo(null);
-      if (type.equals(ctx.QUEUE))
-        sendToQueue(dest,msg);
-      else
-        sendToTopic(dest,msg);
-    } catch (Exception e)
-    {
-      if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/start, exception="+e);
-      throw new JobException(e.getMessage(),e,false);
+    public MessageSenderJob(SwiftletContext ctx) {
+        this.ctx = ctx;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
     }
-    jobTerminationListener.jobTerminated();
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/start done");
-  }
 
-  public void stop() throws JobException
-  {
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/stop, do nothing");
-  }
+    private static synchronized String nextJMSMessageId() {
+        if (msgNo == Long.MAX_VALUE)
+            msgNo = 0;
+        return PREFIX + (++msgNo);
+    }
 
-  public String toString()
-  {
-    return "[MessageSenderJob, id="+id+"]";
-  }
+    private MessageImpl copyMessage(MessageImpl msg) throws Exception {
+        DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
+        DataByteArrayInputStream dbis = new DataByteArrayInputStream();
+        dbos.rewind();
+        msg.writeContent(dbos);
+        dbis.reset();
+        dbis.setBuffer(dbos.getBuffer(), 0, dbos.getCount());
+        MessageImpl msgCopy = MessageImpl.createInstance(dbis.readInt());
+        msgCopy.readContent(dbis);
+        return msgCopy;
+    }
+
+    private MessageImpl getMessage() throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/getMessage ...");
+        MessageSelector selector = new MessageSelector(ctx.PROP_SCHED_ID + " = '" + id + "'");
+        selector.compile();
+        QueueReceiver receiver = ctx.queueManager.createQueueReceiver(ctx.INTERNAL_QUEUE, null, selector);
+        QueuePullTransaction t = receiver.createTransaction(false);
+        MessageEntry entry = t.getMessage(0, selector);
+        t.rollback();
+        receiver.close();
+        if (entry == null)
+            throw new Exception("Schedule with ID '" + id + "' not found!");
+        MessageImpl msg = copyMessage(entry.getMessage());
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/getMessage done");
+        return msg;
+
+    }
+
+    private void sendToQueue(String queueName, MessageImpl msg) throws Exception {
+        if (!ctx.queueManager.isQueueDefined(queueName))
+            throw new Exception("Queue '" + queueName + "' is undefined!");
+        QueueSender sender = ctx.queueManager.createQueueSender(queueName, null);
+        QueuePushTransaction t = sender.createTransaction();
+        msg.setJMSDestination(new QueueImpl(queueName));
+        msg.setJMSTimestamp(System.currentTimeMillis());
+        msg.setJMSMessageID(nextJMSMessageId());
+        t.putMessage(msg);
+        t.commit();
+        sender.close();
+    }
+
+    private void sendToTopic(String topicName, MessageImpl msg) throws Exception {
+        if (!ctx.topicManager.isTopicDefined(topicName))
+            throw new Exception("Topic '" + topicName + "' is undefined!");
+        String queueName = ctx.topicManager.getQueueForTopic(topicName);
+        QueueSender sender = ctx.queueManager.createQueueSender(queueName, null);
+        QueuePushTransaction t = sender.createTransaction();
+        msg.setJMSDestination(new TopicImpl(topicName));
+        msg.setJMSTimestamp(System.currentTimeMillis());
+        msg.setJMSMessageID(nextJMSMessageId());
+        t.putMessage(msg);
+        t.commit();
+        sender.close();
+    }
+
+    public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+        id = properties.getProperty(ctx.PARM);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/start ...");
+        try {
+            MessageImpl msg = getMessage();
+            String type = msg.getStringProperty(ctx.PROP_SCHED_DEST_TYPE).toLowerCase();
+            String dest = msg.getStringProperty(ctx.PROP_SCHED_DEST);
+            long expiration = 0;
+            if (msg.propertyExists(ctx.PROP_SCHED_EXPIRATION))
+                expiration = msg.getLongProperty(ctx.PROP_SCHED_EXPIRATION);
+            List list = new ArrayList();
+            for (Enumeration _enum = msg.getPropertyNames(); _enum.hasMoreElements(); ) {
+                String name = (String) _enum.nextElement();
+                if (name.startsWith("JMS_SWIFTMQ_SCHEDULER"))
+                    list.add(name);
+            }
+            for (int i = 0; i < list.size(); i++)
+                msg.removeProperty((String) list.get(i));
+            if (expiration > 0)
+                msg.setJMSExpiration(System.currentTimeMillis() + expiration);
+            msg.setJMSReplyTo(null);
+            if (type.equals(ctx.QUEUE))
+                sendToQueue(dest, msg);
+            else
+                sendToTopic(dest, msg);
+        } catch (Exception e) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/start, exception=" + e);
+            throw new JobException(e.getMessage(), e, false);
+        }
+        jobTerminationListener.jobTerminated();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/start done");
+    }
+
+    public void stop() throws JobException {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/stop, do nothing");
+    }
+
+    public String toString() {
+        return "[MessageSenderJob, id=" + id + "]";
+    }
 }

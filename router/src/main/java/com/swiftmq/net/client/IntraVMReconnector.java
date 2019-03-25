@@ -17,44 +17,34 @@
 
 package com.swiftmq.net.client;
 
-import com.swiftmq.net.SocketFactory;
-import com.swiftmq.jms.SwiftMQConnectionFactory;
-import com.swiftmq.swiftlet.net.NetworkSwiftlet;
 import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.swiftlet.net.NetworkSwiftlet;
 
 import java.util.List;
 import java.util.Map;
-import java.net.Socket;
 
-public class IntraVMReconnector extends Reconnector
-{
-  public IntraVMReconnector(List servers, Map parameters, boolean enabled, int maxRetries, long retryDelay, boolean debug)
-  {
-    super(servers, parameters, enabled, maxRetries, retryDelay, debug);
-  }
-
-  public boolean isIntraVM()
-  {
-    return true;
-  }
-
-  protected Connection createConnection(ServerEntry entry, Map parameters)
-  {
-    Connection connection = null;
-    try
-    {
-      connection = new IntraVMConnection();
-      NetworkSwiftlet networkSwiftlet = (NetworkSwiftlet)SwiftletManager.getInstance().getSwiftlet("sys$net");
-      networkSwiftlet.connectIntraVMListener("sys$jms",(IntraVMConnection)connection);
-    } catch (Exception e)
-    {
-      if (debug) System.out.println(toString()+" exception creating connection: "+e);
+public class IntraVMReconnector extends Reconnector {
+    public IntraVMReconnector(List servers, Map parameters, boolean enabled, int maxRetries, long retryDelay, boolean debug) {
+        super(servers, parameters, enabled, maxRetries, retryDelay, debug);
     }
-    return connection;
-  }
 
-  public String toString()
-  {
-    return "IntraVMReconnector";
-  }
+    public boolean isIntraVM() {
+        return true;
+    }
+
+    protected Connection createConnection(ServerEntry entry, Map parameters) {
+        Connection connection = null;
+        try {
+            connection = new IntraVMConnection();
+            NetworkSwiftlet networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
+            networkSwiftlet.connectIntraVMListener("sys$jms", (IntraVMConnection) connection);
+        } catch (Exception e) {
+            if (debug) System.out.println(toString() + " exception creating connection: " + e);
+        }
+        return connection;
+    }
+
+    public String toString() {
+        return "IntraVMReconnector";
+    }
 }

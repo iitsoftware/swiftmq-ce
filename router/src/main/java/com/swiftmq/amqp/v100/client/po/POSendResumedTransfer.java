@@ -20,39 +20,32 @@ package com.swiftmq.amqp.v100.client.po;
 import com.swiftmq.amqp.v100.client.Producer;
 import com.swiftmq.amqp.v100.client.SessionVisitor;
 import com.swiftmq.amqp.v100.generated.transport.definitions.DeliveryTag;
-import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendResumedTransfer extends POObject
-{
-  Producer producer = null;
-  DeliveryTag deliveryTag = null;
+public class POSendResumedTransfer extends POObject {
+    Producer producer = null;
+    DeliveryTag deliveryTag = null;
 
-  public POSendResumedTransfer(Producer producer, DeliveryTag deliveryTag)
-  {
-    super(null, null);
-    this.producer = producer;
-    this.deliveryTag = deliveryTag;
-  }
+    public POSendResumedTransfer(Producer producer, DeliveryTag deliveryTag) {
+        super(null, null);
+        this.producer = producer;
+        this.deliveryTag = deliveryTag;
+    }
 
-  public Producer getProducer()
-  {
-    return producer;
-  }
+    public Producer getProducer() {
+        return producer;
+    }
 
-  public DeliveryTag getDeliveryTag()
-  {
-    return deliveryTag;
-  }
+    public DeliveryTag getDeliveryTag() {
+        return deliveryTag;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((SessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((SessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendResumedTransfer, producer="+producer+", deliveryTag=" + deliveryTag.getValueString() + "]";
-  }
+    public String toString() {
+        return "[POSendResumedTransfer, producer=" + producer + ", deliveryTag=" + deliveryTag.getValueString() + "]";
+    }
 }

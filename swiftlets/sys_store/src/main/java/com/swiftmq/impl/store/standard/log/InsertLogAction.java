@@ -18,64 +18,58 @@
 
 package com.swiftmq.impl.store.standard.log;
 
-import com.swiftmq.impl.store.standard.cache.*;
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class InsertLogAction extends LogAction
-{
-	int pageNo;
-	
-	/**
-	 * @param pageNo 
-	 * @SBGen Constructor assigns pageNo
-	 */
-	public InsertLogAction(int pageNo)
-	{
-		// SBgen: Assign variable
-		this.pageNo = pageNo;
-	}
-	
-	/**
-	 * @return 
-	 */
-	public int getType()
-	{
-		return INSERT; 
-	}
-	
-	/**
-	 * @return 
-	 * @SBGen Method get pageNo
-	 */
-	public int getPageNo()
-	{
-		// SBgen: Get variable
-		return(pageNo);
-	}
-	
-	/**
-	 * @param out 
-	 * @exception IOException 
-	 */
-	protected void writeContent(DataOutput out)
-		throws IOException
-	{
-		out.writeInt(pageNo);
-	}
-	
-	/**
-	 * @param in 
-	 * @exception IOException 
-	 */
-	protected void readContent(DataInput in)
-		throws IOException
-	{
-		pageNo = in.readInt();
-	}
-	
-	public String toString()
-	{
-		return "[InsertLogAction, pageNo="+pageNo+"]";
-	}
+public class InsertLogAction extends LogAction {
+    int pageNo;
+
+    /**
+     * @param pageNo
+     * @SBGen Constructor assigns pageNo
+     */
+    public InsertLogAction(int pageNo) {
+        // SBgen: Assign variable
+        this.pageNo = pageNo;
+    }
+
+    /**
+     * @return
+     */
+    public int getType() {
+        return INSERT;
+    }
+
+    /**
+     * @return
+     * @SBGen Method get pageNo
+     */
+    public int getPageNo() {
+        // SBgen: Get variable
+        return (pageNo);
+    }
+
+    /**
+     * @param out
+     * @throws IOException
+     */
+    protected void writeContent(DataOutput out)
+            throws IOException {
+        out.writeInt(pageNo);
+    }
+
+    /**
+     * @param in
+     * @throws IOException
+     */
+    protected void readContent(DataInput in)
+            throws IOException {
+        pageNo = in.readInt();
+    }
+
+    public String toString() {
+        return "[InsertLogAction, pageNo=" + pageNo + "]";
+    }
 }
 

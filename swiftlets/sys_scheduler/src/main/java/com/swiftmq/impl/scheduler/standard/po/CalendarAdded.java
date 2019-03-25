@@ -17,32 +17,27 @@
 
 package com.swiftmq.impl.scheduler.standard.po;
 
-import com.swiftmq.tools.pipeline.*;
-import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.impl.scheduler.standard.SchedulerCalendar;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class CalendarAdded extends POObject
-{
-  SchedulerCalendar calendar = null;
+public class CalendarAdded extends POObject {
+    SchedulerCalendar calendar = null;
 
-  public CalendarAdded(SchedulerCalendar calendar)
-  {
-    super(null, null);
-    this.calendar = calendar;
-  }
+    public CalendarAdded(SchedulerCalendar calendar) {
+        super(null, null);
+        this.calendar = calendar;
+    }
 
-  public SchedulerCalendar getCalendar()
-  {
-    return calendar;
-  }
+    public SchedulerCalendar getCalendar() {
+        return calendar;
+    }
 
-  public void accept(POVisitor poVisitor)
-  {
-    ((EventVisitor)poVisitor).visit(this);
-  }
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[CalendarAdded, calendar="+calendar+"]";
-  }
+    public String toString() {
+        return "[CalendarAdded, calendar=" + calendar + "]";
+    }
 }

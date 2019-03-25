@@ -26,49 +26,48 @@ import java.util.Collection;
  *
  * @author IIT Software GmbH, Bremen/Germany, (c) 2012, All Rights Reserved
  */
-public interface DeliveryMemory
-{
-  /**
-   * Will be called from the link to set its link name. This is only done if the name has not been set before and
-   * ensures that new created links that use this delivery memory use the same link name as before.
-   *
-   * @param name
-   */
-  public void setLinkName(String name);
+public interface DeliveryMemory {
+    /**
+     * Will be called from the link to set its link name. This is only done if the name has not been set before and
+     * ensures that new created links that use this delivery memory use the same link name as before.
+     *
+     * @param name
+     */
+    public void setLinkName(String name);
 
-  /**
-   * Returns the link name,
-   *
-   * @return link name
-   */
-  public String getLinkName();
+    /**
+     * Returns the link name,
+     *
+     * @return link name
+     */
+    public String getLinkName();
 
-  /**
-   * Adds an unsettled delivery which consists of a delivery tag, the delivery state and the AMQP message.
-   *
-   * @param unsettledDelivery unsettled delivery
-   */
-  public void addUnsettledDelivery(UnsettledDelivery unsettledDelivery);
+    /**
+     * Adds an unsettled delivery which consists of a delivery tag, the delivery state and the AMQP message.
+     *
+     * @param unsettledDelivery unsettled delivery
+     */
+    public void addUnsettledDelivery(UnsettledDelivery unsettledDelivery);
 
-  /**
-   * Removes an unsettled delivery from the memory.
-   *
-   * @param deliveryTag delivery tag
-   */
-  public void deliverySettled(DeliveryTag deliveryTag);
+    /**
+     * Removes an unsettled delivery from the memory.
+     *
+     * @param deliveryTag delivery tag
+     */
+    public void deliverySettled(DeliveryTag deliveryTag);
 
-  /**
-   * Returns the number of unsettled deliveries contained in this memory.
-   *
-   * @return number unsettled deliveries
-   */
-  public int getNumberUnsettled();
+    /**
+     * Returns the number of unsettled deliveries contained in this memory.
+     *
+     * @return number unsettled deliveries
+     */
+    public int getNumberUnsettled();
 
-  /**
-   * Returns a collection of all unsettled deliveries. The delivery memory remains untouched so the returned
-   * map is a copy (or better a clone) of the content.
-   *
-   * @return unsettled deliveries
-   */
-  public Collection<UnsettledDelivery> getUnsettled();
+    /**
+     * Returns a collection of all unsettled deliveries. The delivery memory remains untouched so the returned
+     * map is a copy (or better a clone) of the content.
+     *
+     * @return unsettled deliveries
+     */
+    public Collection<UnsettledDelivery> getUnsettled();
 }

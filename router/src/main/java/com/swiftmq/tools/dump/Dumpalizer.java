@@ -21,24 +21,21 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class Dumpalizer
-{
-  public static void dump(DataOutput out, Dumpable dumpable)
-      throws IOException
-  {
-    out.writeInt(dumpable.getDumpId());
-    dumpable.writeContent(out);
-  }
+public class Dumpalizer {
+    public static void dump(DataOutput out, Dumpable dumpable)
+            throws IOException {
+        out.writeInt(dumpable.getDumpId());
+        dumpable.writeContent(out);
+    }
 
-  public static Dumpable construct(DataInput in, DumpableFactory factory)
-      throws IOException
-  {
-    int dumpId = in.readInt();
-    Dumpable dumpable = factory.createDumpable(dumpId);
-    if (dumpable == null)
-      throw new NullPointerException(factory.getClass().getName()+".createDumpable(" + dumpId + ") returns null");
-    dumpable.readContent(in);
-    return dumpable;
-  }
+    public static Dumpable construct(DataInput in, DumpableFactory factory)
+            throws IOException {
+        int dumpId = in.readInt();
+        Dumpable dumpable = factory.createDumpable(dumpId);
+        if (dumpable == null)
+            throw new NullPointerException(factory.getClass().getName() + ".createDumpable(" + dumpId + ") returns null");
+        dumpable.readContent(in);
+        return dumpable;
+    }
 }
 

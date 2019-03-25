@@ -17,10 +17,8 @@
 
 package com.swiftmq.tools.versioning;
 
-public class VersionedException extends Exception
-{
-  public VersionedException(String s)
-  {
-    super(s);
-  }
+public class VersionedException extends Exception {
+    public VersionedException(String s) {
+        super(s);
+    }
 }

@@ -23,35 +23,29 @@ import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPSessionVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POSendEnd extends POObject
-{
-  ErrorConditionIF errorCondition;
-  AMQPString description;
+public class POSendEnd extends POObject {
+    ErrorConditionIF errorCondition;
+    AMQPString description;
 
-  public POSendEnd(ErrorConditionIF errorCondition, AMQPString description)
-  {
-    super(null, null);
-    this.errorCondition = errorCondition;
-    this.description = description;
-  }
+    public POSendEnd(ErrorConditionIF errorCondition, AMQPString description) {
+        super(null, null);
+        this.errorCondition = errorCondition;
+        this.description = description;
+    }
 
-  public ErrorConditionIF getErrorCondition()
-  {
-    return errorCondition;
-  }
+    public ErrorConditionIF getErrorCondition() {
+        return errorCondition;
+    }
 
-  public AMQPString getDescription()
-  {
-    return description;
-  }
+    public AMQPString getDescription() {
+        return description;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPSessionVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPSessionVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POSendEnd, errorCondition=" + errorCondition + ", description=" + description + "]";
-  }
+    public String toString() {
+        return "[POSendEnd, errorCondition=" + errorCondition + ", description=" + description + "]";
+    }
 }

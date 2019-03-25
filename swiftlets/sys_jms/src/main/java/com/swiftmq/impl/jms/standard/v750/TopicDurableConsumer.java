@@ -24,45 +24,39 @@ import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.topic.TopicManager;
 
-public class TopicDurableConsumer extends Consumer
-{
-  TopicManager topicManager = null;
-  int subscriberId = -1;
-  TopicImpl topic = null;
-  String queueName = null;
-  String topicName = null;
+public class TopicDurableConsumer extends Consumer {
+    TopicManager topicManager = null;
+    int subscriberId = -1;
+    TopicImpl topic = null;
+    String queueName = null;
+    String topicName = null;
 
-  protected TopicDurableConsumer(SessionContext ctx, String durableName, TopicImpl topic, String selector, boolean noLocal)
-      throws Exception
-  {
-    super(ctx);
-    topicName = topic.getTopicName();
-    MessageSelector msel = null;
-    if (selector != null)
-    {
-      msel = new MessageSelector(selector);
-      msel.compile();
+    protected TopicDurableConsumer(SessionContext ctx, String durableName, TopicImpl topic, String selector, boolean noLocal)
+            throws Exception {
+        super(ctx);
+        topicName = topic.getTopicName();
+        MessageSelector msel = null;
+        if (selector != null) {
+            msel = new MessageSelector(selector);
+            msel.compile();
+        }
+        this.topic = ctx.topicManager.verifyTopic(topic);
+        queueName = ctx.topicManager.subscribeDurable(durableName, topic, msel, noLocal, ctx.activeLogin);
+        setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, null));
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
     }
-    this.topic = ctx.topicManager.verifyTopic(topic);
-    queueName = ctx.topicManager.subscribeDurable(durableName, topic, msel, noLocal, ctx.activeLogin);
-    setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, null));
-    if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-  }
 
-  public String getQueueName()
-  {
-    return queueName;
-  }
+    public String getQueueName() {
+        return queueName;
+    }
 
-  public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache)
-  {
-    if (accountingProfile.isMatchTopicName(topicName))
-      collector = cache.getDestinationCollector(topicName, DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_CONSUMER);
-  }
+    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
+        if (accountingProfile.isMatchTopicName(topicName))
+            collector = cache.getDestinationCollector(topicName, DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_CONSUMER);
+    }
 
-  public String toString()
-  {
-    return "TopicDurableConsumer, topic=" + topic;
-  }
+    public String toString() {
+        return "TopicDurableConsumer, topic=" + topic;
+    }
 }
 

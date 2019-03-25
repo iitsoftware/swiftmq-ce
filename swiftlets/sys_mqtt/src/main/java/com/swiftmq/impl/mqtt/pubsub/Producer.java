@@ -22,11 +22,11 @@ import com.swiftmq.impl.mqtt.session.MQTTSession;
 import com.swiftmq.jms.BytesMessageImpl;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.TopicImpl;
-import com.swiftmq.swiftlet.queue.QueuePushTransaction;
-import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttFixedHeader;
 import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
+import com.swiftmq.swiftlet.queue.QueuePushTransaction;
+import com.swiftmq.swiftlet.queue.QueueSender;
 
 import javax.jms.DeliveryMode;
 
@@ -70,7 +70,7 @@ public class Producer {
         transaction = sender.createTransaction();
         transaction.putMessage(bytesMessage);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", sent: "+bytesMessage);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", sent: " + bytesMessage);
     }
 
     public void commit() throws Exception {
@@ -83,7 +83,7 @@ public class Producer {
 
     @Override
     public String toString() {
-        return session.toString()+"/Producer, " +
+        return session.toString() + "/Producer, " +
                 "topicName='" + topicName + '\'' +
                 ", topic=" + topic +
                 '}';

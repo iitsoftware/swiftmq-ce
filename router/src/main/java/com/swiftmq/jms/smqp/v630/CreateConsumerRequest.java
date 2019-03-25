@@ -17,10 +17,11 @@
 
 package com.swiftmq.jms.smqp.v630;
 
-/** SMQP-Protocol Version 630, Class: CreateConsumerRequest
- *  Automatically generated, don't change!
- *  Generation Date: Thu Aug 30 17:17:54 CEST 2007
- *  (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
+/**
+ * SMQP-Protocol Version 630, Class: CreateConsumerRequest
+ * Automatically generated, don't change!
+ * Generation Date: Thu Aug 30 17:17:54 CEST 2007
+ * (c) 2007, IIT GmbH, Bremen/Germany, All Rights Reserved
  **/
 
 import com.swiftmq.jms.QueueImpl;
@@ -33,107 +34,90 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class CreateConsumerRequest extends Request
-{
-  private QueueImpl queue;
-  private String messageSelector;
+public class CreateConsumerRequest extends Request {
+    private QueueImpl queue;
+    private String messageSelector;
 
-  public CreateConsumerRequest()
-  {
-    super(0, true);
-  }
+    public CreateConsumerRequest() {
+        super(0, true);
+    }
 
-  public CreateConsumerRequest(int dispatchId)
-  {
-    super(dispatchId, true);
-  }
+    public CreateConsumerRequest(int dispatchId) {
+        super(dispatchId, true);
+    }
 
-  public CreateConsumerRequest(RequestRetryValidator validator, int dispatchId)
-  {
-    super(dispatchId, true, validator);
-  }
+    public CreateConsumerRequest(RequestRetryValidator validator, int dispatchId) {
+        super(dispatchId, true, validator);
+    }
 
-  public CreateConsumerRequest(int dispatchId, QueueImpl queue, String messageSelector)
-  {
-    super(dispatchId, true);
-    this.queue = queue;
-    this.messageSelector = messageSelector;
-  }
+    public CreateConsumerRequest(int dispatchId, QueueImpl queue, String messageSelector) {
+        super(dispatchId, true);
+        this.queue = queue;
+        this.messageSelector = messageSelector;
+    }
 
-  public CreateConsumerRequest(RequestRetryValidator validator, int dispatchId, QueueImpl queue, String messageSelector)
-  {
-    super(dispatchId, true, validator);
-    this.queue = queue;
-    this.messageSelector = messageSelector;
-  }
+    public CreateConsumerRequest(RequestRetryValidator validator, int dispatchId, QueueImpl queue, String messageSelector) {
+        super(dispatchId, true, validator);
+        this.queue = queue;
+        this.messageSelector = messageSelector;
+    }
 
-  public void setQueue(QueueImpl queue)
-  {
-    this.queue = queue;
-  }
+    public void setQueue(QueueImpl queue) {
+        this.queue = queue;
+    }
 
-  public QueueImpl getQueue()
-  {
-    return queue;
-  }
+    public QueueImpl getQueue() {
+        return queue;
+    }
 
-  public void setMessageSelector(String messageSelector)
-  {
-    this.messageSelector = messageSelector;
-  }
+    public void setMessageSelector(String messageSelector) {
+        this.messageSelector = messageSelector;
+    }
 
-  public String getMessageSelector()
-  {
-    return messageSelector;
-  }
+    public String getMessageSelector() {
+        return messageSelector;
+    }
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_CREATECONSUMER_REQ;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_CREATECONSUMER_REQ;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    SMQPUtil.write(queue, out);
-    if (messageSelector != null)
-    {
-      out.writeBoolean(true);
-      SMQPUtil.write(messageSelector, out);
-    } else
-      out.writeBoolean(false);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        SMQPUtil.write(queue, out);
+        if (messageSelector != null) {
+            out.writeBoolean(true);
+            SMQPUtil.write(messageSelector, out);
+        } else
+            out.writeBoolean(false);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    queue = SMQPUtil.read(queue, in);
-    boolean messageSelector_set = in.readBoolean();
-    if (messageSelector_set)
-      messageSelector = SMQPUtil.read(messageSelector, in);
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        queue = SMQPUtil.read(queue, in);
+        boolean messageSelector_set = in.readBoolean();
+        if (messageSelector_set)
+            messageSelector = SMQPUtil.read(messageSelector, in);
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return new CreateConsumerReply();
-  }
+    protected Reply createReplyInstance() {
+        return new CreateConsumerReply();
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQPVisitor) visitor).visit(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQPVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    StringBuffer _b = new StringBuffer("[v630/CreateConsumerRequest, ");
-    _b.append(super.toString());
-    _b.append(", ");
-    _b.append("queue=");
-    _b.append(queue);
-    _b.append(", ");
-    _b.append("messageSelector=");
-    _b.append(messageSelector);
-    _b.append("]");
-    return _b.toString();
-  }
+    public String toString() {
+        StringBuffer _b = new StringBuffer("[v630/CreateConsumerRequest, ");
+        _b.append(super.toString());
+        _b.append(", ");
+        _b.append("queue=");
+        _b.append(queue);
+        _b.append(", ");
+        _b.append("messageSelector=");
+        _b.append(messageSelector);
+        _b.append("]");
+        return _b.toString();
+    }
 }

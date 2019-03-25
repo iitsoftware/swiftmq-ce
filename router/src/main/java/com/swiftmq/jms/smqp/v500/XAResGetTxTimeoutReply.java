@@ -19,43 +19,38 @@ package com.swiftmq.jms.smqp.v500;
 
 import com.swiftmq.tools.requestreply.Reply;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class XAResGetTxTimeoutReply extends Reply
-{
-  long txTimeout = 0;
+public class XAResGetTxTimeoutReply extends Reply {
+    long txTimeout = 0;
 
-  public int getDumpId()
-  {
-    return SMQPFactory.DID_XARESGETTXTIMEOUT_REP;
-  }
+    public int getDumpId() {
+        return SMQPFactory.DID_XARESGETTXTIMEOUT_REP;
+    }
 
-  public void writeContent(DataOutput out) throws IOException
-  {
-    super.writeContent(out);
-    out.writeLong(txTimeout);
-  }
+    public void writeContent(DataOutput out) throws IOException {
+        super.writeContent(out);
+        out.writeLong(txTimeout);
+    }
 
-  public void readContent(DataInput in) throws IOException
-  {
-    super.readContent(in);
-    txTimeout = in.readLong();
-  }
+    public void readContent(DataInput in) throws IOException {
+        super.readContent(in);
+        txTimeout = in.readLong();
+    }
 
-  public void setTxTimeout(long txTimeout)
-  {
-    this.txTimeout = txTimeout;
-  }
+    public void setTxTimeout(long txTimeout) {
+        this.txTimeout = txTimeout;
+    }
 
-  public long getTxTimeout()
-  {
-    return txTimeout;
-  }
+    public long getTxTimeout() {
+        return txTimeout;
+    }
 
-  public String toString()
-  {
-    return "[XAResGetTxTimeoutReply " + super.toString() + ", txTimeout=" + txTimeout + "]";
-  }
+    public String toString() {
+        return "[XAResGetTxTimeoutReply " + super.toString() + ", txTimeout=" + txTimeout + "]";
+    }
 
 }
 

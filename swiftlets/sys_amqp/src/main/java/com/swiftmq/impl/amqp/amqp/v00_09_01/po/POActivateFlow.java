@@ -21,20 +21,16 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.AMQPChannelVisitor;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class POActivateFlow extends POObject
-{
-  public POActivateFlow()
-  {
-    super(null, null);
-  }
+public class POActivateFlow extends POObject {
+    public POActivateFlow() {
+        super(null, null);
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((AMQPChannelVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((AMQPChannelVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[POActivateFlow]";
-  }
+    public String toString() {
+        return "[POActivateFlow]";
+    }
 }

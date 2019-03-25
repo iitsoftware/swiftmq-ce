@@ -22,28 +22,23 @@ import com.swiftmq.tools.pipeline.POVisitor;
 
 import java.io.DataInput;
 
-public class PODataAvailable extends POObject
-{
-  DataInput in;
+public class PODataAvailable extends POObject {
+    DataInput in;
 
-  public PODataAvailable(DataInput in)
-  {
-    super(null, null);
-    this.in = in;
-  }
+    public PODataAvailable(DataInput in) {
+        super(null, null);
+        this.in = in;
+    }
 
-  public DataInput getIn()
-  {
-    return in;
-  }
+    public DataInput getIn() {
+        return in;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((ReconnectVisitor) visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((ReconnectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[PODataAvailable, in=" + in + "]";
-  }
+    public String toString() {
+        return "[PODataAvailable, in=" + in + "]";
+    }
 }

@@ -21,30 +21,24 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestVisitor;
 
-public class StartStageRequest extends Request
-{
-  public StartStageRequest()
-  {
-    super(0, false);
-  }
+public class StartStageRequest extends Request {
+    public StartStageRequest() {
+        super(0, false);
+    }
 
-  public int getDumpId()
-  {
-    return SMQRFactory.START_STAGE_REQ;
-  }
+    public int getDumpId() {
+        return SMQRFactory.START_STAGE_REQ;
+    }
 
-  protected Reply createReplyInstance()
-  {
-    return null;
-  }
+    protected Reply createReplyInstance() {
+        return null;
+    }
 
-  public void accept(RequestVisitor visitor)
-  {
-    ((SMQRVisitor) visitor).handleRequest(this);
-  }
+    public void accept(RequestVisitor visitor) {
+        ((SMQRVisitor) visitor).handleRequest(this);
+    }
 
-  public String toString()
-  {
-    return "[StartStageRequest]";
-  }
+    public String toString() {
+        return "[StartStageRequest]";
+    }
 }

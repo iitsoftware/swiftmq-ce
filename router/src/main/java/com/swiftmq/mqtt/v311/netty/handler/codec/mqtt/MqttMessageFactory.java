@@ -27,7 +27,7 @@ public final class MqttMessageFactory {
 
     public static MqttMessage newMessage(MqttFixedHeader mqttFixedHeader, Object variableHeader, Object payload) {
         switch (mqttFixedHeader.messageType()) {
-            case CONNECT :
+            case CONNECT:
                 return new MqttConnectMessage(
                         mqttFixedHeader,
                         (MqttConnectVariableHeader) variableHeader,
@@ -87,5 +87,6 @@ public final class MqttMessageFactory {
         return new MqttMessage(null, null, null, DecoderResult.failure(cause));
     }
 
-    private MqttMessageFactory() { }
+    private MqttMessageFactory() {
+    }
 }

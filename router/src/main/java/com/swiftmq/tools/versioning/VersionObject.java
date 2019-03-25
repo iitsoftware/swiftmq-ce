@@ -19,7 +19,6 @@ package com.swiftmq.tools.versioning;
 
 import com.swiftmq.tools.dump.Dumpable;
 
-public interface VersionObject extends Dumpable
-{
-  public void accept(VersionVisitor visitor);
+public interface VersionObject extends Dumpable {
+    public void accept(VersionVisitor visitor);
 }

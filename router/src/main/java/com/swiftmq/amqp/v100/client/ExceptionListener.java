@@ -20,14 +20,13 @@ package com.swiftmq.amqp.v100.client;
 /**
  * An exception listener can be registered at the connection and is called whenever an excption occurs (e.g. connection closed).
  *
- *  @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
+ * @author IIT Software GmbH, Bremen/Germany, (c) 2011, All Rights Reserved
  */
-public interface ExceptionListener
-{
-  /**
-   * Called when an exception occurs.
-   *
-   * @param exception exception
-   */
-  public void onException(Exception exception);
+public interface ExceptionListener {
+    /**
+     * Called when an exception occurs.
+     *
+     * @param exception exception
+     */
+    public void onException(Exception exception);
 }

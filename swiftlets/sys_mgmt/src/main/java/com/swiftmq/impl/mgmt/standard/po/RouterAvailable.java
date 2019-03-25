@@ -17,30 +17,24 @@
 
 package com.swiftmq.impl.mgmt.standard.po;
 
-import com.swiftmq.util.SwiftUtilities;
-import com.swiftmq.tools.pipeline.*;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class RouterAvailable extends EventObject
-{
-  String name = null;
+public class RouterAvailable extends EventObject {
+    String name = null;
 
-  public RouterAvailable(String name)
-  {
-    this.name = name;
-  }
+    public RouterAvailable(String name) {
+        this.name = name;
+    }
 
-  public String getName()
-  {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void accept(POVisitor visitor)
-  {
-    ((EventObjectVisitor)visitor).visit(this);
-  }
+    public void accept(POVisitor visitor) {
+        ((EventObjectVisitor) visitor).visit(this);
+    }
 
-  public String toString()
-  {
-    return "[RouterAvailable, name="+name+"]";
-  }
+    public String toString() {
+        return "[RouterAvailable, name=" + name + "]";
+    }
 }
