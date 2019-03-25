@@ -29,6 +29,17 @@ delete c3
 delete c4
 delete c5
 delete c6
+delete t0
+delete t1
+delete t2
+delete t3
+delete t4
+delete t5
+delete t6
+delete t7
+delete t8
+delete t9
+delete t10
 cc /sys$topicmanager/topics
 delete amqp_testtopic1
 delete amqp_testtopic2
@@ -40,6 +51,7 @@ delete amqp_testtopic7
 delete amqp_testtopic8
 delete amqp_testtopic9
 delete amqp_testtopic10
+delete testtopic0
 delete testtopic1
 delete testtopic2
 delete testtopic3

@@ -25,6 +25,17 @@ new c3
 new c4
 new c5
 new c6
+new t0
+new t1
+new t2
+new t3
+new t4
+new t5
+new t6
+new t7
+new t8
+new t9
+new t10
 cc /sys$queuemanager/clustered-queues
 new cqueue
 cc cqueue/queue-bindings
@@ -51,6 +62,7 @@ new amqp_testtopic7
 new amqp_testtopic8
 new amqp_testtopic9
 new amqp_testtopic10
+new testtopic0
 new testtopic1
 new testtopic2
 new testtopic3
