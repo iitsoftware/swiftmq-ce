@@ -32,7 +32,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_accounting/target/sys_accounting-${project.version}.jar</source>
+      <source>../swiftlets/sys_accounting/target/sys_accounting.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$accounting</outputDirectory>
       <destName>sys$accounting.jar</destName>
     </file>
@@ -42,7 +42,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_amqp/target/sys_amqp-${project.version}.jar</source>
+      <source>../swiftlets/sys_amqp/target/sys_amqp.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$amqp</outputDirectory>
       <destName>sys$amqp.jar</destName>
     </file>
@@ -52,7 +52,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_authentication/target/sys_authentication.jar</source>
+      <source>../swiftlets/sys_authentication/target/sys_authentication_fat.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$authentication</outputDirectory>
       <destName>sys$authentication.jar</destName>
     </file>
@@ -62,7 +62,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_deploy/target/sys_deploy-${project.version}.jar</source>
+      <source>../swiftlets/sys_deploy/target/sys_deploy.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$deploy</outputDirectory>
       <destName>sys$deploy.jar</destName>
     </file>
@@ -72,7 +72,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_jms/target/sys_jms-${project.version}.jar</source>
+      <source>../swiftlets/sys_jms/target/sys_jms.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jms</outputDirectory>
       <destName>sys$jms.jar</destName>
     </file>
@@ -82,7 +82,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_jndi/target/sys_jndi-${project.version}.jar</source>
+      <source>../swiftlets/sys_jndi/target/sys_jndi.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jndi</outputDirectory>
       <destName>sys$jndi.jar</destName>
     </file>
@@ -92,7 +92,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_log/target/sys_log-${project.version}.jar</source>
+      <source>../swiftlets/sys_log/target/sys_log.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$log</outputDirectory>
       <destName>sys$log.jar</destName>
     </file>
@@ -102,7 +102,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_mgmt/target/sys_mgmt-${project.version}.jar</source>
+      <source>../swiftlets/sys_mgmt/target/sys_mgmt.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mgmt</outputDirectory>
       <destName>sys$mgmt.jar</destName>
     </file>
@@ -112,7 +112,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_monitor/target/sys_monitor.jar</source>
+      <source>../swiftlets/sys_monitor/target/sys_monitor_fat.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$monitor</outputDirectory>
       <destName>sys$monitor.jar</destName>
     </file>
@@ -122,7 +122,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_mqtt/target/sys_mqtt-${project.version}.jar</source>
+      <source>../swiftlets/sys_mqtt/target/sys_mqtt.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mqtt</outputDirectory>
       <destName>sys$mgmt.jar</destName>
     </file>
@@ -132,7 +132,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_net/target/sys_net-${project.version}.jar</source>
+      <source>../swiftlets/sys_net/target/sys_net.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$net</outputDirectory>
       <destName>sys$net.jar</destName>
     </file>
@@ -142,7 +142,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_queuemanager/target/sys_queuemanager-${project.version}.jar</source>
+      <source>../swiftlets/sys_queuemanager/target/sys_queuemanager.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$queuemanager</outputDirectory>
       <destName>sys$queuemanager.jar</destName>
     </file>
@@ -152,7 +152,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_routing/target/sys_routing-${project.version}.jar</source>
+      <source>../swiftlets/sys_routing/target/sys_routing.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$routing</outputDirectory>
       <destName>sys$routing.jar</destName>
     </file>
@@ -162,7 +162,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_scheduler/target/sys_scheduler-${project.version}.jar</source>
+      <source>../swiftlets/sys_scheduler/target/sys_scheduler.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$scheduler</outputDirectory>
       <destName>sys$scheduler.jar</destName>
     </file>
@@ -172,7 +172,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_store/target/sys_store-${project.version}.jar</source>
+      <source>../swiftlets/sys_store/target/sys_store.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$store</outputDirectory>
       <destName>sys$store.jar</destName>
     </file>
@@ -182,7 +182,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_streams/target/sys_streams.jar</source>
+      <source>../swiftlets/sys_streams/target/sys_streams_fat.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$streams</outputDirectory>
       <destName>sys$streams.jar</destName>
     </file>
@@ -192,7 +192,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_threadpool/target/sys_threadpool-${project.version}.jar</source>
+      <source>../swiftlets/sys_threadpool/target/sys_threadpool.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$threadpool</outputDirectory>
       <destName>sys$threadpool.jar</destName>
     </file>
@@ -202,7 +202,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_timer/target/sys_timer-${project.version}.jar</source>
+      <source>../swiftlets/sys_timer/target/sys_timer.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$timer</outputDirectory>
       <destName>sys$timer.jar</destName>
     </file>
@@ -212,7 +212,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_topicmanager/target/sys_topicmanager-${project.version}.jar</source>
+      <source>../swiftlets/sys_topicmanager/target/sys_topicmanager.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$topicmanager</outputDirectory>
       <destName>sys$topicmanager.jar</destName>
     </file>
@@ -222,7 +222,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_trace/target/sys_trace-${project.version}.jar</source>
+      <source>../swiftlets/sys_trace/target/sys_trace.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$trace</outputDirectory>
       <destName>sys$trace.jar</destName>
     </file>
@@ -232,7 +232,7 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_xa/target/sys_xa-${project.version}.jar</source>
+      <source>../swiftlets/sys_xa/target/sys_xa.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$xa</outputDirectory>
       <destName>sys$xa.jar</destName>
     </file>

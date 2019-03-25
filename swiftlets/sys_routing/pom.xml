@@ -13,7 +13,11 @@
   <groupId>com.swiftmq.swiftlets</groupId>
   <artifactId>sys_routing</artifactId>
   <version>12.0.0-SNAPSHOT</version>
-  
+
+  <properties>
+      <jar.finalName>${project.artifactId}</jar.finalName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.swiftmq</groupId>

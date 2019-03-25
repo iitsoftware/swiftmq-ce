@@ -13,7 +13,11 @@
   <groupId>com.swiftmq.swiftlets</groupId>
   <artifactId>sys_monitor</artifactId>
   <version>12.0.0-SNAPSHOT</version>
-  
+
+  <properties>
+      <jar.finalName>${project.artifactId}</jar.finalName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.swiftmq</groupId>
@@ -67,7 +71,7 @@
                       <include>javax.mail</include>
                   </includes>
               </artifactSet>
-              <outputFile>${project.build.directory}/${project.artifactId}.jar</outputFile>
+              <outputFile>${project.build.directory}/${project.artifactId}_fat.jar</outputFile>
             </configuration>
           </execution>
         </executions>
