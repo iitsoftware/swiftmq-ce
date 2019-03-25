@@ -44,10 +44,7 @@ public class Tester extends MultisessionConnectedXAPTPTestCase
       XAResource xares3 = sessions[2].getXAResource();
       XAResource xares4 = sessions[3].getXAResource();
 
-      int txto = xares1.getTransactionTimeout();
-      assertTrue("Invalid tx timeout, 300 expected but was "+txto,txto == 300);
-
-      txto = 600;
+      int txto = 600;
       assertTrue("xares2.setTransactionTimeout(txto) returns false",xares2.setTransactionTimeout(txto));
       int txto2 = xares1.getTransactionTimeout();
       assertTrue("Invalid tx timeout, "+txto+" expected but was "+txto2,txto == txto2);
