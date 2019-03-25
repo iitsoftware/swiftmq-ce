@@ -40,9 +40,9 @@
         <version>2.9.8</version>
     </dependency>
     <dependency>
-        <groupId>javax.mail</groupId>
-        <artifactId>javax.mail-api</artifactId>
-        <version>1.6.2</version>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+      <version>1.6.0</version>
     </dependency>
   </dependencies>
   <build>
@@ -86,7 +86,8 @@
                        <include>org.json</include>
                        <include>com.jayway.jsonpath</include>
                        <include>com.fasterxml.jackson.core</include>
-                       <include>javax.mail</include>
+                       <include>com.sun.mail</include>
+                       <include>javax.activation</include>
                      </includes>
                  </artifactSet>
                  <outputFile>${project.build.directory}/${project.artifactId}_fat.jar</outputFile>
