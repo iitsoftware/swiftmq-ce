@@ -111,22 +111,30 @@ public class JMSTestCase extends TestCase
 
   public void deleteQueue(String queueName) throws Exception
   {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter("router");
-    cli.executeCommand("sr router");
-    cli.executeCommand("cc /sys$queuemanager/queues");
-    cli.executeCommand("delete " + queueName);
+    try {
+      if (cli == null)
+        createCLI();
+      cli.waitForRouter("router");
+      cli.executeCommand("sr router");
+      cli.executeCommand("cc /sys$queuemanager/queues");
+      cli.executeCommand("delete " + queueName);
+    } catch (Exception e) {
+
+    }
   }
 
   public void deleteTopic(String topicName) throws Exception
   {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter("router");
-    cli.executeCommand("sr router");
-    cli.executeCommand("cc /sys$topicmanager/topics");
-    cli.executeCommand("delete " + topicName);
+    try {
+      if (cli == null)
+        createCLI();
+      cli.waitForRouter("router");
+      cli.executeCommand("sr router");
+      cli.executeCommand("cc /sys$topicmanager/topics");
+      cli.executeCommand("delete " + topicName);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   public void haltRouter(String routerName) throws Exception

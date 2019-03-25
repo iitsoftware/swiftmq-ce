@@ -1,0 +1,29 @@
+wr router
+sr router
+cc /sys$queuemanager/clustered-queues
+delete cqueue
+cc /sys$queuemanager/composite-queues
+delete compqueue
+cc /sys$queuemanager/queues
+delete testqueue1
+delete testqueue2
+delete testqueue3
+delete testqueue4
+delete testqueue5
+delete complink1
+delete complink2
+delete complink3
+delete c1
+delete c2
+delete c3
+delete c4
+delete c5
+delete c6
+cc /sys$topicmanager/topics
+delete testtopic1
+delete testtopic2
+delete testtopic3
+delete testtopic4
+delete testtopic5
+save
+exit
