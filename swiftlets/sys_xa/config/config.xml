@@ -17,7 +17,7 @@
               display="Default Transaction Timeout (ms)"
               description="Max. time a XA transaction can run, thereafter it will be rolled back"
               min="0"
-              default="300000"/>
+              default="0"/>
     <entity name="usage"
             display="Usage"
             description="Usage">
