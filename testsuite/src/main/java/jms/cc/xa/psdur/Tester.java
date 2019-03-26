@@ -47,7 +47,7 @@ public class Tester extends XAPSTestCase
   {
     String tcfName = System.getProperty("jndi.tcf");
     assertNotNull("missing property 'jndi.tcf'", tcfName);
-    tc = createXATopicConnection(tcfName, "jms.cc-test", false);
+    tc = createXATopicConnection(tcfName, "jms-cc-test", false);
     String topicName = System.getProperty("jndi.topic");
     assertNotNull("missing property 'jndi.topic'", topicName);
     topic = getTopic(topicName);

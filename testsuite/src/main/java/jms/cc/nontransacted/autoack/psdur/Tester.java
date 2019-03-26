@@ -45,7 +45,7 @@ public class Tester extends PSTestCase
   {
     String tcfName = System.getProperty("jndi.tcf");
     assertNotNull("missing property 'jndi.tcf'", tcfName);
-    tc = createTopicConnection(tcfName, "jms.cc-test", false);
+    tc = createTopicConnection(tcfName, "jms-cc-test", false);
     String topicName = System.getProperty("jndi.topic");
     assertNotNull("missing property 'jndi.topic'", topicName);
     topic = getTopic(topicName);
