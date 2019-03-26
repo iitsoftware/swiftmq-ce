@@ -83,58 +83,42 @@ public class JMSTestCase extends TestCase
 
   public void createQueue(String queueName) throws Exception
   {
-    try {
-      if (cli == null)
-        createCLI();
-      cli.waitForRouter("router");
-      cli.executeCommand("sr router");
-      cli.executeCommand("cc /sys$queuemanager/queues");
-      cli.executeCommand("new " + queueName);
-    } catch (Exception e) {
-
-    }
+    if (cli == null)
+      createCLI();
+    cli.waitForRouter("router");
+    cli.executeCommand("sr router");
+    cli.executeCommand("cc /sys$queuemanager/queues");
+    cli.executeCommand("new " + queueName);
   }
 
   public void createTopic(String topicName) throws Exception
   {
-    try {
-      if (cli == null)
-        createCLI();
-      cli.waitForRouter("router");
-      cli.executeCommand("sr router");
-      cli.executeCommand("cc /sys$topicmanager/topics");
-      cli.executeCommand("new " + topicName);
-    } catch (Exception e) {
-
-    }
+    if (cli == null)
+      createCLI();
+    cli.waitForRouter("router");
+    cli.executeCommand("sr router");
+    cli.executeCommand("cc /sys$topicmanager/topics");
+    cli.executeCommand("new " + topicName);
   }
 
   public void deleteQueue(String queueName) throws Exception
   {
-    try {
-      if (cli == null)
-        createCLI();
-      cli.waitForRouter("router");
-      cli.executeCommand("sr router");
-      cli.executeCommand("cc /sys$queuemanager/queues");
-      cli.executeCommand("delete " + queueName);
-    } catch (Exception e) {
-
-    }
+    if (cli == null)
+      createCLI();
+    cli.waitForRouter("router");
+    cli.executeCommand("sr router");
+    cli.executeCommand("cc /sys$queuemanager/queues");
+    cli.executeCommand("delete " + queueName);
   }
 
   public void deleteTopic(String topicName) throws Exception
   {
-    try {
-      if (cli == null)
-        createCLI();
-      cli.waitForRouter("router");
-      cli.executeCommand("sr router");
-      cli.executeCommand("cc /sys$topicmanager/topics");
-      cli.executeCommand("delete " + topicName);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    if (cli == null)
+      createCLI();
+    cli.waitForRouter("router");
+    cli.executeCommand("sr router");
+    cli.executeCommand("cc /sys$topicmanager/topics");
+    cli.executeCommand("delete " + topicName);
   }
 
   public void haltRouter(String routerName) throws Exception

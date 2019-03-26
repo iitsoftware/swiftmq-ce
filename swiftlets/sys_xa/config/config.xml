@@ -11,13 +11,13 @@
               display="Scan Interval (ms)"
               description="Interval to scan prepared XA transaction to put into the Usage List"
               min="500"
-              default="120000"/>
+              default="20000"/>
     <property name="default-transaction-timeout"
               type="java.lang.Long"
               display="Default Transaction Timeout (ms)"
               description="Max. time a XA transaction can run, thereafter it will be rolled back"
               min="0"
-              default="0"/>
+              default="300000"/>
     <entity name="usage"
             display="Usage"
             description="Usage">

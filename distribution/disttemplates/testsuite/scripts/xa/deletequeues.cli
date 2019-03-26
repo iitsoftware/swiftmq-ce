@@ -23,6 +23,7 @@ delete c4
 delete c5
 delete c6
 cc /sys$topicmanager/topics
+delete testtopic0
 delete testtopic1
 delete testtopic2
 delete testtopic3

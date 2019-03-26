@@ -34,6 +34,7 @@ new complink1 generate-new-message-id false change-destination true
 new complink2 generate-new-message-id false change-destination false
 new complink3 generate-new-message-id false change-destination false message-selector "Prop = 'X'"
 cc /sys$topicmanager/topics
+new testtopic0
 new testtopic1
 new testtopic2
 new testtopic3
