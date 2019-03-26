@@ -1,0 +1,26 @@
+wr router
+sr router
+cc /sys$queuemanager/queues
+delete amqp_testqueue1
+delete amqp_testqueue2
+delete amqp_testqueue3
+delete amqp_testqueue4
+delete amqp_testqueue5
+delete amqp_testqueue6
+delete amqp_testqueue7
+delete amqp_testqueue8
+delete amqp_testqueue9
+delete amqp_testqueue10
+cc /sys$topicmanager/topics
+delete amqp_testtopic1
+delete amqp_testtopic2
+delete amqp_testtopic3
+delete amqp_testtopic4
+delete amqp_testtopic5
+delete amqp_testtopic6
+delete amqp_testtopic7
+delete amqp_testtopic8
+delete amqp_testtopic9
+delete amqp_testtopic10
+save
+exit

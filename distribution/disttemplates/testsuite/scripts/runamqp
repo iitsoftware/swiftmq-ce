@@ -1,0 +1,9 @@
+export ROUTER=$1
+export TESTSUITE=`pwd`
+cd $ROUTER/scripts
+./clis admin secret $TESTSUITE/amqp/createqueues.cli
+cd $TESTSUITE
+java -Xmx1024M -cp $TESTSUITE/../jars/swiftmq-testsuite.jar -Dusesasl=true -Danonlogin=true -Dnmsgs=1000 -Dpersistent=true -Dnpairs=10 org.junit.runner.JUnitCore jms.func.Suite jms.funcunified.Suite
+cd $ROUTER/scripts
+./clis admin secret $TESTSUITE/amqp/deletequeues.cli
+cd $TESTSUITE
