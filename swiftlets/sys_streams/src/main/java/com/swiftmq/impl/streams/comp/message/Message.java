@@ -70,6 +70,7 @@ public class Message {
         dbis.setBuffer(dbos.getBuffer(), 0, dbos.getCount());
         MessageImpl msgCopy = MessageImpl.createInstance(dbis.readInt());
         msgCopy.readContent(dbis);
+        msgCopy.clearSwiftMQAllProps();
         return msgCopy;
     }
 
