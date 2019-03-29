@@ -1,2 +1,2 @@
 # swiftmq-ce
-SwiftMQ Community Edition
+SwiftMQ Community Edition (CE)
