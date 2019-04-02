@@ -49,7 +49,7 @@ public class UnifiedXAMixedTestCase extends JMSTestCase
         qc.start();
     } catch (Exception e)
     {
-      fail("create xa connection failed: " + e);
+      failFast("create xa connection failed: " + e);
     }
     return qc;
   }
@@ -70,7 +70,7 @@ public class UnifiedXAMixedTestCase extends JMSTestCase
       qc = createXAConnection(ctx, lookup, start);
     } catch (Exception e)
     {
-      fail("create connection failed: " + e);
+      failFast("create connection failed: " + e);
     }
     return qc;
   }
@@ -89,7 +89,7 @@ public class UnifiedXAMixedTestCase extends JMSTestCase
         tc.start();
     } catch (Exception e)
     {
-      fail("create xa topic connection failed: " + e);
+      failFast("create xa topic connection failed: " + e);
     }
     return tc;
   }
@@ -109,7 +109,7 @@ public class UnifiedXAMixedTestCase extends JMSTestCase
       tc = createXAConnection(ctx, lookup, clientId, start);
     } catch (Exception e)
     {
-      fail("create topic connection failed: " + e);
+      failFast("create topic connection failed: " + e);
     }
     return tc;
   }
@@ -129,7 +129,7 @@ public class UnifiedXAMixedTestCase extends JMSTestCase
       dest = (Destination) ctx.lookup(name);
     } catch (Exception e)
     {
-      fail("get dest failed: " + e);
+      failFast("get dest failed: " + e);
     }
     return dest;
   }

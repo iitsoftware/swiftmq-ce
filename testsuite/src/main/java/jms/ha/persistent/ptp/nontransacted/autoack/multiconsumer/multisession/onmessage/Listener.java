@@ -68,7 +68,7 @@ public class Listener extends SimpleConnectedPTPTestCase
         throw exception;
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

@@ -49,7 +49,7 @@ public class UnifiedXAPTPTestCase extends JMSTestCase
         qc.start();
     } catch (Exception e)
     {
-      fail("create xa queue connection failed: " + e);
+      failFast("create xa queue connection failed: " + e);
     }
     return qc;
   }
@@ -70,7 +70,7 @@ public class UnifiedXAPTPTestCase extends JMSTestCase
       qc = createXAConnection(ctx, lookup, start);
     } catch (Exception e)
     {
-      fail("create queue connection failed: " + e);
+      failFast("create queue connection failed: " + e);
     }
     return qc;
   }
@@ -85,7 +85,7 @@ public class UnifiedXAPTPTestCase extends JMSTestCase
       queue = (Queue) ctx.lookup(name);
     } catch (Exception e)
     {
-      fail("get queue failed: " + e);
+      failFast("get queue failed: " + e);
     }
     return queue;
   }

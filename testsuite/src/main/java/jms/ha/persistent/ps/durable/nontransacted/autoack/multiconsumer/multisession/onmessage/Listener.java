@@ -84,7 +84,7 @@ public class Listener extends SimpleConnectedPSTestCase
         throw exception;
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

@@ -59,7 +59,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedUnifiedPSTestCase
               tm.acknowledge();
             } catch (Exception jmse)
             {
-              fail(jmse.toString());
+              failFast(jmse.toString());
             }
             if (cnt == 10)
             {
@@ -93,7 +93,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedUnifiedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -115,7 +115,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedUnifiedPSTestCase
               tm.acknowledge();
             } catch (Exception jmse)
             {
-              fail(jmse.toString());
+              failFast(jmse.toString());
             }
             if (cnt == 10)
             {
@@ -149,7 +149,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedUnifiedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

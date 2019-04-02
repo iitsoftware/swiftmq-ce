@@ -73,7 +73,7 @@ public class Subscriber extends SimpleConnectedUnifiedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

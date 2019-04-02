@@ -49,7 +49,7 @@ public class Priority extends SimpleConnectedUnifiedPTPTestCase
       }
     } catch (Exception e)
     {
-      fail("test_9_to_0 failed: " + e);
+      failFast("test_9_to_0 failed: " + e);
     }
   }
 
@@ -75,7 +75,7 @@ public class Priority extends SimpleConnectedUnifiedPTPTestCase
       }
     } catch (Exception e)
     {
-      fail("test_0_to_9 failed: " + e);
+      failFast("test_0_to_9 failed: " + e);
     }
   }
 

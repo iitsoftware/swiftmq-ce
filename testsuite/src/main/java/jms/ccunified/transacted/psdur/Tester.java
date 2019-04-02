@@ -92,7 +92,7 @@ public class Tester extends UnifiedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("Test failed: " + e.toString());
+      failFast("Test failed: " + e.toString());
     }
   }
 

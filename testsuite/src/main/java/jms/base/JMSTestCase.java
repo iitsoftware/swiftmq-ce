@@ -48,7 +48,7 @@ public class JMSTestCase extends TestCase
       ctx = new InitialContext(env);
     } catch (Exception e)
     {
-      fail("Failed to create InitialContext from class: " + className + ", url: " + url + ", exception=" + e);
+      failFast("Failed to create InitialContext from class: " + className + ", url: " + url + ", exception=" + e);
     }
     return ctx;
   }
@@ -146,6 +146,11 @@ public class JMSTestCase extends TestCase
     cli.waitForRouter(routerName);
     cli.executeCommand("sr " + routerName);
     cli.executeCommand("save");
+  }
+
+  public static void failFast(String msg){
+    fail(msg);
+    System.exit(-1);
   }
 
   protected void tearDown() throws Exception

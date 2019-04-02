@@ -85,7 +85,7 @@ public class SendReceive extends SimpleConnectedUnifiedMixedTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

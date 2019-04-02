@@ -88,13 +88,13 @@ public class Forwarder extends SimpleConnectedXAPTPTestCase
       sem.waitHere(30000);
     } while (n != nMsgs && lastInc + 60000 > System.currentTimeMillis());
     if (exception != null)
-      fail("failed: " + exception);
+      failFast("failed: " + exception);
     try
     {
       verifier.verify();
     } catch (Exception e)
     {
-      fail("failed: " + e);
+      failFast("failed: " + e);
     }
   }
 

@@ -85,7 +85,7 @@ public class Sender extends SimpleConnectedXAPTPTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

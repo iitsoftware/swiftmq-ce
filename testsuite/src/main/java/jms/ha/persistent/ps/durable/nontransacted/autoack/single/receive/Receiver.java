@@ -89,7 +89,7 @@ public class Receiver extends SimpleConnectedPSTestCase
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

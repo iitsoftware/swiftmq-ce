@@ -49,7 +49,7 @@ public class Receiver extends SimpleConnectedUnifiedPTPTestCase
       System.out.println("got " + cnt + " messages");
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

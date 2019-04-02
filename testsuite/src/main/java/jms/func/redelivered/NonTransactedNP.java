@@ -75,7 +75,7 @@ public class NonTransactedNP extends SimpleConnectedPTPTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

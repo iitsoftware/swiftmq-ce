@@ -55,7 +55,7 @@ public class Tester extends SimpleConnectedUnifiedXAPTPTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -79,7 +79,7 @@ public class Tester extends SimpleConnectedUnifiedXAPTPTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -98,7 +98,7 @@ public class Tester extends SimpleConnectedUnifiedXAPTPTestCase
     } catch (XAException e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -132,7 +132,7 @@ public class Tester extends SimpleConnectedUnifiedXAPTPTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

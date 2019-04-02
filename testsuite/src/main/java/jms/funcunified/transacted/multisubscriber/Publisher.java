@@ -49,7 +49,7 @@ public class Publisher extends SimpleConnectedUnifiedPSTestCase
       ts.commit();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -66,7 +66,7 @@ public class Publisher extends SimpleConnectedUnifiedPSTestCase
       ts.commit();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

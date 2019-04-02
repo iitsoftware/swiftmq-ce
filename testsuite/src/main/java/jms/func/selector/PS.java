@@ -82,7 +82,7 @@ public class PS extends SimpleConnectedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -110,7 +110,7 @@ public class PS extends SimpleConnectedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -135,7 +135,7 @@ public class PS extends SimpleConnectedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -163,7 +163,7 @@ public class PS extends SimpleConnectedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -192,7 +192,7 @@ public class PS extends SimpleConnectedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -220,7 +220,7 @@ public class PS extends SimpleConnectedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -246,7 +246,7 @@ public class PS extends SimpleConnectedPSTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -274,7 +274,7 @@ public class PS extends SimpleConnectedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -329,7 +329,7 @@ public class PS extends SimpleConnectedPSTestCase
       assertTrue("cnt != 1",cnt == 1);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

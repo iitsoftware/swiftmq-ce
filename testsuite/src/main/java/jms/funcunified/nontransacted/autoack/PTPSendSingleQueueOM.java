@@ -86,7 +86,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -135,7 +135,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

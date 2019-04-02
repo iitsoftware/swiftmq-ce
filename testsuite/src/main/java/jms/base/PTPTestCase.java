@@ -44,7 +44,7 @@ public class PTPTestCase extends JMSTestCase
         qc.start();
     } catch (Exception e)
     {
-      fail("create queue connection failed: " + e);
+      failFast("create queue connection failed: " + e);
     }
     return qc;
   }
@@ -59,7 +59,7 @@ public class PTPTestCase extends JMSTestCase
       qc = createQueueConnection(ctx, lookup, false);
     } catch (Exception e)
     {
-      fail("create queue connection failed: " + e);
+      failFast("create queue connection failed: " + e);
     }
     return qc;
   }
@@ -74,7 +74,7 @@ public class PTPTestCase extends JMSTestCase
       qc = createQueueConnection(ctx, lookup);
     } catch (Exception e)
     {
-      fail("create queue connection failed: " + e);
+      failFast("create queue connection failed: " + e);
     }
     return qc;
   }
@@ -89,7 +89,7 @@ public class PTPTestCase extends JMSTestCase
       qc = createQueueConnection(ctx, lookup, start);
     } catch (Exception e)
     {
-      fail("create queue connection failed: " + e);
+      failFast("create queue connection failed: " + e);
     }
     return qc;
   }
@@ -104,7 +104,7 @@ public class PTPTestCase extends JMSTestCase
       queue = (Queue) ctx.lookup(name);
     } catch (Exception e)
     {
-      fail("get queue failed: " + e);
+      failFast("get queue failed: " + e);
     }
     return queue;
   }

@@ -67,7 +67,7 @@ public class Sender extends SimpleConnectedXAPTPClusterTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

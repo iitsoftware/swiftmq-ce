@@ -79,7 +79,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -110,7 +110,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -142,7 +142,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -173,7 +173,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -205,7 +205,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -236,7 +236,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -268,7 +268,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -299,7 +299,7 @@ public class PTP extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

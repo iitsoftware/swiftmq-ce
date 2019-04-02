@@ -66,7 +66,7 @@ public class Receiver extends SimpleConnectedXAPSTestCase
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

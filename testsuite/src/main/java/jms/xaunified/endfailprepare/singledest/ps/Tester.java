@@ -46,7 +46,7 @@ public class Tester extends SimpleConnectedUnifiedXAPS1MTestCase
       try
       {
         xares.prepare(xid);
-        fail("doesn't throws XAException!");
+        failFast("doesn't throws XAException!");
       } catch (XAException e)
       {
         xares.rollback(xid);
@@ -67,7 +67,7 @@ public class Tester extends SimpleConnectedUnifiedXAPS1MTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -87,7 +87,7 @@ public class Tester extends SimpleConnectedUnifiedXAPS1MTestCase
       try
       {
         xares.prepare(xid);
-        fail("doesn't throws XAException!");
+        failFast("doesn't throws XAException!");
       } catch (XAException e)
       {
         xares.rollback(xid);
@@ -108,7 +108,7 @@ public class Tester extends SimpleConnectedUnifiedXAPS1MTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

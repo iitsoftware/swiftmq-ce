@@ -102,7 +102,7 @@ public class SelectorReceiver extends SimpleConnectedXAPTPTestCase
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

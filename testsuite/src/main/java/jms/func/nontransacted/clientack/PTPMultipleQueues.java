@@ -134,7 +134,7 @@ public class PTPMultipleQueues extends SimpleConnectedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -201,7 +201,7 @@ public class PTPMultipleQueues extends SimpleConnectedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -264,7 +264,7 @@ public class PTPMultipleQueues extends SimpleConnectedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -327,7 +327,7 @@ public class PTPMultipleQueues extends SimpleConnectedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -404,7 +404,7 @@ public class PTPMultipleQueues extends SimpleConnectedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -481,7 +481,7 @@ public class PTPMultipleQueues extends SimpleConnectedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

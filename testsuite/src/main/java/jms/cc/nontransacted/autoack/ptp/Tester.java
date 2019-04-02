@@ -96,7 +96,7 @@ public class Tester extends PTPTestCase
       assertTrue("Msg != null", msg == null);
     } catch (Exception e)
     {
-      fail("Test failed: " + e.toString());
+      failFast("Test failed: " + e.toString());
     }
   }
 

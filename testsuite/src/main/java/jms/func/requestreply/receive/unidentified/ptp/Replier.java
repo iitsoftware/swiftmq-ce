@@ -49,7 +49,7 @@ public class Replier extends SimpleConnectedPTPTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

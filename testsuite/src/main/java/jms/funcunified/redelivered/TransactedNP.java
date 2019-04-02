@@ -77,7 +77,7 @@ public class TransactedNP extends SimpleConnectedUnifiedPTPTestCase
       qs.commit();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

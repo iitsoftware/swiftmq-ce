@@ -59,7 +59,7 @@ public class Tester extends MultisessionConnectedXAPTPTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

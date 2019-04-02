@@ -62,7 +62,7 @@ public class Replier extends SimpleConnectedUnifiedPTPTestCase
             }
           } catch (Exception e1)
           {
-            fail("onMessage failed: " + e1);
+            failFast("onMessage failed: " + e1);
           }
         }
       });
@@ -77,7 +77,7 @@ public class Replier extends SimpleConnectedUnifiedPTPTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

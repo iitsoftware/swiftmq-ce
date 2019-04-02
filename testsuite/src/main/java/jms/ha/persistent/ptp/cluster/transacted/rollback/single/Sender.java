@@ -104,7 +104,7 @@ public class Sender extends SimpleConnectedPTPClusterTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

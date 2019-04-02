@@ -91,7 +91,7 @@ public class Tester extends SimpleConnectedUnifiedXAPTPTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

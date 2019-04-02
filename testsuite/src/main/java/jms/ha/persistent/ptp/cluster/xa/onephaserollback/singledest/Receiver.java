@@ -95,7 +95,7 @@ public class Receiver extends SimpleConnectedXAPTPClusterTestCase
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

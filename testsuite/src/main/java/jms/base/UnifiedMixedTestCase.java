@@ -44,7 +44,7 @@ public class UnifiedMixedTestCase extends JMSTestCase
         qc.start();
     } catch (Exception e)
     {
-      fail("create connection failed: " + e);
+      failFast("create connection failed: " + e);
     }
     return qc;
   }
@@ -59,7 +59,7 @@ public class UnifiedMixedTestCase extends JMSTestCase
       qc = createConnection(ctx, lookup, false);
     } catch (Exception e)
     {
-      fail("create connection failed: " + e);
+      failFast("create connection failed: " + e);
     }
     return qc;
   }
@@ -74,7 +74,7 @@ public class UnifiedMixedTestCase extends JMSTestCase
       qc = createConnection(ctx, lookup);
     } catch (Exception e)
     {
-      fail("create connection failed: " + e);
+      failFast("create connection failed: " + e);
     }
     return qc;
   }
@@ -89,7 +89,7 @@ public class UnifiedMixedTestCase extends JMSTestCase
       qc = createConnection(ctx, lookup, start);
     } catch (Exception e)
     {
-      fail("create connection failed: " + e);
+      failFast("create connection failed: " + e);
     }
     return qc;
   }
@@ -108,7 +108,7 @@ public class UnifiedMixedTestCase extends JMSTestCase
         tc.start();
     } catch (Exception e)
     {
-      fail("create connection failed: " + e);
+      failFast("create connection failed: " + e);
     }
     return tc;
   }
@@ -123,7 +123,7 @@ public class UnifiedMixedTestCase extends JMSTestCase
       tc = createConnection(ctx, lookup, clientId, true);
     } catch (Exception e)
     {
-      fail("create connection failed: " + e);
+      failFast("create connection failed: " + e);
     }
     return tc;
   }
@@ -138,7 +138,7 @@ public class UnifiedMixedTestCase extends JMSTestCase
       dest = (Destination) ctx.lookup(name);
     } catch (Exception e)
     {
-      fail("get topic failed: " + e);
+      failFast("get topic failed: " + e);
     }
     return dest;
   }

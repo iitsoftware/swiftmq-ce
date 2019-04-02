@@ -56,7 +56,7 @@ public class PSSendSingleTopicDur extends SimpleConnectedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -83,7 +83,7 @@ public class PSSendSingleTopicDur extends SimpleConnectedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

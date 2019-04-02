@@ -56,7 +56,7 @@ public class Subscriber extends SimpleConnectedUnifiedPSTestCase
                 ts.commit();
               } catch (Exception jmse)
               {
-                fail(jmse.toString());
+                failFast(jmse.toString());
               }
               sem.notify();
             }
@@ -80,7 +80,7 @@ public class Subscriber extends SimpleConnectedUnifiedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

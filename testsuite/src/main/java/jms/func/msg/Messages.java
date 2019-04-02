@@ -69,7 +69,7 @@ public class Messages extends SimpleConnectedPTPTestCase
       assertTrue("Failed String2", msg.getObjectProperty("String2").equals("StringValue2"));
     } catch (Exception e)
     {
-      fail("testMessageImpl failed: " + e);
+      failFast("testMessageImpl failed: " + e);
     }
   }
 
@@ -116,7 +116,7 @@ public class Messages extends SimpleConnectedPTPTestCase
       assertTrue("Failed readUTF", msg.readUTF().equals("String1"));
     } catch (Exception e)
     {
-      fail("testBytesMessageImpl failed: " + e);
+      failFast("testBytesMessageImpl failed: " + e);
     }
   }
 
@@ -166,7 +166,7 @@ public class Messages extends SimpleConnectedPTPTestCase
       assertTrue("Failed readString", msg.readString().equals("String1"));
     } catch (Exception e)
     {
-      fail("testStreamMessageImpl failed: " + e);
+      failFast("testStreamMessageImpl failed: " + e);
     }
   }
 
@@ -213,7 +213,7 @@ public class Messages extends SimpleConnectedPTPTestCase
       assertTrue("Failed getString", msg.getString("P14").equals("String1"));
     } catch (Exception e)
     {
-      fail("testMapMessageImpl failed: " + e);
+      failFast("testMapMessageImpl failed: " + e);
     }
   }
 
@@ -228,7 +228,7 @@ public class Messages extends SimpleConnectedPTPTestCase
       assertTrue("Failed getObject", ((StringBuffer) msg.getObject()).toString().equals("A string buffer is an object"));
     } catch (Exception e)
     {
-      fail("testObjectMessageImpl failed: " + e);
+      failFast("testObjectMessageImpl failed: " + e);
     }
   }
 
@@ -243,7 +243,7 @@ public class Messages extends SimpleConnectedPTPTestCase
       assertTrue("Failed getText", msg.getText().equals("A string"));
     } catch (Exception e)
     {
-      fail("testTextMessageImpl failed: " + e);
+      failFast("testTextMessageImpl failed: " + e);
     }
   }
 
@@ -262,7 +262,7 @@ public class Messages extends SimpleConnectedPTPTestCase
       assertTrue("Failed getText", msg.getText().equals(s));
     } catch (Exception e)
     {
-      fail("testTextMessageImplLargeText failed: " + e);
+      failFast("testTextMessageImplLargeText failed: " + e);
     }
   }
 }

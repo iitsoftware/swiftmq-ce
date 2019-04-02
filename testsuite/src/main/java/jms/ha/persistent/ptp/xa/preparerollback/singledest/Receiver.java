@@ -90,7 +90,7 @@ public class Receiver extends SimpleConnectedXAPTPTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

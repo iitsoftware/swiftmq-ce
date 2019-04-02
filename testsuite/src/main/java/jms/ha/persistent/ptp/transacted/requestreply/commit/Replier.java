@@ -79,7 +79,7 @@ public class Replier extends SimpleConnectedPTPTestCase implements MessageListen
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

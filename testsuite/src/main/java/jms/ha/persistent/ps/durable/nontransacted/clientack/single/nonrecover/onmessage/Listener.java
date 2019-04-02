@@ -109,7 +109,7 @@ public class Listener extends SimpleConnectedPSTestCase implements MessageListen
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

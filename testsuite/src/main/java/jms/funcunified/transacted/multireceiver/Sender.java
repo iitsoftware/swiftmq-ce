@@ -46,7 +46,7 @@ public class Sender extends SimpleConnectedUnifiedPTPTestCase
       qs.commit();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -63,7 +63,7 @@ public class Sender extends SimpleConnectedUnifiedPTPTestCase
       qs.commit();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

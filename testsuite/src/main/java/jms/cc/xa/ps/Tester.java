@@ -95,7 +95,7 @@ public class Tester extends XAPSTestCase
       }
     } catch (Exception e)
     {
-      fail("Test failed: " + e.toString());
+      failFast("Test failed: " + e.toString());
     }
   }
 

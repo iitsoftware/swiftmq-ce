@@ -115,7 +115,7 @@ public class Listener extends SimpleConnectedPTPClusterTestCase implements Messa
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

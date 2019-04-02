@@ -85,7 +85,7 @@ public class MDBForwarder extends UnifiedXAPTPTestCase
       }
     } catch (Exception e)
     {
-      fail("Test failed: " + e.toString());
+      failFast("Test failed: " + e.toString());
     }
   }
 

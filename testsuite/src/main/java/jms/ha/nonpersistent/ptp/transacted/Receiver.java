@@ -56,7 +56,7 @@ public class Receiver extends SimpleConnectedPTPTestCase
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

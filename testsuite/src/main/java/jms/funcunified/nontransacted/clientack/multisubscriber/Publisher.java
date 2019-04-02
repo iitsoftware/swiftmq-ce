@@ -48,7 +48,7 @@ public class Publisher extends SimpleConnectedUnifiedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -64,7 +64,7 @@ public class Publisher extends SimpleConnectedUnifiedPSTestCase
       }
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

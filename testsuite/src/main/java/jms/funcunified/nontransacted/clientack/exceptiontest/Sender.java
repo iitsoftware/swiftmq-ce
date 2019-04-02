@@ -45,7 +45,7 @@ public class Sender extends SimpleConnectedUnifiedPTPTestCase
       producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -62,7 +62,7 @@ public class Sender extends SimpleConnectedUnifiedPTPTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

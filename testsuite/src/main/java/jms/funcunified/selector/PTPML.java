@@ -87,7 +87,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
       qr1.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -124,7 +124,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
       qr2.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -167,7 +167,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -204,7 +204,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
       qr4.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -240,7 +240,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
       qr1.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -277,7 +277,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
       qr2.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -320,7 +320,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
 
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -357,7 +357,7 @@ public class PTPML extends SimpleConnectedUnifiedPTPTestCase
       qr4.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

@@ -115,7 +115,7 @@ public class Receiver extends SimpleConnectedPTPClusterTestCase
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 

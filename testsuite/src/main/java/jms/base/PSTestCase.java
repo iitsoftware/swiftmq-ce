@@ -51,7 +51,7 @@ public class PSTestCase extends JMSTestCase
         tc.start();
     } catch (Exception e)
     {
-      fail("create topic connection failed: " + e);
+      failFast("create topic connection failed: " + e);
     }
     return tc;
   }
@@ -71,7 +71,7 @@ public class PSTestCase extends JMSTestCase
       tc = createTopicConnection(ctx, lookup, clientId, start);
     } catch (Exception e)
     {
-      fail("create topic connection failed: " + e);
+      failFast("create topic connection failed: " + e);
     }
     return tc;
   }
@@ -86,7 +86,7 @@ public class PSTestCase extends JMSTestCase
       tc = createTopicConnection(ctx, lookup, clientId, true);
     } catch (Exception e)
     {
-      fail("create topic connection failed: " + e);
+      failFast("create topic connection failed: " + e);
     }
     return tc;
   }
@@ -112,7 +112,7 @@ public class PSTestCase extends JMSTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("get topic failed: " + e);
+      failFast("get topic failed: " + e);
     }
     if (topic == null)
       throw new RuntimeException("Lookup for name '"+name+"' returns null");

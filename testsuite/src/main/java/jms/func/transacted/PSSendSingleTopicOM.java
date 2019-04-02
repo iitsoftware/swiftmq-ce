@@ -60,7 +60,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedPSTestCase
                 ts2.commit();
               } catch (Exception jmse)
               {
-                fail(jmse.toString());
+                failFast(jmse.toString());
               }
               sem.notify();
             }
@@ -92,7 +92,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -116,7 +116,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedPSTestCase
                 ts2.commit();
               } catch (Exception jmse)
               {
-                fail(jmse.toString());
+                failFast(jmse.toString());
               }
               sem.notify();
             }
@@ -148,7 +148,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedPSTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

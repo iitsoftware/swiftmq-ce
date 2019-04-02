@@ -51,7 +51,7 @@ public class UnifiedPSTestCase extends JMSTestCase
         tc.start();
     } catch (Exception e)
     {
-      fail("create topic connection failed: " + e);
+      failFast("create topic connection failed: " + e);
     }
     return tc;
   }
@@ -71,7 +71,7 @@ public class UnifiedPSTestCase extends JMSTestCase
       tc = createConnection(ctx, lookup, clientId, start);
     } catch (Exception e)
     {
-      fail("create topic connection failed: " + e);
+      failFast("create topic connection failed: " + e);
     }
     return tc;
   }
@@ -86,7 +86,7 @@ public class UnifiedPSTestCase extends JMSTestCase
       tc = createConnection(ctx, lookup, clientId, true);
     } catch (Exception e)
     {
-      fail("create topic connection failed: " + e);
+      failFast("create topic connection failed: " + e);
     }
     return tc;
   }
@@ -111,7 +111,7 @@ public class UnifiedPSTestCase extends JMSTestCase
       topic = (Topic) ctx.lookup(name);
     } catch (Exception e)
     {
-      fail("get topic failed: " + e);
+      failFast("get topic failed: " + e);
     }
     return topic;
   }

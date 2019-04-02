@@ -86,7 +86,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub1.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -122,7 +122,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub2.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -158,7 +158,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub3.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -194,7 +194,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub4.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -229,7 +229,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub1.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -265,7 +265,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub2.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -301,7 +301,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub3.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -337,7 +337,7 @@ public class PSML extends SimpleConnectedUnifiedPSTestCase
       tsub4.setMessageListener(null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

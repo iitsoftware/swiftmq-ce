@@ -70,7 +70,7 @@ public class Consumer extends SimpleConnectedXAPTPCCClusterTestCase
     sem = new Semaphore();
     sem.waitHere();
     if (exception != null)
-      fail("failed: " + exception);
+      failFast("failed: " + exception);
   }
 
   protected void tearDown() throws Exception

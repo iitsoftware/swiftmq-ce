@@ -66,13 +66,13 @@ public class Consumer extends SimpleConnectedXAPSTestCase
     sem = new Semaphore();
     sem.waitHere();
     if (exception != null)
-      fail("failed: " + exception);
+      failFast("failed: " + exception);
     try
     {
       verifier.verify();
     } catch (Exception e)
     {
-      fail("failed: " + e);
+      failFast("failed: " + e);
     }
   }
 

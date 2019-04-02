@@ -63,7 +63,7 @@ public class Consumer extends SimpleConnectedPSTestCase
     sem = new Semaphore();
     sem.waitHere();
     if (exception != null)
-      fail("failed: " + exception);
+      failFast("failed: " + exception);
   }
 
   protected void tearDown() throws Exception

@@ -81,7 +81,7 @@ public class MDBFinalReceiver extends XAPTPTestCase
       }
     } catch (Exception e)
     {
-      fail("Test failed: " + e.toString());
+      failFast("Test failed: " + e.toString());
     }
   }
 

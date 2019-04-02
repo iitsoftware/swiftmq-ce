@@ -61,7 +61,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedUnifiedPTPTestCase
                 qs2.commit();
               } catch (Exception jmse)
               {
-                fail(jmse.toString());
+                failFast(jmse.toString());
               }
               sem.notify();
             }
@@ -93,7 +93,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -117,7 +117,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedUnifiedPTPTestCase
                 qs2.commit();
               } catch (Exception jmse)
               {
-                fail(jmse.toString());
+                failFast(jmse.toString());
               }
               sem.notify();
             }
@@ -149,7 +149,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedUnifiedPTPTestCase
       assertTrue("Received msg!=null", msg == null);
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

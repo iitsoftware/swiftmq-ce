@@ -99,7 +99,7 @@ public class Tester extends SimpleConnectedXAPTPTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
@@ -172,7 +172,7 @@ public class Tester extends SimpleConnectedXAPTPTestCase
     } catch (Exception e)
     {
       e.printStackTrace();
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 }

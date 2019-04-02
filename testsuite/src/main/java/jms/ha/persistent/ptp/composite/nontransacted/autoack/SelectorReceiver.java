@@ -71,7 +71,7 @@ public class SelectorReceiver extends SimpleConnectedPTPTestCase
       verifier.verify();
     } catch (Exception e)
     {
-      fail("test failed: " + e);
+      failFast("test failed: " + e);
     }
   }
 
