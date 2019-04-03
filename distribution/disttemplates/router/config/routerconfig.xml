@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<router name="router" kernelpath="../kernel" release="${configrelease}" startorder="sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$accounting sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$amqp sys$mqtt sys$deploy sys$scheduler sys$monitor sys$streams">
+<router name="router" kernelpath="../kernel" release="${release}" startorder="sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$accounting sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$amqp sys$mqtt sys$deploy sys$scheduler sys$monitor sys$streams">
 
   <!--  Accounting Swiftlet, Release: ${release}  -->
 

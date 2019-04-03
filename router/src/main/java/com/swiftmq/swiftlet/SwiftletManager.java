@@ -31,7 +31,8 @@ import com.swiftmq.tools.deploy.BundleEvent;
 import com.swiftmq.tools.deploy.DeployPath;
 import com.swiftmq.tools.log.NullPrintStream;
 import com.swiftmq.util.SwiftUtilities;
-import com.swiftmq.util.UpgradeUtilities;
+import com.swiftmq.upgrade.UpgradeUtilities;
+import com.swiftmq.util.Version;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -463,493 +464,6 @@ public class SwiftletManager {
         return rebooting;
     }
 
-    private void checkRelease() throws Exception {
-        boolean converted = false;
-        Element root = routerConfig.getRootElement();
-        String release = root.attributeValue("release");
-        if (release == null || release.trim().length() == 0) {
-            String fn = configFilename + ".300";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.addAttribute("release", "03.02.00");
-            UpgradeUtilities.convert310to320(root);
-            UpgradeUtilities.convert320to400(root);
-            UpgradeUtilities.convert400to450(root);
-            UpgradeUtilities.convert520to521(root);
-            UpgradeUtilities.convert521to600(root);
-            UpgradeUtilities.convert600to610(root);
-            UpgradeUtilities.convert610to700(root);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.equals("03.02.00")) {
-            String fn = configFilename + ".320";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert320to400(root);
-            UpgradeUtilities.convert400to450(root);
-            UpgradeUtilities.convert520to521(root);
-            UpgradeUtilities.convert521to600(root);
-            UpgradeUtilities.convert600to610(root);
-            UpgradeUtilities.convert610to700(root);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.startsWith("04.00")) {
-            String fn = configFilename + ".400";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert400to450(root);
-            UpgradeUtilities.convert520to521(root);
-            UpgradeUtilities.convert521to600(root);
-            UpgradeUtilities.convert600to610(root);
-            UpgradeUtilities.convert610to700(root);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("05.02.00") <= 0) {
-            String fn = configFilename + ".520";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert520to521(root);
-            UpgradeUtilities.convert521to600(root);
-            UpgradeUtilities.convert600to610(root);
-            UpgradeUtilities.convert610to700(root);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("06.00.00") < 0) {
-            String fn = configFilename + ".521";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert521to600(root);
-            UpgradeUtilities.convert600to610(root);
-            UpgradeUtilities.convert610to700(root);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("06.10.00") < 0) {
-            String fn = configFilename + ".600";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert600to610(root);
-            UpgradeUtilities.convert610to700(root);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("07.00.00") < 0) {
-            String fn = configFilename + ".610";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert610to700(root);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("07.02.00") < 0) {
-            String fn = configFilename + ".700";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert700to720(root);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("07.04.00") < 0) {
-            String fn = configFilename + ".720";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert720to740(root);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("07.05.00") < 0) {
-            String fn = configFilename + ".740";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert740to750(root);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("07.05.02") < 0) {
-            String fn = configFilename + ".750";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert750to752(root);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("08.00.00") < 0) {
-            String fn = configFilename + ".752";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert752to800(root);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("08.01.00") < 0) {
-            String fn = configFilename + ".800";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert800to810(root);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.00.00") < 0) {
-            String fn = configFilename + ".810";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert810to900(root);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.02.02") < 0) {
-            String fn = configFilename + ".900";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert900to922(root);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.03.00") < 0) {
-            String fn = configFilename + ".922";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert922to930(root);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.04.00") < 0) {
-            String fn = configFilename + ".931";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert931to940(root);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.04.02") < 0) {
-            String fn = configFilename + ".940";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert940to942(root);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.06.00") < 0) {
-            String fn = configFilename + ".942";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert942to960(root);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.07.00") < 0) {
-            String fn = configFilename + ".970";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert960to970(root);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("09.07.03") < 0) {
-            String fn = configFilename + ".972";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert970to973(root);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("10.00.00") < 0) {
-            String fn = configFilename + ".973";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert973to1000(root);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("10.01.01") < 0) {
-            String fn = configFilename + ".1000";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert1000to1011(root);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("10.02.00") < 0) {
-            String fn = configFilename + ".1011";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert1011to1020(root);
-            UpgradeUtilities.convert1020to1100(root);
-        } else if (release.compareTo("11.00.00") < 0) {
-            String fn = configFilename + ".1020";
-            System.out.println("+++ Saving old configuration to " + fn);
-            XMLUtilities.writeDocument(routerConfig, fn);
-            converted = true;
-            root.attribute("release").setValue(SwiftUtilities.KERNEL_CONFIG_RELEASE);
-            UpgradeUtilities.convert1020to1100(root);
-        }
-
-
-        if (converted) {
-            System.out.println("+++ Saving new configuration to " + configFilename);
-            XMLUtilities.writeDocument(routerConfig, configFilename);
-        }
-    }
-
     protected Map createBundleTable(String kernelPath) throws Exception {
         if (kernelPath == null)
             throw new Exception("Missing attribute: kernelpath");
@@ -989,7 +503,8 @@ public class SwiftletManager {
             workingDirAdded = true;
         }
         routerConfig = XMLUtilities.createDocument(new FileInputStream(configFilename));
-        checkRelease();
+        
+        UpgradeUtilities.checkRelease(configFilename, routerConfig);
         Element root = routerConfig.getRootElement();
         parseOptionalConfiguration(root);
         String value = root.attributeValue("startorder");
@@ -1094,7 +609,7 @@ public class SwiftletManager {
     }
 
     private synchronized void initSwiftlets() {
-        System.out.println("Booting SwiftMQ " + SwiftUtilities.KERNEL_VERSION + " ...");
+        System.out.println("Booting SwiftMQ " + Version.getKernelVersion() + " ...");
         /*${evalprintout}*/
         startup = true;
         swiftletTable = (Map) Collections.synchronizedMap(new HashMap());
@@ -1138,7 +653,7 @@ public class SwiftletManager {
             prop.setType(String.class);
             prop.setDisplayName("SwiftMQ Release");
             prop.setDescription("SwiftMQ Release");
-            prop.setValue(SwiftUtilities.KERNEL_VERSION);
+            prop.setValue(Version.getKernelVersion());
             prop.setReadOnly(true);
             prop.setStorable(false);
             envEntity.addProperty(prop.getName(), prop);
@@ -1214,7 +729,7 @@ public class SwiftletManager {
         startup = false;
         if (doFireKernelStartedEvent)
             fireKernelStartedEvent();
-        System.out.println("SwiftMQ " + SwiftUtilities.KERNEL_VERSION + " is ready.");
+        System.out.println("SwiftMQ " + Version.getKernelVersion() + " is ready.");
     }
 
     /**
@@ -1369,7 +884,7 @@ public class SwiftletManager {
      * Performs a shutdown of the router.
      */
     public synchronized void shutdown() {
-        System.out.println("Shutdown SwiftMQ " + SwiftUtilities.KERNEL_VERSION + " ...");
+        System.out.println("Shutdown SwiftMQ " + Version.getKernelVersion() + " ...");
         trace("shutdown");
         if (configfileWatchdog != null)
             timerSwiftlet.removeTimerListener(configfileWatchdog);
@@ -1384,7 +899,7 @@ public class SwiftletManager {
         PoolManager.reset();
         traceSpace = null;
         logSwiftlet = null;
-        System.out.println("Shutdown SwiftMQ " + SwiftUtilities.KERNEL_VERSION + " DONE.");
+        System.out.println("Shutdown SwiftMQ " + Version.getKernelVersion() + " DONE.");
     }
 
     /**
@@ -1424,7 +939,7 @@ public class SwiftletManager {
             Element root = DocumentHelper.createElement("router");
             root.addAttribute("name", (String) entity.getEntity(Configuration.ENV_ENTITY).getProperty("routername").getValue());
             root.addAttribute("kernelpath", routerConfig.getRootElement().attributeValue("kernelpath"));
-            root.addAttribute("release", SwiftUtilities.KERNEL_CONFIG_RELEASE);
+            root.addAttribute("release", Version.getKernelConfigRelease());
             root.addAttribute("startorder", routerConfig.getRootElement().attributeValue("startorder"));
             boolean b = ((Boolean) entity.getEntity(Configuration.ENV_ENTITY).getProperty("use-smart-tree").getValue()).booleanValue();
             if (!b)

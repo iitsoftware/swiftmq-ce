@@ -9,19 +9,11 @@
     <fileSet>
       <directory>disttemplates/router</directory>
       <outputDirectory>${project.artifactId}_${project.version}_router</outputDirectory>
-      <excludes>
-        <exclude>config/routerconfig.xml</exclude>
-      </excludes>
       <fileMode>0755</fileMode>
+      <filtered>true</filtered>
     </fileSet>
   </fileSets>
   <files>
-    <file>
-      <source>disttemplates/router/config/routerconfig.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/config</outputDirectory>
-      <filtered>true</filtered>
-      <fileMode>0755</fileMode>
-    </file>
     <file>
       <source>../router/target/swiftmq.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/jars</outputDirectory>

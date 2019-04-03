@@ -19,7 +19,6 @@ package com.swiftmq.mgmt;
 
 import com.swiftmq.tools.util.ObjectCloner;
 import com.swiftmq.util.SwiftUtilities;
-import com.swiftmq.util.UpgradeUtilities;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -449,7 +448,7 @@ public class XMLUtilities {
         }
         list.createCommands();
         if (node != null)
-            list.setUpgrade(node.attribute(UpgradeUtilities.UPGRADE_ATTRIBUTE) != null);
+            list.setUpgrade(node.attribute(SwiftUtilities.UPGRADE_ATTRIBUTE) != null);
         return list;
     }
 
@@ -476,7 +475,7 @@ public class XMLUtilities {
         }
         entity.createCommands();
         if (node != null)
-            entity.setUpgrade(node.attribute(UpgradeUtilities.UPGRADE_ATTRIBUTE) != null);
+            entity.setUpgrade(node.attribute(SwiftUtilities.UPGRADE_ATTRIBUTE) != null);
         return entity;
     }
 

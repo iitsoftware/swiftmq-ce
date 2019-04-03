@@ -19,7 +19,7 @@
 
 package com.swiftmq.jms.v400;
 
-import com.swiftmq.util.SwiftUtilities;
+import com.swiftmq.util.Version;
 
 import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
@@ -71,7 +71,7 @@ public class ConnectionMetaDataImpl implements ConnectionMetaData, Enumeration {
      * @see
      */
     public ConnectionMetaDataImpl() {
-        this("1.1", 1, 1, "SwiftMQ", SwiftUtilities.KERNEL_VERSION, SwiftUtilities.SWIFTMQ_MAJOR_VERSION, SwiftUtilities.SWIFTMQ_MINOR_VERSION);
+        this("1.1", 1, 1, "SwiftMQ", Version.getKernelVersion(), Version.getSwiftmqMajorVersion(), Version.getSwiftmqMinorVersion());
     }
 
     /**

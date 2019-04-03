@@ -15,26 +15,21 @@
  *
  */
 
-package com.swiftmq;
+package com.swiftmq.upgrade;
 
-import com.swiftmq.swiftlet.SwiftletManager;
+import org.dom4j.Document;
 
-public class Router {
-    public static void main(java.lang.String[] args) {
-        if (args.length == 0) {
-            System.err.println("usage: java com.swiftmq.Router <configfile> [<swiftmq-dir>]");
-            System.exit(-1);
+public class UpgradeUtilities {
+    static Upgrader upgrader = null;
+
+    public static void checkRelease(String configFilename, Document routerConfig) throws Exception {
+        if (upgrader == null) {
+            try {
+                upgrader = (Upgrader)Class.forName(System.getProperty("swiftmq.config.upgrader")).newInstance();
+            } catch (Exception e) {
+            }
         }
-
-        try {
-            if (args.length > 1)
-                    SwiftletManager.getInstance().setWorkingDirectory(args[1]);
-
-            SwiftletManager.getInstance().startRouter(args[0]);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
+        if (upgrader != null)
+            upgrader.upgradeConfig(configFilename, routerConfig);
     }
 }
-

@@ -43,7 +43,7 @@ import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.PipelineQueue;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.util.LengthCaptureDataInput;
-import com.swiftmq.util.SwiftUtilities;
+import com.swiftmq.util.Version;
 
 import javax.security.auth.callback.*;
 import javax.security.sasl.*;
@@ -257,8 +257,8 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             start.setLocales("en_US".getBytes("utf-8"));
             Map serverProps = new HashMap();
             serverProps.put("product", new Field('S', "SwiftMQ".getBytes("utf-8")));
-            serverProps.put("release", new Field('S', SwiftUtilities.KERNEL_VERSION.getBytes("utf-8")));
-            serverProps.put("vendor", new Field('S', SwiftUtilities.KERNEL_VENDOR.getBytes("utf-8")));
+            serverProps.put("release", new Field('S', Version.getKernelVendor().getBytes("utf-8")));
+            serverProps.put("vendor", new Field('S', Version.getKernelVendor().getBytes("utf-8")));
             Map capas = new HashMap();
             capas.put("exchange_exchange_bindings", new Field('t', new Boolean(false)));
             capas.put("consumer_cancel_notify", new Field('t', new Boolean(false)));

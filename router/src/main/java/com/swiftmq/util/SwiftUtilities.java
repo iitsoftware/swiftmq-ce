@@ -26,14 +26,10 @@ import java.net.URL;
 import java.util.*;
 
 public class SwiftUtilities {
-    public static final String KERNEL_VENDOR = "IIT Software GmbH, Muenster/Germany";
-    public static final String KERNEL_VERSION = "12.0.0 Community Edition";
-    public static final String KERNEL_CONFIG_RELEASE = "12.0.0";
-    public static final int SWIFTMQ_MAJOR_VERSION = 12;
-    public static final int SWIFTMQ_MINOR_VERSION = 0;
     public static final String PREFIX = "${";
     public static final String SUFFIX = "}";
     public static final String ABSOLUTEDIR_PREFIX = "absolute:";
+    public static final String UPGRADE_ATTRIBUTE = "_upgrade";
 
     public static String getStackTrace(Exception e) {
         StringWriter sw = new StringWriter();
