@@ -20,12 +20,12 @@ package com.swiftmq.upgrade;
 import org.dom4j.Document;
 
 public class UpgradeUtilities {
-    static Upgrader upgrader = null;
+    private static Upgrader upgrader = null;
 
     public static void checkRelease(String configFilename, Document routerConfig) throws Exception {
         if (upgrader == null) {
             try {
-                upgrader = (Upgrader)Class.forName(System.getProperty("swiftmq.config.upgrader")).newInstance();
+                upgrader = (Upgrader)Class.forName("com.swiftmq.upgrade.UpgraderImpl").newInstance();
             } catch (Exception e) {
             }
         }
