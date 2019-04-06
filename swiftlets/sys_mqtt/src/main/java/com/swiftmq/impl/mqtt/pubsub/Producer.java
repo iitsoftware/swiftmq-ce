@@ -22,9 +22,9 @@ import com.swiftmq.impl.mqtt.session.MQTTSession;
 import com.swiftmq.jms.BytesMessageImpl;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.TopicImpl;
-import com.swiftmq.mqtt.v311.netty.buffer.ByteBuf;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttFixedHeader;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
+import com.swiftmq.impl.mqtt.v311.netty.buffer.ByteBuf;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttFixedHeader;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 

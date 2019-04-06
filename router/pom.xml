@@ -83,7 +83,11 @@
                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                 </transformer>
               </transformers>
-              <artifactSet/>
+              <artifactSet>
+                <excludes>
+                  <exclude>io.netty</exclude>
+                </excludes>
+              </artifactSet>
               <outputFile>${project.build.directory}/swiftmq.jar</outputFile>
             </configuration>
           </execution>

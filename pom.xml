@@ -21,7 +21,7 @@
     <module>swiftlets/sys_mgmt</module>
     <module>swiftlets/sys_monitor</module>
     <module>swiftlets/sys_mqtt</module>
-    <module>swiftlets/sys_net</module>
+    <module>swiftlets/sys_net_netty</module>
     <module>swiftlets/sys_queuemanager</module>
     <module>swiftlets/sys_routing</module>
     <module>swiftlets/sys_scheduler</module>

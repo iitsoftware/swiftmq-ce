@@ -2,7 +2,7 @@ OPENS=""
 
 if [ "$1" = "java9" ]
 then
-  OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-exports=java.desktop/com.sun.awt=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED"
+  OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-exports=java.desktop/com.sun.awt=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
   shift
 fi
-java -server -Xmx1024M $OPENS -Dnashorn.args="--no-deprecation-warning" -cp ../jars/swiftmq.jar com.swiftmq.Router ../config/routerconfig.xml $1
+java -server -Xmx1024M $OPENS  -cp ../jars/swiftmq.jar com.swiftmq.Router ../config/routerconfig.xml $1

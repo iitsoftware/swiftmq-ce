@@ -1,0 +1,100 @@
+/*
+ * Copyright 2019 IIT Software GmbH
+ *
+ * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package com.swiftmq.impl.net.netty.scheduler;
+
+import com.swiftmq.impl.net.netty.SSLContextFactory;
+import com.swiftmq.impl.net.netty.SwiftletContext;
+import com.swiftmq.swiftlet.net.ListenerMetaData;
+import com.swiftmq.swiftlet.net.event.ConnectionListener;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+
+import java.io.IOException;
+
+public class NettyTCPListener extends TCPListener {
+    SwiftletContext ctx;
+    EventLoopGroup bossGroup = new NioEventLoopGroup();
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
+    ChannelFuture channelFuture = null;
+    boolean useTLS = false;
+
+    public NettyTCPListener(SwiftletContext ctx, ListenerMetaData metaData) {
+        super(metaData);
+        this.ctx = ctx;
+        useTLS = metaData.getSocketFactoryClass().equals("com.swiftmq.net.JSSESocketFactory");
+    }
+
+    private NettyConnection setupConnection(SocketChannel ch) throws Exception {
+        if (ctx.networkSwiftlet.isDnsResolve() && !getMetaData().isConnectionAllowed(ch.remoteAddress().getHostName())) {
+            String msg = "connection NOT allowed, REJECTED: " + ch.remoteAddress().getHostName();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$net", toString() + "/" + msg);
+            ctx.logSwiftlet.logError(toString(), msg);
+            throw new Exception(msg);
+        }
+        NettyConnection connection = new NettyConnection(ctx, ch, ctx.networkSwiftlet.isDnsResolve());
+        ConnectionListener connectionListener = getMetaData().getConnectionListener();
+        connection.setConnectionListener(connectionListener);
+        connection.setMetaData(getMetaData());
+        connectionListener.connected(connection);
+        ctx.networkSwiftlet.getConnectionManager().addConnection(connection);
+        ctx.logSwiftlet.logInformation(super.toString(), "connection accepted: " + connection.toString());
+        return connection;
+    }
+
+    @Override
+    public void start() throws IOException {
+        try {
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        public void initChannel(SocketChannel ch) throws Exception {
+                            if (useTLS)
+                                ch.pipeline().addLast(SSLContextFactory.createSwiftMQStandardContext().newHandler(ch.alloc()));
+                            ch.pipeline().addLast(new NettyInboundConnectionHandler(ctx, setupConnection(ch)));
+                        }
+                    })
+                    .option(ChannelOption.SO_BACKLOG, 500)
+                    .option(ChannelOption.SO_REUSEADDR, ctx.networkSwiftlet.isReuseServerSocket())
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.SO_SNDBUF, getMetaData().getOutputBufferSize())
+                    .childOption(ChannelOption.SO_RCVBUF, getMetaData().getInputBufferSize())
+                    .childOption(ChannelOption.TCP_NODELAY, getMetaData().isUseTcpNoDelay());
+
+            channelFuture = b.bind(getMetaData().getPort()).sync();
+        } catch (InterruptedException e) {
+            throw new IOException(e.toString());
+        }
+    }
+
+    @Override
+    public void close() {
+        if (channelFuture != null)
+            channelFuture.channel().close();
+        workerGroup.shutdownGracefully();
+        bossGroup.shutdownGracefully();
+    }
+}

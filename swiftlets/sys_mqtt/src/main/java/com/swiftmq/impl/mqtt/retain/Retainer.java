@@ -17,7 +17,7 @@
 
 package com.swiftmq.impl.mqtt.retain;
 
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.util.List;
 

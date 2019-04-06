@@ -119,12 +119,12 @@
       <destName>sys$mgmt.jar</destName>
     </file>
     <file>
-      <source>../swiftlets/sys_net/config/config.xml</source>
+      <source>../swiftlets/sys_net_netty/config/config.xml</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$net</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
-      <source>../swiftlets/sys_net/target/sys_net.jar</source>
+      <source>../swiftlets/sys_net_netty/target/sys_net_netty_fat.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$net</outputDirectory>
       <destName>sys$net.jar</destName>
     </file>

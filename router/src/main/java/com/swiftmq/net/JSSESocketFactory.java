@@ -28,6 +28,7 @@ import java.net.*;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -122,6 +123,8 @@ public class JSSESocketFactory implements com.swiftmq.net.SocketFactory, Seriali
         }
         sslSocket.setTcpNoDelay(useTcpNoDelay);
         setEnabledCipherSuites(sslSocket);
+        System.out.println("Enabled protocols: "+ Arrays.asList(sslSocket.getEnabledProtocols()));
+        System.out.println("Enabled ciphers: "+ Arrays.asList(sslSocket.getEnabledCipherSuites()));
         Semaphore sem = new Semaphore();
         sslSocket.addHandshakeCompletedListener(new CompletionListener(sem));
         sslSocket.startHandshake();

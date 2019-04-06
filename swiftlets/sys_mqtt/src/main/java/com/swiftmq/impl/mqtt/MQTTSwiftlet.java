@@ -19,7 +19,7 @@ package com.swiftmq.impl.mqtt;
 
 import com.swiftmq.impl.mqtt.connection.MQTTConnection;
 import com.swiftmq.mgmt.*;
-import com.swiftmq.mqtt.v311.PacketDecoder;
+import com.swiftmq.impl.mqtt.v311.PacketDecoder;
 import com.swiftmq.net.protocol.raw.RawInputHandler;
 import com.swiftmq.net.protocol.raw.RawOutputHandler;
 import com.swiftmq.swiftlet.Swiftlet;

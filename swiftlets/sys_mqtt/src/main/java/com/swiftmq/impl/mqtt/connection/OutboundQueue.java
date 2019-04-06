@@ -18,8 +18,8 @@
 package com.swiftmq.impl.mqtt.connection;
 
 import com.swiftmq.impl.mqtt.SwiftletContext;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttEncoder;
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttMessage;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttEncoder;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttMessage;
 import com.swiftmq.swiftlet.threadpool.AsyncTask;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.tools.queue.SingleProcessorQueue;

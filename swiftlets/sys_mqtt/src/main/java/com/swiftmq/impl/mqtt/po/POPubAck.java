@@ -17,7 +17,7 @@
 
 package com.swiftmq.impl.mqtt.po;
 
-import com.swiftmq.mqtt.v311.netty.handler.codec.mqtt.MqttPubAckMessage;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttPubAckMessage;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 

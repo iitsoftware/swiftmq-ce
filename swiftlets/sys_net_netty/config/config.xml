@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright 2019 IIT Software GmbH
+  ~
+  ~ IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<swiftlet name="sys$net"
+					displayname="Network Swiftlet"
+					class="com.swiftmq.impl.net.netty.NetworkSwiftletImpl"
+					icon="/sys_net/images/swiftlet.png"
+					description="Network Swiftlet"
+					release="${release}"
+					vendor="IIT Software GmbH" >
+	<configuration>
+      <property name="collect-interval"
+                          type="java.lang.Long"
+                          display="Collect Interval"
+                          description="Throughput Collect Interval"
+                          default="1000" />
+        <property name="zombi-connection-timeout"
+                            type="java.lang.Long"
+                            display="Zombi-Connection Timeout"
+                            description="Zombi-Connection Timeout"
+                            default="0" />
+		<property name="dns-resolve-enabled"
+							type="java.lang.Boolean"
+							display="DNS Resolve Enabled"
+							description="Resolve DNS Names during Connect"
+							default="false" />
+    <property name="reuse-serversockets"
+              type="java.lang.Boolean"
+              display="Re-Use Server Sockets"
+              description="Re-Use Server Sockets"
+              default="true" />
+    <property name="set-socket-options"
+              type="java.lang.Boolean"
+              display="Set Socket Options"
+              description="Sets TCP send/receive buffer to router in/output buffer size"
+              default="true" />
+		<entitylist name="usage" display="Connections" description="Active Connections" >
+			<entitytemplate name="usage" display="Connection" description="Active Connection" >
+				<property name="swiftlet"
+									type="java.lang.String"
+									display="Swiftlet"
+									description="Attached to Swiftlet" />
+				<property name="connect-time"
+									type="java.lang.String"
+									display="Connect Time"
+									description="Connect Time" />
+				<property name="throughput-input"
+									type="java.lang.String"
+									display="Input KB/s"
+									description="Input KB/s"/>
+				<property name="throughput-output"
+									type="java.lang.String"
+									display="Output KB/s"
+									description="Output KB/s"/>
+			</entitytemplate>
+		</entitylist>
+	</configuration>
+</swiftlet>
