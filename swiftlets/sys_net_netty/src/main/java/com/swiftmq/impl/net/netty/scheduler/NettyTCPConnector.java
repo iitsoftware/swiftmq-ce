@@ -17,6 +17,7 @@
 
 package com.swiftmq.impl.net.netty.scheduler;
 
+import com.swiftmq.impl.net.netty.SSLContextFactory;
 import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.swiftlet.net.ConnectorMetaData;
 import com.swiftmq.swiftlet.net.event.ConnectionListener;
@@ -33,12 +34,14 @@ public class NettyTCPConnector extends TCPConnector {
     ChannelFuture channelFuture = null;
     NettyConnection connection = null;
     NettyOutboundConnectionHandler connectionHandler = null;
+    boolean useTLS = false;
 
     public NettyTCPConnector(SwiftletContext ctx, ConnectorMetaData metaData) {
         super(ctx, metaData);
     }
 
     private void registerConnection() throws Exception {
+        useTLS = metaData.getSocketFactoryClass() != null && metaData.getSocketFactoryClass().equals("com.swiftmq.net.JSSESocketFactory");
         ConnectionListener connectionListener = getMetaData().getConnectionListener();
         connection.setConnectionListener(connectionListener);
         connection.setMetaData(getMetaData());
@@ -58,6 +61,11 @@ public class NettyTCPConnector extends TCPConnector {
         clientBootstrap.channel(NioSocketChannel.class);
         clientBootstrap.remoteAddress(new InetSocketAddress(getMetaData().getHostname(), getMetaData().getPort()));
         clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
+                ctx.logSwiftlet.logError("sys$net", NettyTCPConnector.this.toString()+"/Got exception: "+cause);
+            }
+
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 connection = new NettyConnection(ctx, socketChannel, ctx.networkSwiftlet.isDnsResolve());
                 connectionHandler = new NettyOutboundConnectionHandler(ctx, connection) {
@@ -66,6 +74,8 @@ public class NettyTCPConnector extends TCPConnector {
                         registerConnection();
                     }
                 };
+                if (useTLS)
+                    socketChannel.pipeline().addLast(SSLContextFactory.createClientContext().newHandler(socketChannel.alloc()));
                 socketChannel.pipeline().addLast(connectionHandler);
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$net", NettyTCPConnector.this.toString() + "/initChannel");

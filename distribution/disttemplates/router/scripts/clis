@@ -1,2 +1,2 @@
-java -cp ../jars/swiftmq.jar -Dcli.username=$1 -Dcli.password=$2 com.swiftmq.admin.cli.CLI smqp://localhost:4001 ConnectionFactory $3
+java -cp ../jars/swiftmq.jar -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret -Dcli.username=$1 -Dcli.password=$2 com.swiftmq.admin.cli.CLI smqp://localhost:4001 ConnectionFactory $3
 

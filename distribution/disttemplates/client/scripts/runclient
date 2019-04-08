@@ -1,4 +1,4 @@
 export cp=$1
 shift
-java -Xmx512M -cp $cp:../jars/swiftmq.jar -Dswiftmq.amqp.frame.debug=false -Dswiftmq.amqp.debug=false $@
+java -Xmx512M -cp $cp:../jars/swiftmq.jar -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret $@
 

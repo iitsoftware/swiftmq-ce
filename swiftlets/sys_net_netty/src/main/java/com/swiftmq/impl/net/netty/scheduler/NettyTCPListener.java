@@ -22,10 +22,7 @@ import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.swiftlet.net.ListenerMetaData;
 import com.swiftmq.swiftlet.net.event.ConnectionListener;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -71,9 +68,14 @@ public class NettyTCPListener extends TCPListener {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
+                        public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
+                            ctx.logSwiftlet.logError("sys$net", NettyTCPListener.this.toString()+"/Got exception: "+cause);
+                        }
+
+                        @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             if (useTLS)
-                                ch.pipeline().addLast(SSLContextFactory.createSwiftMQStandardContext().newHandler(ch.alloc()));
+                                ch.pipeline().addLast(SSLContextFactory.createServerContext().newHandler(ch.alloc()));
                             ch.pipeline().addLast(new NettyInboundConnectionHandler(ctx, setupConnection(ch)));
                         }
                     })
