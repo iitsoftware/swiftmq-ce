@@ -30,7 +30,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 
 public class NettyTCPConnector extends TCPConnector {
-    EventLoopGroup group = new NioEventLoopGroup();
+    EventLoopGroup group;
+    TaskExecutor taskExecutor;
     ChannelFuture channelFuture = null;
     NettyConnection connection = null;
     NettyOutboundConnectionHandler connectionHandler = null;
@@ -42,6 +43,8 @@ public class NettyTCPConnector extends TCPConnector {
 
     private void registerConnection() throws Exception {
         useTLS = metaData.getSocketFactoryClass() != null && metaData.getSocketFactoryClass().equals("com.swiftmq.net.JSSESocketFactory");
+        taskExecutor = new TaskExecutor(ctx);
+        group = new NioEventLoopGroup(taskExecutor.getNumberThreads()-1, taskExecutor);
         ConnectionListener connectionListener = getMetaData().getConnectionListener();
         connection.setConnectionListener(connectionListener);
         connection.setMetaData(getMetaData());

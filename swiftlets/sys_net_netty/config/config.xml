@@ -43,11 +43,13 @@
               display="Re-Use Server Sockets"
               description="Re-Use Server Sockets"
               default="true" />
-    <property name="set-socket-options"
-              type="java.lang.Boolean"
-              display="Set Socket Options"
-              description="Sets TCP send/receive buffer to router in/output buffer size"
-              default="true" />
+		<property name="number-selector-tasks"
+                  type="java.lang.Integer"
+                  display="Number Selector Tasks"
+                  description="Number Selector Tasks. Might be increased for Multi-Processor Machines."
+                  reboot-required="true"
+                  min="4"
+                  default="5"/>
 		<entitylist name="usage" display="Connections" description="Active Connections" >
 			<entitytemplate name="usage" display="Connection" description="Active Connection" >
 				<property name="swiftlet"

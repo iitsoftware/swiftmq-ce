@@ -40,7 +40,6 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
     long collectInterval = -1;
     boolean reuseServerSocket = true;
     boolean dnsResolve = true;
-    boolean setSocketOptions = false;
     long zombiConnectionTimeout = 0;
 
     private void collectChanged(long oldInterval, long newInterval) {
@@ -149,15 +148,6 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
             }
         });
         dnsResolve = (Boolean) prop.getValue();
-
-        prop = config.getProperty("set-socket-options");
-        prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                setSocketOptions = (Boolean) newValue;
-            }
-        });
-        setSocketOptions = (Boolean) prop.getValue();
 
         prop = config.getProperty("zombi-connection-timeout");
         zombiConnectionTimeout = (Long) prop.getValue();

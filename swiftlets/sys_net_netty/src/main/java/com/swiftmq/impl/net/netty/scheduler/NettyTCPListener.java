@@ -31,8 +31,9 @@ import java.io.IOException;
 
 public class NettyTCPListener extends TCPListener {
     SwiftletContext ctx;
-    EventLoopGroup bossGroup = new NioEventLoopGroup();
-    EventLoopGroup workerGroup = new NioEventLoopGroup();
+    EventLoopGroup bossGroup;
+    EventLoopGroup workerGroup;
+    TaskExecutor taskExecutor;
     ChannelFuture channelFuture = null;
     boolean useTLS = false;
 
@@ -40,6 +41,9 @@ public class NettyTCPListener extends TCPListener {
         super(metaData);
         this.ctx = ctx;
         useTLS = metaData.getSocketFactoryClass().equals("com.swiftmq.net.JSSESocketFactory");
+        taskExecutor = new TaskExecutor(ctx);
+        bossGroup = new NioEventLoopGroup(1, taskExecutor);
+        workerGroup = new NioEventLoopGroup(taskExecutor.getNumberThreads()-1, taskExecutor);
     }
 
     private NettyConnection setupConnection(SocketChannel ch) throws Exception {
