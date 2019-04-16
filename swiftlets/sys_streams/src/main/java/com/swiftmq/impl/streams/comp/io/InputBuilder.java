@@ -65,12 +65,22 @@ public class InputBuilder {
     }
 
     /**
-     * Creates a new ManagementInput.
+     * Creates a new ManagementInput and registers it under the context name.
      *
      * @return ManagementInput
      */
     public ManagementInput management() throws Exception {
         return (ManagementInput) ctx.stream.addInput(name, new ManagementInput(ctx, name));
+    }
+
+    /**
+     * Creates a new ManagementInput and registers it under a different name.
+     *
+     * @param registrationName
+     * @return ManagementInput
+     */
+    public ManagementInput management(String registrationName) throws Exception {
+        return (ManagementInput) ctx.stream.addInput(registrationName, new ManagementInput(ctx, name));
     }
 
 }
