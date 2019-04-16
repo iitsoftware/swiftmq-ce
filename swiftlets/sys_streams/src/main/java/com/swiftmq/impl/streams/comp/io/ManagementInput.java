@@ -43,6 +43,7 @@ public class ManagementInput implements Input {
 
     StreamContext ctx;
     String name;
+    String context = null;
     Message current;
     InputCallback addCallback;
     InputCallback removeCallback;
@@ -58,16 +59,7 @@ public class ManagementInput implements Input {
     ManagementInput(StreamContext ctx, String name) {
         this.ctx = ctx;
         this.name = name;
-        try {
-            EntityList inputList = (EntityList) ctx.usage.getEntity("inputs");
-            usage = inputList.createEntity();
-            usage.setName(name.replace('/', '_'));
-            usage.createCommands();
-            inputList.addEntity(usage);
-            usage.getProperty("01-type").setValue("Management");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.context = name;
     }
 
     @Override
@@ -122,6 +114,23 @@ public class ManagementInput implements Input {
         return selector;
     }
 
+    /**
+     * Sets a CLI context different from the name.
+     * @param context  CLI context
+     * @return this
+     */
+    public Input context(String context) {
+        this.context = context;
+        return this;
+    }
+
+    /**
+     * Returns the CLI context
+     * @return CLI context
+     */
+    public String context() {
+        return context;
+    }
     /**
      * Sets a JMS Message selector
      *
@@ -227,6 +236,8 @@ public class ManagementInput implements Input {
 
     @Override
     public void collect(long interval) {
+        if (!started)
+            return;
         if ((long) totalMsg + (long) msgsProcessed > Integer.MAX_VALUE)
             totalMsg = 0;
         totalMsg += msgsProcessed;
@@ -243,6 +254,16 @@ public class ManagementInput implements Input {
     public void start() throws Exception {
         if (started)
             return;
+        try {
+            EntityList inputList = (EntityList) ctx.usage.getEntity("inputs");
+            usage = inputList.createEntity();
+            usage.setName(name.replace('/', '_'));
+            usage.createCommands();
+            inputList.addEntity(usage);
+            usage.getProperty("01-type").setValue("Management");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         managementProcessor = new ManagementProcessor(ctx, this);
         managementProcessor.register();
         started = true;

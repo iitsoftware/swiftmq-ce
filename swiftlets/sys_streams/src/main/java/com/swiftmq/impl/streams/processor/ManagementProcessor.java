@@ -55,11 +55,11 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
             messageSelector = new MessageSelector(input.getSelector());
             messageSelector.compile();
         }
-        String[] name = SwiftUtilities.tokenize(input.getName(), "/");
+        String[] name = SwiftUtilities.tokenize(input.context(), "/");
         String[] context = SwiftUtilities.cutLast(name);
         Object object = RouterConfiguration.Singleton().getContext(null, context, 0);
         if (object == null)
-            throw new NullPointerException("CLI context not found: " + input.getName());
+            throw new NullPointerException("CLI context not found: " + input.context());
         Entity e = (Entity) object;
         Entity child = e.getEntity(name[name.length - 1]);
         if (child != null && child instanceof EntityList) {
@@ -83,7 +83,7 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
                 entityPropWatchListener = new AllPropertyWatchListener(entity).register();
                 ctx.ctx.mgmtSwiftlet.fireEvent(true);
             } else
-                throw new NullPointerException("Nothing found at CLI context: " + input.getName());
+                throw new NullPointerException("Nothing found at CLI context: " + input.context());
         }
     }
 
@@ -107,7 +107,7 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
 
     private Message addProperties(Message message, Entity entity) {
         message.property("name").set(entity.getName());
-        message.property(ManagementInput.PROP_CTX).set(input.getName());
+        message.property(ManagementInput.PROP_CTX).set(input.context());
         Map props = entity.getProperties();
         if (props != null) {
             for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
@@ -158,7 +158,7 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
                 !property.getValue().equals(prevValue) || prevValue == null) {
             Message message = ctx.messageBuilder.message()
                     .property(ManagementInput.PROP_OPER).set(ManagementInput.VAL_CHANGE)
-                    .property(ManagementInput.PROP_CTX).set(input.getName())
+                    .property(ManagementInput.PROP_CTX).set(input.context())
                     .property(ManagementInput.PROP_TIME).set(System.currentTimeMillis())
                     .property("name").set(property.getParent().getName())
                     .property(property.getName().replace("-", "_")).set(property.getValue());
@@ -194,7 +194,7 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
                     !property.getValue().equals(prevValue) || prevValue == null) {
                 Message message = ctx.messageBuilder.message()
                         .property(ManagementInput.PROP_OPER).set(ManagementInput.VAL_CHANGE)
-                        .property(ManagementInput.PROP_CTX).set(input.getName())
+                        .property(ManagementInput.PROP_CTX).set(input.context())
                         .property("name").set(entity.getName())
                         .property(ManagementInput.PROP_TIME).set(System.currentTimeMillis())
                         .property(property.getName().replace("-", "_")).set(property.getValue());
