@@ -17,6 +17,7 @@
 
 package com.swiftmq.impl.streams.comp.management;
 
+import com.swiftmq.admin.cli.CLIException;
 import com.swiftmq.impl.streams.StreamContext;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.mgmt.CLIExecutor;
@@ -123,6 +124,23 @@ public class CLI {
             result = entity.getEntityNames();
         }
         return result == null ? new String[]{} : result;
+    }
+
+    /**
+     * Returns the JSON output of the CLI context which must point to an Entity or EntityList.
+     *
+     * @param context CLI context
+     * @return JSON
+     */
+    public String contextJson(String context) {
+        String[] c = SwiftUtilities.tokenize(context, "/");
+        Entity entity = (Entity) RouterConfiguration.Singleton().getContext(null, c, 0);
+        if (entity == null)
+            return null;
+        if (entity instanceof EntityList) {
+            return ((EntityList)entity).toJson();
+        }
+        return entity.toJson();
     }
 
     /**

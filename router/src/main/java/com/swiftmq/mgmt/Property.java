@@ -742,6 +742,14 @@ public class Property implements Dumpable {
         s.append(mandatory).append(", ");
         s.append(quote("rebootRequired")).append(": ");
         s.append(rebootRequired);
+        if (value != null){
+            s.append(", ");
+            s.append(quote("value")).append(": ");
+            if (value instanceof String)
+                s.append(quote((String)value));
+            else
+                s.append(value);
+        }
         if (minValue != null){
             s.append(", ");
             s.append(quote("minValue")).append(": ");
