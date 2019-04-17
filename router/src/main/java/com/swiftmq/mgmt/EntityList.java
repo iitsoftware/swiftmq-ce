@@ -393,18 +393,24 @@ public class EntityList extends Entity {
         s.append(quote("displayName")).append(": ");
         s.append(quote(displayName)).append(", ");
         s.append(quote("description")).append(": ");
-        s.append(quote(description));
+        s.append(quote(description)).append(", ");
         s.append(quote("template")).append(": ");
-        s.append(quote(template.toJson()));
+        s.append(template.toJson());
         if (commandRegistry != null && commandRegistry.getCommands() != null) {
             s.append(", ");
-            s.append(quote("properties")).append(": ");
+            s.append(quote("commands")).append(": ");
             s.append("[");
             List cmds = commandRegistry.getCommands();
+            boolean first = true;
             for (int i = 0; i < cmds.size(); i++) {
-                if (i > 0)
-                    s.append(", ");
-                s.append(quote(((Command) cmds.get(i)).toJson()));
+                Command command = (Command) cmds.get(i);
+                if (commandIncluded(command, new String[]{"help", "sum", "show template"})) {
+                    if (!first) {
+                        s.append(", ");
+                    }
+                    first = false;
+                    s.append(((Command) cmds.get(i)).toJson());
+                }
             }
             s.append("]");
         }

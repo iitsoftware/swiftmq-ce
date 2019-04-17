@@ -31,16 +31,7 @@ public class Remover
         implements CommandExecutor {
     static String COMMAND = "remove";
     static String PATTERN = "remove <queue> (<message-key>|*)|(-index <start> <stop>)";
-    static String DESCRIPTION = "Remove message(s) either by message-key or by\n" +
-            "message index. To remove by message key, use\n" +
-            "remove <queuename> <message-key>  or\n" +
-            "remove <queuename> *   to remove all messages.\n" +
-            "To remove messages by index (sequence-number),\n" +
-            "use:\n" +
-            "remove <queuename> -index <start> <stop>\n" +
-            "Example:\n" +
-            "remove testqueue 0 99\n" +
-            "Removes the first 100 messages.";
+    static String DESCRIPTION = "Remove message(s) either by message-key or by message index.";
     SwiftletContext ctx = null;
 
     public Remover(SwiftletContext ctx) {

@@ -56,34 +56,52 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
             messageSelector.compile();
         }
         String[] name = SwiftUtilities.tokenize(input.context(), "/");
-        String[] context = SwiftUtilities.cutLast(name);
-        Object object = RouterConfiguration.Singleton().getContext(null, context, 0);
-        if (object == null)
-            throw new NullPointerException("CLI context not found: " + input.context());
-        Entity e = (Entity) object;
-        Entity child = e.getEntity(name[name.length - 1]);
-        if (child != null && child instanceof EntityList) {
-            entityList = (EntityList) child;
-            Map entities = entityList.getEntities();
-            if (entities != null) {
-                for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                    entityAdded(entityList, (Entity) ((Map.Entry) iter.next()).getValue());
-                }
-            }
+        if (input.context().equals("/")) {
+            // Root node
+            entityList = RouterConfiguration.Singleton();
             entityList.addEntityWatchListener(this);
             ctx.ctx.mgmtSwiftlet.fireEvent(true);
+        } else if (name.length == 1) {
+            // A top-level swiftlet
+            entity = (Entity) RouterConfiguration.Singleton().getContext(null, name, 0);
+            if (entity == null)
+                throw new NullPointerException("CLI context not found: " + input.context());
+            entityPropWatchListener = new AllPropertyWatchListener(entity).register();
+            ctx.ctx.mgmtSwiftlet.fireEvent(true);
         } else {
+            // Any other context
+            String[] context = SwiftUtilities.cutLast(name);
+            Entity e = (Entity) RouterConfiguration.Singleton().getContext(null, context, 0);
+            if (e == null)
+                throw new NullPointerException("CLI context not found: " + input.context());
             property = e.getProperty(name[name.length - 1]);
             if (property != null) {
+                // Found a property
                 propertyValueChanged(property);
                 property.addPropertyWatchListener(this);
                 ctx.ctx.mgmtSwiftlet.fireEvent(true);
-            } else if (child != null) {
-                entity = child;
-                entityPropWatchListener = new AllPropertyWatchListener(entity).register();
-                ctx.ctx.mgmtSwiftlet.fireEvent(true);
-            } else
-                throw new NullPointerException("Nothing found at CLI context: " + input.context());
+            } else {
+                // Found an entity
+                Entity child = e.getEntity(name[name.length - 1]);
+                if (child != null) {
+                    if (child instanceof EntityList) {
+                        entityList = (EntityList) child;
+                        Map entities = entityList.getEntities();
+                        if (entities != null) {
+                            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
+                                entityAdded(entityList, (Entity) ((Map.Entry) iter.next()).getValue());
+                            }
+                        }
+                        entityList.addEntityWatchListener(this);
+                        ctx.ctx.mgmtSwiftlet.fireEvent(true);
+                    } else {
+                        entity = child;
+                        entityPropWatchListener = new AllPropertyWatchListener(entity).register();
+                        ctx.ctx.mgmtSwiftlet.fireEvent(true);
+                    }
+                } else
+                    throw new NullPointerException("Nothing found at CLI context: " + input.context());
+            }
         }
     }
 

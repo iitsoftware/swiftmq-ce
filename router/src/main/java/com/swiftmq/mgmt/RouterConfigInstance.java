@@ -422,5 +422,63 @@ public class RouterConfigInstance extends EntityList {
             AuthenticatorHolder.threadLocal.set(null);
         }
     }
+
+    @Override
+    public String toJson() {
+        StringBuffer s = new StringBuffer();
+        s.append("{");
+        s.append(quote("nodetype")).append(": ");
+        s.append(quote("root")).append(", ");
+        s.append(quote("name")).append(": ");
+        s.append(quote(SwiftletManager.getInstance().getRouterName()));
+        if (entities != null) {
+            s.append(", ");
+            s.append(quote("entities")).append(": ");
+            s.append("[");
+            boolean first = true;
+            for (Object o : entities.entrySet()) {
+                if (!first)
+                    s.append(", ");
+                first = false;
+                Entity e = (Entity) ((Map.Entry) o).getValue();
+                s.append("{");
+                s.append(quote("nodetype")).append(": ");
+                if (e instanceof EntityList)
+                    s.append(quote("entitylist")).append(", ");
+                else
+                    s.append(quote("entity")).append(", ");
+                s.append(quote("name")).append(": ");
+                s.append(quote(e.getName())).append(", ");
+                s.append(quote("displayName")).append(": ");
+                s.append(quote(e.getDisplayName())).append(", ");
+                s.append(quote("description")).append(": ");
+                s.append(quote(e.getDescription()));
+                s.append("}");
+
+            }
+            s.append("]");
+        }
+        if (commandRegistry != null && commandRegistry.getCommands() != null) {
+            s.append(", ");
+            s.append(quote("commands")).append(": ");
+            s.append("[");
+            List cmds = commandRegistry.getCommands();
+            boolean first = true;
+            for (int i = 0; i < cmds.size(); i++) {
+                Command command = (Command) cmds.get(i);
+                if (commandIncluded(command, new String[]{"help", "sum", "show template"})) {
+                    if (!first) {
+                        s.append(", ");
+                    }
+                    first = false;
+                    s.append(((Command) cmds.get(i)).toJson());
+                }
+            }
+            s.append("]");
+        }
+        s.append("}");
+        return s.toString();
+
+    }
 }
 

@@ -32,10 +32,6 @@ public class Mover extends Copier {
     }
 
     protected String _getDescription() {
-        return "Move messages from queue <source> to\n" +
-                "queue/topic <target>. A subset can be defined\n" +
-                "with -selector <selector> or by specifying\n" +
-                "a range with -index <start> <stop>,\n" +
-                "with a -maxlimit of <nmsgs> to move.";
+        return "Move messages.";
     }
 }

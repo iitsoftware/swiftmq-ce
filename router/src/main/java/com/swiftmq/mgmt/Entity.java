@@ -26,6 +26,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * A Entity represents a node within the management tree. It may contain Property objects,
@@ -828,6 +829,10 @@ public class Entity implements Dumpable {
         return "\"" + s + "\"";
     }
 
+    protected boolean commandIncluded(Command command, String[] exclude) {
+        return IntStream.range(0, exclude.length).noneMatch(i -> exclude[i].equals(command.getName()));
+    }
+
     public String toJson() {
         StringBuffer s = new StringBuffer();
         s.append("{");
@@ -855,7 +860,7 @@ public class Entity implements Dumpable {
         }
         if (entities != null) {
             s.append(", ");
-            s.append(quote("properties")).append(": ");
+            s.append(quote("entities")).append(": ");
             s.append("[");
             boolean first = true;
             for (Object o : entities.entrySet()) {
@@ -885,10 +890,16 @@ public class Entity implements Dumpable {
             s.append(quote("commands")).append(": ");
             s.append("[");
             List cmds = commandRegistry.getCommands();
+            boolean first = true;
             for (int i = 0; i < cmds.size(); i++) {
-                if (i > 0)
-                    s.append(", ");
-                s.append(quote(((Command) cmds.get(i)).toJson()));
+                Command command = (Command) cmds.get(i);
+                if (commandIncluded(command, new String[]{"help", "set", "describe"})) {
+                    if (!first) {
+                        s.append(", ");
+                    }
+                    first = false;
+                    s.append(((Command) cmds.get(i)).toJson());
+                }
             }
             s.append("]");
         }

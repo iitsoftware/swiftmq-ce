@@ -50,11 +50,7 @@ public class Copier
     }
 
     protected String _getDescription() {
-        return "Copy messages from queue <source> to\n" +
-                "queue/topic <target>. A subset can be defined\n" +
-                "with -selector <selector> or by specifying\n" +
-                "a range with -index <start> <stop>,\n" +
-                "with a -maxlimit of <nmsgs> to copy.";
+        return "Copy messages.";
     }
 
     public Command createCommand() {

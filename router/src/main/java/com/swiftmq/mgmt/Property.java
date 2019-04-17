@@ -735,7 +735,7 @@ public class Property implements Dumpable {
         s.append(quote("description")).append(": ");
         s.append(quote(description)).append(", ");
         s.append(quote("type")).append(": ");
-        s.append(quote(type.toString())).append(", ");
+        s.append(quote(type.getSimpleName())).append(", ");
         s.append(quote("readOnly")).append(": ");
         s.append(readOnly).append(", ");
         s.append(quote("mandatory")).append(": ");
@@ -763,7 +763,10 @@ public class Property implements Dumpable {
         if (defaultValue != null){
             s.append(", ");
             s.append(quote("defaultValue")).append(": ");
-            s.append(defaultValue);
+            if (type == String.class)
+                s.append(quote((String) defaultValue));
+            else
+                s.append(defaultValue);
         }
         if (possibleValues != null){
             s.append(", ");
