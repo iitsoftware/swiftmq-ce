@@ -25,10 +25,7 @@ import javax.swing.*;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * A Entity represents a node within the management tree. It may contain Property objects,
@@ -825,6 +822,78 @@ public class Entity implements Dumpable {
 
     public void setUpgrade(boolean upgrade) {
         this.upgrade = upgrade;
+    }
+
+    protected String quote(String s) {
+        return "\"" + s + "\"";
+    }
+
+    public String toJson() {
+        StringBuffer s = new StringBuffer();
+        s.append("{");
+        s.append(quote("nodetype")).append(": ");
+        s.append(quote("entity")).append(", ");
+        s.append(quote("name")).append(": ");
+        s.append(quote(name)).append(", ");
+        s.append(quote("displayName")).append(": ");
+        s.append(quote(displayName)).append(", ");
+        s.append(quote("description")).append(": ");
+        s.append(quote(description));
+        if (properties != null) {
+            s.append(", ");
+            s.append(quote("properties")).append(": ");
+            s.append("[");
+            boolean first = true;
+            for (Object o : properties.entrySet()) {
+                if (!first)
+                    s.append(", ");
+                first = false;
+                Property p = (Property) ((Map.Entry) o).getValue();
+                s.append(p.toJson());
+            }
+            s.append("]");
+        }
+        if (entities != null) {
+            s.append(", ");
+            s.append(quote("properties")).append(": ");
+            s.append("[");
+            boolean first = true;
+            for (Object o : entities.entrySet()) {
+                if (!first)
+                    s.append(", ");
+                first = false;
+                Entity e = (Entity) ((Map.Entry) o).getValue();
+                s.append("{");
+                s.append(quote("nodetype")).append(": ");
+                if (e instanceof EntityList)
+                    s.append(quote("entitylist")).append(", ");
+                else
+                    s.append(quote("entity")).append(", ");
+                s.append(quote("name")).append(": ");
+                s.append(quote(e.getName())).append(", ");
+                s.append(quote("displayName")).append(": ");
+                s.append(quote(e.getDisplayName())).append(", ");
+                s.append(quote("description")).append(": ");
+                s.append(quote(e.getDescription()));
+                s.append("}");
+
+            }
+            s.append("]");
+        }
+        if (commandRegistry != null && commandRegistry.getCommands() != null) {
+            s.append(", ");
+            s.append(quote("commands")).append(": ");
+            s.append("[");
+            List cmds = commandRegistry.getCommands();
+            for (int i = 0; i < cmds.size(); i++) {
+                if (i > 0)
+                    s.append(", ");
+                s.append(quote(((Command) cmds.get(i)).toJson()));
+            }
+            s.append("]");
+        }
+        s.append("}");
+        return s.toString();
     }
 
     public String toString() {

@@ -287,6 +287,23 @@ public class Command implements Dumpable {
         return true;
     }
 
+    private String quote(String s) {
+        return "\"" + s + "\"";
+    }
+
+    public String toJson() {
+        StringBuffer s = new StringBuffer();
+        s.append("{");
+        s.append(quote("name")).append(": ");
+        s.append(quote(name)).append(", ");
+        s.append(quote("description")).append(": ");
+        s.append(quote(description)).append(", ");
+        s.append(quote("guiForChild")).append(": ");
+        s.append(guiForChild);
+        s.append("}");
+        return s.toString();
+    }
+
     public String toString() {
         StringBuffer s = new StringBuffer();
         s.append("[Command, name=");

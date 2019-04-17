@@ -383,6 +383,35 @@ public class EntityList extends Entity {
         super.setEntityRemoveListener(entityRemoveListener);
     }
 
+    public String toJson() {
+        StringBuffer s = new StringBuffer();
+        s.append("{");
+        s.append(quote("nodetype")).append(": ");
+        s.append(quote("entitylist")).append(", ");
+        s.append(quote("name")).append(": ");
+        s.append(quote(name)).append(", ");
+        s.append(quote("displayName")).append(": ");
+        s.append(quote(displayName)).append(", ");
+        s.append(quote("description")).append(": ");
+        s.append(quote(description));
+        s.append(quote("template")).append(": ");
+        s.append(quote(template.toJson()));
+        if (commandRegistry != null && commandRegistry.getCommands() != null) {
+            s.append(", ");
+            s.append(quote("properties")).append(": ");
+            s.append("[");
+            List cmds = commandRegistry.getCommands();
+            for (int i = 0; i < cmds.size(); i++) {
+                if (i > 0)
+                    s.append(", ");
+                s.append(quote(((Command) cmds.get(i)).toJson()));
+            }
+            s.append("]");
+        }
+        s.append("}");
+        return s.toString();
+    }
+
     public String toString() {
         StringBuffer s = new StringBuffer();
         s.append("\n[EntityList, entity=");

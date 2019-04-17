@@ -721,6 +721,57 @@ public class Property implements Dumpable {
         return prop;
     }
 
+    private String quote(String s) {
+        return "\"" + s + "\"";
+    }
+
+    public String toJson() {
+        StringBuffer s = new StringBuffer();
+        s.append("{");
+        s.append(quote("name")).append(": ");
+        s.append(quote(name)).append(", ");
+        s.append(quote("displayName")).append(": ");
+        s.append(quote(displayName)).append(", ");
+        s.append(quote("description")).append(": ");
+        s.append(quote(description)).append(", ");
+        s.append(quote("type")).append(": ");
+        s.append(quote(type.toString())).append(", ");
+        s.append(quote("readOnly")).append(": ");
+        s.append(readOnly).append(", ");
+        s.append(quote("mandatory")).append(": ");
+        s.append(mandatory).append(", ");
+        s.append(quote("rebootRequired")).append(": ");
+        s.append(rebootRequired);
+        if (minValue != null){
+            s.append(", ");
+            s.append(quote("minValue")).append(": ");
+            s.append(minValue);
+        }
+        if (maxValue != null){
+            s.append(", ");
+            s.append(quote("maxValue")).append(": ");
+            s.append(maxValue);
+        }
+        if (defaultValue != null){
+            s.append(", ");
+            s.append(quote("defaultValue")).append(": ");
+            s.append(defaultValue);
+        }
+        if (possibleValues != null){
+            s.append(", ");
+            s.append(quote("possibleValues")).append(": ");
+            s.append("[");
+            for (int i=0;i<possibleValues.size();i++){
+                if (i > 0)
+                    s.append(", ");
+                s.append(quote(possibleValues.get(i).toString()));
+            }
+            s.append("]");
+        }
+        s.append("}");
+        return s.toString();
+    }
+
     public String toString() {
         StringBuffer s = new StringBuffer();
         s.append("[Property, name=");
