@@ -12,6 +12,11 @@
       <fileMode>0755</fileMode>
       <filtered>true</filtered>
     </fileSet>
+    <fileSet>
+      <directory>disttemplates/certs</directory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/certs</outputDirectory>
+      <filtered>false</filtered>
+    </fileSet>
   </fileSets>
   <files>
     <file>

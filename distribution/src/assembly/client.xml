@@ -11,6 +11,11 @@
       <outputDirectory>${project.artifactId}_${project.version}_client</outputDirectory>
       <fileMode>0755</fileMode>
     </fileSet>
+    <fileSet>
+      <directory>disttemplates/certs</directory>
+      <outputDirectory>${project.artifactId}_${project.version}_client/certs</outputDirectory>
+      <filtered>false</filtered>
+    </fileSet>
   </fileSets>
   <files>
     <file>
