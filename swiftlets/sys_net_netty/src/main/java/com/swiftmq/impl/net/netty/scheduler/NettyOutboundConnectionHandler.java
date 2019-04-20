@@ -22,7 +22,9 @@ import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.net.protocol.ChunkListener;
 import com.swiftmq.net.protocol.ProtocolInputHandler;
 import com.swiftmq.swiftlet.net.Connection;
+import com.swiftmq.swiftlet.net.ConnectionMetaData;
 import com.swiftmq.swiftlet.net.InboundHandler;
+import com.swiftmq.swiftlet.net.event.ConnectionListener;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import io.netty.buffer.ByteBuf;
@@ -30,55 +32,75 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
-public abstract class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter implements ChunkListener, TimerListener {
+public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter implements ChunkListener, TimerListener {
     SwiftletContext ctx;
     Connection connection;
+    ConnectionMetaData metaData;
     ProtocolInputHandler inputHandler = null;
     InboundHandler inboundHandler = null;
     DataByteArrayInputStream bais = null;
     Countable countableInput;
     boolean activated = false;
-    boolean registered = false;
     volatile boolean zombi = true;
 
-    public NettyOutboundConnectionHandler(SwiftletContext ctx, Connection connection) {
+    public NettyOutboundConnectionHandler(SwiftletContext ctx, Connection connection, ConnectionMetaData metaData) {
         this.ctx = ctx;
         this.connection = connection;
+        this.metaData = metaData;
         long zombiConnectionTimeout = ctx.networkSwiftlet.getZombiConnectionTimeout();
         if (zombiConnectionTimeout > 0)
             ctx.timerSwiftlet.addInstantTimerListener(zombiConnectionTimeout, this);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/created");
     }
 
-    protected abstract void register() throws Exception;
-
     private void activate() throws Exception {
-        register();
-        inputHandler = connection.getMetaData().createProtocolInputHandler();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/activate");
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/registerConnection");
+        ConnectionListener connectionListener = metaData.getConnectionListener();
+        connection.setConnectionListener(connectionListener);
+        connection.setMetaData(metaData);
+        connectionListener.connected(connection);
+        ctx.networkSwiftlet.getConnectionManager().addConnection(connection);
+        ctx.logSwiftlet.logInformation(super.toString(), "connection created: " + connection.toString());
+        inputHandler = metaData.createProtocolInputHandler();
         connection.setProtocolInputHandler(inputHandler);
         inputHandler.setChunkListener(this);
-        inputHandler.createInputBuffer(connection.getMetaData().getInputBufferSize(), connection.getMetaData().getInputExtendSize());
+        inputHandler.createInputBuffer(metaData.getInputBufferSize(), metaData.getInputExtendSize());
         inboundHandler = connection.getInboundHandler();
         countableInput = (Countable)connection.getInputStream();
         activated = true;
-        registered = true;
     }
 
     public boolean isActive() {
-        return !registered || activated;
+        return activated;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext context) throws Exception {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/channelActive");
+        activate();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext context) throws Exception {
-        ctx.logSwiftlet.logInformation(toString(), "connection inactive, closing: " + connection.toString());
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/channelInactive");
+        ctx.logSwiftlet.logInformation("sys$net", toString()+"/connection inactive, closing");
         ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
         activated = false;
 
     }
+    @Override
+    public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
+        ctx.logSwiftlet.logInformation("sys$net", toString()+"/Got exception: "+cause);
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext context, Object msg) throws Exception {
-        if (!activated)
-            activate();;
         byte[] buffer = inputHandler.getBuffer();
         int offset = inputHandler.getOffset();
         ByteBuf in = (ByteBuf) msg;
@@ -129,6 +151,6 @@ public abstract class NettyOutboundConnectionHandler extends ChannelInboundHandl
 
     @Override
     public String toString() {
-        return connection.toString();
+        return "[NettyOutboundConnectionHandler, connection="+connection.toString()+"]";
     }
 }

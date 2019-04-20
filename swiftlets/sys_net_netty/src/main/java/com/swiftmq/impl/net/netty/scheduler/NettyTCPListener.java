@@ -73,7 +73,7 @@ public class NettyTCPListener extends TCPListener {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
-                            ctx.logSwiftlet.logError("sys$net", NettyTCPListener.this.toString()+"/Got exception: "+cause);
+                            ctx.logSwiftlet.logInformation("sys$net", NettyTCPListener.this.toString()+"/Got exception: "+cause);
                         }
 
                         @Override

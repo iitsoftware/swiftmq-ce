@@ -61,10 +61,15 @@ public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelInactive(ChannelHandlerContext context) throws Exception {
-        ctx.logSwiftlet.logInformation(toString(), "connection inactive, closing: " + connection.toString());
+        ctx.logSwiftlet.logInformation("sys$net", toString()+"/connection inactive, closing");
         ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
         closed = true;
 
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
+        ctx.logSwiftlet.logInformation("sys$net", toString()+"/Got exception: "+cause);
     }
 
     @Override

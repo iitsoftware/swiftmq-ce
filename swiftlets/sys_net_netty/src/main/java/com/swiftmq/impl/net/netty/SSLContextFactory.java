@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.net.netty;
 
-import com.swiftmq.tools.prop.SystemProperties;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -79,7 +78,7 @@ public class SSLContextFactory {
                 throw new Exception("Can't create SslContext! Private key file " + privatekeyFile + " does not exists!");
             builder = SslContextBuilder.forServer(certchain, privatekey);
         }
-        boolean clientAuth = Boolean.valueOf(SystemProperties.get(PROP_CLIENT_AUTH_ENABLED, "false"));
+        boolean clientAuth = Boolean.valueOf(System.getProperty(PROP_CLIENT_AUTH_ENABLED, "false"));
         if (clientAuth)
             builder.clientAuth(ClientAuth.REQUIRE);
 
@@ -126,7 +125,7 @@ public class SSLContextFactory {
                 }
             }
         }
-        boolean clientAuth = Boolean.valueOf(SystemProperties.get(PROP_CLIENT_AUTH_ENABLED, "false"));
+        boolean clientAuth = Boolean.valueOf(System.getProperty(PROP_CLIENT_AUTH_ENABLED, "false"));
         if (clientAuth)
             builder.clientAuth(ClientAuth.REQUIRE);
         return builder.build();

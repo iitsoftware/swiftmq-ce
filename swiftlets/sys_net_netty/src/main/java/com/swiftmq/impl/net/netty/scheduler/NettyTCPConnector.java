@@ -39,18 +39,9 @@ public class NettyTCPConnector extends TCPConnector {
 
     public NettyTCPConnector(SwiftletContext ctx, ConnectorMetaData metaData) {
         super(ctx, metaData);
-    }
-
-    private void registerConnection() throws Exception {
         useTLS = metaData.getSocketFactoryClass() != null && metaData.getSocketFactoryClass().equals("com.swiftmq.net.JSSESocketFactory");
         taskExecutor = new TaskExecutor(ctx);
         group = new NioEventLoopGroup(taskExecutor.getNumberThreads()-1, taskExecutor);
-        ConnectionListener connectionListener = getMetaData().getConnectionListener();
-        connection.setConnectionListener(connectionListener);
-        connection.setMetaData(getMetaData());
-        connectionListener.connected(connection);
-        ctx.networkSwiftlet.getConnectionManager().addConnection(connection);
-        ctx.logSwiftlet.logInformation(super.toString(), "connection created: " + connection.toString());
     }
 
     @Override
@@ -58,7 +49,7 @@ public class NettyTCPConnector extends TCPConnector {
         if (connectionHandler != null && connectionHandler.isActive())
             return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$net", super.toString() + "/connect");
+            ctx.traceSpace.trace("sys$net", toString() + "/connect");
         Bootstrap clientBootstrap = new Bootstrap();
         clientBootstrap.group(group);
         clientBootstrap.channel(NioSocketChannel.class);
@@ -71,12 +62,7 @@ public class NettyTCPConnector extends TCPConnector {
 
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 connection = new NettyConnection(ctx, socketChannel, ctx.networkSwiftlet.isDnsResolve());
-                connectionHandler = new NettyOutboundConnectionHandler(ctx, connection) {
-                    @Override
-                    protected void register() throws Exception {
-                        registerConnection();
-                    }
-                };
+                connectionHandler = new NettyOutboundConnectionHandler(ctx, connection, getMetaData());
                 if (useTLS)
                     socketChannel.pipeline().addLast(SSLContextFactory.createClientContext().newHandler(socketChannel.alloc()));
                 socketChannel.pipeline().addLast(connectionHandler);
@@ -86,7 +72,6 @@ public class NettyTCPConnector extends TCPConnector {
 
             @Override
             public void channelInactive(ChannelHandlerContext context) throws Exception {
-                super.channelInactive(context);
                 close();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$net", NettyTCPConnector.this.toString() + "/channelInactive");
