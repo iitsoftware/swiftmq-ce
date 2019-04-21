@@ -142,9 +142,7 @@ public class XMLUtilities {
         set.add("before-install");
         set.add("after-remove");
         possibleEle.put("cli", set);
-    }
-
-    ;
+    };
 
     private static void checkElement(Element element) throws Exception {
         HashSet set = (HashSet) possibleAttr.get(element.getName());

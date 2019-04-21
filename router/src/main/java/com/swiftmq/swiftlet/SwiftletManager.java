@@ -29,6 +29,7 @@ import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.tools.deploy.Bundle;
 import com.swiftmq.tools.deploy.BundleEvent;
 import com.swiftmq.tools.deploy.DeployPath;
+import com.swiftmq.tools.file.NumberBackupFileReducer;
 import com.swiftmq.tools.log.NullPrintStream;
 import com.swiftmq.util.SwiftUtilities;
 import com.swiftmq.upgrade.UpgradeUtilities;
@@ -929,6 +930,7 @@ public class SwiftletManager {
             String backupFile = configFilename + fmt.format(new Date());
             File file = new File(configFilename);
             file.renameTo(new File(backupFile));
+            new NumberBackupFileReducer(file.getParent(), file.getName()+".", 15).process();
             al.add("Configuration backed up to file '" + backupFile + "'.");
         } catch (Exception e) {
             al.add("Error creating configuration backup: " + e);
