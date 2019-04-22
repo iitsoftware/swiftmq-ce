@@ -430,7 +430,7 @@ public class RouterConfigInstance extends EntityList {
         s.append(quote("nodetype")).append(": ");
         s.append(quote("root")).append(", ");
         s.append(quote("name")).append(": ");
-        s.append(quote(SwiftletManager.getInstance().getRouterName()));
+        s.append(quote(SwiftletManager.getInstance().getRouterName())).append(", ");
         s.append(quote("hasChilds")).append(": ");
         s.append(entities != null && entities.size()>0);
         if (entities != null) {
@@ -454,7 +454,7 @@ public class RouterConfigInstance extends EntityList {
                 s.append(quote("displayName")).append(": ");
                 s.append(quote(e.getDisplayName())).append(", ");
                 s.append(quote("description")).append(": ");
-                s.append(quote(e.getDescription()));
+                s.append(quote(e.getDescription())).append(", ");
                 s.append(quote("hasChilds")).append(": ");
                 s.append(e.getEntities() != null && e.getEntities().size()>0);
                 s.append("}");

@@ -393,9 +393,9 @@ public class EntityList extends Entity {
         s.append(quote("displayName")).append(": ");
         s.append(quote(displayName)).append(", ");
         s.append(quote("description")).append(": ");
-        s.append(quote("hasChilds")).append(": ");
-        s.append(true);
         s.append(quote(description)).append(", ");
+        s.append(quote("hasChilds")).append(": ");
+        s.append(true).append(", ");
         s.append(quote("template")).append(": ");
         s.append(template.toJson());
         if (commandRegistry != null && commandRegistry.getCommands() != null) {
