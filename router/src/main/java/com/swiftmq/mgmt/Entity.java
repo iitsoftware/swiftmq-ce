@@ -844,6 +844,8 @@ public class Entity implements Dumpable {
         s.append(quote(displayName)).append(", ");
         s.append(quote("description")).append(": ");
         s.append(quote(description));
+        s.append(quote("hasChilds")).append(": ");
+        s.append(entities != null && entities.size()>0);
         if (properties != null) {
             s.append(", ");
             s.append(quote("properties")).append(": ");
@@ -880,6 +882,8 @@ public class Entity implements Dumpable {
                 s.append(quote(e.getDisplayName())).append(", ");
                 s.append(quote("description")).append(": ");
                 s.append(quote(e.getDescription()));
+                s.append(quote("hasChilds")).append(": ");
+                s.append(e.getEntities() != null && e.getEntities().size()>0);
                 s.append("}");
 
             }
