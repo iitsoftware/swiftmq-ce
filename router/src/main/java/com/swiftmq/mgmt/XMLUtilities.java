@@ -497,7 +497,7 @@ public class XMLUtilities {
         }
     }
 
-    private static Element getSwiftletElement(String searched, Element root) throws Exception {
+    public static Element getSwiftletElement(String searched, Element root) throws Exception {
         for (Iterator iter = root.elementIterator(); iter.hasNext(); ) {
             Element e = (Element) iter.next();
             if (e.getName().equals("swiftlet")) {

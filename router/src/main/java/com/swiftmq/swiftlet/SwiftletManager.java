@@ -19,6 +19,7 @@ package com.swiftmq.swiftlet;
 
 import com.swiftmq.client.thread.PoolManager;
 import com.swiftmq.mgmt.*;
+import com.swiftmq.mgmt.Entity;
 import com.swiftmq.swiftlet.event.KernelStartupListener;
 import com.swiftmq.swiftlet.event.SwiftletManagerEvent;
 import com.swiftmq.swiftlet.event.SwiftletManagerListener;
@@ -34,9 +35,7 @@ import com.swiftmq.tools.log.NullPrintStream;
 import com.swiftmq.util.SwiftUtilities;
 import com.swiftmq.upgrade.UpgradeUtilities;
 import com.swiftmq.util.Version;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
+import org.dom4j.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,6 +82,8 @@ import java.util.*;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
 public class SwiftletManager {
+    static final String PROP_PRECONFIG = "swiftmq.preconfig";
+    static final String ATTR_PRECONFIG = "preconfig-applied";
     static final String PROP_SHUTDOWN_HOOK = "swiftmq.shutdown.hook";
     static final String PROP_REUSE_KERNEL_CL = "swiftmq.reuse.kernel.classloader";
     static final long PROP_CONFIG_WATCHDOG_INTERVAL = Long.parseLong(System.getProperty("swiftmq.config.watchdog.interval", "0"));
@@ -492,6 +493,25 @@ public class SwiftletManager {
     }
 
     /**
+     * Checks and applies a preconfiguration.
+     *
+     * @throws Exception
+     */
+    private void checkAndApplyPreconfig() throws Exception {
+        String preconfig = System.getProperty(PROP_PRECONFIG);
+        if (preconfig != null && preconfig.trim().length() > 0) {
+            Attribute preconfigAttr = routerConfig.getRootElement().attribute(ATTR_PRECONFIG);
+            if (preconfigAttr == null || !preconfigAttr.getValue().equals("true")){
+                XMLUtilities.writeDocument(routerConfig, configFilename+fmt.format(new Date()));
+                routerConfig = new PreConfigurator(routerConfig, XMLUtilities.createDocument(new FileInputStream(preconfig))).applyChanges();
+                routerConfig.getRootElement().addAttribute(ATTR_PRECONFIG, "true");
+                XMLUtilities.writeDocument(routerConfig, configFilename);
+                System.out.println("Applied changes from preconfig file: " + preconfig);
+            }
+        }
+    }
+
+    /**
      * Starts the router.
      * This method is called from the bootstrap class only.
      *
@@ -506,6 +526,7 @@ public class SwiftletManager {
         routerConfig = XMLUtilities.createDocument(new FileInputStream(configFilename));
         
         UpgradeUtilities.checkRelease(configFilename, routerConfig);
+        checkAndApplyPreconfig();
         Element root = routerConfig.getRootElement();
         parseOptionalConfiguration(root);
         String value = root.attributeValue("startorder");
@@ -610,7 +631,7 @@ public class SwiftletManager {
     }
 
     private synchronized void initSwiftlets() {
-        System.out.println("Booting SwiftMQ " + Version.getKernelVersion() + " ...");
+        System.out.println("Booting SwiftMQ " + Version.getKernelVersion() + " "+"["+getRouterName()+"] ...");
         /*${evalprintout}*/
         startup = true;
         swiftletTable = (Map) Collections.synchronizedMap(new HashMap());
@@ -730,7 +751,7 @@ public class SwiftletManager {
         startup = false;
         if (doFireKernelStartedEvent)
             fireKernelStartedEvent();
-        System.out.println("SwiftMQ " + Version.getKernelVersion() + " is ready.");
+        System.out.println("SwiftMQ " + Version.getKernelVersion() + " "+"["+getRouterName()+"] is ready.");
     }
 
     /**
@@ -885,7 +906,7 @@ public class SwiftletManager {
      * Performs a shutdown of the router.
      */
     public synchronized void shutdown() {
-        System.out.println("Shutdown SwiftMQ " + Version.getKernelVersion() + " ...");
+        System.out.println("Shutdown SwiftMQ " + Version.getKernelVersion() + " "+"["+getRouterName()+"] ...");
         trace("shutdown");
         if (configfileWatchdog != null)
             timerSwiftlet.removeTimerListener(configfileWatchdog);
@@ -900,7 +921,7 @@ public class SwiftletManager {
         PoolManager.reset();
         traceSpace = null;
         logSwiftlet = null;
-        System.out.println("Shutdown SwiftMQ " + Version.getKernelVersion() + " DONE.");
+        System.out.println("Shutdown SwiftMQ " + Version.getKernelVersion() +" "+"["+getRouterName()+"] DONE.");
     }
 
     /**
