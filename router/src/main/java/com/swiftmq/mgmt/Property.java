@@ -18,6 +18,7 @@
 package com.swiftmq.mgmt;
 
 import com.swiftmq.tools.dump.Dumpable;
+import com.swiftmq.util.SwiftUtilities;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -721,8 +722,11 @@ public class Property implements Dumpable {
         return prop;
     }
 
+    private String escapeJsonControls(String s) {
+        return SwiftUtilities.replace(s, "\\", "\\\\").replace("\"", "\\\"");
+    }
     private String quote(String s) {
-        return "\"" + s + "\"";
+        return "\"" + escapeJsonControls(s) + "\"";
     }
 
     public String toJson() {

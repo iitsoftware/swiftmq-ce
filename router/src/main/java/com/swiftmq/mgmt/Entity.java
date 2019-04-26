@@ -883,7 +883,10 @@ public class Entity implements Dumpable {
                 s.append(quote("description")).append(": ");
                 s.append(quote(e.getDescription())).append(", ");
                 s.append(quote("hasChilds")).append(": ");
-                s.append(e.getEntities() != null && e.getEntities().size()>0);
+                if (e instanceof EntityList)
+                    s.append(true);
+                else
+                    s.append(e.getEntities() != null && e.getEntities().size()>0);
                 s.append("}");
 
             }
