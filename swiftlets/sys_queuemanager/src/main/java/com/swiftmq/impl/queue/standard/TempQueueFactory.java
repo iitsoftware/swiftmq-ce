@@ -37,6 +37,11 @@ public class TempQueueFactory implements QueueFactory {
         /*{evaltimer3}*/
     }
 
+    @Override
+    public boolean registerUsage() {
+        return true;
+    }
+
     public AbstractQueue createQueue(String queueName, Entity queueController)
             throws QueueException {
         NonPersistentStore nStore = null;

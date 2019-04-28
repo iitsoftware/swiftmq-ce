@@ -1067,14 +1067,16 @@ public class QueueManagerImpl extends QueueManager
             queueTable.put(queueName, queue);
             startQueue(queue);
         }
-        try {
-            Entity qEntity = ctx.usageList.createEntity();
-            qEntity.setName(localName);
-            qEntity.setDynamicObject(queue);
-            qEntity.createCommands();
-            ctx.usageList.addEntity(qEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (factory.registerUsage()) {
+            try {
+                Entity qEntity = ctx.usageList.createEntity();
+                qEntity.setName(localName);
+                qEntity.setDynamicObject(queue);
+                qEntity.createCommands();
+                ctx.usageList.addEntity(qEntity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1096,14 +1098,16 @@ public class QueueManagerImpl extends QueueManager
             queueTable.put(queueName, queue);
             startQueue(queue);
         }
-        try {
-            Entity qEntity = ctx.usageList.createEntity();
-            qEntity.setName(localName);
-            qEntity.setDynamicObject(queue);
-            qEntity.createCommands();
-            ctx.usageList.addEntity(qEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (factory.registerUsage()) {
+            try {
+                Entity qEntity = ctx.usageList.createEntity();
+                qEntity.setName(localName);
+                qEntity.setDynamicObject(queue);
+                qEntity.createCommands();
+                ctx.usageList.addEntity(qEntity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

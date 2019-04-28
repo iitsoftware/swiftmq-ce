@@ -30,6 +30,11 @@ public class CompositeQueueFactory implements QueueFactory {
         this.ctx = ctx;
     }
 
+    @Override
+    public boolean registerUsage() {
+        return true;
+    }
+
     public AbstractQueue createQueue(String queueName, Entity compositeQueueEntity) throws QueueException {
         CompositeQueue queue = new CompositeQueue(ctx, compositeQueueEntity);
         queue.setFlowController(new CompositeQueueFlowController());

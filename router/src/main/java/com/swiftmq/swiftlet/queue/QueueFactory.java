@@ -25,6 +25,14 @@ import com.swiftmq.mgmt.Entity;
  * @author IIT GmbH, Bremen/Germany, Copyright (c) 2000-2002, All Rights Reserved
  */
 public interface QueueFactory {
+
+    /**
+     * Returns whether queues created from this factory should be registered in the Usage section of the management tree
+     *
+     * @return true/false
+     */
+    public boolean registerUsage();
+
     /**
      * Creates a new abstract queue from the given entity.
      *

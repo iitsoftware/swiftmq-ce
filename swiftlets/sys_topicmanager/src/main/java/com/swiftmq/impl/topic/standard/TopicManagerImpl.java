@@ -96,6 +96,11 @@ public class TopicManagerImpl extends TopicManager
         return directSubscriberSelection;
     }
 
+    @Override
+    public boolean registerUsage() {
+        return false;
+    }
+
     public AbstractQueue createQueue(String queueName, Entity queueEntity)
             throws QueueException {
         StringTokenizer t = new StringTokenizer(queueName, "$@");

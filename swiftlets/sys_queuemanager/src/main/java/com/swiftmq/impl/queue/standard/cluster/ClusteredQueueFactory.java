@@ -30,6 +30,11 @@ public class ClusteredQueueFactory implements QueueFactory {
         this.ctx = ctx;
     }
 
+    @Override
+    public boolean registerUsage() {
+        return true;
+    }
+
     public AbstractQueue createQueue(String queueName, Entity clusteredQueueEntity) throws QueueException {
         AbstractQueue queue = new ClusteredQueue(ctx, ctx.dispatchPolicyRegistry.add(queueName, ctx.messageGroupDispatchPolicyFactory.create(ctx, clusteredQueueEntity, queueName, new RoundRobinDispatchPolicy(ctx, queueName))));
         queue.setFlowController(new ClusteredQueueFlowController());

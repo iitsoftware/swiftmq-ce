@@ -39,6 +39,11 @@ public class RegularQueueFactory implements QueueFactory {
         /*{evaltimer3}*/
     }
 
+    @Override
+    public boolean registerUsage() {
+        return true;
+    }
+
     public AbstractQueue createQueue(String queueName, Entity queueEntity)
             throws QueueException {
         PersistentStore pStore = null;
