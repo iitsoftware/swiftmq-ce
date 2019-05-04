@@ -43,6 +43,7 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
     boolean isStartup = false;
     boolean isShutdown = false;
     RepositorySupport repositorySupport = new RepositorySupport();
+    StreamLibDeployer streamLibDeployer = null;
 
     private void collectChanged(long oldInterval, long newInterval) {
         if (!collectOn)
@@ -177,6 +178,8 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
                 if (streamController != null) {
                     streamController.close();
                     delEntity.setUserObject(null);
+                    if (!isShutdown)
+                        streamLibDeployer.removeStreamLibs(streamController.fqn());
                 }
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "onEntityRemove: " + delEntity.getName() + " done");
@@ -396,6 +399,11 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
                 collectOn = false;
             }
         });
+        try {
+            streamLibDeployer = new StreamLibDeployer(ctx);
+        } catch (Exception e) {
+            throw new SwiftletException(e.toString());
+        }
         isStartup = false;
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done.");

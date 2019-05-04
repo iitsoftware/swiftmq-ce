@@ -53,12 +53,15 @@ public class SwiftletContext {
     public TraceSwiftlet traceSwiftlet = null;
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
+    public String streamLibDir = "../streamlib";
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
         this.streamsSwiftlet = streamsSwiftlet;
         root = config;
         usageList = (EntityList) root.getEntity("usage");
+        if (root.getProperty("stream-lib-directory") != null)
+            streamLibDir = (String) root.getProperty("stream-lib-directory").getValue();
         traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");

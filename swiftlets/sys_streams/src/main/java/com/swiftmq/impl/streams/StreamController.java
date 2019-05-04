@@ -25,12 +25,16 @@ import com.swiftmq.impl.streams.processor.po.POStart;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.deploy.ExtendableClassLoader;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.SimpleScriptContext;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Date;
 
 public class StreamController {
@@ -59,6 +63,31 @@ public class StreamController {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/created");
     }
 
+    public String fqn() {
+        return fqn;
+    }
+
+    private ClassLoader createClassLoader() {
+        File libDir = new File(ctx.streamLibDir + File.separatorChar + fqn);
+        ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "createClassLoader: " + ctx.streamLibDir + File.separatorChar + fqn + ", exists: " + libDir.exists());
+        if (libDir.exists()) {
+            File[] libs = libDir.listFiles();
+            ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "createClassLoader: " + ctx.streamLibDir + File.separatorChar + fqn + ", libs: " + libs);
+            if (libs != null) {
+                URL[] urls = new URL[libs.length];
+                try {
+                    for (int i = 0; i < libs.length; i++)
+                        urls[i] = libs[i].toURI().toURL();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Create classloader for stream: " + fqn + " with libs: " + Arrays.asList(urls));
+                return new ExtendableClassLoader(libDir, urls, StreamController.class.getClassLoader());
+            }
+        }
+        return StreamController.class.getClassLoader();
+    }
+
     private Reader loadScript(String name) throws Exception {
         Reader reader = null;
         if (name.startsWith(REGPREFIX)) {
@@ -77,12 +106,12 @@ public class StreamController {
 
     private void evalScript() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript ...");
-        Thread.currentThread().setContextClassLoader(StreamController.class.getClassLoader());
         ScriptEngineManager manager = new ScriptEngineManager();
+        Thread.currentThread().setContextClassLoader(createClassLoader());
         ScriptEngine engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
+        Thread.currentThread().setContextClassLoader(null);
         if (engine == null)
             throw new Exception("Engine for script-language '" + entity.getProperty("script-language").getValue() + "' not found!");
-        Thread.currentThread().setContextClassLoader(null);
         ScriptContext newContext = new SimpleScriptContext();
         streamContext.engineScope = engine.createBindings();
         streamContext.engineScope.put("stream", streamContext.stream);
@@ -111,7 +140,6 @@ public class StreamController {
                 streamContext.usage.getProperty("starttime").setValue(new Date().toString());
             } catch (Exception e) {
             }
-
             streamContext.stream = new Stream(streamContext, domainName, packageName, entity.getName(), nRestarts);
             streamContext.messageBuilder = new MessageBuilder(streamContext);
             evalScript();

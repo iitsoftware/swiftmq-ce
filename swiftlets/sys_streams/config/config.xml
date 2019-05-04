@@ -16,6 +16,12 @@
               display="Stream Grant Predicates"
               description="SQL-Like Predicates to grant Stream Topic access"
               default="stream\_%"/>
+    <property name="stream-lib-directory"
+              type="java.lang.String"
+              display="Stream Lib Directory"
+              description="Hot deploy directory for external jar files used from a stream"
+              default="../streamlib"
+              reboot-required="true"/>
     <entitylist name="domains"
                 display="Domains"
                 description="Stream Domain Names">
