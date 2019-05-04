@@ -69,10 +69,8 @@ public class StreamController {
 
     private ClassLoader createClassLoader() {
         File libDir = new File(ctx.streamLibDir + File.separatorChar + fqn);
-        ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "createClassLoader: " + ctx.streamLibDir + File.separatorChar + fqn + ", exists: " + libDir.exists());
         if (libDir.exists()) {
             File[] libs = libDir.listFiles();
-            ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "createClassLoader: " + ctx.streamLibDir + File.separatorChar + fqn + ", libs: " + libs);
             if (libs != null) {
                 URL[] urls = new URL[libs.length];
                 try {
