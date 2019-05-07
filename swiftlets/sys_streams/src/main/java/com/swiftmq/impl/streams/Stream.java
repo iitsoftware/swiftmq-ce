@@ -85,6 +85,15 @@ public class Stream {
     }
 
     /**
+     * Internal use
+     *
+     * @return stream context
+     */
+    public StreamContext getStreamCtx() {
+        return ctx;
+    }
+
+    /**
      * Returns the name of the local Router.
      *
      * @return routerName

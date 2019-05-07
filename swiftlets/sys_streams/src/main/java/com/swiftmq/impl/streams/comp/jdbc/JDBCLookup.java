@@ -18,14 +18,12 @@
 package com.swiftmq.impl.streams.comp.jdbc;
 
 import com.swiftmq.impl.streams.StreamContext;
-import com.swiftmq.impl.streams.comp.memory.HeapMemory;
 import com.swiftmq.impl.streams.comp.memory.Memory;
-import com.swiftmq.impl.streams.comp.message.Message;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 
-import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 /**
  * Facade to perform queries on a JDBC connected database.
@@ -148,23 +146,7 @@ public class JDBCLookup {
             connect();
         nCalls++;
         long start = System.nanoTime();
-        Memory resultMemory = new HeapMemory(ctx);
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(sql);
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        while (resultSet.next()) {
-            Message message = ctx.messageBuilder.message();
-            for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                String name = metaData.getColumnName(i);
-                Object value = resultSet.getObject(i);
-                if (value instanceof BigDecimal)
-                    value = ((BigDecimal) value).doubleValue();
-                message.property(name).set(value);
-            }
-            resultMemory.add(message);
-        }
-        resultSet.close();
-        statement.close();
+        Memory resultMemory = Util.query(ctx.stream, connection, sql);
         callTime += (System.nanoTime() - start) / 1000;
         return resultMemory;
     }
