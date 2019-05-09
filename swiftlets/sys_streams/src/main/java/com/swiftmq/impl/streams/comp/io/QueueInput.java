@@ -55,7 +55,7 @@ public class QueueInput implements DestinationInput {
             usage.setName(name);
             usage.createCommands();
             inputList.addEntity(usage);
-            usage.getProperty("01-type").setValue("Queue");
+            usage.getProperty("atype").setValue("Queue");
             usage.getProperty("destinationname").setValue(destinationName);
         } catch (Exception e) {
             e.printStackTrace();
