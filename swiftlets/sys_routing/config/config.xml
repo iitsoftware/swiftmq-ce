@@ -1,10 +1,10 @@
 <swiftlet name="sys$routing"
-					displayname="Routing Swiftlet (Unlimited Connections)"
-					class="com.swiftmq.impl.routing.unlimited.URoutingSwiftletImpl"
-					icon="/sys_routing/images/swiftlet.png"
-					description="Routing Swiftlet (Unlimited Connections)"
-					release="${release}"
-					vendor="IIT Software GmbH" >
+          displayname="Routing Swiftlet (Unlimited Connections)"
+          class="com.swiftmq.impl.routing.unlimited.URoutingSwiftletImpl"
+          icon="/sys_routing/images/swiftlet.png"
+          description="Routing Swiftlet"
+          release="${release}"
+          vendor="IIT Software GmbH" >
 	<configuration>
       <property name="reject-disconnect-delay"
                           type="java.lang.Long"
