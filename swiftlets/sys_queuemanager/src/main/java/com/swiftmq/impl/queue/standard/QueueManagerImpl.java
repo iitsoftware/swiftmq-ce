@@ -587,7 +587,7 @@ public class QueueManagerImpl extends QueueManager
         }
         QueueSender sender = null;
         try {
-            if (ctx.smartTree)
+            if (ctx.smartTree || queueName.startsWith("tpc$"))
                 sender = new QueueSender(queue, null);
             else {
                 Entity queueEntity = ctx.usageList.getEntity(stripLocalName(queueName));
