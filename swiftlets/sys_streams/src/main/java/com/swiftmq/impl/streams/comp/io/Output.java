@@ -57,7 +57,7 @@ public abstract class Output {
                 usage.setName(name);
                 usage.createCommands();
                 outputList.addEntity(usage);
-                usage.getProperty("01-type").setValue(getType());
+                usage.getProperty("atype").setValue(getType());
             } catch (Exception e) {
                 e.printStackTrace();
             }

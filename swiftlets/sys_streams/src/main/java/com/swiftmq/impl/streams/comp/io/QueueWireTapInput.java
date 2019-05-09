@@ -87,7 +87,7 @@ public class QueueWireTapInput implements DestinationInput, WireTapSubscriber {
             usage.setName(destinationName + "-" + name);
             usage.createCommands();
             inputList.addEntity(usage);
-            usage.getProperty("01-type").setValue("QueueWireTapInput");
+            usage.getProperty("atype").setValue("QueueWireTapInput");
             usage.getProperty("destinationname").setValue(destinationName);
         } catch (Exception e) {
             e.printStackTrace();
