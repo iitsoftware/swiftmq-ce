@@ -2,7 +2,7 @@
           displayname="Streams Swiftlet"
           class="com.swiftmq.impl.streams.StreamsSwiftlet"
           icon="/sys_streams/images/swiftlet.png"
-          description="Complex Event Stream Swiftlet"
+          description="SwiftMQ Streams Microservice Engine"
           release="${release}"
           vendor="IIT Software GmbH">
   <configuration>
@@ -121,7 +121,7 @@
                     dynamic-properties="input-processing-rate">
           <entitytemplate name="input" display="Input"
                           description="Input">
-            <property name="01-type"
+            <property name="atype"
                       type="java.lang.String"
                       display="Input Type"
                       description="Type of this Input"/>
@@ -217,7 +217,7 @@
                     dynamic-properties="messages-sent">
           <entitytemplate name="output" display="Output"
                           description="Output">
-            <property name="01-type"
+            <property name="atype"
                       type="java.lang.String"
                       display="Output Type"
                       description="Type of this Output"/>
@@ -226,21 +226,6 @@
                       description="Number of Messages sent to this Output"
                       type="java.lang.Integer"
                       default="0"/>
-          </entitytemplate>
-        </entitylist>
-        <entitylist name="dashboard" display="Dashboard"
-                    description="Dashboard">
-          <entitytemplate name="widget" display="Widget"
-                          description="Dashboard Widget">
-            <property name="description"
-                      type="java.lang.String"
-                      display="Description"
-                      description="Widget Description"/>
-            <property name="type"
-                      display="Type"
-                      description="Widget Type"
-                      choice="statistic monitor"
-                      type="java.lang.String"/>
           </entitytemplate>
         </entitylist>
       </entitytemplate>
