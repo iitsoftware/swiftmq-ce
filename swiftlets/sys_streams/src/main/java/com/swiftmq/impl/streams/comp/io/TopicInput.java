@@ -62,7 +62,7 @@ public class TopicInput implements DestinationInput {
             usage.setName(name);
             usage.createCommands();
             inputList.addEntity(usage);
-            usage.getProperty("01-type").setValue("Topic");
+            usage.getProperty("atype").setValue("Topic");
             usage.getProperty("destinationname").setValue(destinationName);
         } catch (Exception e) {
         }

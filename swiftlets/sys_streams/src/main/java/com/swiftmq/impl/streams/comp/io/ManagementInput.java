@@ -260,7 +260,7 @@ public class ManagementInput implements Input {
             usage.setName(name.replace('/', '_'));
             usage.createCommands();
             inputList.addEntity(usage);
-            usage.getProperty("01-type").setValue("Management");
+            usage.getProperty("atype").setValue("Management");
         } catch (Exception e) {
             e.printStackTrace();
         }
