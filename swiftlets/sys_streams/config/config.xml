@@ -2,7 +2,7 @@
           displayname="Streams Swiftlet"
           class="com.swiftmq.impl.streams.StreamsSwiftlet"
           icon="/sys_streams/images/swiftlet.png"
-          description="Complex Event Stream Swiftlet"
+          description="SwiftMQ Streams Microservice Engine"
           release="${release}"
           vendor="IIT Software GmbH">
   <configuration>
