@@ -1,0 +1,5 @@
+#!/bin/bash
+if [[ ! -e /swiftmq/config/routerconfig.xml ]]; then
+   cp /swiftmq/initialconfig/routerconfig.xml /swiftmq/config/.
+fi
+
