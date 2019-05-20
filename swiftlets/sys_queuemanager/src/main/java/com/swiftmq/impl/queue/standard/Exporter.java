@@ -121,7 +121,7 @@ public class Exporter
             }
             if (xml) {
                 xStream = new XStream(new Dom4JDriver());
-                XStream.setupDefaultSecurity(xStream);
+                xStream.allowTypesByWildcard(new String[]{".*"});
             }
             MessageSelector msel = null;
             if (selector != null) {

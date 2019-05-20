@@ -45,8 +45,7 @@ public class SessionStore {
         if (!ctx.queueManager.isQueueDefined(STORE_QUEUE))
             ctx.queueManager.createQueue(STORE_QUEUE, (ActiveLogin) null);
         xStream = new XStream(new Dom4JDriver());
-        XStream.setupDefaultSecurity(xStream);
-        System.out.println("XStream.setupDefaultSecurity");
+        xStream.allowTypesByWildcard(new String[]{".*"});
         xStream.setClassLoader(getClass().getClassLoader());
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", created");
