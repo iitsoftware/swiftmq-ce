@@ -121,9 +121,7 @@ public class Exporter
             }
             if (xml) {
                 xStream = new XStream(new Dom4JDriver());
-                xStream.allowTypesByWildcard(new String[]
-                        {"com.swiftmq.**", "java.lang.**", "java.util.**"}
-                );
+                XStream.setupDefaultSecurity(xStream);
             }
             MessageSelector msel = null;
             if (selector != null) {
