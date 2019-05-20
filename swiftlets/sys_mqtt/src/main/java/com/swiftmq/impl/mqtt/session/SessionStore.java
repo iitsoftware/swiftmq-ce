@@ -46,7 +46,7 @@ public class SessionStore {
             ctx.queueManager.createQueue(STORE_QUEUE, (ActiveLogin) null);
         xStream = new XStream(new Dom4JDriver());
         xStream.allowTypesByWildcard(new String[]
-                {"com.swiftmq.**", "java.lang.**", "java.util.**"}
+                {".*"}
         );
         xStream.setClassLoader(getClass().getClassLoader());
         if (ctx.traceSpace.enabled)
