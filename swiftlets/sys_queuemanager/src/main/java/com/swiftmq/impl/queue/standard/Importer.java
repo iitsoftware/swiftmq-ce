@@ -93,7 +93,7 @@ public class Importer
                 throw new Exception("Input directory doesn't exists: " + localDir);
 
             xStream = new XStream(new Dom4JDriver());
-            XStream.setupDefaultSecurity(xStream);
+            xStream.allowTypesByWildcard(new String[]{".*"});
 
             QueueSender sender = ctx.queueManager.createQueueSender(queueName, null);
             try {
