@@ -44,6 +44,16 @@
       <destName>sys$amqp.jar</destName>
     </file>
     <file>
+      <source>../swiftlets/sys_amqpbridge/config/config.xml</source>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$amqpbridge</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>../swiftlets/sys_amqpbridge/target/sys_amqpbridge.jar</source>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$amqpbridge</outputDirectory>
+      <destName>sys$amqpbridge.jar</destName>
+    </file>
+    <file>
       <source>../swiftlets/sys_authentication/config/config.xml</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$authentication</outputDirectory>
       <filtered>true</filtered>
@@ -72,6 +82,16 @@
       <source>../swiftlets/sys_jms/target/sys_jms.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jms</outputDirectory>
       <destName>sys$jms.jar</destName>
+    </file>
+    <file>
+      <source>../swiftlets/sys_jmsbridge/config/config.xml</source>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jmsbridge</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>../swiftlets/sys_jmsbridge/target/sys_jmsbridge.jar</source>
+      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$jmsbridge</outputDirectory>
+      <destName>sys$jmsbridge.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_jndi/config/config.xml</source>
