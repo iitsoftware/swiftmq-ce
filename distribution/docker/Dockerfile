@@ -6,6 +6,7 @@ RUN tar xvfz swiftmq.tar.gz
 RUN mkdir /swiftmq/preconfig
 RUN mkdir /swiftmq/initialconfig
 COPY /swiftmq/config/routerconfig.xml /swiftmq/initialconfig/.
+RUN keytool -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit -destkeystore /swiftmq/certs/client.truststore -deststorepass secret
 WORKDIR /swiftmq/scripts
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
 ENV SWIFTMQ_PRECONFIG $SWIFTMQ_PRECONFIG
