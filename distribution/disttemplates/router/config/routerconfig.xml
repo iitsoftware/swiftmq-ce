@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<router name="router" kernelpath="../kernel" release="${release}"
-        startorder="sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$accounting sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$amqp sys$mqtt sys$deploy sys$scheduler sys$monitor sys$streams sys$amqpbridge sys$jmsbridge">
+<router name="router" kernelpath="../kernel" release="${release}" startorder="sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$accounting sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$amqp sys$mqtt sys$deploy sys$scheduler sys$monitor sys$streams">
 
   <!--  Accounting Swiftlet, Release: ${release}  -->
 
@@ -296,21 +295,6 @@
           <thread name="sys$amqp.session.service"/>
         </threads>
       </pool>
-      <pool name="amqpbridge.poll" kernel-pool="true">
-        <threads>
-          <thread name="sys$amqpbridge.poller"/>
-        </threads>
-      </pool>
-      <pool name="amqpbridge.client.connection" kernel-pool="true">
-        <threads>
-          <thread name="sys$amqpbridge.client.connection"/>
-        </threads>
-      </pool>
-      <pool name="amqpbridge.client.session" kernel-pool="true">
-        <threads>
-          <thread name="sys$amqpbridge.client.session"/>
-        </threads>
-      </pool>
       <pool name="jms.connection" kernel-pool="true" max-threads="5" min-threads="5">
         <threads>
           <thread name="sys$jms.connection.service"/>
@@ -329,17 +313,6 @@
       <pool name="jms.session" kernel-pool="true" max-threads="10" min-threads="1">
         <threads>
           <thread name="sys$jms.session.service"/>
-        </threads>
-      </pool>
-      <pool name="jmsbridge.server" kernel-pool="true">
-        <threads>
-          <thread name="sys$jmsbridge.server.mgr"/>
-        </threads>
-      </pool>
-      <pool name="jmsbridge.source" kernel-pool="true">
-        <threads>
-          <thread name="sys$jmsbridge.source.queue"/>
-          <thread name="sys$jmsbridge.source.topic"/>
         </threads>
       </pool>
       <pool name="jndi" kernel-pool="true" max-threads="1" min-threads="1">

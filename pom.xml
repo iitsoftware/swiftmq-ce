@@ -13,11 +13,9 @@
     <module>router</module>
     <module>swiftlets/sys_accounting</module>
     <module>swiftlets/sys_amqp</module>
-    <module>swiftlets/sys_amqpbridge</module>
     <module>swiftlets/sys_authentication</module>
     <module>swiftlets/sys_deploy</module>
     <module>swiftlets/sys_jms</module>
-    <module>swiftlets/sys_jmsbridge</module>
     <module>swiftlets/sys_jndi</module>
     <module>swiftlets/sys_log</module>
     <module>swiftlets/sys_mgmt</module>
