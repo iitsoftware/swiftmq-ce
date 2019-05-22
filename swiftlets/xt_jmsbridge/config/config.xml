@@ -17,7 +17,7 @@
 
 <swiftlet name="xt$bridge"
           displayname="JMS Bridge Extension Swiftlet"
-          class="com.swiftmq.extension.bridge.JMSBridgeSwiftlet"
+          class="com.swiftmq.extension.jmsbridge.JMSBridgeSwiftlet"
           icon="/xt_jmsbridge/images/swiftlet.png"
           description="JMS Bridge Extension Swiftlet"
           release="${release}"
