@@ -11,3 +11,4 @@ for D in */; do
     fi
 done
 cd ${PWD}
+keytool -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit -destkeystore /swiftmq/certs/client.truststore -deststorepass secret
