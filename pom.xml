@@ -32,6 +32,8 @@
     <module>swiftlets/sys_topicmanager</module>
     <module>swiftlets/sys_trace</module>
     <module>swiftlets/sys_xa</module>
+    <module>swiftlets/xt_amqpbridge</module>
+    <module>swiftlets/xt_jmsbridge</module>
     <module>testsuite</module>
     <module>distribution</module>
   </modules>

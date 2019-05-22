@@ -1,0 +1,392 @@
+<!--
+  ~ Copyright 2019 IIT Software GmbH
+  ~
+  ~ IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<swiftlet name="xt$amqpbridge"
+          displayname="AMQP Bridge Extension Swiftlet"
+          class="com.swiftmq.extension.amqpbridge.AMQPBridgeSwiftlet"
+          icon="/xt_amqpbridge/images/swiftlet.png"
+          description="AMQP Bridge Extension Swiftlet"
+          release="${release}"
+          vendor="IIT Software GmbH">
+  <configuration>
+    <entitylist name="connection-templates"
+                display="Connection Templates"
+                description="Templates for Connections">
+      <entitytemplate name="connection-template"
+                      display="Connection Template"
+                      description="Connection Template">
+        <property name="idle-timeout"
+                  type="java.lang.Long"
+                  display="Idle Timeout (ms)"
+                  description="Idle Timeout (ms)"
+                  default="120000"/>
+        <property name="max-frame-size"
+                  type="java.lang.Long"
+                  display="Max. Frame Size"
+                  description="Maximum Frame Site (Bytes)"
+                  default="131072"/>
+        <property name="container-id"
+                  type="java.lang.String"
+                  display="Container Id"
+                  description="Container Id"/>
+        <property name="open-hostname"
+                  type="java.lang.String"
+                  display="Hostname in Open Frame"
+                  description="Overwrites Hostname set in Open Frame"/>
+        <property name="input-buffer-size"
+                  type="java.lang.Integer"
+                  display="Network Input Buffer Size"
+                  description="Network Input Buffer Size"
+                  mandatory="false"
+                  min="4096"
+                  default="1048576"/>
+        <property name="input-buffer-extend-size"
+                  type="java.lang.Integer"
+                  display="Network Input Buffer Extend Size"
+                  description="Network Input Buffer Extend Size"
+                  mandatory="false"
+                  min="4096"
+                  default="1048576"/>
+        <property name="output-buffer-size"
+                  type="java.lang.Integer"
+                  display="Network Output Buffer Size"
+                  description="Network Output Buffer Size"
+                  mandatory="false"
+                  min="4096"
+                  default="1048576"/>
+        <property name="output-buffer-extend-size"
+                  type="java.lang.Integer"
+                  display="Network Output Buffer Extend Size"
+                  description="Network Output Buffer Extend Size"
+                  mandatory="false"
+                  min="4096"
+                  default="1048576"/>
+        <property name="session-incoming-window-size"
+                  type="java.lang.Integer"
+                  display="Session Incoming Window Size"
+                  description="Session Incoming Window Size"
+                  mandatory="false"
+                  min="1"
+                  default="100"/>
+        <property name="session-outgoing-window-size"
+                  type="java.lang.Integer"
+                  display="Session Outgoing Window Size"
+                  description="Session Outgoing Window Size"
+                  mandatory="false"
+                  min="1"
+                  default="100"/>
+        <property name="source-link-credit"
+                  type="java.lang.Integer"
+                  display="Source Link Credit"
+                  description="Source Link Credit"
+                  mandatory="false"
+                  min="1"
+                  default="100"/>
+      </entitytemplate>
+    </entitylist>
+    <entitylist name="bridges100"
+                display="AMQP 1.0 Bridges"
+                description="AMQP 1.0 Bridges">
+      <entitytemplate name="bridge100"
+                      display="AMQP 1.0 Bridge"
+                      description="AMQP 1.0 Bridge">
+        <property name="enabled"
+                  type="java.lang.Boolean"
+                  display="Enabled"
+                  description="Enables/Disables this Connection"
+                  default="false"/>
+        <property name="retryinterval"
+                  type="java.lang.Long"
+                  display="Retry Interval (ms)"
+                  description="Retry Interval (ms) for Re-Connect"
+                  default="60000"/>
+        <property name="transfer-qos"
+                  type="java.lang.String"
+                  display="Transfer Quality of Service"
+                  description="Transfer Quality of Service"
+                  choice="at-most-once at-least-once exactly-once"
+                  default="exactly-once"/>
+        <entity name="source"
+                display="Source"
+                description="Source">
+          <property name="remote-hostname"
+                    type="java.lang.String"
+                    display="Hostname"
+                    description="Remote Host"
+                    default="localhost"/>
+          <property name="remote-port"
+                    type="java.lang.Integer"
+                    display="Port"
+                    description="Remote Port"
+                    default="5672"/>
+          <property name="use-ssl"
+                    type="java.lang.Boolean"
+                    display="Use SSL"
+                    description="Establishes a SSL Connection"
+                    default="false"/>
+          <property name="sasl-enabled"
+                    type="java.lang.Boolean"
+                    display="SASL Enabled"
+                    description="Enables/Disables SASL Authentication"
+                    default="true"/>
+          <property name="sasl-anonymous-login"
+                    type="java.lang.Boolean"
+                    display="SASL Anonymous Login"
+                    description="Use SASL Anonymous Login"
+                    default="true"/>
+          <property name="sasl-loginname"
+                    type="java.lang.String"
+                    display="SASL Loginname"
+                    description="SASL Loginname"/>
+          <property name="sasl-password"
+                    type="java.lang.String"
+                    display="SASL Password"
+                    description="SASL Password"/>
+          <property name="sasl-mechanism"
+                    type="java.lang.String"
+                    display="SASL Mechanism"
+                    description="SASL Mechanism"
+                    default="PLAIN"/>
+          <property name="source-address"
+                    type="java.lang.String"
+                    display="Source Address"
+                    description="Source Address"
+                    default="sourcequeue"/>
+          <property name="source-message-selector"
+                    type="java.lang.String"
+                    display="Source Message Selector"
+                    description="Source Message Selector"/>
+          <property name="connection-template"
+                    type="java.lang.String"
+                    display="Connection Template"
+                    description="Connection Template"
+                    default="default"/>
+        </entity>
+        <entity name="target"
+                display="Target"
+                description="Target">
+          <property name="remote-hostname"
+                    type="java.lang.String"
+                    display="Hostname"
+                    description="Remote Host"
+                    default="localhost"/>
+          <property name="remote-port"
+                    type="java.lang.Integer"
+                    display="Port"
+                    description="Remote Port"
+                    default="5672"/>
+          <property name="use-ssl"
+                    type="java.lang.Boolean"
+                    display="Use SSL"
+                    description="Establishes a SSL Connection"
+                    default="false"/>
+          <property name="sasl-enabled"
+                    type="java.lang.Boolean"
+                    display="SASL Enabled"
+                    description="Enables/Disables SASL Authentication"
+                    default="true"/>
+          <property name="sasl-anonymous-login"
+                    type="java.lang.Boolean"
+                    display="SASL Anonymous Login"
+                    description="Use SASL Anonymous Login"
+                    default="true"/>
+          <property name="sasl-loginname"
+                    type="java.lang.String"
+                    display="SASL Loginname"
+                    description="SASL Loginname"/>
+          <property name="sasl-password"
+                    type="java.lang.String"
+                    display="SASL Password"
+                    description="SASL Password"/>
+          <property name="sasl-mechanism"
+                    type="java.lang.String"
+                    display="SASL Mechanism"
+                    description="SASL Mechanism"
+                    default="PLAIN"/>
+          <property name="target-address"
+                    type="java.lang.String"
+                    display="Target Address"
+                    description="Target Address"
+                    default="targetqueue"/>
+          <property name="connection-template"
+                    type="java.lang.String"
+                    display="Connection Template"
+                    description="Connection Template"
+                    default="default"/>
+        </entity>
+      </entitytemplate>
+    </entitylist>
+    <entitylist name="bridges091"
+                display="AMQP 0.9.1 Bridges"
+                description="AMQP 0.9.1 Bridges">
+      <entitytemplate name="bridge091"
+                      display="AMQP 0.9.1 Bridge"
+                      description="AMQP 0.9.1 Bridge">
+        <property name="enabled"
+                  type="java.lang.Boolean"
+                  display="Enabled"
+                  description="Enables/Disables this Connection"
+                  default="false"/>
+        <property name="retryinterval"
+                  type="java.lang.Long"
+                  display="Retry Interval (ms)"
+                  description="Retry Interval (ms) for Re-Connect"
+                  default="60000"/>
+        <entity name="source"
+                display="Source"
+                description="Source">
+          <property name="connect-uri"
+                    type="java.lang.String"
+                    display="Connect URI"
+                    description="AMQP Connect URI to create the Connection"
+                    default="amqp://admin:secret@localhost:5672/"/>
+          <property name="use-ssl"
+                    type="java.lang.Boolean"
+                    display="Use SSL"
+                    description="Establishes a SSL Connection"
+                    default="false"/>
+          <property name="exchange-name"
+                    type="java.lang.String"
+                    display="Exchange Name"
+                    description="Exchange Name"/>
+          <property name="exchange-type"
+                    type="java.lang.String"
+                    display="Exchange Type"
+                    description="Exchange Type"
+                    default="direct"/>
+          <property name="consumer-tag"
+                    type="java.lang.String"
+                    display="Consumer Tag"
+                    description="Consumer Tag"/>
+          <property name="queue-name"
+                    type="java.lang.String"
+                    display="Queue Name"
+                    description="Queue Name"/>
+          <property name="queue-option-durable"
+                    type="java.lang.Boolean"
+                    display="Queue Durable"
+                    description="Queue is durable?"
+                    default="false"/>
+          <property name="queue-option-exclusive"
+                    type="java.lang.Boolean"
+                    display="Queue Exclusive"
+                    description="Queue is exclusive?"
+                    default="false"/>
+          <property name="queue-option-autodelete"
+                    type="java.lang.Boolean"
+                    display="Queue Autodelete"
+                    description="Queue is autodelete?"
+                    default="false"/>
+          <property name="routing-key"
+                    type="java.lang.String"
+                    display="Routing Key"
+                    description="Routing Key"/>
+        </entity>
+        <entity name="target"
+                display="Target"
+                description="Target">
+          <property name="connect-uri"
+                    type="java.lang.String"
+                    display="Connect URI"
+                    description="AMQP Connect URI to create the Connection"
+                    default="amqp://admin:secret@localhost:5672/"/>
+          <property name="use-ssl"
+                    type="java.lang.Boolean"
+                    display="Use SSL"
+                    description="Establishes a SSL Connection"
+                    default="false"/>
+          <property name="exchange-name"
+                    type="java.lang.String"
+                    display="Exchange Name"
+                    description="Exchange Name"/>
+          <property name="routing-key"
+                    type="java.lang.String"
+                    display="Routing Key"
+                    description="Routing Key"/>
+        </entity>
+      </entitytemplate>
+    </entitylist>
+    <entity name="usage"
+            display="Usage"
+            description="Active AMQP Bridges">
+      <entitylist name="bridges091"
+                  display="AMQP 0.9.1 Bridges"
+                  description="AMQP 0.9.1 Bridges">
+        <entitytemplate name="bridge091"
+                        display="AMQP 0.9.1 Bridge"
+                        description="AMQP 0.9.1 Bridge">
+          <property name="connecttime"
+                    display="Connect Time"
+                    description="Connect Time of this Bridge"
+                    type="java.lang.String"/>
+          <property name="last-transfer-time"
+                    display="Last Transfer Time"
+                    description="Last Transfer Time"
+                    type="java.lang.String"/>
+          <property name="number-messages-transferred"
+                    type="java.lang.Integer"
+                    display="Number Messages transferred"
+                    description="Number Messages transferred"
+                    default="0"/>
+        </entitytemplate>
+      </entitylist>
+      <entitylist name="bridges100"
+                  display="AMQP 1.0 Bridges"
+                  description="AMQP 1.0 Bridges">
+        <entitytemplate name="bridge100"
+                        display="AMQP 1.0 Bridge"
+                        description="AMQP 1.0 Bridge">
+          <property name="connecttime"
+                    display="Connect Time"
+                    description="Connect Time of this Bridge"
+                    type="java.lang.String"/>
+          <property name="last-transfer-time"
+                    display="Last Transfer Time"
+                    description="Last Transfer Time"
+                    type="java.lang.String"/>
+          <property name="number-messages-transferred"
+                    type="java.lang.Integer"
+                    display="Number Messages transferred"
+                    description="Number Messages transferred"
+                    default="0"/>
+        </entitytemplate>
+      </entitylist>
+    </entity>
+  </configuration>
+  <cli>
+    <before-install>
+      cc /sys$threadpool/pools
+      new amqpbridge.poll
+      cc /sys$threadpool/pools/amqpbridge.poll/threads
+      new extension.xt$amqpbridge.poller
+      cc /sys$threadpool/pools
+      new amqpbridge.client.connection
+      cc /sys$threadpool/pools/amqpbridge.client.connection/threads
+      new extension.xt$amqpbridge.client.connection
+      cc /sys$threadpool/pools
+      new amqpbridge.client.session
+      cc /sys$threadpool/pools/amqpbridge.client.session/threads
+      new extension.xt$amqpbridge.client.session
+    </before-install>
+    <after-remove>
+      cc /sys$threadpool/pools
+      delete amqpbridge.poll
+      delete amqpbridge.client.connection
+      delete amqpbridge.client.session
+    </after-remove>
+  </cli>
+</swiftlet>
