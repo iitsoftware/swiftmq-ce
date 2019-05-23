@@ -11,7 +11,7 @@
                     type="java.lang.String"
                     display="Backup Path"
                     description="Root Path for Backup Save Sets"
-                    default="./"
+                    mandatory="true"
                     reboot-required="false"/>
           <property name="keep-generations"
                     type="java.lang.Integer"
@@ -26,7 +26,7 @@
                     type="java.lang.String"
                     display="Path"
                     description="Path of the Database (page.db)"
-                    default="./"
+                    mandatory="true"
                     reboot-required="true"/>
         <property name="initial-page-size"
                   type="java.lang.Integer"
@@ -59,11 +59,11 @@
 		</entity>
 		<entity name="transaction-log" display="Transaction Log" description="Transaction Log Settings">
 			<property name="path"
-                      type="java.lang.String"
-                      display="Path"
-                      description="Path of the Transaction Log (transaction.log)"
-                      default="./"
-                      reboot-required="true"/>
+                type="java.lang.String"
+                display="Path"
+                description="Path of the Transaction Log (transaction.log)"
+                mandatory="true"
+                reboot-required="true"/>
 			<property name="checkpoint-size"
                       type="java.lang.Long"
                       display="Checkpoint Size"
@@ -80,11 +80,11 @@
 		</entity>
 		<entity name="swap" display="Swap" description="Swap Settings">
 			<property name="path"
-                      type="java.lang.String"
-                      display="Path"
-                      description="Path of Swap Files"
-                      default="./"
-                      reboot-required="true"/>
+                type="java.lang.String"
+                display="Path"
+                description="Path of Swap Files"
+                mandatory="true"
+                reboot-required="true"/>
 			<property name="roll-over-size"
                       type="java.lang.Long"
                       display="Roll Over Size"
@@ -95,11 +95,11 @@
 		</entity>
 		<entity name="durable-subscriber" display="Durable Subscriber" description="Durable Subscriber Settings">
 			<property name="path"
-                      type="java.lang.String"
-                      display="Path"
-                      description="Path of Durable Subscriber Files"
-                      default="./"
-                      reboot-required="true"/>
+                type="java.lang.String"
+                display="Path"
+                description="Path of Durable Subscriber Files"
+                mandatory="true"
+                reboot-required="true"/>
 		</entity>
     <entity name="usage" display="Usage" description="Usage">
       <entitylist name="backup"

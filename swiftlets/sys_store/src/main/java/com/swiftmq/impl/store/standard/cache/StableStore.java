@@ -74,6 +74,7 @@ public class StableStore implements TimerListener, MgmtListener {
         this.offline = offline;
         this.freePoolEnabled = freePoolEnabled;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/creating ...");
+        new File(this.path).mkdirs();
         init();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/creating done.");
     }

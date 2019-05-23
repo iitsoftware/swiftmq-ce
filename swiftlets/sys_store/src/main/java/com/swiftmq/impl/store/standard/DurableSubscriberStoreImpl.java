@@ -43,10 +43,7 @@ public class DurableSubscriberStoreImpl
         this.ctx = ctx;
         this.path = path;
         dir = new File(path);
-        if (!dir.exists())
-            throw new StoreException(path + " doesn't exists");
-        if (!dir.isDirectory())
-            throw new StoreException(path + " is not a directory");
+        dir.mkdirs();
     }
 
     public static String getDurableFilename(String clientId, String durableName) {

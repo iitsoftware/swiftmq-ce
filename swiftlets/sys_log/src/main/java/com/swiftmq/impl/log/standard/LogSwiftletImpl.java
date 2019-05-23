@@ -101,9 +101,7 @@ public class LogSwiftletImpl extends LogSwiftlet {
         Property prop = config.getProperty("logsink-directory");
         String dirName = SwiftUtilities.addWorkingDir((String) prop.getValue());
         String filename = dirName + File.separatorChar + s + ".log";
-        File dir = new File(dirName);
-        if (!dir.exists())
-            dir.mkdirs();
+        new File(dirName).mkdirs();
         try {
             return new LogSinkImpl(new PrintWriter(new RollingFileWriter(filename, rolloverSizeProvider, numberGenerationProvider), true));
         } catch (IOException e) {
@@ -135,7 +133,7 @@ public class LogSwiftletImpl extends LogSwiftlet {
 
         prop = root.getProperty("logfile-info");
         String infoFile = SwiftUtilities.addWorkingDir((String) prop.getValue());
-        SwiftUtilities.createDirectoryOfFile(infoFile);
+        new File(infoFile).getParentFile().mkdirs();
         infoFileName = infoFile;
         infoWriter = new PrintWriter(new RollingFileWriter(infoFile, rolloverSizeProvider, numberGenerationProvider), true);
 
@@ -147,7 +145,7 @@ public class LogSwiftletImpl extends LogSwiftlet {
                 synchronized (LogSwiftletImpl.this) {
                     try {
                         String s = SwiftUtilities.addWorkingDir((String) newValue);
-                        SwiftUtilities.createDirectoryOfFile(s);
+                        new File(s).getParentFile().mkdirs();
                         PrintWriter pw = new PrintWriter(new RollingFileWriter(s, rolloverSizeProvider, numberGenerationProvider), true);
                         if (infoWriter != warningWriter && infoWriter != errorWriter)
                             infoWriter.close();
@@ -163,7 +161,7 @@ public class LogSwiftletImpl extends LogSwiftlet {
         prop = root.getProperty("logfile-warning");
         String warningFile = SwiftUtilities.addWorkingDir((String) prop.getValue());
         warningFileName = warningFile;
-        SwiftUtilities.createDirectoryOfFile(warningFile);
+        new File(warningFileName).getParentFile().mkdirs();
         if (warningFile.equals(infoFile))
             warningWriter = infoWriter;
         else
@@ -177,7 +175,7 @@ public class LogSwiftletImpl extends LogSwiftlet {
                 synchronized (LogSwiftletImpl.this) {
                     try {
                         String s = SwiftUtilities.addWorkingDir((String) newValue);
-                        SwiftUtilities.createDirectoryOfFile(s);
+                        new File(s).getParentFile().mkdirs();
                         PrintWriter pw = new PrintWriter(new RollingFileWriter(s, rolloverSizeProvider, numberGenerationProvider), true);
                         if (warningWriter != infoWriter && warningWriter != errorWriter)
                             warningWriter.close();
@@ -193,7 +191,7 @@ public class LogSwiftletImpl extends LogSwiftlet {
         prop = root.getProperty("logfile-error");
         String errorFile = SwiftUtilities.addWorkingDir((String) prop.getValue());
         errorFileName = errorFile;
-        SwiftUtilities.createDirectoryOfFile(errorFile);
+        new File(errorFileName).getParentFile().mkdirs();
         if (errorFile.equals(infoFile))
             errorWriter = infoWriter;
         else if (errorFile.equals(warningFile))
@@ -209,7 +207,7 @@ public class LogSwiftletImpl extends LogSwiftlet {
                 synchronized (LogSwiftletImpl.this) {
                     try {
                         String s = SwiftUtilities.addWorkingDir((String) newValue);
-                        SwiftUtilities.createDirectoryOfFile(s);
+                        new File(s).getParentFile().mkdirs();
                         PrintWriter pw = new PrintWriter(new RollingFileWriter(s, rolloverSizeProvider, numberGenerationProvider), true);
                         if (errorWriter != infoWriter && errorWriter != warningWriter)
                             errorWriter.close();
