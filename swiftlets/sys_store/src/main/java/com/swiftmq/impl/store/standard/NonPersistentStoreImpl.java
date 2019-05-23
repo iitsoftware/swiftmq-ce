@@ -23,6 +23,7 @@ import com.swiftmq.swiftlet.store.NonPersistentStore;
 import com.swiftmq.swiftlet.store.StoreEntry;
 import com.swiftmq.swiftlet.store.StoreException;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ public class NonPersistentStoreImpl implements NonPersistentStore {
         this.ctx = ctx;
         this.queueName = queueName;
         this.path = path;
+        new File(this.path).mkdirs();
         this.maxLength = maxLength;
         if (swapFiles == null)
             swapFiles = new ArrayList();

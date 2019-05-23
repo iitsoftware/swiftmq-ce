@@ -70,7 +70,7 @@
 
   <swiftlet name="sys$deploy">
     <deploy-spaces>
-      <deploy-space name="extension-swiftlets" path="../deploy"/>
+      <deploy-space name="extension-swiftlets" path="../data/deploy"/>
     </deploy-spaces>
   </swiftlet>
 
@@ -111,7 +111,8 @@
 
   <!--  Log Swiftlet, Release: ${release}  -->
 
-  <swiftlet name="sys$log" logfile-error="../log/error.log" logfile-info="../log/info.log" logfile-warning="../log/warning.log" logsink-directory="../log"/>
+  <swiftlet name="sys$log" logfile-error="../data/log/error.log" logfile-info="../data/log/info.log"
+            logfile-warning="../data/log/warning.log" logsink-directory="../data/log"/>
 
   <!--  Management Swiftlet, Release: ${release}  -->
 
@@ -121,12 +122,6 @@
     </jmx>
     <message-interface/>
     <roles>
-      <role name="dashboard_anonymous">
-        <context-filters>
-          <context-filter name="01" cli-context-predicate="%"/>
-          <context-filter name="02" cli-context-predicate="/sys$authentication%" type="exclude"/>
-        </context-filters>
-      </role>
     </roles>
   </swiftlet>
 
@@ -203,12 +198,12 @@
   <!--  Store Swiftlet, Release: ${release}  -->
 
   <swiftlet name="sys$store">
-    <backup path="../store/backup"/>
+    <backup path="../data/store/backup"/>
     <cache/>
-    <database path="../store/db"/>
-    <durable-subscriber path="../store/durables"/>
-    <swap path="../store/swap"/>
-    <transaction-log force-sync="false" path="../store/log"/>
+    <database path="../data/store/db"/>
+    <durable-subscriber path="../data/store/durables"/>
+    <swap path="../data/store/swap"/>
+    <transaction-log force-sync="false" path="../data/store/log"/>
   </swiftlet>
 
   <!--  Streams Swiftlet, Release: ${release}  -->
@@ -439,41 +434,41 @@
     <spaces>
       <space name="kernel">
         <predicates>
-          <predicate name="0" filename="../trace/manager.trace" value="%Manager"/>
-          <predicate name="1" filename="../trace/net.trace" value="sys$net"/>
-          <predicate name="10" filename="../trace/auth.trace" value="sys$auth%"/>
-          <predicate name="11" filename="../trace/mgmt.trace" value="sys$mgmt%"/>
-          <predicate name="12" filename="../trace/store.trace" value="sys$store"/>
-          <predicate name="13" filename="../trace/xa.trace" value="sys$xa"/>
-          <predicate name="15" filename="../trace/timer.trace" value="sys$timer"/>
-          <predicate name="16" filename="../trace/scheduler.trace" value="sys$scheduler"/>
-          <predicate name="17" filename="../trace/monitor.trace" value="sys$monitor"/>
-          <predicate name="18" filename="../trace/accounting.trace" value="sys$accounting"/>
-          <predicate name="19" filename="../trace/amqp.trace" value="sys$amqp"/>
-          <predicate name="2" filename="../trace/jms.trace" value="sys$jms"/>
-          <predicate name="21" filename="../trace/streams.trace" value="sys$streams"/>
-          <predicate name="22" filename="../trace/mqtt.trace" value="sys$mqtt"/>
-          <predicate name="3" filename="../trace/deploy.trace" value="sys$deploy"/>
-          <predicate name="4" filename="../trace/thread.trace" value="sys$thread%"/>
-          <predicate name="5" filename="../trace/routing.trace" value="sys$rout%"/>
-          <predicate name="6" filename="../trace/queuemanager.trace" value="sys$queue%"/>
-          <predicate name="7" filename="../trace/topic.trace" value="sys$topic%"/>
-          <predicate name="9" filename="../trace/jndi.trace" value="sys$jndi"/>
+          <predicate name="0" filename="../data/trace/manager.trace" value="%Manager"/>
+          <predicate name="1" filename="../data/trace/net.trace" value="sys$net"/>
+          <predicate name="10" filename="../data/trace/auth.trace" value="sys$auth%"/>
+          <predicate name="11" filename="../data/trace/mgmt.trace" value="sys$mgmt%"/>
+          <predicate name="12" filename="../data/trace/store.trace" value="sys$store"/>
+          <predicate name="13" filename="../data/trace/xa.trace" value="sys$xa"/>
+          <predicate name="15" filename="../data/trace/timer.trace" value="sys$timer"/>
+          <predicate name="16" filename="../data/trace/scheduler.trace" value="sys$scheduler"/>
+          <predicate name="17" filename="../data/trace/monitor.trace" value="sys$monitor"/>
+          <predicate name="18" filename="../data/trace/accounting.trace" value="sys$accounting"/>
+          <predicate name="19" filename="../data/trace/amqp.trace" value="sys$amqp"/>
+          <predicate name="2" filename="../data/trace/jms.trace" value="sys$jms"/>
+          <predicate name="21" filename="../data/trace/streams.trace" value="sys$streams"/>
+          <predicate name="22" filename="../data/trace/mqtt.trace" value="sys$mqtt"/>
+          <predicate name="3" filename="../data/trace/deploy.trace" value="sys$deploy"/>
+          <predicate name="4" filename="../data/trace/thread.trace" value="sys$thread%"/>
+          <predicate name="5" filename="../data/trace/routing.trace" value="sys$rout%"/>
+          <predicate name="6" filename="../data/trace/queuemanager.trace" value="sys$queue%"/>
+          <predicate name="7" filename="../data/trace/topic.trace" value="sys$topic%"/>
+          <predicate name="9" filename="../data/trace/jndi.trace" value="sys$jndi"/>
         </predicates>
       </space>
       <space name="protocol">
         <predicates>
-          <predicate name="1" filename="../trace/protocol.trace" value="%"/>
+          <predicate name="1" filename="../data/trace/protocol.trace" value="%"/>
         </predicates>
       </space>
       <space name="queue">
         <predicates>
-          <predicate name="1" filename="../trace/queue.trace" value="%"/>
+          <predicate name="1" filename="../data/trace/queue.trace" value="%"/>
         </predicates>
       </space>
       <space name="swiftlet">
         <predicates>
-          <predicate name="1" filename="../trace/swiftlet.trace" value="%"/>
+          <predicate name="1" filename="../data/trace/swiftlet.trace" value="%"/>
         </predicates>
       </space>
     </spaces>

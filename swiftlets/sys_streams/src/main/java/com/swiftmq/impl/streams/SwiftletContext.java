@@ -35,6 +35,8 @@ import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
+import java.io.File;
+
 public class SwiftletContext {
     public Configuration config = null;
     public Entity root = null;
@@ -53,7 +55,7 @@ public class SwiftletContext {
     public TraceSwiftlet traceSwiftlet = null;
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
-    public String streamLibDir = "../streamlib";
+    public String streamLibDir = "../data/streamlib";
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
@@ -62,6 +64,7 @@ public class SwiftletContext {
         usageList = (EntityList) root.getEntity("usage");
         if (root.getProperty("stream-lib-directory") != null)
             streamLibDir = (String) root.getProperty("stream-lib-directory").getValue();
+        new File(streamLibDir).mkdirs();
         traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");

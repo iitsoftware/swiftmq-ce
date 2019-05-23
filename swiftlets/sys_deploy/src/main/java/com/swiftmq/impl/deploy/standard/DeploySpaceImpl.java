@@ -90,8 +90,8 @@ public class DeploySpaceImpl implements DeploySpace, TimerListener {
         });
         prop = spaceEntity.getProperty("path");
         File f = new File(SwiftUtilities.addWorkingDir((String) prop.getValue()));
-        if (!f.exists() || !f.isDirectory())
-            throw new Exception("Path is invalid: " + SwiftUtilities.addWorkingDir((String) prop.getValue()));
+        if (!f.exists())
+            f.mkdirs();
         deployPath = new DeployPath(f, SwiftletManager.class.getClassLoader());
 
         // Only on cold start, otherwise the .deleted files are removed!

@@ -40,6 +40,7 @@ public class PreparedLogFile extends PreparedLog {
         this.path = path;
         this.autoSync = autoSync;
         filename = path + File.separatorChar + FILENAME;
+        new File(filename).getParentFile().mkdirs();
         file = new RandomAccessFile(path + File.separatorChar + FILENAME, "rw");
         getAll();
         if (ctx.traceSpace.enabled)
