@@ -15,7 +15,7 @@
   ~
   -->
 
-<swiftlet name="xt$bridge"
+<swiftlet name="xt$jmsbridge"
           displayname="JMS Bridge Extension Swiftlet"
           class="com.swiftmq.extension.jmsbridge.JMSBridgeSwiftlet"
           icon="/xt_jmsbridge/images/swiftlet.png"
@@ -64,7 +64,7 @@
                     display="Object Factory Class"
                     description="Object Factory Class"
                     mandatory="true"
-                    default="com.swiftmq.extension.bridge.JNDIObjectFactory"/>
+                    default="com.swiftmq.extension.jmsbridge.JNDIObjectFactory"/>
           <entitylist name="properties"
                       display="Object Factory Properties"
                       description="Object Factory Properties">
