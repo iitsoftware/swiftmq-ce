@@ -44,6 +44,12 @@
       <artifactId>javax.mail</artifactId>
       <version>1.6.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <version>1.7.26</version>
+    </dependency>
+
   </dependencies>
   <build>
     <plugins>
@@ -82,13 +88,13 @@
                    </transformer>
                  </transformers>
                  <artifactSet>
-                     <includes>
-                       <include>org.json</include>
-                       <include>com.jayway.jsonpath</include>
-                       <include>com.fasterxml.jackson.core</include>
-                       <include>com.sun.mail</include>
-                       <include>javax.activation</include>
-                     </includes>
+                   <excludes>
+                     <exclude>com.swiftmq:swiftmq-client:*</exclude>
+                     <exclude>org.magicwerk:*</exclude>
+                     <exclude>org.dom4j:*</exclude>
+                     <exclude>com.thoughtworks.xstream:*</exclude>
+                     <exclude>io.netty:*</exclude>
+                   </excludes>
                  </artifactSet>
                  <outputFile>${project.build.directory}/${project.artifactId}_fat.jar</outputFile>
                </configuration>
