@@ -45,7 +45,14 @@ function sendUpdate(output, available, routername) {
 stream.create().memory("active-routes").heap().createIndex("name");
 
 // Init Requests
+// This must be a durable subscriber to ensure
+// that initrequests from clients are served
+// while this stream has not yet been started
 stream.create().input(topic).topic().selector("initrequest = true")
+    .durable()
+    .clientId("routeannouncer")
+    .durableName("initrequests")
+    .destinationName(topic)
     .onInput(function (input) {
         var out = stream.create().output(null).forAddress(input.current().replyTo());
         // Local router is always announced
