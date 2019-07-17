@@ -38,13 +38,13 @@
   <dependencies>
     <dependency>
         <groupId>io.netty</groupId>
-        <artifactId>netty-transport</artifactId>
-        <version>4.1.24.Final</version>
+      <artifactId>netty-all</artifactId>
+      <version>4.1.36.Final</version>
     </dependency>
     <dependency>
       <groupId>com.swiftmq</groupId>
       <artifactId>swiftmq-client</artifactId>
-      <version>12.0.0-Beta6</version>
+      <version>12.0.0-Beta7</version>
     </dependency>
   </dependencies>
   <build>
