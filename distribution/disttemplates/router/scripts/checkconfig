@@ -1,5 +1,5 @@
 #!/bin/bash
-if [[ ! -e /swiftmq/data/config ]]; then
+if [[ ! -d /swiftmq/data/config ]]; then
    mkdir /swiftmq/data/config
 fi
 if [[ ! -e /swiftmq/data/config/routerconfig.xml ]]; then
@@ -9,7 +9,7 @@ if [[ ! -e /swiftmq/data/deploy ]]; then
    mkdir /swiftmq/data/deploy
 fi
 
-if [[ ! -e /swiftmq/optional-swiftlets/extension ]]; then
+if [[ ! -d /swiftmq/optional-swiftlets/extension ]]; then
   PWD=`pwd`
   cd /swiftmq/optional-swiftlets/extension
   for D in */; do
