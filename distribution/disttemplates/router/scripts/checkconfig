@@ -9,14 +9,12 @@ if [[ ! -e /swiftmq/data/deploy ]]; then
    mkdir /swiftmq/data/deploy
 fi
 
-if [[ ! -d /swiftmq/optional-swiftlets/extension ]]; then
-  PWD=`pwd`
-  cd /swiftmq/optional-swiftlets/extension
-  for D in */; do
-      if [[ ! -e /swiftmq/data/deploy/${D} ]]; then
-          cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/.
-      fi
-  done
-  cd ${PWD}
-fi
+PWD=`pwd`
+cd /swiftmq/optional-swiftlets/extension
+for D in */; do
+    if [[ ! -e /swiftmq/data/deploy/${D} ]]; then
+        cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/.
+    fi
+done
+cd ${PWD}
 keytool -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit -destkeystore /swiftmq/certs/client.truststore -deststorepass secret
