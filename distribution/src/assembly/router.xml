@@ -233,33 +233,5 @@
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$xa</outputDirectory>
       <destName>sys$xa.jar</destName>
     </file>
-    <file>
-      <source>../swiftlets/xt_amqpbridge/config/config.xml</source>
-      <outputDirectory>
-        ${project.artifactId}_${project.version}_router/optional-swiftlets/extension/xt$amqpbridge
-      </outputDirectory>
-      <filtered>true</filtered>
-    </file>
-    <file>
-      <source>../swiftlets/xt_amqpbridge/target/xt_amqpbridge.jar</source>
-      <outputDirectory>
-        ${project.artifactId}_${project.version}_router/optional-swiftlets/extension/xt$amqpbridge
-      </outputDirectory>
-      <destName>xt$amqpbridge.jar</destName>
-    </file>
-    <file>
-      <source>../swiftlets/xt_jmsbridge/config/config.xml</source>
-      <outputDirectory>
-        ${project.artifactId}_${project.version}_router/optional-swiftlets/extension/xt$jmsbridge
-      </outputDirectory>
-      <filtered>true</filtered>
-    </file>
-    <file>
-      <source>../swiftlets/xt_jmsbridge/target/xt_jmsbridge.jar</source>
-      <outputDirectory>
-        ${project.artifactId}_${project.version}_router/optional-swiftlets/extension/xt$jmsbridge
-      </outputDirectory>
-      <destName>xt$jmsbridge.jar</destName>
-    </file>
   </files>
 </assembly>
