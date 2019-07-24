@@ -13,7 +13,7 @@ PWD=`pwd`
 cd /swiftmq/optional-swiftlets/extension
 for D in */; do
     if [[ ! -e /swiftmq/data/deploy/${D} ]]; then
-        cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/.  >/dev/null 2>&1
+        cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/. >/dev/null 2>&1
     fi
 done
 cd ${PWD}
