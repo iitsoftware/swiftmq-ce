@@ -20,6 +20,8 @@ package com.swiftmq.impl.streams.comp.log;
 import com.swiftmq.impl.streams.StreamContext;
 import com.swiftmq.swiftlet.log.LogSink;
 
+import java.util.Date;
+
 /**
  * Represents the Stream's log file. The log file is maintained by the Log Swiftlet
  * and located in the log sink directory.
@@ -29,6 +31,7 @@ import com.swiftmq.swiftlet.log.LogSink;
 public class Log {
     StreamContext ctx;
     LogSink logSink;
+    LogInterceptor logInterceptor = null;
 
     /**
      * Internal use.
@@ -36,6 +39,16 @@ public class Log {
     public Log(StreamContext ctx) {
         this.ctx = ctx;
         logSink = ctx.ctx.logSwiftlet.createLogSink("stream_" + ctx.stream.fullyQualifiedName());
+    }
+
+    public void setLogInterceptor(LogInterceptor logInterceptor) {
+        this.logInterceptor = logInterceptor;
+    }
+
+    private void forward(String state, String message) {
+        if (logInterceptor != null) {
+            logInterceptor.logged(new Date().getTime(), state, message);
+        }
     }
 
     /**
@@ -46,6 +59,7 @@ public class Log {
      */
     public Log info(String message) {
         logSink.log("INFORMATION/" + message);
+        forward("GREEN", message);
         return this;
     }
 
@@ -57,6 +71,7 @@ public class Log {
      */
     public Log warning(String message) {
         logSink.log("WARNING/" + message);
+        forward("YELLOW", message);
         return this;
     }
 
@@ -68,6 +83,7 @@ public class Log {
      */
     public Log error(String message) {
         logSink.log("ERROR/" + message);
+        forward("RED", message);
         return this;
     }
 
