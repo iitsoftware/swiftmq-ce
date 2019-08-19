@@ -46,7 +46,21 @@ You need Apache Maven installed on your system. Then perform a
 
     mvn clean install
     
-which generates the `tar.gz` and `zip` distributions into the `target/` directory.
+which generates the `tar.gz` and `zip` distributions into the `distribution/target/` directory.
+
+## Running the Test Suites
+
+The contained test suite distribution can be used to test JMS and AMQP 1.0 functionality. It requires a started
+SwiftMQ Router in standard configuration (just unpack, `cd scripts`, `./router`).
+
+Unpack the test suite and `cd scripts`. Then run:
+
+- `./runjms <path-to-router>`
+- `./runamqp <path-to-router>`
+
+`<path-to-router>` is the path to the SwiftMQ Router installation.
+
+The test suite runs several hundred tests against the JMS API or the AMQP 1.0 protocol, respectively. 
 
 ## Community Support
 
