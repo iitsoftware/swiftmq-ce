@@ -93,9 +93,7 @@ public class Importer
                 throw new Exception("Input directory doesn't exists: " + localDir);
 
             xStream = new XStream(new Dom4JDriver());
-            xStream.allowTypesByWildcard(new String[]
-                    {"com.swiftmq.**", "java.lang.**", "java.util.**"}
-            );
+            xStream.allowTypesByWildcard(new String[]{".*"});
 
             QueueSender sender = ctx.queueManager.createQueueSender(queueName, null);
             try {

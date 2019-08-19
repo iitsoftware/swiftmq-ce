@@ -1,5 +1,5 @@
 <swiftlet name="sys$routing"
-          displayname="Routing Swiftlet (Unlimited Connections)"
+          displayname="Routing Swiftlet"
           class="com.swiftmq.impl.routing.unlimited.URoutingSwiftletImpl"
           icon="/sys_routing/images/swiftlet.png"
           description="Routing Swiftlet"

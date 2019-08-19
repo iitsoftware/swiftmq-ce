@@ -20,7 +20,7 @@
               type="java.lang.String"
               display="Stream Lib Directory"
               description="Hot deploy directory for external jar files used from a stream"
-              default="../streamlib"
+              default="../data/streamlib"
               reboot-required="true"/>
     <entitylist name="domains"
                 display="Domains"

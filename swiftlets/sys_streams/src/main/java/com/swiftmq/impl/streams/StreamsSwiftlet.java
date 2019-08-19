@@ -107,7 +107,8 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
                                 final String packageName = newEntity.getName();
                                 newEntity.setUserObject(createStreamAdapter((EntityList) newEntity.getEntity("streams"), domainName, packageName));
                             } catch (SwiftletException e) {
-                                e.printStackTrace();
+                                ctx.logSwiftlet.logError(getName(), "Error starting stream: " + e);
+                                System.err.println("Error starting stream: " + e.getMessage());
                             }
                         }
 
@@ -205,7 +206,12 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
                         Map streams = ((Entity) ((Map.Entry) iterPkgs.next()).getValue()).getEntity("streams").getEntities();
                         if (streams != null) {
                             for (Iterator iterStreams = streams.entrySet().iterator(); iterStreams.hasNext(); ) {
-                                ((StreamController) ((Entity) ((Map.Entry) iterStreams.next()).getValue()).getUserObject()).init();
+                                try {
+                                    ((StreamController) ((Entity) ((Map.Entry) iterStreams.next()).getValue()).getUserObject()).init();
+                                } catch (Exception e) {
+                                    ctx.logSwiftlet.logError(getName(), "Error starting stream: " + e);
+                                    System.err.println("Error starting stream: " + e.getMessage());
+                                }
                             }
                         }
 

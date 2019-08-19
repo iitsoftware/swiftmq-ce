@@ -107,7 +107,6 @@ public class StreamController {
         ScriptEngineManager manager = new ScriptEngineManager();
         Thread.currentThread().setContextClassLoader(createClassLoader());
         ScriptEngine engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
-        Thread.currentThread().setContextClassLoader(null);
         if (engine == null)
             throw new Exception("Engine for script-language '" + entity.getProperty("script-language").getValue() + "' not found!");
         ScriptContext newContext = new SimpleScriptContext();
@@ -121,6 +120,7 @@ public class StreamController {
         newContext.setBindings(streamContext.engineScope, ScriptContext.ENGINE_SCOPE);
 
         engine.eval(loadScript((String) entity.getProperty("script-file").getValue()), newContext);
+        Thread.currentThread().setContextClassLoader(null);
 
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript done");

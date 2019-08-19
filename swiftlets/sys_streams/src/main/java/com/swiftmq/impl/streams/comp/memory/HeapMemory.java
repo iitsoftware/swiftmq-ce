@@ -186,8 +186,8 @@ public class HeapMemory extends Memory {
         MessageSelector sel = new MessageSelector(selector);
         sel.compile();
         List<Entry> list = all();
-        for (Iterator<Entry> iter = list.listIterator(); iter.hasNext(); ) {
-            Entry entry = iter.next();
+        for (int i = 0; i < list.size(); i++) {
+            Entry entry = list.get(i);
             if (entry.message.isSelected(sel))
                 removeByKey(entry.key);
         }
@@ -265,7 +265,7 @@ public class HeapMemory extends Memory {
         }
 
         List<Entry> all() {
-            return entryList;
+            return new ArrayList<Entry>(messages.values());
         }
 
         List<Entry> removeOlderThan(long time) {

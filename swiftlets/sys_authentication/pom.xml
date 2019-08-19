@@ -21,7 +21,7 @@
   <dependencies>
     <dependency>
       <groupId>com.swiftmq</groupId>
-     	<artifactId>router</artifactId>
+      <artifactId>swiftmq-client</artifactId>
       <version>12.0.0</version>
     </dependency>
     <dependency>

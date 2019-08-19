@@ -125,6 +125,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
 
     protected void deleteSwaps() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "deleteSwaps...");
+        new File(ctx.swapPath).mkdirs();
         File[] list = new File(ctx.swapPath).listFiles();
         for (int i = 0; i < list.length; i++) {
             if (list[i].getName().endsWith(".swap"))
@@ -212,6 +213,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
     }
 
     public LogFile createTxLogFile(String filename, String mode) throws Exception {
+        new File(filename).getParentFile().mkdirs();
         RandomAccessFile file = new RandomAccessFile(filename, mode);
         LogFile logFile = null;
         if (PRECREATE)

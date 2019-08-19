@@ -1,0 +1,20 @@
+#!/bin/bash
+if [[ ! -d /swiftmq/data/config ]]; then
+   mkdir /swiftmq/data/config
+fi
+if [[ ! -e /swiftmq/data/config/routerconfig.xml ]]; then
+   cp /swiftmq/initialconfig/routerconfig.xml /swiftmq/data/config/.
+fi
+if [[ ! -e /swiftmq/data/deploy ]]; then
+   mkdir /swiftmq/data/deploy
+fi
+
+PWD=`pwd`
+cd /swiftmq/optional-swiftlets/extension
+for D in */; do
+    if [[ ! -e /swiftmq/data/deploy/${D} ]]; then
+        cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/. >/dev/null 2>&1
+    fi
+done
+cd ${PWD}
+keytool -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit -destkeystore /swiftmq/certs/client.truststore -deststorepass secret
