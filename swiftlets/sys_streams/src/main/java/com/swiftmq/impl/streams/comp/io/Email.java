@@ -19,6 +19,7 @@ package com.swiftmq.impl.streams.comp.io;
 
 import com.swiftmq.impl.streams.StreamContext;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -35,6 +36,7 @@ public class Email {
     String to;
     String cc;
     String bcc;
+    String replyTo;
     String subject;
     String body;
 
@@ -88,6 +90,17 @@ public class Email {
     }
 
     /**
+     * Sets the replyTo address
+     *
+     * @param replyTo address
+     * @return Email
+     */
+    public Email replyTo(String replyTo) {
+        this.replyTo = replyTo;
+        return this;
+    }
+
+    /**
      * Sets the subject
      *
      * @param subject subject
@@ -110,7 +123,7 @@ public class Email {
     }
 
     /**
-     * Sets fields according to its name: from, to, jms.cc, bcc, subject, body
+     * Sets fields according to its name: from, to, cc, bcc, subject, body
      *
      * @param field field name
      * @param value field value
@@ -125,6 +138,8 @@ public class Email {
             cc(value);
         else if (field.equals("bcc"))
             bcc(value);
+        else if (field.equals("replyto"))
+            replyTo(value);
         else if (field.equals("subject"))
             subject(value);
         else if (field.equals("body"))
@@ -145,6 +160,8 @@ public class Email {
             message.addRecipient(Message.RecipientType.CC, new InternetAddress(cc));
         if (bcc != null && bcc.trim().length() > 0)
             message.addRecipient(Message.RecipientType.BCC, new InternetAddress(bcc));
+        if (replyTo != null && replyTo.trim().length() > 0)
+            message.setReplyTo(new Address[]{new InternetAddress(replyTo)});
         message.setSubject(subject);
         message.setText(body);
         mailServer.send(message);
