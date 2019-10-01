@@ -164,8 +164,10 @@ public abstract class Output {
     public void close() {
         closed = true;
         try {
-            if (usage != null)
+            if (usage != null) {
                 ctx.usage.getEntity("outputs").removeEntity(usage);
+                ctx.stream.removeOutput(name);
+            }
         } catch (Exception e) {
         }
     }
