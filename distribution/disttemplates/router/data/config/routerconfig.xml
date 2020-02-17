@@ -124,7 +124,7 @@
     <roles>
     </roles>
   </swiftlet>
-  
+
   <!--  MQTT Swiftlet, Release: ${release}  -->
 
   <swiftlet name="sys$mqtt">
