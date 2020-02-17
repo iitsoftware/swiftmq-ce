@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<router name="router" kernelpath="../kernel" release="${release}" startorder="sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$accounting sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$amqp sys$mqtt sys$deploy sys$scheduler sys$streams">
-
-  <!--  Accounting Swiftlet, Release: ${release}  -->
-
-  <swiftlet name="sys$accounting">
-    <connections/>
-  </swiftlet>
+<router name="router" kernelpath="../kernel" release="${release}" startorder="sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$amqp sys$mqtt sys$deploy sys$scheduler sys$streams">
 
   <!--  AMQP Swiftlet, Release: ${release}  -->
 
@@ -260,16 +254,6 @@
 
   <swiftlet name="sys$threadpool">
     <pools>
-      <pool name="accounting.connections" kernel-pool="true">
-        <threads>
-          <thread name="sys$accounting.sourcerunner"/>
-        </threads>
-      </pool>
-      <pool name="accounting.events" kernel-pool="true" max-threads="1">
-        <threads>
-          <thread name="sys$accounting.eventprocessor"/>
-        </threads>
-      </pool>
       <pool name="amqp.connection" kernel-pool="true" max-threads="5" min-threads="1">
         <threads>
           <thread name="sys$amqp.connection.service"/>
@@ -434,7 +418,6 @@
           <predicate name="15" filename="../data/trace/timer.trace" value="sys$timer"/>
           <predicate name="16" filename="../data/trace/scheduler.trace" value="sys$scheduler"/>
           <predicate name="17" filename="../data/trace/monitor.trace" value="sys$monitor"/>
-          <predicate name="18" filename="../data/trace/accounting.trace" value="sys$accounting"/>
           <predicate name="19" filename="../data/trace/amqp.trace" value="sys$amqp"/>
           <predicate name="2" filename="../data/trace/jms.trace" value="sys$jms"/>
           <predicate name="21" filename="../data/trace/streams.trace" value="sys$streams"/>
