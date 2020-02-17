@@ -94,16 +94,6 @@
       <destName>sys$mgmt.jar</destName>
     </file>
     <file>
-      <source>../swiftlets/sys_monitor/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$monitor</outputDirectory>
-      <filtered>true</filtered>
-    </file>
-    <file>
-      <source>../swiftlets/sys_monitor/target/sys_monitor_fat.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$monitor</outputDirectory>
-      <destName>sys$monitor.jar</destName>
-    </file>
-    <file>
       <source>../swiftlets/sys_mqtt/config/config.xml</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mqtt</outputDirectory>
       <filtered>true</filtered>
