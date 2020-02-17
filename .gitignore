@@ -2,3 +2,4 @@ distribution
 router/target
 swiftlets/*/target
 testsuite/target
+.idea
