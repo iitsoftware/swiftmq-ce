@@ -992,7 +992,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         });
 
         sourceFactory = new JMSSourceFactory(ctx);
-        ctx.accountingSwiftlet.addAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName(), sourceFactory);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup: done");
     }
 
@@ -1009,7 +1008,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: stopping listener ...");
 
-        ctx.accountingSwiftlet.removeAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName());
         ctx.jndiSwiftlet.deregisterJNDIObjects(new CFComparable(INTRAVM_LISTENER));
         ctx.networkSwiftlet.removeIntraVMListener(intraVMMetaData);
 

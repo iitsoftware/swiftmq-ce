@@ -403,7 +403,6 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
             }
         });
         sourceFactory = new RoutingSourceFactory(ctx);
-        ctx.accountingSwiftlet.addAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName(), sourceFactory);
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done");
     }
@@ -413,7 +412,6 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
         if (ctx == null)
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
-        ctx.accountingSwiftlet.removeAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName());
 
         removeAllRoutes();
         removeAllRoutingListeners();

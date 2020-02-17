@@ -1597,15 +1597,12 @@ public class QueueManagerImpl extends QueueManager
 
         SwiftletManager.getInstance().addSwiftletManagerListener("sys$accounting", new SwiftletManagerAdapter() {
             public void swiftletStarted(SwiftletManagerEvent event) {
-                ctx.accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
                 sourceFactory = new QueueManagerSourceFactory(ctx);
-                ctx.accountingSwiftlet.addAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName(), sourceFactory);
             }
 
             public void swiftletStopInitiated(SwiftletManagerEvent event) {
                 if (accountingProfile != null)
                     setAccountingProfile(null);
-                ctx.accountingSwiftlet.removeAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName());
                 sourceFactory = null;
             }
         });

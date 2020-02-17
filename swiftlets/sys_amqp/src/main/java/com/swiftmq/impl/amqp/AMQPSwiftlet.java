@@ -309,10 +309,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
                     ctx.traceSpace.trace(getName(), "onEntityRemove (Connection): " + myConnection);
             }
         });
-        if (ctx.accountingSwiftlet != null) {
-            sourceFactory = new AMQPSourceFactory(ctx);
-            ctx.accountingSwiftlet.addAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName(), sourceFactory);
-        }
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done.");
     }
@@ -323,8 +319,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
         try {
-            if (ctx.accountingSwiftlet != null)
-                ctx.accountingSwiftlet.removeAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName());
             listenerAdapter.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: shutdown all AMQP connections");
             Semaphore sem = getShutdownSemaphore();
