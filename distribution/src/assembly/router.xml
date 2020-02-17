@@ -24,16 +24,6 @@
       <outputDirectory>${project.artifactId}_${project.version}_router/jars</outputDirectory>
     </file>
     <file>
-      <source>../swiftlets/sys_accounting/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$accounting</outputDirectory>
-      <filtered>true</filtered>
-    </file>
-    <file>
-      <source>../swiftlets/sys_accounting/target/sys_accounting.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$accounting</outputDirectory>
-      <destName>sys$accounting.jar</destName>
-    </file>
-    <file>
       <source>../swiftlets/sys_amqp/config/config.xml</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$amqp</outputDirectory>
       <filtered>true</filtered>
