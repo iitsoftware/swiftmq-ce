@@ -17,8 +17,6 @@
 
 package com.swiftmq.impl.routing.single;
 
-import com.swiftmq.impl.routing.single.accounting.AccountingProfile;
-import com.swiftmq.impl.routing.single.accounting.RoutingSourceFactory;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.impl.routing.single.jobs.JobRegistrar;
 import com.swiftmq.impl.routing.single.manager.po.PORemoveAllObject;
@@ -51,41 +49,6 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
     Acceptor acceptor = null;
     Semaphore shutdownSem = null;
     JobRegistrar jobRegistrar = null;
-    RoutingSourceFactory sourceFactory = null;
-    AccountingProfile accountingProfile = null;
-
-    public synchronized AccountingProfile getAccountingProfile() {
-        return accountingProfile;
-    }
-
-    public void setAccountingProfile(AccountingProfile accountingProfile) {
-        synchronized (this) {
-            this.accountingProfile = accountingProfile;
-        }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "setAccountingProfile, accountingProfile= " + accountingProfile);
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            RoutingConnection rc = (RoutingConnection) c[i].getUserObject();
-            if (rc != null) {
-                if (accountingProfile != null)
-                    rc.startAccounting(accountingProfile);
-                else
-                    rc.stopAccounting();
-            }
-        }
-    }
-
-    public void flushAccounting() {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "flushAccounting");
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            RoutingConnection rc = (RoutingConnection) c[i].getUserObject();
-            if (rc != null)
-                rc.flushAccounting();
-        }
-    }
 
     public void addRoute(RouteImpl route) {
         super.addRoute(route);
@@ -402,7 +365,6 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
                 jobRegistrar.unregister();
             }
         });
-        sourceFactory = new RoutingSourceFactory(ctx);
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done");
     }

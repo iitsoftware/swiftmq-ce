@@ -17,8 +17,6 @@
 
 package com.swiftmq.impl.queue.standard;
 
-import com.swiftmq.impl.queue.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.queue.standard.accounting.QueueManagerSourceFactory;
 import com.swiftmq.impl.queue.standard.cluster.*;
 import com.swiftmq.impl.queue.standard.cluster.v700.QueueMetricImpl;
 import com.swiftmq.impl.queue.standard.jobs.JobRegistrar;
@@ -27,7 +25,6 @@ import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.accounting.AccountingSwiftlet;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.AuthenticationException;
 import com.swiftmq.swiftlet.event.SwiftletManagerAdapter;
@@ -132,40 +129,7 @@ public class QueueManagerImpl extends QueueManager
     long senderId = 0;
     long receiverId = 0;
 
-    volatile AccountingProfile accountingProfile = null;
-    QueueManagerSourceFactory sourceFactory = null;
 
-    public AccountingProfile getAccountingProfile() {
-        return accountingProfile;
-    }
-
-    public void setAccountingProfile(AccountingProfile accountingProfile) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "setAccountingProfile, accountingfProfile=" + accountingProfile);
-        synchronized (qSemaphore) {
-            for (Iterator iter = queueTable.entrySet().iterator(); iter.hasNext(); ) {
-                AbstractQueue queue = ((ActiveQueue) ((Map.Entry) iter.next()).getValue()).getAbstractQueue();
-                if (accountingProfile != null) {
-                    if (accountingProfile.isMatchQueueName(queue.getQueueName()))
-                        queue.startAccounting(accountingProfile);
-
-                } else if (queue.isAccounting())
-                    queue.stopAccounting();
-            }
-        }
-        this.accountingProfile = accountingProfile;
-    }
-
-    public void flushAccounting() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "flushAccounting");
-        synchronized (qSemaphore) {
-            for (Iterator iter = queueTable.entrySet().iterator(); iter.hasNext(); ) {
-                AbstractQueue queue = ((ActiveQueue) ((Map.Entry) iter.next()).getValue()).getAbstractQueue();
-                if (queue.isAccounting())
-                    queue.flushAccounting();
-            }
-        }
-    }
 
     protected SwiftletContext createSwiftletContext(Configuration config) {
         return new SwiftletContext(this, config);
@@ -1595,17 +1559,6 @@ public class QueueManagerImpl extends QueueManager
             }
         });
 
-        SwiftletManager.getInstance().addSwiftletManagerListener("sys$accounting", new SwiftletManagerAdapter() {
-            public void swiftletStarted(SwiftletManagerEvent event) {
-                sourceFactory = new QueueManagerSourceFactory(ctx);
-            }
-
-            public void swiftletStopInitiated(SwiftletManagerEvent event) {
-                if (accountingProfile != null)
-                    setAccountingProfile(null);
-                sourceFactory = null;
-            }
-        });
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup: done.");
     }
 

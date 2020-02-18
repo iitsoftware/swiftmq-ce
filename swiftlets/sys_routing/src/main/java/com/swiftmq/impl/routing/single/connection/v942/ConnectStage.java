@@ -80,24 +80,6 @@ public class ConnectStage extends Stage {
                 ctx.connectionManager.enqueue(new POAddObject(new ListenerCallback(pr), null, routingConnection));
             }
         });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request + " (do nothing)");
-            }
-        });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request + " (do nothing)");
-            }
-        });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request + " (do nothing)");
-            }
-        });
         if (!listener)
             getStageQueue().enqueue(new StartStageRequest());
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init done");
@@ -113,9 +95,6 @@ public class ConnectStage extends Stage {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close");
         super.close();
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, null);
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, null);
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, null);
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REPREQ, null);
     }

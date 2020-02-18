@@ -18,7 +18,6 @@
 package com.swiftmq.impl.routing.single.connection;
 
 import com.swiftmq.impl.routing.single.SwiftletContext;
-import com.swiftmq.impl.routing.single.accounting.AccountingProfile;
 import com.swiftmq.impl.routing.single.connection.event.ActivationListener;
 import com.swiftmq.impl.routing.single.connection.stage.ProtocolSelectStage;
 import com.swiftmq.impl.routing.single.connection.stage.StageQueue;
@@ -57,7 +56,6 @@ public class RoutingConnection
     Entity entity = null;
     Entity usageEntity = null;
     ActivationListener activationListener = null;
-    AccountingProfile accountingProfile = null;
 
     public RoutingConnection(SwiftletContext ctx, Connection connection, Entity entity, String password) throws IOException {
         this.ctx = ctx;
@@ -83,10 +81,6 @@ public class RoutingConnection
         stageQueue = new StageQueue(ctx);
         stageQueue.setStage(new ProtocolSelectStage(ctx, this, listener));
         stageQueue.startQueue();
-
-        AccountingProfile ap = ctx.routingSwiftlet.getAccountingProfile();
-        if (ap != null)
-            startAccounting(ap);
 
         // Start protocol handshaking (initiated from the connector)
         if (listener)
@@ -208,24 +202,6 @@ public class RoutingConnection
 
     public String getConnectionId() {
         return connectionId;
-    }
-
-    public void startAccounting(AccountingProfile accountingProfile) {
-        if (this.accountingProfile == null) {
-            this.accountingProfile = accountingProfile;
-            serviceRequest(new StartAccountingRequest(accountingProfile));
-        }
-    }
-
-    public void flushAccounting() {
-        if (accountingProfile != null)
-            serviceRequest(new FlushAccountingRequest());
-    }
-
-    public void stopAccounting() {
-        if (accountingProfile != null)
-            serviceRequest(new StopAccountingRequest());
-        accountingProfile = null;
     }
 
     public void serviceRequest(Request request) {

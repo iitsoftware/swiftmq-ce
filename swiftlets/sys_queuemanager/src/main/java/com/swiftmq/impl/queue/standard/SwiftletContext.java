@@ -23,7 +23,6 @@ import com.swiftmq.mgmt.Configuration;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.accounting.AccountingSwiftlet;
 import com.swiftmq.swiftlet.auth.AuthenticationSwiftlet;
 import com.swiftmq.swiftlet.jndi.JNDISwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
@@ -43,7 +42,6 @@ public class SwiftletContext {
     public Configuration config = null;
     public Entity root = null;
     public EntityList usageList = null;
-    public AccountingSwiftlet accountingSwiftlet = null;
     public AuthenticationSwiftlet authSwiftlet = null;
     public JNDISwiftlet jndiSwiftlet = null;
     public EntityList jndiAliasList = null;

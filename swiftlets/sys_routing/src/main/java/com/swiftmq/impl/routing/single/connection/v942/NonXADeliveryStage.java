@@ -19,9 +19,6 @@ package com.swiftmq.impl.routing.single.connection.v942;
 
 import com.swiftmq.impl.routing.single.RoutingSwiftletImpl;
 import com.swiftmq.impl.routing.single.SwiftletContext;
-import com.swiftmq.impl.routing.single.accounting.AccountingProfile;
-import com.swiftmq.impl.routing.single.accounting.DestinationCollector;
-import com.swiftmq.impl.routing.single.accounting.DestinationCollectorCache;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.impl.routing.single.connection.stage.Stage;
 import com.swiftmq.impl.routing.single.schedule.SchedulerRegistry;
@@ -47,9 +44,6 @@ public class NonXADeliveryStage extends Stage {
     Map notificationList = null;
     boolean closed = false;
     ThrottleQueue throttleQueue = null;
-    AccountingProfile accountingProfile = null;
-    DestinationCollectorCache inboundCollectorCache = null;
-    DestinationCollectorCache outboundCollectorCache = null;
 
     public NonXADeliveryStage(SwiftletContext ctx, RoutingConnection routingConnection) {
         super(ctx, routingConnection);
@@ -121,7 +115,6 @@ public class NonXADeliveryStage extends Stage {
                         tx.addTransaction(queueName, t);
                     }
                     t.putMessage(msg);
-                    collect(msg, inboundCollectorCache, DestinationCollector.DIRECTION_INBOUND);
                 } catch (Exception e) {
                     try {
                         if (!sender.getQueueName().startsWith(RoutingSwiftletImpl.UNROUTABLE_QUEUE))
@@ -160,31 +153,6 @@ public class NonXADeliveryStage extends Stage {
         return delay;
     }
 
-    private void collect(MessageImpl msg, DestinationCollectorCache cache, String direction)
-            throws JMSException {
-        if (accountingProfile != null &&
-                cache != null &&
-                accountingProfile.isMatchSourceRouter(msg.getSourceRouter()) &&
-                accountingProfile.isMatchDestinationRouter(msg.getDestRouter())) {
-            boolean match = false;
-            String destName = null;
-            String destType = null;
-            Destination d = msg.getJMSDestination();
-            if (d instanceof Topic) {
-                destName = ((Topic) d).getTopicName();
-                destType = DestinationCollector.DTYPE_TOPIC;
-                match = accountingProfile.isMatchTopicName(destName);
-            } else {
-                destName = ((Queue) d).getQueueName();
-                destType = DestinationCollector.DTYPE_QUEUE;
-                match = accountingProfile.isMatchQueueName(destName);
-            }
-            if (match) {
-                DestinationCollector c = cache.getDestinationCollector(msg.getSourceRouter(), msg.getDestRouter(), destName, destType, direction);
-                c.incTotal(1, msg.getMessageLength());
-            }
-        }
-    }
 
     protected void init() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init...");
@@ -198,16 +166,6 @@ public class NonXADeliveryStage extends Stage {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
                 routingConnection.getOutboundQueue().enqueue(rc);
-                AccountingProfile ap = ctx.routingSwiftlet.getAccountingProfile();
-                if (ap != null && ap.isMatchConnectedRouter(routingConnection.getRouterName())) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does match accounting profile");
-                    accountingProfile = ap;
-                    if (ap.isInbound())
-                        inboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("INBOUND"));
-                    if (ap.isOutbound())
-                        outboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("OUTBOUND"));
-                }
                 routingConnection.setXaSelected(false);
             }
         });
@@ -275,7 +233,6 @@ public class NonXADeliveryStage extends Stage {
                             msg.setDestRouter(rc.destinationRouter);
                         msg.setJMSRedelivered(messageIndex.getDeliveryCount() > 1); // mark redelivered for dups detection at the receiving router
                         al.add(msg);
-                        collect(msg, outboundCollectorCache, DestinationCollector.DIRECTION_OUTBOUND);
                     }
                     txNo++;
                     if (txNo == Integer.MAX_VALUE)
@@ -345,61 +302,9 @@ public class NonXADeliveryStage extends Stage {
                 }
             }
         });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
-                AccountingProfile ap = ((StartAccountingRequest) request).getAccountingProfile();
-                if (ap.isMatchConnectedRouter(routingConnection.getRouterName())) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does match accounting profile");
-                    accountingProfile = ap;
-                    if (ap.isInbound())
-                        inboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("INBOUND"));
-                    if (ap.isOutbound())
-                        outboundCollectorCache = new DestinationCollectorCache(ctx.traceSpace, NonXADeliveryStage.this.toString("OUTBOUND"));
-                } else {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/connected router '" + routingConnection.getRouterName() + "' does NOT match accounting profile");
-                }
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + " done");
-            }
-        });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
-                if (accountingProfile != null)
-                    flushCollectorCaches();
-            }
-        });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString() + "/visited, request=" + request + "...");
-                if (accountingProfile != null) {
-                    flushCollectorCaches();
-                    accountingProfile = null;
-                    inboundCollectorCache = null;
-                    outboundCollectorCache = null;
-                }
-            }
-        });
         if (!listener)
             getStageQueue().enqueue(new StartStageRequest());
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init done");
-    }
-
-    private void flushCollectorCaches() {
-        if (inboundCollectorCache != null) {
-            inboundCollectorCache.flush(accountingProfile.getSource(), ctx.routerName, routingConnection.getRouterName(), routingConnection.getRemoteHostName(), routingConnection.getProtocolVersion());
-            inboundCollectorCache.clear();
-        }
-        if (outboundCollectorCache != null) {
-            outboundCollectorCache.flush(accountingProfile.getSource(), ctx.routerName, routingConnection.getRouterName(), routingConnection.getRemoteHostName(), routingConnection.getProtocolVersion());
-            outboundCollectorCache.clear();
-        }
     }
 
     public void process(Request request) {
@@ -410,7 +315,6 @@ public class NonXADeliveryStage extends Stage {
 
     public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close ...");
-        flushCollectorCaches();
         super.close();
         closed = true;
         if (notificationList.size() > 0) {
@@ -464,9 +368,6 @@ public class NonXADeliveryStage extends Stage {
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.SEND_ROUTE_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.DELIVERY_REQ, null);
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_ACCOUNTING_REQ, null);
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.FLUSH_ACCOUNTING_REQ, null);
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.STOP_ACCOUNTING_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ROUTE_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ADJUST_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.NONXA_TRANSACTION_REQ, null);
