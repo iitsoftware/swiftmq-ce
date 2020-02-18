@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.jms.*;
 import com.swiftmq.jms.smqp.v750.*;
 import com.swiftmq.mgmt.Entity;
@@ -86,14 +85,9 @@ public class NontransactedUnifiedSession extends NontransactedSession {
                         producer = new TopicProducer(ctx, topic);
                         break;
                 }
-                if (accountingProfile != null)
-                    producer.createCollector(accountingProfile, collectorCache);
             } else {
                 producer = (Producer) producerList.get(producerId);
             }
-            DestinationCollector collector = producer.getCollector();
-            if (collector != null)
-                collector.incTotal(1, msg.getMessageLength());
             QueuePushTransaction transaction = (QueuePushTransaction) producer.createTransaction();
             transaction.putMessage(msg);
             transaction.commit(new ProduceMessageCallback(producerId == -1 ? producer : null, reply));
@@ -164,8 +158,6 @@ public class NontransactedUnifiedSession extends NontransactedSession {
             QueueProducer producer;
             producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
             producer = new QueueProducer(ctx, queue.getQueueName());
-            if (accountingProfile != null)
-                producer.createCollector(accountingProfile, collectorCache);
             producerList.set(producerId, producer);
             reply.setQueueProducerId(producerId);
             reply.setOk(true);
@@ -209,8 +201,6 @@ public class NontransactedUnifiedSession extends NontransactedSession {
             TopicProducer producer;
             producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
             producer = new TopicProducer(ctx, topic);
-            if (accountingProfile != null)
-                producer.createCollector(accountingProfile, collectorCache);
             producerList.set(producerId, producer);
             reply.setTopicPublisherId(producerId);
             reply.setOk(true);
@@ -286,8 +276,6 @@ public class NontransactedUnifiedSession extends NontransactedSession {
             QueueConsumer consumer = null;
             consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
             consumer = new QueueConsumer(ctx, queueName, messageSelector);
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             consumerList.set(consumerId, consumer);
             consumer.createReadTransaction();
             consumer.createTransaction();
@@ -382,8 +370,6 @@ public class NontransactedUnifiedSession extends NontransactedSession {
                     prop.setReadOnly(true);
                 }
             }
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             consumer.createReadTransaction();
             consumer.createTransaction();
             reply.setOk(true);
@@ -463,8 +449,6 @@ public class NontransactedUnifiedSession extends NontransactedSession {
             TopicDurableConsumer consumer = null;
             consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
             consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             consumerList.set(consumerId, consumer);
             consumer.createReadTransaction();
             consumer.createTransaction();

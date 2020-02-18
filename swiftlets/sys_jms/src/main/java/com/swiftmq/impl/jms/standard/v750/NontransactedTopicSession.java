@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.jms.DestinationFactory;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.TopicImpl;
@@ -68,14 +67,9 @@ public class NontransactedTopicSession extends NontransactedSession {
                 if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
                     ctx.authSwiftlet.verifyTopicSenderSubscription(topic.getTopicName(), ctx.activeLogin.getLoginId());
                 producer = new TopicProducer(ctx, topic);
-                if (accountingProfile != null)
-                    producer.createCollector(accountingProfile, collectorCache);
             } else {
                 producer = (Producer) producerList.get(producerId);
             }
-            DestinationCollector collector = producer.getCollector();
-            if (collector != null)
-                collector.incTotal(1, msg.getMessageLength());
             QueuePushTransaction transaction = (QueuePushTransaction) producer.createTransaction();
             transaction.putMessage(msg);
             transaction.commit(new ProduceMessageCallback(producerId == -1 ? producer : null, reply));
@@ -146,8 +140,6 @@ public class NontransactedTopicSession extends NontransactedSession {
             TopicProducer producer;
             producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
             producer = new TopicProducer(ctx, topic);
-            if (accountingProfile != null)
-                producer.createCollector(accountingProfile, collectorCache);
             producerList.set(producerId, producer);
             reply.setTopicPublisherId(producerId);
             reply.setOk(true);
@@ -246,8 +238,6 @@ public class NontransactedTopicSession extends NontransactedSession {
                     prop.setReadOnly(true);
                 }
             }
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             consumer.setAutoCommit(req.isAutoCommit());
             consumer.createReadTransaction();
             consumer.createTransaction();
@@ -329,8 +319,6 @@ public class NontransactedTopicSession extends NontransactedSession {
             TopicDurableConsumer consumer = null;
             consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
             consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             consumerList.set(consumerId, consumer);
             consumer.createReadTransaction();
             consumer.createTransaction();

@@ -21,7 +21,6 @@ import com.swiftmq.auth.ChallengeResponseFactory;
 import com.swiftmq.impl.jms.standard.JMSSwiftlet;
 import com.swiftmq.impl.jms.standard.SwiftletContext;
 import com.swiftmq.impl.jms.standard.VersionedJMSConnection;
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
 import com.swiftmq.jms.smqp.v500.*;
 import com.swiftmq.jms.v500.ConnectionMetaDataImpl;
 import com.swiftmq.mgmt.Entity;
@@ -124,18 +123,6 @@ public class JMSConnection
 
     public void close() {
         connectionQueue.enqueue(new GenericRequest(0, false, null));
-    }
-
-    public void startAccounting(AccountingProfile accountingProfile) {
-        ctx.logSwiftlet.logWarning(tracePrefix, "This SMQP protocol version (v500) does NOT support accounting! Please upgrade this client to use accounting!");
-    }
-
-    public void flushAccounting() {
-        // no-op
-    }
-
-    public void stopAccounting() {
-        // no-op
     }
 
     protected Session createSession(CreateSessionRequest req, int sessionDispatchId, Entity sessionEntity) {

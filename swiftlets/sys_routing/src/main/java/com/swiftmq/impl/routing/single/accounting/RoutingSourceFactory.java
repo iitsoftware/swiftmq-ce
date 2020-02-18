@@ -18,87 +18,18 @@
 package com.swiftmq.impl.routing.single.accounting;
 
 import com.swiftmq.impl.routing.single.SwiftletContext;
-import com.swiftmq.swiftlet.accounting.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class RoutingSourceFactory implements AccountingSourceFactory {
+public class RoutingSourceFactory {
     SwiftletContext ctx = null;
     Map parms = null;
 
     public RoutingSourceFactory(SwiftletContext ctx) {
         this.ctx = ctx;
         parms = new HashMap();
-        Parameter p = new Parameter("Flush Interval", "Flush Interval of Accounting Data in milliseconds", "60000", false, new ParameterVerifier() {
-            public void verify(Parameter parameter, String value) throws InvalidValueException {
-                try {
-                    long ms = Long.parseLong(value);
-                } catch (NumberFormatException e) {
-                    throw new InvalidValueException(e.toString());
-                }
-            }
-        });
-        parms.put(p.getName(), p);
-        p = new Parameter("Source Router Filter", "Regular Expression to filter Source Router Names", null, false, new ParameterVerifier() {
-            public void verify(Parameter parameter, String value) throws InvalidValueException {
-                try {
-                    Pattern.compile(value);
-                } catch (Exception e) {
-                    throw new InvalidValueException(e.toString());
-                }
-            }
-        });
-        parms.put(p.getName(), p);
-        p = new Parameter("Destination Router Filter", "Regular Expression to filter Destination Router Names", null, false, new ParameterVerifier() {
-            public void verify(Parameter parameter, String value) throws InvalidValueException {
-                try {
-                    Pattern.compile(value);
-                } catch (Exception e) {
-                    throw new InvalidValueException(e.toString());
-                }
-            }
-        });
-        parms.put(p.getName(), p);
-        p = new Parameter("Connected Router Filter", "Regular Expression to filter Connected Router Names", null, false, new ParameterVerifier() {
-            public void verify(Parameter parameter, String value) throws InvalidValueException {
-                try {
-                    Pattern.compile(value);
-                } catch (Exception e) {
-                    throw new InvalidValueException(e.toString());
-                }
-            }
-        });
-        parms.put(p.getName(), p);
-        p = new Parameter("Queue Name Filter", "Regular Expression to filter Queue Names", null, false, new ParameterVerifier() {
-            public void verify(Parameter parameter, String value) throws InvalidValueException {
-                try {
-                    Pattern.compile(value);
-                } catch (Exception e) {
-                    throw new InvalidValueException(e.toString());
-                }
-            }
-        });
-        parms.put(p.getName(), p);
-        p = new Parameter("Topic Name Filter", "Regular Expression to filter Topic Names", null, false, new ParameterVerifier() {
-            public void verify(Parameter parameter, String value) throws InvalidValueException {
-                try {
-                    Pattern.compile(value);
-                } catch (Exception e) {
-                    throw new InvalidValueException(e.toString());
-                }
-            }
-        });
-        parms.put(p.getName(), p);
-        p = new Parameter("Direction", "States which routing direction should be accounted: inbound, outbound, or both", "both", false, new ParameterVerifier() {
-            public void verify(Parameter parameter, String value) throws InvalidValueException {
-                String s = value.toLowerCase();
-                if (!(s.equals("inbound") || s.equals("outbound") || s.equals("both")))
-                    throw new InvalidValueException("Invalid value '" + value + "': inbound, outbound, or both expected");
-            }
-        });
-        parms.put(p.getName(), p);
     }
 
     public boolean isSingleton() {

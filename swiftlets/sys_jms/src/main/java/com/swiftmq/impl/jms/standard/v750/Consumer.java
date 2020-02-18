@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.swiftlet.queue.*;
 
 public class Consumer implements TransactionFactory {
@@ -33,7 +30,6 @@ public class Consumer implements TransactionFactory {
     protected MessageProcessor messageProcessor = null;
     protected boolean hasListener = false;
     protected boolean markedForClose = false;
-    protected DestinationCollector collector = null;
 
     protected Consumer(SessionContext ctx) {
         this.ctx = ctx;
@@ -51,17 +47,6 @@ public class Consumer implements TransactionFactory {
         this.selector = selector;
     }
 
-    public void createCollector(AccountingProfile accoutingProfile, DestinationCollectorCache cache) {
-        // Needs to be overwritten
-    }
-
-    protected void removeCollector() {
-        collector = null;
-    }
-
-    public DestinationCollector getCollector() {
-        return collector;
-    }
 
     public Selector getSelector() {
         return selector;
@@ -141,7 +126,6 @@ public class Consumer implements TransactionFactory {
         }
         messageProcessor = null;
         markedForClose = true;
-        collector = null;
     }
 
     public boolean isMarkedForClose() {
@@ -160,7 +144,6 @@ public class Consumer implements TransactionFactory {
         transaction = null;
         readTransaction = null;
         receiver.close();
-        collector = null;
     }
 }
 

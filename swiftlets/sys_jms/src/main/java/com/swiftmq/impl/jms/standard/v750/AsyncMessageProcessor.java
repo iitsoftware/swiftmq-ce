@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.jms.smqp.v750.AsyncMessageDeliveryRequest;
 import com.swiftmq.swiftlet.queue.*;
 
@@ -132,9 +131,6 @@ public class AsyncMessageProcessor extends MessageProcessor {
             restart = deliveryCount >= consumerCacheSize - lowWaterMark;
         MessageEntry[] buffer = getBulkBuffer();
         if (isAutoCommit()) {
-            DestinationCollector collector = consumer.getCollector();
-            if (collector != null)
-                collector.incTotal(numberMessages, getCurrentBulkSize());
             MessageEntry[] bulk = new MessageEntry[numberMessages];
             System.arraycopy(buffer, 0, bulk, 0, numberMessages);
             AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), null, bulk, session.dispatchId, restart, recoveryEpoche);
