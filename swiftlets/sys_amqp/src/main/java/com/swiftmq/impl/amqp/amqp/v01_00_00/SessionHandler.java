@@ -33,9 +33,6 @@ import com.swiftmq.amqp.v100.generated.transport.performatives.*;
 import com.swiftmq.amqp.v100.types.*;
 import com.swiftmq.impl.amqp.SwiftletContext;
 import com.swiftmq.impl.amqp.VersionedConnection;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
-import com.swiftmq.impl.amqp.accounting.DestinationCollector;
-import com.swiftmq.impl.amqp.accounting.DestinationCollectorCache;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.po.*;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transaction.TransactionRegistry;
 import com.swiftmq.mgmt.Entity;
@@ -114,9 +111,6 @@ public class SessionHandler implements AMQPSessionVisitor {
     public volatile int totalMsgsSent = 0;
 
     boolean sessionDisabled = false;
-
-    protected AccountingProfile accountingProfile = null;
-    protected DestinationCollectorCache collectorCache = null;
 
     public SessionHandler(SwiftletContext ctx, VersionedConnection versionedConnection, AMQPHandler amqpHandler, BeginFrame beginFrame) {
         this.ctx = ctx;
@@ -347,13 +341,6 @@ public class SessionHandler implements AMQPSessionVisitor {
         }
     }
 
-    private void flushCollectors() {
-        if (accountingProfile != null && collectorCache != null) {
-            collectorCache.flush(accountingProfile.getSource(), versionedConnection.getActiveLogin().getUserName(), versionedConnection.getActiveLogin().getClientId(), versionedConnection.getRemoteHostname(), AMQPHandler.VERSION);
-            collectorCache.clear();
-        }
-    }
-
     public void settleOutbound(long deliveryId, DeliveryStateIF deliveryState) throws EndWithErrorException {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", settleOutbound, deliveryId=" + deliveryId + ", deliveryState=" + deliveryState);
@@ -419,11 +406,6 @@ public class SessionHandler implements AMQPSessionVisitor {
                                 sourceLink.addUnsettled(dId, delivery.getMessageIndex());
                         } else {
                             sourceLink.autoack(delivery.getMessageIndex());
-                            if (totalSize > 0) {
-                                DestinationCollector collector = sourceLink.getCollector();
-                                if (collector != null)
-                                    collector.incTotal(1, delivery.getSize());
-                            }
                         }
                         incMsgsSent(1);
                     }
@@ -544,18 +526,6 @@ public class SessionHandler implements AMQPSessionVisitor {
         dispatch(new POSessionCollect(lastCollect));
     }
 
-    public void startAccounting(AccountingProfile accountingProfile) {
-        dispatch(new POSessionStartAccounting(accountingProfile));
-    }
-
-    public void stopAccounting() {
-        dispatch(new POSessionStopAccounting());
-    }
-
-    public void flushAccounting() {
-        dispatch(new POSessionFlushAccounting());
-    }
-
     public void visit(POSessionFrameReceived po) {
         po.getFrame().accept(frameVisitor);
     }
@@ -641,41 +611,6 @@ public class SessionHandler implements AMQPSessionVisitor {
             ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
     }
 
-    public void visit(POSessionStartAccounting po) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        accountingProfile = po.getAccountingProfile();
-        collectorCache = new DestinationCollectorCache(ctx, toString());
-        for (int i = 0; i < handles.size(); i++) {
-            ServerLink link = (ServerLink) handles.get(i);
-            if (link != null)
-                link.createCollector(accountingProfile, collectorCache);
-        }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
-    }
-
-    public void visit(POSessionStopAccounting po) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        flushCollectors();
-        for (int i = 0; i < handles.size(); i++) {
-            ServerLink link = (ServerLink) handles.get(i);
-            if (link != null)
-                link.removeCollector();
-        }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
-    }
-
-    public void visit(POSessionFlushAccounting po) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        flushCollectors();
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
-    }
-
     public void visit(POSendEnd po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
@@ -698,9 +633,6 @@ public class SessionHandler implements AMQPSessionVisitor {
         closed = true;
         if (transactionRegistry != null)
             transactionRegistry.close();
-        flushCollectors();
-        accountingProfile = null;
-        collectorCache = null;
         closeAllLinks();
         handles.clear();
         remoteHandles.clear();
@@ -834,8 +766,6 @@ public class SessionHandler implements AMQPSessionVisitor {
                     }
                 });
                 attachFrame.setTarget(targetIF);
-                if (accountingProfile != null && collectorCache != null)
-                    targetLink.createCollector(accountingProfile, collectorCache);
                 targetLink.setOfferedCapabilities(toSet(frame.getOfferedCapabilities()));
                 targetLink.setDesiredCapabilities(toSet(frame.getDesiredCapabilities()));
                 versionedConnection.send(attachFrame);
@@ -996,8 +926,6 @@ public class SessionHandler implements AMQPSessionVisitor {
                     sourceLink.setRemoteUnsettled(remoteUnsettled.getValue());
                 versionedConnection.getActiveLogin().getResourceLimitGroup().incConsumers();
                 sourceLink.verifyLocalAddress();
-                if (accountingProfile != null && collectorCache != null)
-                    sourceLink.createCollector(accountingProfile, collectorCache);
                 attachFrame.setSndSettleMode(new SenderSettleMode(sourceLink.getSndSettleMode()));
                 SourceIF sourceIF = frame.getSource();
                 if (sourceIF != null) {

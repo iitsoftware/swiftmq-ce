@@ -17,8 +17,6 @@
 
 package com.swiftmq.impl.amqp;
 
-import com.swiftmq.impl.amqp.accounting.AMQPSourceFactory;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
 import com.swiftmq.impl.amqp.sasl.provider.SASLProvider;
 import com.swiftmq.impl.amqp.sasl.v01_00_00.SASLHandlerFactory;
 import com.swiftmq.mgmt.*;
@@ -47,8 +45,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
     boolean collectOn = false;
     long collectInterval = -1;
     long lastCollect = System.currentTimeMillis();
-    AMQPSourceFactory sourceFactory = null;
-    AccountingProfile accountingProfile = null;
 
     private void collectChanged(long oldInterval, long newInterval) {
         if (!collectOn)
@@ -78,32 +74,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         }
         lastCollect = System.currentTimeMillis();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction done");
-    }
-
-    public synchronized AccountingProfile getAccountingProfile() {
-        return accountingProfile;
-    }
-
-    public void setAccountingProfile(AccountingProfile accountingProfile) {
-        synchronized (this) {
-            this.accountingProfile = accountingProfile;
-        }
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionedConnection vc = (VersionedConnection) c[i].getUserObject();
-            if (accountingProfile != null)
-                vc.startAccounting(accountingProfile);
-            else
-                vc.stopAccounting();
-        }
-    }
-
-    public void flushAccounting() {
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionedConnection vc = (VersionedConnection) c[i].getUserObject();
-            vc.flushAccounting();
-        }
     }
 
     private void createListenerAdapter(EntityList listenerList) throws SwiftletException {

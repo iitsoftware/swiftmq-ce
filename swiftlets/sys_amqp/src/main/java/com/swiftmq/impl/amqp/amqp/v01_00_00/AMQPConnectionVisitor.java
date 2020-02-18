@@ -31,12 +31,6 @@ public interface AMQPConnectionVisitor extends POVisitor {
 
     public void visit(POConnectionCollect po);
 
-    public void visit(POConnectionStartAccounting po);
-
-    public void visit(POConnectionStopAccounting po);
-
-    public void visit(POConnectionFlushAccounting po);
-
     public void visit(POSendClose po);
 
     public void visit(POClose po);

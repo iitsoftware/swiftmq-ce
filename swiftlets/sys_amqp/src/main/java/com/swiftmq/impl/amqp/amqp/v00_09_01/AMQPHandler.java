@@ -28,7 +28,6 @@ import com.swiftmq.impl.amqp.Handler;
 import com.swiftmq.impl.amqp.OutboundTracer;
 import com.swiftmq.impl.amqp.SwiftletContext;
 import com.swiftmq.impl.amqp.VersionedConnection;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
 import com.swiftmq.impl.amqp.amqp.v00_09_01.po.*;
 import com.swiftmq.impl.amqp.sasl.provider.AnonServer;
 import com.swiftmq.mgmt.Entity;
@@ -230,15 +229,6 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     }
 
     public void collect(long lastCollect) {
-    }
-
-    public void startAccounting(AccountingProfile accountingProfile) {
-    }
-
-    public void stopAccounting() {
-    }
-
-    public void flushAccounting() {
     }
 
     public void dispatch(POObject po) {

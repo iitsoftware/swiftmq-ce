@@ -28,9 +28,6 @@ import com.swiftmq.amqp.v100.generated.transport.performatives.TransferFrame;
 import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 import com.swiftmq.amqp.v100.types.*;
 import com.swiftmq.impl.amqp.SwiftletContext;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
-import com.swiftmq.impl.amqp.accounting.DestinationCollector;
-import com.swiftmq.impl.amqp.accounting.DestinationCollectorCache;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transaction.QueueSenderProvider;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transaction.TransactionRegistry;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.DestinationFactory;
@@ -80,7 +77,6 @@ public class TargetLink extends ServerLink
     Destination lastDestination = null;
     TransferFrame currentMessage = null;
     DeliveryNumber lastDeliveryId = null;
-    DestinationCollector collector = null;
     Map remoteUnsettled = null;
     String queueName = null;
 
@@ -226,26 +222,6 @@ public class TargetLink extends ServerLink
     public Destination create(AddressIF addressIF) {
         addressIF.accept(this);
         return lastDestination;
-    }
-
-    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
-        if (coordinator)
-            return;
-        if (isQueue) {
-            if (accountingProfile.isMatchQueueName(getLocalAddress().getValueString()))
-                collector = cache.getDestinationCollector(localDestination.toString(), DestinationCollector.DTYPE_QUEUE, DestinationCollector.ATYPE_PRODUCER);
-        } else {
-            if (accountingProfile.isMatchTopicName(getLocalAddress().getValueString()))
-                collector = cache.getDestinationCollector(localDestination.toString(), DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_PRODUCER);
-        }
-    }
-
-    public void removeCollector() {
-        collector = null;
-    }
-
-    public DestinationCollector getCollector() {
-        return collector;
     }
 
     public void verifyLocalAddress() throws AuthenticationException, QueueException, TopicException, InvalidSelectorException {
@@ -430,14 +406,10 @@ public class TargetLink extends ServerLink
                     TransactionalState txState = (TransactionalState) state;
                     TxnIdIF txnId = txState.getTxnId();
                     if (txnId != null) {
-                        if (collector != null)
-                            collector.incTx(new String(((TransactionId) txnId).getValue()), 1, payloadLength);
                         transactionRegistry.addToTransaction(txnId, name, msg, this);
                     } else
                         throw new SessionEndException(TransactionError.UNKNOWN_ID, new AMQPString("Missing TxnId in TransactionalState: " + txState));
                 } else {
-                    if (collector != null)
-                        collector.incTotal(1, payloadLength);
                     QueuePushTransaction tx = sender.createTransaction();
                     tx.putMessage(msg);
                     tx.commit();
