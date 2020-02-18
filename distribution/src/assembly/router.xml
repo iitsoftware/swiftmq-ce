@@ -24,16 +24,6 @@
       <outputDirectory>${project.artifactId}_${project.version}_router/jars</outputDirectory>
     </file>
     <file>
-      <source>../swiftlets/sys_accounting/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$accounting</outputDirectory>
-      <filtered>true</filtered>
-    </file>
-    <file>
-      <source>../swiftlets/sys_accounting/target/sys_accounting.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$accounting</outputDirectory>
-      <destName>sys$accounting.jar</destName>
-    </file>
-    <file>
       <source>../swiftlets/sys_amqp/config/config.xml</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$amqp</outputDirectory>
       <filtered>true</filtered>
@@ -102,16 +92,6 @@
       <source>../swiftlets/sys_mgmt/target/sys_mgmt.jar</source>
       <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$mgmt</outputDirectory>
       <destName>sys$mgmt.jar</destName>
-    </file>
-    <file>
-      <source>../swiftlets/sys_monitor/config/config.xml</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$monitor</outputDirectory>
-      <filtered>true</filtered>
-    </file>
-    <file>
-      <source>../swiftlets/sys_monitor/target/sys_monitor_fat.jar</source>
-      <outputDirectory>${project.artifactId}_${project.version}_router/kernel/sys$monitor</outputDirectory>
-      <destName>sys$monitor.jar</destName>
     </file>
     <file>
       <source>../swiftlets/sys_mqtt/config/config.xml</source>

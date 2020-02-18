@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
 import com.swiftmq.swiftlet.net.InboundHandler;
 import com.swiftmq.tools.requestreply.Reply;
 
@@ -27,12 +26,6 @@ public interface VersionedJMSConnection {
     public void sendReply(Reply reply);
 
     public void collect(long lastCollectTime);
-
-    public void startAccounting(AccountingProfile accountingProfile);
-
-    public void flushAccounting();
-
-    public void stopAccounting();
 
     public void close();
 }

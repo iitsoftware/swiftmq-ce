@@ -17,8 +17,6 @@
 
 package com.swiftmq.impl.amqp;
 
-import com.swiftmq.impl.amqp.accounting.AMQPSourceFactory;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
 import com.swiftmq.impl.amqp.sasl.provider.SASLProvider;
 import com.swiftmq.impl.amqp.sasl.v01_00_00.SASLHandlerFactory;
 import com.swiftmq.mgmt.*;
@@ -47,8 +45,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
     boolean collectOn = false;
     long collectInterval = -1;
     long lastCollect = System.currentTimeMillis();
-    AMQPSourceFactory sourceFactory = null;
-    AccountingProfile accountingProfile = null;
 
     private void collectChanged(long oldInterval, long newInterval) {
         if (!collectOn)
@@ -78,32 +74,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         }
         lastCollect = System.currentTimeMillis();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction done");
-    }
-
-    public synchronized AccountingProfile getAccountingProfile() {
-        return accountingProfile;
-    }
-
-    public void setAccountingProfile(AccountingProfile accountingProfile) {
-        synchronized (this) {
-            this.accountingProfile = accountingProfile;
-        }
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionedConnection vc = (VersionedConnection) c[i].getUserObject();
-            if (accountingProfile != null)
-                vc.startAccounting(accountingProfile);
-            else
-                vc.stopAccounting();
-        }
-    }
-
-    public void flushAccounting() {
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionedConnection vc = (VersionedConnection) c[i].getUserObject();
-            vc.flushAccounting();
-        }
     }
 
     private void createListenerAdapter(EntityList listenerList) throws SwiftletException {
@@ -309,10 +279,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
                     ctx.traceSpace.trace(getName(), "onEntityRemove (Connection): " + myConnection);
             }
         });
-        if (ctx.accountingSwiftlet != null) {
-            sourceFactory = new AMQPSourceFactory(ctx);
-            ctx.accountingSwiftlet.addAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName(), sourceFactory);
-        }
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done.");
     }
@@ -323,8 +289,6 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
         try {
-            if (ctx.accountingSwiftlet != null)
-                ctx.accountingSwiftlet.removeAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName());
             listenerAdapter.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: shutdown all AMQP connections");
             Semaphore sem = getShutdownSemaphore();

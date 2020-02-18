@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.jms.DestinationFactory;
 import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.ms.MessageSelector;
@@ -74,11 +71,6 @@ public class TopicConsumer extends Consumer {
 
     protected void setAutoCommit(boolean autoCommit) {
         this.autoCommit = this.autoCommit && autoCommit;
-    }
-
-    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
-        if (accountingProfile.isMatchTopicName(topicName))
-            collector = cache.getDestinationCollector(topicName, DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_CONSUMER);
     }
 
     protected void close() throws Exception {

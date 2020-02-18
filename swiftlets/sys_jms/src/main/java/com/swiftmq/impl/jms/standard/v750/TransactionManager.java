@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.swiftlet.queue.QueueTransactionClosedException;
 import com.swiftmq.swiftlet.store.CompositeStoreTransaction;
@@ -112,9 +111,6 @@ public class TransactionManager {
                 Pair p = (Pair) iter.next();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/commitWithGlobalLock, t=" + p.tx + ", closed=" + p.tx.isClosed());
-                DestinationCollector c = p.factory.getCollector();
-                if (c != null)
-                    c.commit();
                 try {
                     p.tx.setCompositeStoreTransaction(compTx);
                     p.tx.commit();
@@ -145,9 +141,6 @@ public class TransactionManager {
             Pair p = (Pair) iter.next();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/commitWithoutGlobalLock, t=" + p.tx + ", closed=" + p.tx.isClosed());
-            DestinationCollector c = p.factory.getCollector();
-            if (c != null)
-                c.commit();
             try {
                 p.tx.commit();
             } catch (QueueTransactionClosedException e) {
@@ -179,9 +172,6 @@ public class TransactionManager {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/rollback");
         for (Iterator iter = transactions.iterator(); iter.hasNext(); ) {
             Pair p = (Pair) iter.next();
-            DestinationCollector c = p.factory.getCollector();
-            if (c != null)
-                c.abort();
             try {
                 p.tx.rollback();
             } catch (QueueTransactionClosedException e) {

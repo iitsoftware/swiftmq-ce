@@ -21,7 +21,6 @@ import com.swiftmq.mgmt.Configuration;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.accounting.AccountingSwiftlet;
 import com.swiftmq.swiftlet.auth.AuthenticationSwiftlet;
 import com.swiftmq.swiftlet.jndi.JNDISwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
@@ -42,7 +41,6 @@ public class SwiftletContext {
     public Entity root = null;
     public EntityList usageList = null;
     public AuthenticationSwiftlet authenticationSwiftlet = null;
-    public AccountingSwiftlet accountingSwiftlet = null;
     public ThreadpoolSwiftlet threadpoolSwiftlet = null;
     public TimerSwiftlet timerSwiftlet = null;
     public QueueManager queueManager = null;
@@ -69,7 +67,6 @@ public class SwiftletContext {
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
         authenticationSwiftlet = (AuthenticationSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$authentication");
-        accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
         timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
         mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");
         schedulerSwiftlet = (SchedulerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$scheduler");

@@ -24,7 +24,6 @@ import com.swiftmq.amqp.v100.types.*;
 import com.swiftmq.impl.amqp.Handler;
 import com.swiftmq.impl.amqp.SwiftletContext;
 import com.swiftmq.impl.amqp.VersionedConnection;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
 import com.swiftmq.impl.amqp.sasl.provider.AnonServer;
 import com.swiftmq.impl.amqp.sasl.v01_00_00.po.POClose;
 import com.swiftmq.impl.amqp.sasl.v01_00_00.po.POSaslFrameReceived;
@@ -158,18 +157,6 @@ public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SAS
     }
 
     public void collect(long lastCollect) {
-        // do nothing
-    }
-
-    public void startAccounting(AccountingProfile accountingProfile) {
-        // do nothing
-    }
-
-    public void stopAccounting() {
-        // do nothing
-    }
-
-    public void flushAccounting() {
         // do nothing
     }
 

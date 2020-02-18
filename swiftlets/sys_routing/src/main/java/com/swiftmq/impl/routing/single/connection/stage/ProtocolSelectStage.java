@@ -100,24 +100,6 @@ public class ProtocolSelectStage extends Stage {
                 routingConnection.getOutboundQueue().enqueue(reply);
             }
         });
-        visitor.setRequestHandler(SMQRFactory.START_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ProtocolSelectStage.this.toString() + "/visited, request=" + request + " (do nothing)");
-            }
-        });
-        visitor.setRequestHandler(SMQRFactory.FLUSH_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ProtocolSelectStage.this.toString() + "/visited, request=" + request + " (do nothing)");
-            }
-        });
-        visitor.setRequestHandler(SMQRFactory.STOP_ACCOUNTING_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ProtocolSelectStage.this.toString() + "/visited, request=" + request + " (do nothing)");
-            }
-        });
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init done");
     }
 
@@ -133,9 +115,6 @@ public class ProtocolSelectStage extends Stage {
         visitor.setRequestHandler(SMQRFactory.START_STAGE_REQ, null);
         visitor.setRequestHandler(SMQRFactory.PROTOCOL_REQ, null);
         visitor.setRequestHandler(SMQRFactory.PROTOCOL_REPREQ, null);
-        visitor.setRequestHandler(SMQRFactory.START_ACCOUNTING_REQ, null);
-        visitor.setRequestHandler(SMQRFactory.FLUSH_ACCOUNTING_REQ, null);
-        visitor.setRequestHandler(SMQRFactory.STOP_ACCOUNTING_REQ, null);
     }
 
     public String toString() {

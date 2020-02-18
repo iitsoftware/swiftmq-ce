@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.ms.MessageSelector;
 
 public class QueueConsumer extends Consumer {
@@ -39,10 +36,6 @@ public class QueueConsumer extends Consumer {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
     }
 
-    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
-        if (accountingProfile.isMatchQueueName(queueName))
-            collector = cache.getDestinationCollector(queueName, DestinationCollector.DTYPE_QUEUE, DestinationCollector.ATYPE_CONSUMER);
-    }
 
     public String toString() {
         return "QueueConsumer, queue=" + queueName;

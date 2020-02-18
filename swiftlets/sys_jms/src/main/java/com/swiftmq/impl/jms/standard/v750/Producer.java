@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
@@ -29,7 +26,6 @@ public class Producer implements TransactionFactory {
     protected QueueSender sender = null;
     protected QueuePushTransaction transaction = null;
     protected boolean markedForClose = false;
-    protected DestinationCollector collector = null;
 
     protected Producer(SessionContext ctx) {
         this.ctx = ctx;
@@ -37,18 +33,6 @@ public class Producer implements TransactionFactory {
 
     protected void setQueueSender(QueueSender sender) {
         this.sender = sender;
-    }
-
-    public void createCollector(AccountingProfile accoutingProfile, DestinationCollectorCache cache) {
-        // Needs to be overwritten
-    }
-
-    protected void removeCollector() {
-        collector = null;
-    }
-
-    public DestinationCollector getCollector() {
-        return collector;
     }
 
     public QueueTransaction createTransaction() throws Exception {
@@ -66,7 +50,6 @@ public class Producer implements TransactionFactory {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
         markedForClose = true;
-        collector = null;
     }
 
     public boolean isMarkedForClose() {
@@ -76,7 +59,6 @@ public class Producer implements TransactionFactory {
     public void close() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
         transaction = null;
-        collector = null;
         sender.close();
     }
 }

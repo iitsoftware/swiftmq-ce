@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.topic.TopicManager;
@@ -48,11 +45,6 @@ public class TopicDurableConsumer extends Consumer {
 
     public String getQueueName() {
         return queueName;
-    }
-
-    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
-        if (accountingProfile.isMatchTopicName(topicName))
-            collector = cache.getDestinationCollector(topicName, DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_CONSUMER);
     }
 
     public String toString() {
