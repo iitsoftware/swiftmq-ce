@@ -34,7 +34,6 @@ public class SchedulerSwiftletImpl extends SchedulerSwiftlet {
     SwiftletContext ctx = null;
     EntityListEventAdapter calendarAdapter = null;
     EntityListEventAdapter scheduleAdapter = null;
-    RequestProcessor requestProcessor = null;
     JobGroup myJobGroup = null;
 
     public synchronized JobGroup getJobGroup(String s) {
@@ -159,11 +158,6 @@ public class SchedulerSwiftletImpl extends SchedulerSwiftlet {
         ctx.scheduler = new Scheduler(ctx);
         createCalendarAdapter((EntityList) ctx.root.getEntity("calendars"));
         createScheduleAdapter((EntityList) ctx.root.getEntity("schedules"));
-        try {
-            requestProcessor = new RequestProcessor(ctx);
-        } catch (Exception e) {
-            throw new SwiftletException(e.toString());
-        }
         myJobGroup = getJobGroup(SwiftletContext.JOBGROUP);
         JobFactory jf = new MessageSenderJobFactory(ctx);
         myJobGroup.addJobFactory(jf.getName(), jf);
@@ -176,7 +170,6 @@ public class SchedulerSwiftletImpl extends SchedulerSwiftlet {
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
         myJobGroup.removeAll();
-        requestProcessor.stop();
         try {
             scheduleAdapter.close();
             calendarAdapter.close();
