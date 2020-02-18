@@ -68,6 +68,7 @@ public class SwiftletContext {
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
         networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
         xaResourceManagerSwiftlet = (XAResourceManagerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$xa");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
         routerName = SwiftletManager.getInstance().getRouterName();
