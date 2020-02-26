@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<router startorder="sys$log sys$authentication sys$threadpool sys$timer sys$net sys$store sys$queuemanager sys$topicmanager sys$mgmt sys$xa sys$routing sys$jndi sys$jms sys$amqp sys$mqtt sys$deploy sys$scheduler sys$streams">
+
+    <swiftlet name="sys$threadpool">
+        <pools>
+            <pool _op="remove" name="accounting.connections"/>
+            <pool _op="remove" name="accounting.events"/>
+        </pools>
+    </swiftlet>
+
+    <swiftlet name="sys$trace">
+        <spaces>
+            <space name="kernel">
+                <predicate name="18" _op="remove"/>
+            </space>
+        </spaces>
+    </swiftlet>
+
+</router>
