@@ -70,7 +70,12 @@ public class StreamController {
     private ClassLoader createClassLoader() {
         File libDir = new File(ctx.streamLibDir + File.separatorChar + fqn);
         if (libDir.exists()) {
-            File[] libs = libDir.listFiles();
+            File[] libs = libDir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".jar");
+                }
+            });
             if (libs != null) {
                 URL[] urls = new URL[libs.length];
                 try {
