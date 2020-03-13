@@ -4,4 +4,3 @@ swiftlets/*/target
 testsuite/target
 .idea
 .DS_Store
-*.iml
