@@ -162,11 +162,11 @@ public class StreamLibDeployer extends MessageProcessor {
         fos.close();
     }
 
-    private void sendReply(QueueImpl replyTo) throws JMSException {
+    private void sendReply(QueueImpl replyTo, boolean rc) throws JMSException {
         QueueSender sender = ctx.queueManager.createQueueSender(replyTo.getQueueName(), (ActiveLogin) null);
         QueuePushTransaction pushTx = sender.createTransaction();
         MessageImpl reply = new MessageImpl();
-        reply.setBooleanProperty("success", true);
+        reply.setBooleanProperty("success", rc);
         reply.setJMSDestination(replyTo);
         pushTx.putMessage(reply);
         pushTx.commit();
@@ -189,8 +189,14 @@ public class StreamLibDeployer extends MessageProcessor {
         File dir = getOrCreateDeployDir(domain, pkg, stream);
         appendChunk(dir, libname, chunk, buffer);
         if (last) {
-            addCerts(domain + "." + pkg + "." + stream, dir);
-            sendReply(replyTo);
+            try {
+                addCerts(domain + "." + pkg + "." + stream, dir);
+                sendReply(replyTo, true);
+            } catch (Exception e) {
+                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), toString() + "/Exception during addCert: " + e);
+                removeStreamLibs(domain + "." + pkg + "." + stream);
+                sendReply(replyTo, false);
+            }
         }
     }
 
