@@ -27,10 +27,7 @@ import com.swiftmq.tools.security.Store;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.Arrays;
 
 public class StreamLibDeployer extends MessageProcessor {
@@ -77,13 +74,12 @@ public class StreamLibDeployer extends MessageProcessor {
         return ctx.streamsSwiftlet.getName() + "/" + toString();
     }
 
-    public static byte[] loadAsBytes(File file) throws Exception {
-        if (!file.exists())
-            throw new Exception("File not found: " + file.getName());
-        RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
-        byte[] b = new byte[(int) file.length()];
-        randomAccessFile.readFully(b);
-        return b;
+    public static String loadAsString(File f) throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader(f));
+        char[] buffer = new char[(int) f.length()];
+        reader.read(buffer);
+        reader.close();
+        return new String(buffer);
     }
 
     private void addCerts(String fqn, File dir) throws Exception {
@@ -98,7 +94,11 @@ public class StreamLibDeployer extends MessageProcessor {
             for (int i = 0; i < certs.length; i++) {
                 File cert = certs[i];
                 ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), toString() + "/addCert: " + fqn + "." + cert.getName());
-                store.addCert(fqn + "." + cert.getName(), loadAsBytes(cert));
+                try {
+                    store.removeCert(fqn + "." + cert.getName());
+                } catch (Exception e) {
+                }
+                store.addCert(fqn + "." + cert.getName(), loadAsString(cert).getBytes());
             }
             store.save();
         }
