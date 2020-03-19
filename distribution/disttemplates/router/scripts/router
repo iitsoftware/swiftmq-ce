@@ -1,5 +1,6 @@
 #!/bin/bash
 OPENS=""
+PRECONFIG="-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml"
 
 if [ "$1" = "java9" ]
 then
@@ -8,7 +9,7 @@ then
 fi
 if [ ! "$1" = "none" ]
 then
-  PRECONFIG="-Dswiftmq.preconfig=$1"
+  PRECONFIG="$PRECONFIG,$1"
   shift
 fi
 exec java -server -Xmx1024M $OPENS $PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
