@@ -12,7 +12,9 @@
     <swiftlet name="sys$trace">
         <spaces>
             <space name="kernel">
+              <predicates>
                 <predicate name="18" _op="remove"/>
+              </predicates>
             </space>
         </spaces>
     </swiftlet>
