@@ -18,6 +18,7 @@
 package com.swiftmq.impl.streams;
 
 import com.swiftmq.impl.streams.comp.message.MessageBuilder;
+import com.swiftmq.impl.streams.graalvm.GraalSetup;
 import com.swiftmq.impl.streams.processor.StreamProcessor;
 import com.swiftmq.impl.streams.processor.po.POClose;
 import com.swiftmq.impl.streams.processor.po.POCollect;
@@ -39,6 +40,7 @@ import java.util.Date;
 
 public class StreamController {
     static final String REGPREFIX = "repository:";
+    static final boolean ISGRAAL = Boolean.valueOf(System.getProperty("swiftmq.graalvm", "false"));
     SwiftletContext ctx;
     RepositorySupport repositorySupport;
     StreamContext streamContext;
@@ -111,7 +113,11 @@ public class StreamController {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript ...");
         ScriptEngineManager manager = new ScriptEngineManager();
         Thread.currentThread().setContextClassLoader(createClassLoader());
-        ScriptEngine engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
+        ScriptEngine engine = null;
+        if (ISGRAAL)
+            engine = GraalSetup.engine();
+        else
+            engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
         if (engine == null)
             throw new Exception("Engine for script-language '" + entity.getProperty("script-language").getValue() + "' not found!");
         ScriptContext newContext = new SimpleScriptContext();
@@ -122,6 +128,7 @@ public class StreamController {
         streamContext.engineScope.put("os", new OsSupport());
         streamContext.engineScope.put("repository", repositorySupport);
         streamContext.engineScope.put("transform", new ContentTransformer());
+        streamContext.engineScope.put("typeconvert", new TypeConverter());
         newContext.setBindings(streamContext.engineScope, ScriptContext.ENGINE_SCOPE);
 
         engine.eval(loadScript((String) entity.getProperty("script-file").getValue()), newContext);
