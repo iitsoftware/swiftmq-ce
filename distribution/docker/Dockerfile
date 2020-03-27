@@ -11,6 +11,5 @@ COPY /swiftmq/data/preconfig/* /swiftmq/initialpreconfig/.
 WORKDIR /swiftmq/scripts
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
 ENV SWIFTMQ_PRECONFIG none
-ENV GRAALVM false
-CMD ./checkconfig && exec ./router $GRAALVM $SWIFTMQ_PRECONFIG $SWIFTMQ_INITIAL_CONFIG
+CMD ./checkconfig && exec ./router $SWIFTMQ_PRECONFIG $SWIFTMQ_INITIAL_CONFIG
 
