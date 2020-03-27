@@ -1,4 +1,5 @@
-FROM oracle/graalvm-ce:20.0.0-java11
+FROM openjdk:8-jre-alpine
+RUN apk update && apk add bash
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
@@ -10,6 +11,6 @@ COPY /swiftmq/data/preconfig/* /swiftmq/initialpreconfig/.
 WORKDIR /swiftmq/scripts
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
 ENV SWIFTMQ_PRECONFIG none
-ENV GRAALVM graal
+ENV GRAALVM false
 CMD ./checkconfig && exec ./router $GRAALVM $SWIFTMQ_PRECONFIG $SWIFTMQ_INITIAL_CONFIG
 
