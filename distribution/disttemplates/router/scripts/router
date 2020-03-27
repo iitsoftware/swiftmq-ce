@@ -1,10 +1,17 @@
 #!/bin/bash
 OPENS=""
 PRECONFIG="-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml"
+GRAAL="false"
 
 if [ "$1" = "java9" ]
 then
   OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-exports=java.desktop/com.sun.awt=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
+  shift
+fi
+if [ "$1" = "graal" ]
+then
+  OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-exports=java.desktop/com.sun.awt=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED"
+  GRAAL="true"
   shift
 fi
 if [ ! "$1" = "none" ]
@@ -12,4 +19,4 @@ then
   PRECONFIG="$PRECONFIG,$1"
   shift
 fi
-exec java -server -Xmx1024M $OPENS $PRECONFIG -Dswiftmq.graalvm=false -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
+exec java -server -Xmx1024M $OPENS $PRECONFIG -Dswiftmq.graalvm=$GRAAL -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
