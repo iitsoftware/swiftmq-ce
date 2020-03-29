@@ -27,6 +27,7 @@ import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.deploy.ExtendableClassLoader;
+import com.swiftmq.util.SwiftUtilities;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -101,7 +102,8 @@ public class StreamController {
                 throw new Exception("Script '" + name + "' not found in Stream Repository!");
             reader = new StringReader(script);
         } else {
-            File file = new File(name);
+
+            File file = new File(SwiftUtilities.addWorkingDir(name));
             if (!file.exists())
                 throw new FileNotFoundException("Script file '" + name + "' not found!");
             reader = new FileReader(file);

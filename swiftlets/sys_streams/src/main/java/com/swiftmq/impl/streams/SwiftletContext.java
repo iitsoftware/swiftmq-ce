@@ -33,6 +33,7 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.util.SwiftUtilities;
 
 import java.io.File;
 
@@ -61,7 +62,7 @@ public class SwiftletContext {
         root = config;
         usageList = (EntityList) root.getEntity("usage");
         if (root.getProperty("stream-lib-directory") != null)
-            streamLibDir = (String) root.getProperty("stream-lib-directory").getValue();
+            streamLibDir = SwiftUtilities.addWorkingDir((String) root.getProperty("stream-lib-directory").getValue());
         new File(streamLibDir).mkdirs();
         traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
