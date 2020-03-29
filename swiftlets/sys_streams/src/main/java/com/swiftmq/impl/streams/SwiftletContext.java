@@ -54,7 +54,7 @@ public class SwiftletContext {
     public TraceSwiftlet traceSwiftlet = null;
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
-    public String streamLibDir = "../data/streamlib";
+    public String streamLibDir = SwiftUtilities.addWorkingDir("../data/streamlib");
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
