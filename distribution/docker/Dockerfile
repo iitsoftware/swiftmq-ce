@@ -1,5 +1,4 @@
 FROM openjdk:11
-RUN apk update && apk add bash
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
