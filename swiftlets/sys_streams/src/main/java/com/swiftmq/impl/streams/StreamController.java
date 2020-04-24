@@ -41,7 +41,6 @@ import java.util.Date;
 
 public class StreamController {
     static final String REGPREFIX = "repository:";
-    static final boolean ISGRAAL = Boolean.valueOf(System.getProperty("swiftmq.graalvm", "false"));
     SwiftletContext ctx;
     RepositorySupport repositorySupport;
     StreamContext streamContext;
@@ -116,7 +115,7 @@ public class StreamController {
         ScriptEngineManager manager = new ScriptEngineManager();
         Thread.currentThread().setContextClassLoader(createClassLoader());
         ScriptEngine engine = null;
-        if (ISGRAAL)
+        if (ctx.ISGRAAL)
             engine = GraalSetup.engine();
         else
             engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());

@@ -55,6 +55,7 @@ public class SwiftletContext {
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
     public String streamLibDir = SwiftUtilities.addWorkingDir("../data/streamlib");
+    public boolean ISGRAAL = false;
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
@@ -76,5 +77,7 @@ public class SwiftletContext {
         jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
         storeSwiftlet = (StoreSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$store");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        ISGRAAL = System.getProperty("java.vm.version") != null && System.getProperty("java.vm.version").contains("GraalVM");
+        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vm.version: " + System.getProperty("java.vm.version") + ", runnung on GraalVM: " + ISGRAAL);
     }
 }
