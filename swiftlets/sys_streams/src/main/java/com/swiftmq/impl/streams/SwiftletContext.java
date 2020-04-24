@@ -77,7 +77,7 @@ public class SwiftletContext {
         jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
         storeSwiftlet = (StoreSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$store");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        ISGRAAL = System.getProperty("java.vm.version") != null && System.getProperty("java.vm.version").contains("GraalVM");
-        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vm.version: " + System.getProperty("java.vm.version") + ", runnung on GraalVM: " + ISGRAAL);
+        ISGRAAL = System.getProperty("java.vm.name") != null && System.getProperty("java.vm.name").contains("GraalVM");
+        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vm.name: " + System.getProperty("java.vm.name") + ", runnung on GraalVM: " + ISGRAAL);
     }
 }
