@@ -158,7 +158,7 @@ public class StreamController {
             Semaphore sem = new Semaphore();
             POStart po = new POStart(sem);
             streamContext.streamProcessor.dispatch(po);
-            sem.waitHere(10000);
+            sem.waitHere(5000);
             if (sem.isNotified() && !po.isSuccess())
                 throw new Exception(po.getException());
             started = true;
@@ -183,7 +183,7 @@ public class StreamController {
         started = false;
         Semaphore sem = new Semaphore();
         streamContext.streamProcessor.dispatch(new POClose(sem));
-        sem.waitHere(10000);
+        sem.waitHere(5000);
         try {
             ctx.usageList.removeEntity(streamContext.usage);
         } catch (EntityRemoveException e) {
