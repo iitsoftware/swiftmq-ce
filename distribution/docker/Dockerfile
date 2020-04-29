@@ -9,5 +9,5 @@ COPY /swiftmq/data/config/routerconfig.xml /swiftmq/initialconfig/.
 COPY /swiftmq/data/preconfig/* /swiftmq/initialpreconfig/.
 WORKDIR /swiftmq/scripts
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
-CMD ./checkconfig && exec ./routerG
+CMD exec ./checkconfig && exec ./router
 
