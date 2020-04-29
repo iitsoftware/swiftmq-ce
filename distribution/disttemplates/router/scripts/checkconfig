@@ -12,6 +12,9 @@ fi
 if [[ ! -e /swiftmq/data/deploy ]]; then
    mkdir /swiftmq/data/deploy
 fi
+if [[ ! -e /swiftmq/data/log ]]; then
+   mkdir /swiftmq/data/log
+fi
 
 PWD=`pwd`
 cd /swiftmq/optional-swiftlets/extension
