@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:11-slim
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
