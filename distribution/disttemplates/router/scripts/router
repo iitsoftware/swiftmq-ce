@@ -21,4 +21,4 @@ if [[ ! -e ../certs/.certimported ]]; then
    touch ../certs/.certimported
 fi
 
-exec java -server -Xmx2G  $ROUTEROPT -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
+exec java -server -Xmx2G  $ROUTEROPT -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
