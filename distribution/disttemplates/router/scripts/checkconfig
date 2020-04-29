@@ -20,7 +20,3 @@ for D in */; do
         cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/. >/dev/null 2>&1
     fi
 done
-cd ${PWD}
-echo $JAVA_HOME
-ls -l $JAVA_HOME/lib/security
-keytool -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit -destkeystore /swiftmq/certs/client.truststore -deststorepass secret
