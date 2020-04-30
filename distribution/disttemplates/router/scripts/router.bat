@@ -13,6 +13,10 @@ if "%ISJAVA8%" == "false" (
 )
 
 set PRECONFIG=-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml
+IF "%1"=="java9" (
+  @echo Please don't use 'java9' as parameter anymore!
+  shift
+)
 IF NOT "%1"=="" (
   set PRECONFIG=%PRECONFIG%,%1
 )

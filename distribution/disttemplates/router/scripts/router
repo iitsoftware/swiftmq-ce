@@ -7,6 +7,11 @@ if [ $ISJAVA8 = "false" ]
 then
   OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
 fi
+if [ "$1" = "java9" ]
+then
+  echo "Please do not use 'java9' as parameter anymore."
+  shift
+fi
 if [ "$1" != "" ]
 then
   PRECONFIG="$PRECONFIG,$1"
