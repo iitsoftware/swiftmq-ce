@@ -13,12 +13,12 @@ if "%ISJAVA8%" == "false" (
 )
 
 set PRECONFIG=-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml
-IF "%1"=="java9" (
+IF "%~1"=="java9" (
   @echo Please don't use 'java9' as parameter anymore!
   shift
 )
-IF NOT "%1"=="" (
-  set PRECONFIG=%PRECONFIG%,%1
+IF NOT "%~1"=="" (
+  set PRECONFIG=%PRECONFIG%,%~1
 )
 set ROUTEROPT=%OPENS% %PRECONFIG% -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret
 
