@@ -17,8 +17,9 @@ ROUTEROPT="$OPENS $PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl
 if [[ ! -e ../certs/.certimported ]]; then
    CACERTS="$JAVAHOME/lib/security/cacerts"
    echo "Import keystore: $CACERTS"
-   keytool -importkeystore -srckeystore $CACERTS -srcstorepass changeit -destkeystore ../certs/client.truststore -deststorepass secret  >/dev/null 2>1
+   keytool -importkeystore -srckeystore $CACERTS -srcstorepass changeit -destkeystore ../certs/client.truststore -deststorepass secret  >/dev/null 2>/dev/null
    touch ../certs/.certimported
 fi
 
+echo "Starting SwiftMQ. Please have a look at data/log/stdout.log ..."
 exec java -server -Xmx2G  $ROUTEROPT -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
