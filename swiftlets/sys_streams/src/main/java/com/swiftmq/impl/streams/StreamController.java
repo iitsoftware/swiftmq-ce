@@ -113,10 +113,11 @@ public class StreamController {
     private void evalScript() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript ...");
         ScriptEngineManager manager = new ScriptEngineManager();
-        Thread.currentThread().setContextClassLoader(createClassLoader());
+        ClassLoader classLoader = createClassLoader();
+        Thread.currentThread().setContextClassLoader(classLoader);
         ScriptEngine engine = null;
         if (ctx.ISGRAAL)
-            engine = GraalSetup.engine();
+            engine = GraalSetup.engine(classLoader);
         else
             engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
         if (engine == null)

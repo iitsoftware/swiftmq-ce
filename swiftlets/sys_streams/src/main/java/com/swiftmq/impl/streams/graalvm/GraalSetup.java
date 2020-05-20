@@ -29,7 +29,7 @@ public class GraalSetup {
         return builder.build();
     }
 
-    public static ScriptEngine engine() throws Exception {
-        return GraalJSScriptEngine.create(null, Context.newBuilder("js").allowAllAccess(true).allowHostAccess(getHostAccess()));
+    public static ScriptEngine engine(ClassLoader cl) throws Exception {
+        return GraalJSScriptEngine.create(null, Context.newBuilder("js").allowAllAccess(true).allowHostAccess(getHostAccess()).hostClassLoader(cl));
     }
 }
