@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.jms.smqp.v750.*;
@@ -67,14 +66,9 @@ public class NontransactedQueueSession extends NontransactedSession {
                 if (!ctx.queueManager.isQueueRunning(queueName))
                     throw new InvalidDestinationException("Invalid destination: " + queueName);
                 producer = new QueueProducer(ctx, queueName);
-                if (accountingProfile != null)
-                    producer.createCollector(accountingProfile, collectorCache);
             } else {
                 producer = (Producer) producerList.get(producerId);
             }
-            DestinationCollector collector = producer.getCollector();
-            if (collector != null)
-                collector.incTotal(1, msg.getMessageLength());
             QueuePushTransaction transaction = (QueuePushTransaction) producer.createTransaction();
             transaction.putMessage(msg);
             transaction.commit(new ProduceMessageCallback(producerId == -1 ? producer : null, reply));
@@ -145,8 +139,6 @@ public class NontransactedQueueSession extends NontransactedSession {
             QueueProducer producer;
             producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
             producer = new QueueProducer(ctx, queue.getQueueName());
-            if (accountingProfile != null)
-                producer.createCollector(accountingProfile, collectorCache);
             producerList.set(producerId, producer);
             reply.setQueueProducerId(producerId);
             reply.setOk(true);
@@ -216,8 +208,6 @@ public class NontransactedQueueSession extends NontransactedSession {
             consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
             consumer = new QueueConsumer(ctx, queueName, messageSelector);
             consumerList.set(consumerId, consumer);
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             consumer.createReadTransaction();
             consumer.createTransaction();
             reply.setOk(true);

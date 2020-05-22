@@ -17,19 +17,12 @@
 
 package com.swiftmq.impl.amqp;
 
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
 import com.swiftmq.net.client.InboundHandler;
 
 public interface Handler extends InboundHandler {
     public String getVersion();
 
     public void collect(long lastCollect);
-
-    public void startAccounting(AccountingProfile accountingProfile);
-
-    public void stopAccounting();
-
-    public void flushAccounting();
 
     public void close();
 }

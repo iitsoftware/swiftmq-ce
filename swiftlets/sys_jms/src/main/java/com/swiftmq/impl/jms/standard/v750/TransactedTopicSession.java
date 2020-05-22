@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.jms.DestinationFactory;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.TopicImpl;
@@ -78,8 +77,6 @@ public class TransactedTopicSession extends TransactedSession {
                     if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
                         ctx.authSwiftlet.verifyTopicSenderSubscription(topic.getTopicName(), ctx.activeLogin.getLoginId());
                     producer = new TopicProducer(ctx, topic);
-                    if (accountingProfile != null)
-                        producer.createCollector(accountingProfile, collectorCache);
                     if (tempProducers == null)
                         tempProducers = new RingBuffer(8);
                     tempProducers.add(producer);
@@ -87,9 +84,6 @@ public class TransactedTopicSession extends TransactedSession {
                 } else {
                     producer = (Producer) producerList.get(producerId);
                 }
-                DestinationCollector collector = producer.getCollector();
-                if (collector != null)
-                    collector.incTx(1, msg.getMessageLength());
                 QueuePushTransaction transaction = producer.getTransaction();
                 transaction.putMessage(msg);
                 fcDelay = Math.max(fcDelay, transaction.getFlowControlDelay());
@@ -135,8 +129,6 @@ public class TransactedTopicSession extends TransactedSession {
             TopicProducer producer;
             producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
             producer = new TopicProducer(ctx, topic);
-            if (accountingProfile != null)
-                producer.createCollector(accountingProfile, collectorCache);
             producerList.set(producerId, producer);
             reply.setTopicPublisherId(producerId);
             reply.setOk(true);
@@ -237,8 +229,6 @@ public class TransactedTopicSession extends TransactedSession {
                     prop.setReadOnly(true);
                 }
             }
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             reply.setOk(true);
             reply.setTopicSubscriberId(consumerId);
 
@@ -313,8 +303,6 @@ public class TransactedTopicSession extends TransactedSession {
             TopicDurableConsumer consumer = null;
             consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
             consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
-            if (accountingProfile != null)
-                consumer.createCollector(accountingProfile, collectorCache);
             consumerList.set(consumerId, consumer);
             reply.setOk(true);
             reply.setTopicSubscriberId(consumerId);

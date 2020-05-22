@@ -23,11 +23,11 @@ import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.tools.security.Store;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.Arrays;
 
 public class StreamLibDeployer extends MessageProcessor {
@@ -74,9 +74,62 @@ public class StreamLibDeployer extends MessageProcessor {
         return ctx.streamsSwiftlet.getName() + "/" + toString();
     }
 
+    public static String loadAsString(File f) throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader(f));
+        char[] buffer = new char[(int) f.length()];
+        reader.read(buffer);
+        reader.close();
+        return new String(buffer);
+    }
+
+    private void addCerts(String fqn, File dir) throws Exception {
+        File[] certs = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".pem");
+            }
+        });
+        if (certs != null && certs.length > 0) {
+            Store store = new Store();
+            for (int i = 0; i < certs.length; i++) {
+                File cert = certs[i];
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), toString() + "/addCert: " + fqn + "." + cert.getName());
+                try {
+                    store.removeCert(fqn + "." + cert.getName());
+                } catch (Exception e) {
+                }
+                store.addCert(fqn + "." + cert.getName(), loadAsString(cert).getBytes());
+            }
+            store.save();
+        }
+    }
+
+    private void removeCerts(String fqn, File dir) throws Exception {
+        File[] certs = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".pem");
+            }
+        });
+        if (certs != null && certs.length > 0) {
+            Store store = new Store();
+            for (int i = 0; i < certs.length; i++) {
+                File cert = certs[i];
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), toString() + "/removeCert: " + fqn + "." + cert.getName());
+                store.removeCert(fqn + "." + cert.getName());
+            }
+            store.save();
+        }
+    }
+
     public void removeStreamLibs(String fqn) {
         File folder = new File(ctx.streamLibDir + File.separatorChar + fqn);
         if (folder.exists() && folder.isDirectory()) {
+            try {
+                removeCerts(fqn, folder);
+            } catch (Exception e) {
+                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), toString() + "/error removeCerts: " + e);
+            }
             Arrays.stream(folder.listFiles()).forEach(File::delete);
             folder.delete();
         }
@@ -109,11 +162,11 @@ public class StreamLibDeployer extends MessageProcessor {
         fos.close();
     }
 
-    private void sendReply(QueueImpl replyTo) throws JMSException {
+    private void sendReply(QueueImpl replyTo, boolean rc) throws JMSException {
         QueueSender sender = ctx.queueManager.createQueueSender(replyTo.getQueueName(), (ActiveLogin) null);
         QueuePushTransaction pushTx = sender.createTransaction();
         MessageImpl reply = new MessageImpl();
-        reply.setBooleanProperty("success", true);
+        reply.setBooleanProperty("success", rc);
         reply.setJMSDestination(replyTo);
         pushTx.putMessage(reply);
         pushTx.commit();
@@ -135,8 +188,16 @@ public class StreamLibDeployer extends MessageProcessor {
             ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/processChunk, domain=" + domain + ", package=" + pkg + ", stream=" + stream + ", libname=" + libname + ", chunk=" + chunk + ", last=" + last);
         File dir = getOrCreateDeployDir(domain, pkg, stream);
         appendChunk(dir, libname, chunk, buffer);
-        if (last)
-            sendReply(replyTo);
+        if (last) {
+            try {
+                addCerts(domain + "." + pkg + "." + stream, dir);
+                sendReply(replyTo, true);
+            } catch (Exception e) {
+                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), toString() + "/Exception during addCert: " + e);
+                removeStreamLibs(domain + "." + pkg + "." + stream);
+                sendReply(replyTo, false);
+            }
+        }
     }
 
     public void run() {

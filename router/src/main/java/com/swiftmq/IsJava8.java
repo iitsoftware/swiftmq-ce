@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2020 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,26 +15,11 @@
  *
  */
 
-package com.swiftmq.impl.accounting.standard.po;
+package com.swiftmq;
 
-import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.POVisitor;
-
-public class CheckConnections extends POObject {
-    public CheckConnections(Semaphore semaphore) {
-        super(null, semaphore);
-    }
-
-    public CheckConnections() {
-        super(null, null);
-    }
-
-    public void accept(POVisitor poVisitor) {
-        ((EventVisitor) poVisitor).visit(this);
-    }
-
-    public String toString() {
-        return "[CheckConnections]";
+public class IsJava8 {
+    public static void main(String[] args) {
+        String javaVersion = System.getProperty("java.version");
+        System.out.print(javaVersion.startsWith("1.8"));
     }
 }

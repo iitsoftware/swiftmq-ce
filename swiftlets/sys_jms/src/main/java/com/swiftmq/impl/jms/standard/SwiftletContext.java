@@ -19,7 +19,6 @@ package com.swiftmq.impl.jms.standard;
 
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.accounting.AccountingSwiftlet;
 import com.swiftmq.swiftlet.auth.AuthenticationSwiftlet;
 import com.swiftmq.swiftlet.jndi.JNDISwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
@@ -36,7 +35,6 @@ public class SwiftletContext {
     public Entity root = null;
     public EntityList usageList = null;
     public AuthenticationSwiftlet authSwiftlet = null;
-    public AccountingSwiftlet accountingSwiftlet = null;
     public ThreadpoolSwiftlet threadpoolSwiftlet = null;
     public MgmtSwiftlet mgmtSwiftlet = null;
     public TimerSwiftlet timerSwiftlet = null;
@@ -67,7 +65,6 @@ public class SwiftletContext {
         queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
         jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
         authSwiftlet = (AuthenticationSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$authentication");
-        accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
         Property prop = root.getProperty("consumer-cache-low-water-mark");
         consumerCacheLowWaterMark = ((Integer) prop.getValue()).intValue();

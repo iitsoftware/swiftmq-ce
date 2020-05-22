@@ -22,7 +22,6 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.QueueMapper;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.TransformerFactory;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.accounting.AccountingSwiftlet;
 import com.swiftmq.swiftlet.auth.AuthenticationSwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
@@ -41,7 +40,6 @@ public class SwiftletContext {
     public Configuration config = null;
     public Entity root = null;
     public EntityList usageList = null;
-    public AccountingSwiftlet accountingSwiftlet = null;
     public AuthenticationSwiftlet authSwiftlet = null;
     public ThreadpoolSwiftlet threadpoolSwiftlet = null;
     public TimerSwiftlet timerSwiftlet = null;
@@ -70,7 +68,6 @@ public class SwiftletContext {
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
         protSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
-        accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
         authSwiftlet = (AuthenticationSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$authentication");
         timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
         mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");

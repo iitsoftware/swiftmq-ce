@@ -21,7 +21,6 @@ import com.swiftmq.mgmt.Configuration;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.accounting.AccountingSwiftlet;
 import com.swiftmq.swiftlet.auth.AuthenticationSwiftlet;
 import com.swiftmq.swiftlet.jndi.JNDISwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
@@ -34,6 +33,7 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.util.SwiftUtilities;
 
 import java.io.File;
 
@@ -42,7 +42,6 @@ public class SwiftletContext {
     public Entity root = null;
     public EntityList usageList = null;
     public AuthenticationSwiftlet authenticationSwiftlet = null;
-    public AccountingSwiftlet accountingSwiftlet = null;
     public ThreadpoolSwiftlet threadpoolSwiftlet = null;
     public TimerSwiftlet timerSwiftlet = null;
     public QueueManager queueManager = null;
@@ -55,7 +54,8 @@ public class SwiftletContext {
     public TraceSwiftlet traceSwiftlet = null;
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
-    public String streamLibDir = "../data/streamlib";
+    public String streamLibDir = SwiftUtilities.addWorkingDir("../data/streamlib");
+    public boolean ISGRAAL = false;
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
@@ -63,13 +63,12 @@ public class SwiftletContext {
         root = config;
         usageList = (EntityList) root.getEntity("usage");
         if (root.getProperty("stream-lib-directory") != null)
-            streamLibDir = (String) root.getProperty("stream-lib-directory").getValue();
+            streamLibDir = SwiftUtilities.addWorkingDir((String) root.getProperty("stream-lib-directory").getValue());
         new File(streamLibDir).mkdirs();
         traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
         authenticationSwiftlet = (AuthenticationSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$authentication");
-        accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
         timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
         mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");
         schedulerSwiftlet = (SchedulerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$scheduler");
@@ -78,5 +77,12 @@ public class SwiftletContext {
         jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
         storeSwiftlet = (StoreSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$store");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        try {
+            org.graalvm.home.Version.getCurrent();
+            ISGRAAL = true;
+        } catch (Exception e) {
+            ISGRAAL = false; // Class is not found on other JDKs
+        }
+        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", runnung on GraalVM: " + ISGRAAL);
     }
 }

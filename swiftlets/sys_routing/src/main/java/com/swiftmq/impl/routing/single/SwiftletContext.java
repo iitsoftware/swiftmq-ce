@@ -27,7 +27,6 @@ import com.swiftmq.mgmt.PropertyChangeAdapter;
 import com.swiftmq.mgmt.PropertyChangeException;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.accounting.AccountingSwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.net.NetworkSwiftlet;
 import com.swiftmq.swiftlet.queue.QueueManager;
@@ -49,7 +48,6 @@ public class SwiftletContext {
     public XAResourceManagerSwiftlet xaResourceManagerSwiftlet = null;
     public RoutingSwiftletImpl routingSwiftlet = null;
     public SchedulerSwiftlet schedulerSwiftlet = null;
-    public AccountingSwiftlet accountingSwiftlet = null;
     public ConnectionManager connectionManager = null;
     public Entity root = null;
     public Entity usageList = null;
@@ -70,7 +68,6 @@ public class SwiftletContext {
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
         networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        accountingSwiftlet = (AccountingSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$accounting");
         queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
         xaResourceManagerSwiftlet = (XAResourceManagerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$xa");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);

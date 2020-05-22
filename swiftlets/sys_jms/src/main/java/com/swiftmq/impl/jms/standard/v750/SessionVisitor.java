@@ -32,13 +32,4 @@ public class SessionVisitor extends SMQPVisitorAdapter {
 
     public void visitGenericRequest(GenericRequest request) {
     }
-
-    public void visit(SessionStartAccounting startAccounting) {
-    }
-
-    public void visit(SessionFlushAccounting flushAccounting) {
-    }
-
-    public void visit(SessionStopAccounting stopAccounting) {
-    }
 }

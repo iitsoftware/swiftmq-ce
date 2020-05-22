@@ -21,7 +21,6 @@ import com.swiftmq.auth.ChallengeResponseFactory;
 import com.swiftmq.impl.jms.standard.JMSSwiftlet;
 import com.swiftmq.impl.jms.standard.SwiftletContext;
 import com.swiftmq.impl.jms.standard.VersionedJMSConnection;
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
 import com.swiftmq.jms.smqp.v750.*;
 import com.swiftmq.jms.v750.ConnectionMetaDataImpl;
 import com.swiftmq.mgmt.Entity;
@@ -74,7 +73,6 @@ public class JMSConnection
     long keepAliveInterval = 0;
     boolean smartTree = false;
     ConnectionQueue connectionQueue = null;
-    AccountingProfile accountingProfile = null;
     int nSessions = 0;
 
     public JMSConnection(SwiftletContext ctx, Entity connectionEntity, Connection connection) {
@@ -112,9 +110,6 @@ public class JMSConnection
             ctx.timerSwiftlet.addTimerListener(keepAliveInterval, inboundReader);
             ctx.timerSwiftlet.addTimerListener(keepAliveInterval, outboundWriter);
         }
-        AccountingProfile ap = ctx.jmsSwiftlet.getAccountingProfile();
-        if (ap != null)
-            serviceRequest(new StartAccounting(ap));
     }
 
     public String getClientId() {
@@ -139,19 +134,6 @@ public class JMSConnection
 
     public void collect(long lastCollectTime) {
         connectionQueue.enqueue(new CollectRequest(lastCollectTime));
-    }
-
-    public void startAccounting(AccountingProfile accountingProfile) {
-        serviceRequest(new StartAccounting(accountingProfile));
-    }
-
-    public void flushAccounting() {
-        if (accountingProfile != null)
-            serviceRequest(new FlushAccounting());
-    }
-
-    public void stopAccounting() {
-        serviceRequest(new StopAccounting());
     }
 
     public boolean isClosed() {
@@ -259,8 +241,6 @@ public class JMSConnection
                 }
                 session.setMyConnection(JMSConnection.this);
                 inboundReader.addRequestService(session);
-                if (accountingProfile != null)
-                    session.serviceRequest(new SessionStartAccounting(accountingProfile));
                 reply.setOk(true);
                 reply.setSessionDispatchId(sessionDispatchId);
                 nSessions++;
@@ -550,63 +530,6 @@ public class JMSConnection
                     sentTotalProp.setValue(new Integer(totalSent));
             } catch (Exception e) {
             }
-        }
-
-        public void visit(StartAccounting startAccounting) {
-            if (closed)
-                return;
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$jms", tracePrefix + "/start accounting: " + startAccounting);
-            if (accountingProfile != null) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace("sys$jms", tracePrefix + "/start accounting, accountingProfile already active: " + accountingProfile);
-                return;
-            }
-            accountingProfile = startAccounting.getAccountingProfile();
-            if (accountingProfile.isMatchUserName(userName) &&
-                    accountingProfile.isMatchClientId(clientId) &&
-                    accountingProfile.isMatchHostName(remoteHostname)) {
-                for (int i = 1; i < inboundReader.getNumberServices(); i++) {
-                    Session session = (Session) inboundReader.getRequestService(i);
-                    if (session != null)
-                        session.serviceRequest(new SessionStartAccounting(accountingProfile));
-                }
-
-            } else {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace("sys$jms", tracePrefix + "/start accounting, NO MATCH, userName=" + userName + ", clientId=" + clientId + ", remoteHostname=" + remoteHostname);
-                accountingProfile = null;
-            }
-
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/start accounting DONE.");
-        }
-
-        public void visit(FlushAccounting flushAccounting) {
-            if (closed || accountingProfile == null)
-                return;
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$jms", tracePrefix + "/flush accounting: " + flushAccounting);
-            for (int i = 1; i < inboundReader.getNumberServices(); i++) {
-                Session session = (Session) inboundReader.getRequestService(i);
-                if (session != null)
-                    session.serviceRequest(new SessionFlushAccounting());
-            }
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/flush accounting DONE.");
-        }
-
-        public void visit(StopAccounting stopAccounting) {
-            if (closed)
-                return;
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/stop accounting ...");
-            if (accountingProfile != null) {
-                for (int i = 1; i < inboundReader.getNumberServices(); i++) {
-                    Session session = (Session) inboundReader.getRequestService(i);
-                    if (session != null)
-                        session.serviceRequest(new SessionStopAccounting());
-                }
-                accountingProfile = null;
-            }
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/stop accounting DONE.");
         }
     }
 

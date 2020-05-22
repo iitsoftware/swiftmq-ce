@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.jms.smqp.v750.CloseSessionRequest;
 import com.swiftmq.jms.smqp.v750.MessageDeliveredRequest;
 import com.swiftmq.jms.smqp.v750.StartConsumerRequest;
@@ -55,8 +52,6 @@ public abstract class Session extends SessionVisitor
     protected boolean recoveryInProgress = false;
     protected boolean closed = false;
     protected JMSConnection myConnection = null;
-    protected AccountingProfile accountingProfile = null;
-    protected DestinationCollectorCache collectorCache = null;
 
     public Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
         this.dispatchId = dispatchId;
@@ -187,11 +182,8 @@ public abstract class Session extends SessionVisitor
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest, isCountDeliveredDequests()=" + isCountDeliveredRequests());
                 if (isCountDeliveredRequests()) {
-                    DestinationCollector collector = consumer.getCollector();
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest, comnsumer=" + consumer + ", collector=" + collector + ", size=" + size);
-                    if (collector != null)
-                        collector.incTx(1, size);
+                        ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest, comnsumer=" + consumer + ", size=" + size);
                 }
             }
         } catch (Exception e) {
@@ -215,62 +207,7 @@ public abstract class Session extends SessionVisitor
         ctx.sessionQueue.enqueue(request);
     }
 
-    public void visit(SessionStartAccounting request) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitSessionStartAccounting...");
-        accountingProfile = request.getAccountingProfile();
-        collectorCache = new DestinationCollectorCache(ctx.traceSpace, ctx.tracePrefix);
-        for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
-            if (consumer != null) {
-                consumer.createCollector(accountingProfile, collectorCache);
-            }
-        }
-        for (int i = 0; i < producerList.size(); i++) {
-            Producer producer = (Producer) producerList.get(i);
-            if (producer != null) {
-                producer.createCollector(accountingProfile, collectorCache);
-            }
-        }
-    }
-
-    public void visit(SessionFlushAccounting request) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitSessionFlushAccounting...");
-        if (accountingProfile != null && collectorCache != null)
-            collectorCache.flush(accountingProfile.getSource(), myConnection.getUserName(), myConnection.getClientId(), myConnection.getRemoteHostname(), "750");
-    }
-
-    public void visit(SessionStopAccounting request) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitSessionStopAccounting...");
-        if (accountingProfile != null && collectorCache != null) {
-            collectorCache.flush(accountingProfile.getSource(), myConnection.getUserName(), myConnection.getClientId(), myConnection.getRemoteHostname(), "750");
-            collectorCache.clear();
-        }
-        for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
-            if (consumer != null) {
-                consumer.removeCollector();
-            }
-        }
-        for (int i = 0; i < producerList.size(); i++) {
-            Producer producer = (Producer) producerList.get(i);
-            if (producer != null) {
-                producer.removeCollector();
-            }
-        }
-        accountingProfile = null;
-        collectorCache = null;
-    }
-
     protected void close() {
-        if (accountingProfile != null && collectorCache != null) {
-            collectorCache.flush(accountingProfile.getSource(), myConnection.getUserName(), myConnection.getClientId(), myConnection.getRemoteHostname(), "750");
-            collectorCache.clear();
-        }
-        accountingProfile = null;
-        collectorCache = null;
-
         closed = true;
         ctx.sessionQueue.stopQueue();
 
@@ -278,7 +215,6 @@ public abstract class Session extends SessionVisitor
             Consumer consumer = (Consumer) consumerList.get(i);
             if (consumer != null) {
                 try {
-                    consumer.removeCollector();
                     consumer.close();
                 } catch (Exception e) {
                 }
@@ -289,7 +225,6 @@ public abstract class Session extends SessionVisitor
             Producer producer = (Producer) producerList.get(i);
             if (producer != null) {
                 try {
-                    producer.removeCollector();
                     producer.close();
                 } catch (Exception e) {
                 }

@@ -21,9 +21,9 @@
 var inputQueue = parameters.optional("input-queue", "streams_scheduler_input");
 var storeQueue = parameters.optional("store-queue", "streams_scheduler_store");
 var delayFormat = parameters.optional("delay-format", "dd.MM.yyyy HH:mm:ss");
-var interval = parameters.optional("interval", "10");
-var purgeInterval = parameters.optional("purge-interval", "2");
-var maxBatchSize = parameters.optional("max-batch-size", "10000");
+var interval = typeconvert.toInteger(parameters.optional("interval", "10"));
+var purgeInterval = typeconvert.toInteger(parameters.optional("purge-interval", "2"));
+var maxBatchSize = typeconvert.toInteger(parameters.optional("max-batch-size", "10000"));
 
 // Create input & store queue if not exists
 stream.cli().execute("cc /sys$queuemanager/queues")

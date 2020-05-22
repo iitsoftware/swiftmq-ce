@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
 import com.swiftmq.jms.smqp.v750.*;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
@@ -141,11 +140,6 @@ public class NontransactedSession extends Session {
                 Long size = (Long) getResult();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success + ", size=" + size);
-                if (size != null) {
-                    DestinationCollector collector = consumer.getCollector();
-                    if (collector != null)
-                        collector.incTotal(1, size.longValue());
-                }
             } else {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/SingleAckCallback, success=" + success + ", exception=" + getException());
@@ -194,11 +188,6 @@ public class NontransactedSession extends Session {
                 Long size = (Long) getResult();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/MultiAckCallback, success=" + success + ", nMsgs=" + nMsgs + ", size=" + size);
-                if (size != null) {
-                    DestinationCollector collector = consumer.getCollector();
-                    if (collector != null)
-                        collector.incTotal(nMsgs, size.longValue());
-                }
             }
             join.done(this, success);
         }

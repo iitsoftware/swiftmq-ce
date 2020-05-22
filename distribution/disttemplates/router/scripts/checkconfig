@@ -2,11 +2,18 @@
 if [[ ! -d /swiftmq/data/config ]]; then
    mkdir /swiftmq/data/config
 fi
+if [[ ! -d /swiftmq/data/preconfig ]]; then
+   mkdir /swiftmq/data/preconfig
+fi
+cp /swiftmq/initialpreconfig/* /swiftmq/data/preconfig/.
 if [[ ! -e /swiftmq/data/config/routerconfig.xml ]]; then
    cp /swiftmq/initialconfig/routerconfig.xml /swiftmq/data/config/.
 fi
 if [[ ! -e /swiftmq/data/deploy ]]; then
    mkdir /swiftmq/data/deploy
+fi
+if [[ ! -e /swiftmq/data/log ]]; then
+   mkdir /swiftmq/data/log
 fi
 
 PWD=`pwd`
@@ -16,5 +23,4 @@ for D in */; do
         cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/. >/dev/null 2>&1
     fi
 done
-cd ${PWD}
-keytool -importkeystore -srckeystore $JAVA_HOME/lib/security/cacerts -srcstorepass changeit -destkeystore /swiftmq/certs/client.truststore -deststorepass secret
+cd /swiftmq/scripts

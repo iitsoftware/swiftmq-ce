@@ -1,14 +1,30 @@
 #!/bin/bash
+JAVAHOME=`java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome`
+ISJAVA8=`java -cp ../jars/swiftmq.jar com.swiftmq.IsJava8`
 OPENS=""
-
+PRECONFIG="-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml"
+if [ $ISJAVA8 = "false" ]
+then
+  OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
+fi
 if [ "$1" = "java9" ]
 then
-  OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-exports=java.desktop/com.sun.awt=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
+  echo "Please do not use 'java9' as parameter anymore."
   shift
 fi
-if [ ! "$1" = "none" ]
+if [ "$1" != "" ]
 then
-  PRECONFIG="-Dswiftmq.preconfig=$1"
+  PRECONFIG="$PRECONFIG,$1"
   shift
 fi
-exec java -server -Xmx1024M $OPENS $PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
+ROUTEROPT="$OPENS $PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret"
+
+if [[ ! -e ../certs/.certimported ]]; then
+   CACERTS="$JAVAHOME/lib/security/cacerts"
+   echo "Import keystore: $CACERTS"
+   keytool -importkeystore -srckeystore $CACERTS -srcstorepass changeit -destkeystore ../certs/client.truststore -deststorepass secret  >/dev/null 2>/dev/null
+   touch ../certs/.certimported
+fi
+
+echo "Starting SwiftMQ. Please have a look at data/log/stdout.log ..."
+exec java -server -Xmx2G  $ROUTEROPT -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log

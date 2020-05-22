@@ -31,12 +31,6 @@ public interface AMQPSessionVisitor extends POVisitor {
 
     public void visit(POSessionCollect po);
 
-    public void visit(POSessionStartAccounting po);
-
-    public void visit(POSessionStopAccounting po);
-
-    public void visit(POSessionFlushAccounting po);
-
     public void visit(POSendEnd po);
 
     public void visit(POCloseSession po);

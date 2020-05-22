@@ -22,9 +22,6 @@ import com.swiftmq.amqp.v100.generated.messaging.message_format.AddressIF;
 import com.swiftmq.amqp.v100.generated.messaging.message_format.AddressString;
 import com.swiftmq.amqp.v100.generated.messaging.message_format.AddressVisitor;
 import com.swiftmq.impl.amqp.SwiftletContext;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
-import com.swiftmq.impl.amqp.accounting.DestinationCollector;
-import com.swiftmq.impl.amqp.accounting.DestinationCollectorCache;
 import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.mgmt.Entity;
@@ -143,12 +140,6 @@ public abstract class ServerLink {
     public void setWaitingPO(POObject waitingPO) {
         this.waitingPO = waitingPO;
     }
-
-    public abstract void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache);
-
-    public abstract void removeCollector();
-
-    public abstract DestinationCollector getCollector();
 
     public void verifyLocalAddress() throws AuthenticationException, QueueException, TopicException, InvalidSelectorException {
         if (localAddress == null)

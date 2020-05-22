@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2020 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,22 +15,10 @@
  *
  */
 
-package com.swiftmq.impl.amqp.amqp.v01_00_00.po;
+package com.swiftmq;
 
-import com.swiftmq.impl.amqp.amqp.v01_00_00.AMQPConnectionVisitor;
-import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.POVisitor;
-
-public class POConnectionStopAccounting extends POObject {
-    public POConnectionStopAccounting() {
-        super(null, null);
-    }
-
-    public void accept(POVisitor visitor) {
-        ((AMQPConnectionVisitor) visitor).visit(this);
-    }
-
-    public String toString() {
-        return "[POConnectionStopAccounting]";
+public class JavaHome {
+    public static void main(String[] args) {
+        System.out.print(System.getProperty("java.home"));
     }
 }

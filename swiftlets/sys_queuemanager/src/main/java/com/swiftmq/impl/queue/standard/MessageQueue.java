@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.queue.standard;
 
-import com.swiftmq.impl.queue.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.queue.standard.accounting.QueueCollector;
-import com.swiftmq.impl.queue.standard.accounting.QueueManagerSource;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.XidImpl;
 import com.swiftmq.mgmt.Entity;
@@ -66,11 +63,6 @@ public class MessageQueue extends AbstractQueue {
     protected int duplicateDetectionBacklogSize = 500;
     protected ListSet duplicateBacklog = new ListSet(500);
     private ListRecycler recycler = new ListRecycler(20);
-    AccountingProfile accountingProfile = null;
-    QueueCollector pConsumeCollector = null;
-    QueueCollector pProduceCollector = null;
-    QueueCollector npConsumeCollector = null;
-    QueueCollector npProduceCollector = null;
     int totalConsumed = 0;
     int totalProduced = 0;
     int consumed = 0;
@@ -102,72 +94,6 @@ public class MessageQueue extends AbstractQueue {
         queueLock.lock();
         while (asyncActive)
             asyncFinished.awaitUninterruptibly();
-    }
-
-    private void createCollectors() {
-        if (pStore != null) {
-            pConsumeCollector = new QueueCollector(getQueueName(), QueueCollector.DMODE_PERSISTENT, QueueCollector.ATYPE_CONSUME);
-            pProduceCollector = new QueueCollector(getQueueName(), QueueCollector.DMODE_PERSISTENT, QueueCollector.ATYPE_PRODUCE);
-        }
-        if (nStore != null) {
-            npConsumeCollector = new QueueCollector(getQueueName(), QueueCollector.DMODE_NON_PERSISTENT, QueueCollector.ATYPE_CONSUME);
-            npProduceCollector = new QueueCollector(getQueueName(), QueueCollector.DMODE_NON_PERSISTENT, QueueCollector.ATYPE_PRODUCE);
-        }
-    }
-
-    public boolean isAccounting() {
-        return accountingProfile != null;
-    }
-
-    public void startAccounting(Object accountingProfile) {
-        lockAndWaitAsyncFinished();
-        try {
-            if (this.accountingProfile == null) {
-                if (ctx.queueSpace.enabled)
-                    ctx.queueSpace.trace(getQueueName(), "startAccounting, accountingProfile=" + accountingProfile);
-                createCollectors();
-                this.accountingProfile = (AccountingProfile) accountingProfile;
-            }
-        } finally {
-            queueLock.unlock();
-        }
-    }
-
-    public void flushAccounting() {
-        lockAndWaitAsyncFinished();
-        try {
-            if (accountingProfile != null) {
-                if (ctx.queueSpace.enabled)
-                    ctx.queueSpace.trace(getQueueName(), "flushAccounting");
-                QueueManagerSource source = accountingProfile.getSource();
-                if (pConsumeCollector != null && pConsumeCollector.isDirty())
-                    source.send(pConsumeCollector);
-                if (npConsumeCollector != null && npConsumeCollector.isDirty())
-                    source.send(npConsumeCollector);
-                if (pProduceCollector != null && pProduceCollector.isDirty())
-                    source.send(pProduceCollector);
-                if (npProduceCollector != null && npProduceCollector.isDirty())
-                    source.send(npProduceCollector);
-            }
-        } finally {
-            queueLock.unlock();
-        }
-    }
-
-    public void stopAccounting() {
-        lockAndWaitAsyncFinished();
-        try {
-            if (ctx.queueSpace.enabled)
-                ctx.queueSpace.trace(getQueueName(), "stopAccounting");
-            flushAccounting();
-            accountingProfile = null;
-            pConsumeCollector = null;
-            npConsumeCollector = null;
-            pProduceCollector = null;
-            npProduceCollector = null;
-        } finally {
-            queueLock.unlock();
-        }
     }
 
     @Override
@@ -516,12 +442,6 @@ public class MessageQueue extends AbstractQueue {
         if (views != null) {
             insertIntoViews(storeId, message);
         }
-        if (pProduceCollector != null) {
-            if (storeId.isPersistent())
-                pProduceCollector.incTotal(1, storeId.getMsgSize());
-            else
-                npProduceCollector.incTotal(1, storeId.getMsgSize());
-        }
         produced++;
         if (produced == Integer.MAX_VALUE)
             produced = 0;
@@ -584,12 +504,6 @@ public class MessageQueue extends AbstractQueue {
     }
 
     private void incrementConsumeCount(StoreId storeId) {
-        if (pConsumeCollector != null) {
-            if (storeId.isPersistent())
-                pConsumeCollector.incTotal(1, storeId.getMsgSize());
-            else
-                npConsumeCollector.incTotal(1, storeId.getMsgSize());
-        }
         consumed++;
         if (consumed == Integer.MAX_VALUE)
             consumed = 0;
@@ -727,11 +641,6 @@ public class MessageQueue extends AbstractQueue {
                 if (ctx.queueSpace.enabled)
                     ctx.queueSpace.trace(getQueueName(), "Queue has " + queueContent.size() + " entries");
                 running = true;
-                AccountingProfile ap = ctx.queueManager.getAccountingProfile();
-                if (ap != null && ap.isMatchQueueName(getQueueName())) {
-                    accountingProfile = ap;
-                    createCollectors();
-                }
                 lastConsumedTimestamp = System.currentTimeMillis();
                 lastProducedTimestamp = lastConsumedTimestamp;
             } catch (Exception e) {
@@ -751,10 +660,8 @@ public class MessageQueue extends AbstractQueue {
             if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "stopQueue ...");
             if (!running)
                 throw new QueueException("queue " + getQueueName() + " is not running");
-            if (accountingProfile != null)
-                stopAccounting();
-            running = false;
 
+            running = false;
             wireTaps.clear();
             removeWatchListeners();
 
@@ -981,12 +888,6 @@ public class MessageQueue extends AbstractQueue {
                             StoreId storeId = (StoreId) preparedList.get(i);
                             storeId.setLocked(false);
                             if (type == TransactionId.PULL_TRANSACTION) {
-                                if (pConsumeCollector != null) {
-                                    if (storeId.isPersistent())
-                                        pConsumeCollector.incTotal(1, storeId.getMsgSize());
-                                    else
-                                        npConsumeCollector.incTotal(1, storeId.getMsgSize());
-                                }
                                 queueContent.remove(storeId);
                                 if (views != null)
                                     removeFromViews(storeId);

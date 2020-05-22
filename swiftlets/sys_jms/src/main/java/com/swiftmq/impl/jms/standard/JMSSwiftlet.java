@@ -18,8 +18,6 @@
 package com.swiftmq.impl.jms.standard;
 
 import com.swiftmq.auth.ChallengeResponseFactory;
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.JMSSourceFactory;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.Swiftlet;
 import com.swiftmq.swiftlet.SwiftletException;
@@ -53,8 +51,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
     boolean collectOn = false;
     long collectInterval = -1;
     long lastCollect = System.currentTimeMillis();
-    JMSSourceFactory sourceFactory = null;
-    AccountingProfile accountingProfile = null;
     Semaphore shutdownSem = null;
     boolean allowSameClientId = false;
 
@@ -93,42 +89,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction done");
     }
 
-    public synchronized AccountingProfile getAccountingProfile() {
-        return accountingProfile;
-    }
 
-    public void setAccountingProfile(AccountingProfile accountingProfile) {
-        synchronized (this) {
-            this.accountingProfile = accountingProfile;
-        }
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionSelector vs = (VersionSelector) c[i].getUserObject();
-            if (vs != null) {
-                VersionedJMSConnection jmsc = vs.getJmsConnection();
-                if (jmsc != null) {
-                    if (accountingProfile != null)
-                        jmsc.startAccounting(accountingProfile);
-                    else
-                        jmsc.stopAccounting();
-                }
-            }
-        }
-
-    }
-
-    public void flushAccounting() {
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionSelector vs = (VersionSelector) c[i].getUserObject();
-            if (vs != null) {
-                VersionedJMSConnection jmsc = vs.getJmsConnection();
-                if (jmsc != null)
-                    jmsc.flushAccounting();
-            }
-        }
-
-    }
 
     public ChallengeResponseFactory getChallengeResponseFactory() {
         return challengeResponseFactory;
@@ -991,8 +952,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
             }
         });
 
-        sourceFactory = new JMSSourceFactory(ctx);
-        ctx.accountingSwiftlet.addAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName(), sourceFactory);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup: done");
     }
 
@@ -1009,7 +968,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: stopping listener ...");
 
-        ctx.accountingSwiftlet.removeAccountingSourceFactory(sourceFactory.getGroup(), sourceFactory.getName());
         ctx.jndiSwiftlet.deregisterJNDIObjects(new CFComparable(INTRAVM_LISTENER));
         ctx.networkSwiftlet.removeIntraVMListener(intraVMMetaData);
 

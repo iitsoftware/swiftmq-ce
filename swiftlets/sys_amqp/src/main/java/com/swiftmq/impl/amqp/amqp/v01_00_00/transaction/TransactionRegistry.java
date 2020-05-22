@@ -26,7 +26,6 @@ import com.swiftmq.amqp.v100.generated.transport.definitions.AmqpError;
 import com.swiftmq.amqp.v100.generated.transport.performatives.DispositionFrame;
 import com.swiftmq.amqp.v100.types.AMQPString;
 import com.swiftmq.impl.amqp.SwiftletContext;
-import com.swiftmq.impl.amqp.accounting.DestinationCollector;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.*;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.swiftlet.queue.MessageIndex;
@@ -112,9 +111,6 @@ public class TransactionRegistry {
             ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/addToTransaction, txnId=" + txnId + ", linkName=" + linkName + ", messageIndex=" + messageIndex);
         lock.lock();
         try {
-            DestinationCollector collector = sourceLink.getCollector();
-            if (collector != null)
-                collector.incTx(txnId, 1, size);
             ActiveTxEntry activeTxEntry = (ActiveTxEntry) activeTx.get(txnId);
             if (activeTxEntry == null) {
                 if (ctx.traceSpace.enabled)
@@ -199,13 +195,6 @@ public class TransactionRegistry {
                         inboundTxEntry.tx.rollback();
                     else
                         inboundTxEntry.tx.commit();
-                    DestinationCollector collector = inboundTxEntry.targetLink.getCollector();
-                    if (collector != null) {
-                        if (rollback)
-                            collector.abort(txnId);
-                        else
-                            collector.commit(txnId);
-                    }
                     inboundTxEntry.targetLink.setFlowcontrolDelay(inboundTxEntry.tx.getFlowControlDelay());
                     inboundTxEntry.targetLink.decreaseActiveTransactions();
                     inboundTxEntry.targetLink.closeResource();
@@ -227,15 +216,6 @@ public class TransactionRegistry {
                     if (outboundTxEntry.sourceLink != null) {
                         outboundTxEntry.sourceLink.decreaseActiveTransactions();
                         outboundTxEntry.sourceLink.closeResource();
-                    }
-                    if (outboundTxEntry.sourceLink != null) {
-                        DestinationCollector collector = outboundTxEntry.sourceLink.getCollector();
-                        if (collector != null) {
-                            if (rollback)
-                                collector.abort(txnId);
-                            else
-                                collector.commit(txnId);
-                        }
                     }
                 }
                 activeTxEntry.outboundTxEntryMap.clear();

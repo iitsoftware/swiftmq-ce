@@ -17,9 +17,6 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.accounting.AccountingProfile;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollector;
-import com.swiftmq.impl.jms.standard.accounting.DestinationCollectorCache;
 import com.swiftmq.jms.DestinationFactory;
 import com.swiftmq.jms.TopicImpl;
 
@@ -37,11 +34,6 @@ public class TopicProducer extends Producer {
         String queueName = topic.getQueueName();
         setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
-    }
-
-    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
-        if (accountingProfile.isMatchTopicName(topicName))
-            collector = cache.getDestinationCollector(topicName, DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_PRODUCER);
     }
 
     public String toString() {

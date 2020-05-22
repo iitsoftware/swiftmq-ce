@@ -18,6 +18,7 @@
 package com.swiftmq.impl.streams;
 
 import com.swiftmq.impl.streams.comp.message.MessageBuilder;
+import com.swiftmq.impl.streams.graalvm.GraalSetup;
 import com.swiftmq.impl.streams.processor.StreamProcessor;
 import com.swiftmq.impl.streams.processor.po.POClose;
 import com.swiftmq.impl.streams.processor.po.POCollect;
@@ -26,6 +27,7 @@ import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.deploy.ExtendableClassLoader;
+import com.swiftmq.util.SwiftUtilities;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -70,7 +72,12 @@ public class StreamController {
     private ClassLoader createClassLoader() {
         File libDir = new File(ctx.streamLibDir + File.separatorChar + fqn);
         if (libDir.exists()) {
-            File[] libs = libDir.listFiles();
+            File[] libs = libDir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".jar");
+                }
+            });
             if (libs != null) {
                 URL[] urls = new URL[libs.length];
                 try {
@@ -94,7 +101,8 @@ public class StreamController {
                 throw new Exception("Script '" + name + "' not found in Stream Repository!");
             reader = new StringReader(script);
         } else {
-            File file = new File(name);
+
+            File file = new File(SwiftUtilities.addWorkingDir(name));
             if (!file.exists())
                 throw new FileNotFoundException("Script file '" + name + "' not found!");
             reader = new FileReader(file);
@@ -105,8 +113,13 @@ public class StreamController {
     private void evalScript() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript ...");
         ScriptEngineManager manager = new ScriptEngineManager();
-        Thread.currentThread().setContextClassLoader(createClassLoader());
-        ScriptEngine engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
+        ClassLoader classLoader = createClassLoader();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        ScriptEngine engine = null;
+        if (ctx.ISGRAAL)
+            engine = GraalSetup.engine(classLoader);
+        else
+            engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
         if (engine == null)
             throw new Exception("Engine for script-language '" + entity.getProperty("script-language").getValue() + "' not found!");
         ScriptContext newContext = new SimpleScriptContext();
@@ -117,6 +130,7 @@ public class StreamController {
         streamContext.engineScope.put("os", new OsSupport());
         streamContext.engineScope.put("repository", repositorySupport);
         streamContext.engineScope.put("transform", new ContentTransformer());
+        streamContext.engineScope.put("typeconvert", new TypeConverter());
         newContext.setBindings(streamContext.engineScope, ScriptContext.ENGINE_SCOPE);
 
         engine.eval(loadScript((String) entity.getProperty("script-file").getValue()), newContext);
@@ -145,8 +159,8 @@ public class StreamController {
             Semaphore sem = new Semaphore();
             POStart po = new POStart(sem);
             streamContext.streamProcessor.dispatch(po);
-            sem.waitHere();
-            if (!po.isSuccess())
+            sem.waitHere(5000);
+            if (sem.isNotified() && !po.isSuccess())
                 throw new Exception(po.getException());
             started = true;
         } catch (Exception e) {
@@ -170,7 +184,7 @@ public class StreamController {
         started = false;
         Semaphore sem = new Semaphore();
         streamContext.streamProcessor.dispatch(new POClose(sem));
-        sem.waitHere();
+        sem.waitHere(5000);
         try {
             ctx.usageList.removeEntity(streamContext.usage);
         } catch (EntityRemoveException e) {

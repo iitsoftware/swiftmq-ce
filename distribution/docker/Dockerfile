@@ -1,13 +1,14 @@
-FROM openjdk:8-jre-alpine
-RUN apk update && apk add bash
+FROM openjdk:11-slim
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
 RUN mkdir /swiftmq/preconfig
 RUN mkdir /swiftmq/initialconfig
+RUN mkdir /swiftmq/initialpreconfig
 COPY /swiftmq/data/config/routerconfig.xml /swiftmq/initialconfig/.
-WORKDIR /swiftmq/scripts
+COPY /swiftmq/data/preconfig/* /swiftmq/initialpreconfig/.
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
-ENV SWIFTMQ_PRECONFIG none
-CMD ./checkconfig && exec ./router $SWIFTMQ_PRECONFIG $SWIFTMQ_INITIAL_CONFIG
+WORKDIR /swiftmq/scripts
+CMD ./checkconfig && exec ./router $SWIFTMQ_PRECONFIG
+
 

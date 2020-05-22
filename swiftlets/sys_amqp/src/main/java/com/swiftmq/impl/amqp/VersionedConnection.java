@@ -20,7 +20,6 @@ package com.swiftmq.impl.amqp;
 import com.swiftmq.amqp.OutboundHandler;
 import com.swiftmq.amqp.ProtocolHeader;
 import com.swiftmq.amqp.Writable;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
 import com.swiftmq.impl.amqp.amqp.v00_09_01.AMQPHandlerFactory;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.net.protocol.amqp.AMQPInputHandler;
@@ -53,7 +52,6 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
     volatile AMQPInputHandler protHandler = null;
     volatile Handler delegate = null;
     volatile ActiveLogin activeLogin = null;
-    volatile AccountingProfile accountingProfile = null;
     boolean closed = false;
 
     public VersionedConnection(SwiftletContext ctx, Connection connection, Entity usage, boolean requiresSasl, Entity connectionTemplate) {
@@ -64,9 +62,6 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
         this.connectionTemplate = connectionTemplate;
         outboundQueue = new OutboundQueue(ctx, ctx.threadpoolSwiftlet.getPool(TP_CONNECTIONSVC), this);
         outboundQueue.startQueue();
-        AccountingProfile ap = ctx.amqpSwiftlet.getAccountingProfile();
-        if (ap != null)
-            startAccounting(ap);
     }
 
     public Entity getUsage() {
@@ -97,26 +92,6 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
         Handler handler = delegate;
         if (handler != null)
             handler.collect(lastCollect);
-    }
-
-    public void startAccounting(AccountingProfile accountingProfile) {
-        this.accountingProfile = accountingProfile;
-        Handler handler = delegate;
-        if (handler != null)
-            handler.startAccounting(accountingProfile);
-
-    }
-
-    public void flushAccounting() {
-        Handler handler = delegate;
-        if (handler != null)
-            handler.flushAccounting();
-    }
-
-    public void stopAccounting() {
-        Handler handler = delegate;
-        if (handler != null)
-            handler.stopAccounting();
     }
 
     public synchronized void registerSaslHandlerFactory(ProtocolHeader header, HandlerFactory factory) {
@@ -243,9 +218,6 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
                         }
                     }
                 }
-                AccountingProfile ap = accountingProfile;
-                if (ap != null && delegate != null && valid)
-                    delegate.startAccounting(ap);
             } catch (Exception e) {
                 ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
             }

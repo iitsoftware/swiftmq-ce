@@ -29,9 +29,6 @@ import com.swiftmq.amqp.v100.generated.transactions.coordination.TxnIdIF;
 import com.swiftmq.amqp.v100.generated.transport.definitions.AmqpError;
 import com.swiftmq.amqp.v100.types.*;
 import com.swiftmq.impl.amqp.SwiftletContext;
-import com.swiftmq.impl.amqp.accounting.AccountingProfile;
-import com.swiftmq.impl.amqp.accounting.DestinationCollector;
-import com.swiftmq.impl.amqp.accounting.DestinationCollectorCache;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transaction.QueueReceiverProvider;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transaction.TransactionRegistry;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.OutboundTransformer;
@@ -84,7 +81,6 @@ public class SourceLink extends ServerLink
     Property propDrain = null;
     Property propNoLocal = null;
     Property propSelector = null;
-    DestinationCollector collector = null;
     Map remoteUnsettled = null;
 
     public SourceLink(SwiftletContext ctx, SessionHandler mySessionHandler, String name, int sndSettleMode) {
@@ -357,28 +353,6 @@ public class SourceLink extends ServerLink
         deliveryCountSnd += getLinkCredit();
     }
 
-    public void createCollector(AccountingProfile accountingProfile, DestinationCollectorCache cache) {
-        if (dynamic) {
-            if (accountingProfile.isMatchQueueName(queueName))
-                collector = cache.getDestinationCollector(queueName, DestinationCollector.DTYPE_QUEUE, DestinationCollector.ATYPE_CONSUMER);
-        } else {
-            if (isQueue) {
-                if (accountingProfile.isMatchQueueName(getLocalAddress().getValueString()))
-                    collector = cache.getDestinationCollector(localDestination.toString(), DestinationCollector.DTYPE_QUEUE, DestinationCollector.ATYPE_CONSUMER);
-            } else {
-                if (accountingProfile.isMatchTopicName(getLocalAddress().getValueString()))
-                    collector = cache.getDestinationCollector(localDestination.toString(), DestinationCollector.DTYPE_TOPIC, DestinationCollector.ATYPE_CONSUMER);
-            }
-        }
-    }
-
-    public void removeCollector() {
-        collector = null;
-    }
-
-    public DestinationCollector getCollector() {
-        return collector;
-    }
 
     public void verifyLocalAddress() throws AuthenticationException, QueueException, TopicException, InvalidSelectorException {
         if (!dynamic) {
@@ -508,8 +482,6 @@ public class SourceLink extends ServerLink
     }
 
     public void addUnsettled(long deliveryId, MessageIndex messageIndex, long size) {
-        if (collector != null && size > 0)
-            collector.incTx(messageIndex.toString(), 1, size);
         addUnsettled(deliveryId, messageIndex);
     }
 
@@ -534,8 +506,6 @@ public class SourceLink extends ServerLink
 
                 public void visit(Accepted accepted) {
                     try {
-                        if (collector != null)
-                            collector.commit(messageIndex.toString());
                         readTransaction.acknowledgeMessage(messageIndex);
                     } catch (QueueException e) {
                         exceptionHolder.endWithErrorException = new LinkEndException(SourceLink.this, AmqpError.INTERNAL_ERROR, new AMQPString(e.toString()));
@@ -544,8 +514,6 @@ public class SourceLink extends ServerLink
 
                 public void visit(Rejected rejected) {
                     try {
-                        if (collector != null)
-                            collector.abort(messageIndex.toString());
                         releaseMessage(messageIndex, true);
                     } catch (EndWithErrorException e) {
                         exceptionHolder.endWithErrorException = e;
@@ -554,8 +522,6 @@ public class SourceLink extends ServerLink
 
                 public void visit(Released released) {
                     try {
-                        if (collector != null)
-                            collector.abort(messageIndex.toString());
                         releaseMessage(messageIndex, true);
                     } catch (EndWithErrorException e) {
                         exceptionHolder.endWithErrorException = e;
@@ -564,8 +530,6 @@ public class SourceLink extends ServerLink
 
                 public void visit(Modified modified) {
                     try {
-                        if (collector != null)
-                            collector.abort(messageIndex.toString());
                         releaseMessage(messageIndex, modified.getDeliveryFailed() != null && modified.getDeliveryFailed().getValue());
                     } catch (EndWithErrorException e) {
                         exceptionHolder.endWithErrorException = e;
@@ -581,8 +545,6 @@ public class SourceLink extends ServerLink
                     outcomeIF.accept(new OutcomeVisitor() {
                         public void visit(Accepted accepted) {
                             try {
-                                if (collector != null)
-                                    collector.commit(messageIndex.toString());
                                 readTransaction.acknowledgeMessage(messageIndex);
                             } catch (QueueException e) {
                                 exceptionHolder.endWithErrorException = new LinkEndException(SourceLink.this, AmqpError.INTERNAL_ERROR, new AMQPString(e.toString()));
@@ -591,8 +553,6 @@ public class SourceLink extends ServerLink
 
                         public void visit(Rejected rejected) {
                             try {
-                                if (collector != null)
-                                    collector.abort(messageIndex.toString());
                                 releaseMessage(messageIndex, true);
                             } catch (EndWithErrorException e) {
                                 exceptionHolder.endWithErrorException = e;
@@ -601,8 +561,6 @@ public class SourceLink extends ServerLink
 
                         public void visit(Released released) {
                             try {
-                                if (collector != null)
-                                    collector.abort(messageIndex.toString());
                                 releaseMessage(messageIndex, true);
                             } catch (EndWithErrorException e) {
                                 exceptionHolder.endWithErrorException = e;
