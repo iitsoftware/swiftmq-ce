@@ -716,17 +716,6 @@ public class Stream {
     }
 
     /**
-     * Wraps a callback class by a proxy that executes on the stream's event loop. This is the only mode
-     * to avoid multi-threaded access in JS code. It works in Nashorn and GraalVM.
-     *
-     * @param callback callback
-     * @return wrapped callback
-     */
-    public Object async(Object callback) {
-        return AsyncProxy.newInstance(this, callback);
-    }
-
-    /**
      * Returns the last exception occurred on the stream
      *
      * @return last exception
