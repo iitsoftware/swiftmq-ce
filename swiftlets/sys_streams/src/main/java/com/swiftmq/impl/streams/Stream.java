@@ -702,7 +702,9 @@ public class Stream {
 
     /**
      * Executes a function callback in the Stream's event queue.
-     * This is the only method to execute asynchronous calls from libraries.
+     * This is one method to execute asynchronous calls from libraries. This does
+     * not work in GraalVM. Please use stream.async(...)
+     *
      *
      * @param functionCallback callback
      * @param context          optional context
@@ -711,6 +713,17 @@ public class Stream {
     public Stream executeCallback(FunctionCallback functionCallback, Object context) {
         ctx.streamProcessor.dispatch(new POFunctionCallback(null, functionCallback, context));
         return this;
+    }
+
+    /**
+     * Wraps a callback class by a proxy that executes on the stream's event loop. This is the only mode
+     * to avoid multi-threaded access in JS code. It works in Nashorn and GraalVM.
+     *
+     * @param callback callback
+     * @return wrapped callback
+     */
+    public Object async(Object callback) {
+        return AsyncProxy.newInstance(this, callback);
     }
 
     /**
