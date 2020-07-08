@@ -197,6 +197,24 @@ public class StreamProcessor implements POStreamVisitor {
     }
 
     @Override
+    public void visit(POExecute po) {
+        ctx.ctx.traceSpace.trace(ctx.ctx.streamsSwiftlet.getName(), toString() + "/visit, po=" + po + " ...");
+        po.setSuccess(true);
+
+        try {
+            po.getRunnable().run();
+            ctx.commitTransactions();
+        } catch (Exception e) {
+            handleException(po, e);
+        }
+        if (po.getSemaphore() != null)
+            po.getSemaphore().notifySingleWaiter();
+
+        if (ctx.ctx.traceSpace.enabled)
+            ctx.ctx.traceSpace.trace(ctx.ctx.streamsSwiftlet.getName(), toString() + "/visit, po=" + po + " done");
+    }
+
+    @Override
     public void visit(POCollect po) {
         if (ctx.ctx.traceSpace.enabled)
             ctx.ctx.traceSpace.trace(ctx.ctx.streamsSwiftlet.getName(), toString() + "/visit, po=" + po + " ...");

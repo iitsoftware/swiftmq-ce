@@ -716,6 +716,19 @@ public class Stream {
     }
 
     /**
+     * Wraps an async callback with a proxy that implements the interface given by the "interfaceClassName" and runs
+     * the callback on the Stream's event queue. This works on GraalVM and Nashorn.
+     *
+     * @param interfaceClassName Fully qualified class name of the interface to implement
+     * @param callback           Callback
+     * @return proxy object
+     * @throws Exception
+     */
+    public Object async(String interfaceClassName, Object callback) throws Exception {
+        return AsyncProxy.newInstance(this, interfaceClassName, callback);
+    }
+
+    /**
      * Returns the last exception occurred on the stream
      *
      * @return last exception
