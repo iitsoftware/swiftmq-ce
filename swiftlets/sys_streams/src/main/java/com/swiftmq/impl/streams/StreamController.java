@@ -114,6 +114,7 @@ public class StreamController {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript ...");
         ScriptEngineManager manager = new ScriptEngineManager();
         ClassLoader classLoader = createClassLoader();
+        streamContext.classLoader = classLoader;
         Thread.currentThread().setContextClassLoader(classLoader);
         ScriptEngine engine = null;
         if (ctx.ISGRAAL)
