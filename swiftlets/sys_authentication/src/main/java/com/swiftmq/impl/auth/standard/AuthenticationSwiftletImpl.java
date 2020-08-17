@@ -49,6 +49,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
     Map groups = Collections.synchronizedMap(new HashMap());
     Map users = Collections.synchronizedMap(new HashMap());
     boolean authenticationOff = true;
+    boolean passwordCheckOnly = false;
     String masterPassword = null;
     boolean useEncryption = false;
     List<AuthenticationDelegate> delegates = new GapList<AuthenticationDelegate>();
@@ -117,7 +118,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyQueueSenderSubscription(String queueName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff)
+        if (authenticationOff || passwordCheckOnly)
             return;
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -138,7 +139,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyQueueReceiverSubscription(String queueName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff)
+        if (authenticationOff || passwordCheckOnly)
             return;
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -159,7 +160,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyQueueBrowserCreation(String queueName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff)
+        if (authenticationOff || passwordCheckOnly)
             return;
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -180,7 +181,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyTopicSenderSubscription(String topicName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff)
+        if (authenticationOff || passwordCheckOnly)
             return;
         synchronized (delegates) {
             for (AuthenticationDelegate delegate : delegates) {
@@ -207,7 +208,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyTopicReceiverSubscription(String topicName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff)
+        if (authenticationOff || passwordCheckOnly)
             return;
         synchronized (delegates) {
             for (AuthenticationDelegate delegate : delegates) {
@@ -234,7 +235,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyTopicDurableSubscriberCreation(String topicName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff)
+        if (authenticationOff || passwordCheckOnly)
             return;
         synchronized (delegates) {
             for (AuthenticationDelegate delegate : delegates) {
@@ -838,6 +839,8 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
         Property authProp = config.getProperty("authentication-enabled");
         authenticationOff = !((Boolean) authProp.getValue()).booleanValue();
+        Property pwOnlyProp = config.getProperty("password-check-only");
+        passwordCheckOnly = !((Boolean) pwOnlyProp.getValue()).booleanValue();
         if (traceSpace.enabled)
             traceSpace.trace(getName(), "startup, authentication is " + (authenticationOff ? "OFF" : "ON"));
         authProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
