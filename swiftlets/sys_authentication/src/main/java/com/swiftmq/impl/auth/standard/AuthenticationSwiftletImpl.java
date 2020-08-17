@@ -840,7 +840,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
         Property authProp = config.getProperty("authentication-enabled");
         authenticationOff = !((Boolean) authProp.getValue()).booleanValue();
         Property pwOnlyProp = config.getProperty("password-check-only");
-        passwordCheckOnly = !((Boolean) pwOnlyProp.getValue()).booleanValue();
+        passwordCheckOnly = ((Boolean) pwOnlyProp.getValue()).booleanValue();
         if (traceSpace.enabled)
             traceSpace.trace(getName(), "startup, authentication is " + (authenticationOff ? "OFF" : "ON"));
         authProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
