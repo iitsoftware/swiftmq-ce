@@ -70,6 +70,10 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public String getPassword(String userName)
             throws AuthenticationException {
+        if (!authenticationOff) {
+            if (userName == null || userName.equals(ANONYMOUS_USER))
+                throw new AuthenticationException("Login as anonymous user is disabled!");
+        }
         if (userName == null)
             userName = ANONYMOUS_USER;
         User user = (User) users.get(userName);

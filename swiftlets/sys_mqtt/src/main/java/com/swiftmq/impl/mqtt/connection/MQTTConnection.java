@@ -22,11 +22,11 @@ import com.swiftmq.impl.mqtt.po.*;
 import com.swiftmq.impl.mqtt.pubsub.Producer;
 import com.swiftmq.impl.mqtt.session.AssociateSessionCallback;
 import com.swiftmq.impl.mqtt.session.MQTTSession;
-import com.swiftmq.mgmt.Entity;
-import com.swiftmq.mgmt.Property;
 import com.swiftmq.impl.mqtt.v311.MqttListener;
 import com.swiftmq.impl.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.*;
+import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.AuthenticationException;
@@ -296,7 +296,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
             try {
                 ctx.authSwiftlet.verifyHostLogin(username, remoteHostname);
                 String pwd = ctx.authSwiftlet.getPassword(username);
-                if (password != null && pwd != null && password.equals(pwd) || password == pwd) {
+                if (password != null && password.equals(pwd)) {
                     rc = MqttConnectReturnCode.CONNECTION_ACCEPTED;
                     activeLogin = ctx.authSwiftlet.createActiveLogin(username, "MQTT");
                     activeLogin.setClientId(clientId);
