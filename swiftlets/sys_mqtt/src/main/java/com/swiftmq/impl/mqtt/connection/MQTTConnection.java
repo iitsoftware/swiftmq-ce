@@ -296,7 +296,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
             try {
                 ctx.authSwiftlet.verifyHostLogin(username, remoteHostname);
                 String pwd = ctx.authSwiftlet.getPassword(username);
-                if (password != null && password.equals(pwd)) {
+                if (password == pwd || password != null && password.equals(pwd)) {
                     rc = MqttConnectReturnCode.CONNECTION_ACCEPTED;
                     activeLogin = ctx.authSwiftlet.createActiveLogin(username, "MQTT");
                     activeLogin.setClientId(clientId);
@@ -340,6 +340,10 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.CONNACK, connectMessage.fixedHeader().isDup(), connectMessage.fixedHeader().qosLevel(), connectMessage.fixedHeader().isRetain(), 2);
         MqttConnAckVariableHeader variableHeader = new MqttConnAckVariableHeader(rc, false);
         connAckMessage = new MqttConnAckMessage(fixedHeader, variableHeader);
+        if (rc != MqttConnectReturnCode.CONNECTION_ACCEPTED) {
+            protocolInvalid = true;
+            initiateClose("not authenticated");
+        }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
     }
