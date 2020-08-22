@@ -702,7 +702,9 @@ public class Stream {
 
     /**
      * Executes a function callback in the Stream's event queue.
-     * This is the only method to execute asynchronous calls from libraries.
+     * This is one method to execute asynchronous calls from libraries. This does
+     * not work in GraalVM. Please use stream.async(...)
+     *
      *
      * @param functionCallback callback
      * @param context          optional context
@@ -711,6 +713,19 @@ public class Stream {
     public Stream executeCallback(FunctionCallback functionCallback, Object context) {
         ctx.streamProcessor.dispatch(new POFunctionCallback(null, functionCallback, context));
         return this;
+    }
+
+    /**
+     * Wraps an async callback with a proxy that implements the interface given by the "interfaceClassName" and runs
+     * the callback on the Stream's event queue. This works on GraalVM and Nashorn.
+     *
+     * @param interfaceClassName Fully qualified class name of the interface to implement
+     * @param callback           Callback
+     * @return proxy object
+     * @throws Exception
+     */
+    public Object async(String interfaceClassName, Object callback) throws Exception {
+        return AsyncProxy.newInstance(this, interfaceClassName, callback);
     }
 
     /**

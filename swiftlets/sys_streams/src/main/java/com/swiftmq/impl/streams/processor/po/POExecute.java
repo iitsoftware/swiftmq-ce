@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2020 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -17,24 +17,27 @@
 
 package com.swiftmq.impl.streams.processor.po;
 
+import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface POStreamVisitor extends POVisitor {
-    public void visit(POStart po);
+public class POExecute extends POObject {
+    Runnable runnable;
 
-    public void visit(POMessage po);
+    public POExecute(Semaphore semaphore, Runnable runnable) {
+        super(null, semaphore);
+        this.runnable = runnable;
+    }
 
-    public void visit(POMgmtMessage po);
+    public Runnable getRunnable() {
+        return runnable;
+    }
 
-    public void visit(POWireTapMessage po);
+    public void accept(POVisitor poVisitor) {
+        ((POStreamVisitor) poVisitor).visit(this);
+    }
 
-    public void visit(POFunctionCallback po);
-
-    public void visit(POExecute po);
-
-    public void visit(POTimer po);
-
-    public void visit(POCollect po);
-
-    public void visit(POClose po);
+    public String toString() {
+        return "[POExecute, runnable=" + runnable + "]";
+    }
 }

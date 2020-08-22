@@ -22,11 +22,11 @@ import com.swiftmq.impl.mqtt.po.*;
 import com.swiftmq.impl.mqtt.pubsub.Producer;
 import com.swiftmq.impl.mqtt.session.AssociateSessionCallback;
 import com.swiftmq.impl.mqtt.session.MQTTSession;
-import com.swiftmq.mgmt.Entity;
-import com.swiftmq.mgmt.Property;
 import com.swiftmq.impl.mqtt.v311.MqttListener;
 import com.swiftmq.impl.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.*;
+import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.AuthenticationException;
@@ -296,7 +296,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
             try {
                 ctx.authSwiftlet.verifyHostLogin(username, remoteHostname);
                 String pwd = ctx.authSwiftlet.getPassword(username);
-                if (password != null && pwd != null && password.equals(pwd) || password == pwd) {
+                if (password == pwd || password != null && password.equals(pwd)) {
                     rc = MqttConnectReturnCode.CONNECTION_ACCEPTED;
                     activeLogin = ctx.authSwiftlet.createActiveLogin(username, "MQTT");
                     activeLogin.setClientId(clientId);
@@ -340,6 +340,10 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.CONNACK, connectMessage.fixedHeader().isDup(), connectMessage.fixedHeader().qosLevel(), connectMessage.fixedHeader().isRetain(), 2);
         MqttConnAckVariableHeader variableHeader = new MqttConnAckVariableHeader(rc, false);
         connAckMessage = new MqttConnAckMessage(fixedHeader, variableHeader);
+        if (rc != MqttConnectReturnCode.CONNECTION_ACCEPTED) {
+            protocolInvalid = true;
+            initiateClose("not authenticated");
+        }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
     }

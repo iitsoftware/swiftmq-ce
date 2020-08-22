@@ -11,6 +11,11 @@
 							display="Authentication Enabled"
 							description="Enabes/Disables Authentication"
 							default="false" />
+    <property name="password-check-only"
+              type="java.lang.Boolean"
+              display="Password Check Only"
+              description="If authentication is enabled, performs password checks only but not resource grants"
+              default="false"/>
 		<entitylist name="groups" display="Groups" description="Authentication Group Definitions" icon="/com/swiftmq/impl/auth/standard/images/groups.png" >
 			<entitytemplate name="group" display="Group" description="Authentication Group Definition" >
 				<entitylist name="queue-grants" display="Queue Grants" description="Queue Grant Definitions" >

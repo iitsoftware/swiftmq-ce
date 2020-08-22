@@ -41,6 +41,7 @@ public class StreamContext {
     public Entity entity;
     public Entity usage;
     public String msgIdPrefix;
+    public ClassLoader classLoader = null;
     long msgInc = 0;
     List<Entry> queueTransactions;
     List<TransactionFlushListener> flushListeners;
