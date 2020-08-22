@@ -1,4 +1,4 @@
-FROM oracle/graalvm-ce:20.1.0-java11
+FROM oracle/graalvm-ce:20.2.0-java11
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
