@@ -90,7 +90,10 @@ public class NettyTCPListener extends TCPListener {
                     .childOption(ChannelOption.SO_RCVBUF, getMetaData().getInputBufferSize())
                     .childOption(ChannelOption.TCP_NODELAY, getMetaData().isUseTcpNoDelay());
 
-            channelFuture = b.bind(getMetaData().getPort()).sync();
+            if (getMetaData().getBindAddress() != null)
+                channelFuture = b.bind(getMetaData().getBindAddress(), getMetaData().getPort()).sync();
+            else
+                channelFuture = b.bind(getMetaData().getPort()).sync();
         } catch (InterruptedException e) {
             throw new IOException(e.toString());
         }
