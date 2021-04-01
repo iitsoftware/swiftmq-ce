@@ -30,6 +30,10 @@ public class GraalSetup {
     }
 
     public static ScriptEngine engine(ClassLoader cl) throws Exception {
-        return GraalJSScriptEngine.create(null, Context.newBuilder("js").allowAllAccess(true).allowHostAccess(getHostAccess()).hostClassLoader(cl));
+        return GraalJSScriptEngine.create(null, Context.newBuilder("js")
+                .allowExperimentalOptions(true).option("js.nashorn-compat", "true")
+                .allowAllAccess(true)
+                .allowHostAccess(getHostAccess())
+                .hostClassLoader(cl));
     }
 }
