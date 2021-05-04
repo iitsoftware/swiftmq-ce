@@ -219,6 +219,15 @@ public class TimeUnitChangeLimit implements Limit {
 
     }
 
+    private void log(String s) {
+        ctx.stream.log().info(memory.name() + "/" + s);
+    }
+
+    private String format(long time) {
+        TimeSupport timeSupport = new TimeSupport();
+        return timeSupport.format(time, "dd.MM.yyyy:HH:mm:ss");
+    }
+
     @Override
     public void checkLimit() {
         try {
@@ -226,6 +235,7 @@ public class TimeUnitChangeLimit implements Limit {
                 return;
             calcWindow(memory.getStoreTime(0));
             long currentUnit = currentUnit(memory.orderBy() != null ? memory.getStoreTime(memory.size() - 1) : System.currentTimeMillis());
+            log("currentUnit=" + format(currentUnit) + ", lastUnit=" + format(lastUnit) + ", windowEnd=" + format(windowEnd));
             if (currentUnit != lastUnit) {
                 memory.removeOlderThan(windowEnd, true);
                 windowEnd = -1;
