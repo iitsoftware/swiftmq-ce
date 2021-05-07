@@ -18,7 +18,6 @@
 package com.swiftmq.impl.streams.comp.memory;
 
 import com.swiftmq.impl.streams.StreamContext;
-import com.swiftmq.impl.streams.TimeSupport;
 import com.swiftmq.impl.streams.comp.message.Message;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.QueueImpl;
@@ -181,18 +180,8 @@ public class QueueMemory extends Memory {
         return messageStore.get(index).storeTime;
     }
 
-    private void log(String s) {
-        ctx.stream.log().info(name() + "/removeOlderThan/" + s);
-    }
-
-    private String format(long time) {
-        TimeSupport timeSupport = new TimeSupport();
-        return timeSupport.format(time, "dd.MM.yyyy:HH:mm:ss");
-    }
-
     @Override
     public Memory removeOlderThan(long time, boolean executeCallback) throws Exception {
-        log("time=" + format(time));
         Memory retired = null;
         List<KeyEntry> removed = messageStore.removeOlderThan(time);
         if (orderBy != null && removed.size() > 0)
@@ -406,9 +395,7 @@ public class QueueMemory extends Memory {
             List<KeyEntry> removed = new ArrayList<KeyEntry>();
             for (Iterator<KeyEntry> iter = entryList.iterator(); iter.hasNext(); ) {
                 KeyEntry entry = iter.next();
-                log("time=" + format(time) + ", entry.time=" + entry.storeTime);
                 if (entry.storeTime < time) {
-                    log("remove/ entry.time=" + entry.storeTime);
                     removed.add(entry);
                     messages.remove(entry.key);
                     iter.remove();
