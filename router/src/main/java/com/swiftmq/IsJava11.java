@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 IIT Software GmbH
+ * Copyright 2021 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -17,9 +17,13 @@
 
 package com.swiftmq;
 
-public class IsJava8 {
+public class IsJava11 {
     public static void main(String[] args) {
-        String javaVersion = System.getProperty("java.version");
-        System.out.print(javaVersion.startsWith("1.8"));
+        try {
+            Runtime.Version version = Runtime.version();
+            System.out.print(version.feature() >= 11);
+        } catch (Error e) {
+            System.out.print(false);
+        }
     }
 }

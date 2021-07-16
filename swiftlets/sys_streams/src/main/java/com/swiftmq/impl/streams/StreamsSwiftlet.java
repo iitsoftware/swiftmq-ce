@@ -357,6 +357,11 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
 
     protected void startup(Configuration config) throws SwiftletException {
         ctx = new SwiftletContext(config, this);
+        if (!ctx.HASENGINE) {
+            ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "You are using Java " + ctx.JAVAVERSION + " but not GraalVM. Cannot start Streams Swiftlet. Please use GraalVM: https://graalvm.org");
+            ctx.logSwiftlet.logWarning(ctx.streamsSwiftlet.getName(), "You are using Java " + ctx.JAVAVERSION + " but not GraalVM. Cannot start Streams Swiftlet. Please use GraalVM: https://graalvm.org");
+            return;
+        }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
         isStartup = true;
         ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "starting, available Scripting Engines:");
@@ -416,7 +421,7 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
     }
 
     protected void shutdown() throws SwiftletException {
-        if (ctx == null)
+        if (ctx == null || !ctx.HASENGINE)
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
         isShutdown = true;

@@ -56,6 +56,8 @@ public class SwiftletContext {
     public StreamsSwiftlet streamsSwiftlet = null;
     public String streamLibDir = SwiftUtilities.addWorkingDir("../data/streamlib");
     public boolean ISGRAAL = false;
+    public boolean HASENGINE = false;
+    public int JAVAVERSION = 0;
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
@@ -77,12 +79,10 @@ public class SwiftletContext {
         jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
         storeSwiftlet = (StoreSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$store");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        try {
-            org.graalvm.home.Version.getCurrent();
-            ISGRAAL = true;
-        } catch (Exception e) {
-            ISGRAAL = false; // Class is not found on other JDKs
-        }
-        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", runnung on GraalVM: " + ISGRAAL);
+        Runtime.Version version = Runtime.version();
+        JAVAVERSION = version.feature();
+        ISGRAAL = org.graalvm.home.Version.getCurrent().isRelease();
+        HASENGINE = JAVAVERSION < 15 || ISGRAAL;
+        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", running on GraalVM: " + ISGRAAL);
     }
 }
