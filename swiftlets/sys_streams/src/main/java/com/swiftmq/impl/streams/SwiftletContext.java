@@ -81,7 +81,11 @@ public class SwiftletContext {
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
         Runtime.Version version = Runtime.version();
         JAVAVERSION = version.feature();
-        ISGRAAL = org.graalvm.home.Version.getCurrent().isRelease();
+        try {
+            ISGRAAL = org.graalvm.home.Version.getCurrent().isRelease();
+        } catch (Exception e) {
+            ISGRAAL = false;
+        }
         HASENGINE = JAVAVERSION < 15 || ISGRAAL;
         logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", running on GraalVM: " + ISGRAAL);
     }
