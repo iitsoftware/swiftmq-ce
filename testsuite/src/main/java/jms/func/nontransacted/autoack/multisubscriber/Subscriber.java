@@ -19,7 +19,10 @@ package jms.func.nontransacted.autoack.multisubscriber;
 
 import jms.base.SimpleConnectedPSTestCase;
 
-import javax.jms.*;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
 public class Subscriber extends SimpleConnectedPSTestCase
 {
@@ -62,7 +65,7 @@ public class Subscriber extends SimpleConnectedPSTestCase
         {
           try
           {
-            sem.wait();
+            sem.wait(20000);
           } catch (Exception ignored)
           {
           }

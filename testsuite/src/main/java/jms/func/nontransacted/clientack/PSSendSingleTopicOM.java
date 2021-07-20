@@ -82,7 +82,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedPSTestCase
         {
           try
           {
-            sem.wait();
+            sem.wait(20000);
           } catch (Exception ignored)
           {
           }
@@ -138,7 +138,7 @@ public class PSSendSingleTopicOM extends SimpleConnectedPSTestCase
         {
           try
           {
-            sem.wait();
+            sem.wait(20000);
           } catch (Exception ignored)
           {
           }
