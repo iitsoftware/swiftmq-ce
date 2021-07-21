@@ -84,7 +84,7 @@ public class P2PRequestor
 			env.put(Context.PROVIDER_URL,smqpURL);
 			InitialContext ctx = new InitialContext(env);
 			QueueConnectionFactory connectionFactory = (QueueConnectionFactory)ctx.lookup(qcfName);
-			Queue queue = (Queue)ctx.lookup(queueName);
+			javax.jms.Queue queue = (javax.jms.Queue)ctx.lookup(queueName);
 			
 			// Important to note that you should close the context thereafter, because
 			// the context holds an active JMS connection.
