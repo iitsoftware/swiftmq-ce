@@ -38,7 +38,7 @@ public class Activate implements CommandExecutor {
     }
 
     protected String _getDescription() {
-        return "Activates delivery of messages to consumers.";
+        return "Toggles active/pause delivery of messages to consumers.";
     }
 
     public Command createCommand() {
@@ -53,11 +53,9 @@ public class Activate implements CommandExecutor {
         MessageQueue queue = (MessageQueue) ctx.queueManager.getQueueForInternalUse(queueName);
         if (queue == null)
             return new String[]{TreeCommands.ERROR, "Queue not found: " + queueName};
-        if (queue.isActive())
-            return new String[]{TreeCommands.ERROR, "Queue is already activated."};
-        queue.activate(true);
+        queue.activate(!queue.isActive());
         try {
-            ctx.usageList.getEntity(queueName).getProperty("active").setValue(true);
+            ctx.usageList.getEntity(queueName).getProperty("active").setValue(queue.isActive());
         } catch (Exception e) {
         }
         return null;
