@@ -547,6 +547,11 @@ public class MessageQueue extends AbstractQueue {
 
     // Must own the queueSemaphore's monitor
     private void notifyWaiters() {
+        if (!active) {
+            if (ctx.queueSpace.enabled)
+                ctx.queueSpace.trace(getQueueName(), "notifyWaiters, Queue is paused");
+            return; // Queue is paused
+        }
         if (ctx.queueSpace.enabled)
             ctx.queueSpace.trace(getQueueName(), "notifyWaiters, activeMsgProcList: " + activeMsgProcList + ", size(): " + msgProcessors[activeMsgProcList].size());
         List currentProcessors = msgProcessors[activeMsgProcList];
@@ -2052,10 +2057,16 @@ public class MessageQueue extends AbstractQueue {
                     ctx.queueSpace.trace(getQueueName(), "registerMessageProcessor, consumerMode is ACTIVESTANDBY and activeReceiverId (" + activeReceiverId + ") !=  messageProcessor.getReceiverId() (" + messageProcessor.getReceiverId() + ")");
                 storeMessageProcessor(messageProcessor);
             } else {
-                if (messageProcessor.isBulkMode())
-                    _registerBulkMessageProcessor(messageProcessor);
-                else
-                    _registerMessageProcessor(messageProcessor);
+                if (!active) {
+                    if (ctx.queueSpace.enabled)
+                        ctx.queueSpace.trace(getQueueName(), "registerMessageProcessor, Queue is paused, store message processor");
+                    storeMessageProcessor(messageProcessor);
+                } else {
+                    if (messageProcessor.isBulkMode())
+                        _registerBulkMessageProcessor(messageProcessor);
+                    else
+                        _registerMessageProcessor(messageProcessor);
+                }
             }
         } finally {
             queueLock.unlock();
@@ -2088,6 +2099,10 @@ public class MessageQueue extends AbstractQueue {
         lockAndWaitAsyncFinished();
         try {
             active = b;
+            if (flowController != null)
+                ((FlowControllerImpl) flowController).active(b);
+            if (active)
+                notifyWaiters();
         } finally {
             queueLock.unlock();
         }
