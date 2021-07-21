@@ -78,6 +78,7 @@ public class MessageQueue extends AbstractQueue {
     long activeReceiverId = -1;
     int monitorAlertThreshold = -1;
     Map<String, WireTap> wireTaps = new HashMap<String, WireTap>();
+    boolean active = true;
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP) {
         this.ctx = ctx;
@@ -2069,6 +2070,24 @@ public class MessageQueue extends AbstractQueue {
                 msgProcessors[activeMsgProcList].set(id, null);
                 messageProcessor.setRegistrationId(-1);
             }
+        } finally {
+            queueLock.unlock();
+        }
+    }
+
+    public boolean isActive() {
+        lockAndWaitAsyncFinished();
+        try {
+            return active;
+        } finally {
+            queueLock.unlock();
+        }
+    }
+
+    public void activate(boolean b) {
+        lockAndWaitAsyncFinished();
+        try {
+            active = b;
         } finally {
             queueLock.unlock();
         }
