@@ -24,21 +24,28 @@ public class FlowControllerImpl extends FlowController {
     int startQueueSize = 0;
     boolean lastWasNull = false;
     long prevAmount = 0;
+    boolean active = true;
 
     public FlowControllerImpl(int startQueueSize, long maxDelay) {
         this.startQueueSize = startQueueSize;
         this.maxDelay = maxDelay;
     }
 
+    public synchronized void active(boolean b) {
+        active = b;
+    }
+
     public synchronized int getStartQueueSize() {
-        return startQueueSize;
+        return active ? startQueueSize : -1;
     }
 
     public synchronized long getLastDelay() {
-        return super.getLastDelay();
+        return active ? super.getLastDelay() : 0;
     }
 
     public synchronized long getNewDelay() {
+        if (!active)
+            return 0;
         if (receiverCount == 0 ||
                 queueSize <= startQueueSize) {
             lastDelay = 0;

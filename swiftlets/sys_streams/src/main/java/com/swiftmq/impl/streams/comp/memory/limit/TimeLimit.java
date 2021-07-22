@@ -67,7 +67,7 @@ public class TimeLimit implements Limit {
      * @return TimeLimit
      */
     public TimeLimit days(int n) {
-        millis += 24 * 60 * 60 * n * 1000;
+        millis += 24 * 60 * 60 * (long) n * 1000;
         return this;
     }
 
@@ -78,7 +78,7 @@ public class TimeLimit implements Limit {
      * @return TimeLimit
      */
     public TimeLimit hours(int n) {
-        millis += 60 * 60 * n * 1000;
+        millis += 60 * 60 * (long) n * 1000;
         return this;
     }
 
@@ -89,7 +89,7 @@ public class TimeLimit implements Limit {
      * @return TimeLimit
      */
     public TimeLimit minutes(int n) {
-        millis += 60 * n * 1000;
+        millis += 60 * (long) n * 1000;
         return this;
     }
 
@@ -100,7 +100,7 @@ public class TimeLimit implements Limit {
      * @return TimeLimit
      */
     public TimeLimit seconds(int n) {
-        millis += n * 1000;
+        millis += (long) n * 1000;
         return this;
     }
 

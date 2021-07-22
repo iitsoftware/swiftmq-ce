@@ -18,6 +18,7 @@
 package jms.base;
 
 import com.swiftmq.admin.cli.CLI;
+import com.swiftmq.admin.cli.CLIException;
 import junit.framework.TestCase;
 
 import javax.jms.QueueConnection;
@@ -75,29 +76,35 @@ public class JMSTestCase extends TestCase
   private void createCLI() throws Exception
   {
     InitialContext ctx = createInitialContext();
-    QueueConnectionFactory qcf = (QueueConnectionFactory) ctx.lookup("QueueConnectionFactory");
+    QueueConnectionFactory qcf = (QueueConnectionFactory) ctx.lookup("ConnectionFactory");
     cliQC = qcf.createQueueConnection();
     cli = new CLI(cliQC);
     ctx.close();
   }
 
-  public void createQueue(String queueName) throws Exception
-  {
+  public void createQueue(String queueName) throws Exception {
     if (cli == null)
       createCLI();
     cli.waitForRouter("router");
     cli.executeCommand("sr router");
     cli.executeCommand("cc /sys$queuemanager/queues");
+    try {
+      cli.executeCommand("delete " + queueName);
+    } catch (CLIException e) {
+    }
     cli.executeCommand("new " + queueName);
   }
 
-  public void createTopic(String topicName) throws Exception
-  {
+  public void createTopic(String topicName) throws Exception {
     if (cli == null)
       createCLI();
     cli.waitForRouter("router");
     cli.executeCommand("sr router");
     cli.executeCommand("cc /sys$topicmanager/topics");
+    try {
+      cli.executeCommand("delete " + topicName);
+    } catch (CLIException e) {
+    }
     cli.executeCommand("new " + topicName);
   }
 

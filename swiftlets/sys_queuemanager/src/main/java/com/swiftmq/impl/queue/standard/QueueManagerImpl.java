@@ -1390,6 +1390,7 @@ public class QueueManagerImpl extends QueueManager
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
 
+        ctx.usageList.getCommandRegistry().addCommand(new Activate(ctx).createCommand());
         ctx.usageList.getCommandRegistry().addCommand(new Viewer(ctx).createCommand());
         ctx.usageList.getCommandRegistry().addCommand(new Exporter(ctx).createCommand());
         ctx.usageList.getCommandRegistry().addCommand(new Importer(ctx).createCommand());

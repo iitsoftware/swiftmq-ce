@@ -78,6 +78,7 @@ public class MessageQueue extends AbstractQueue {
     long activeReceiverId = -1;
     int monitorAlertThreshold = -1;
     Map<String, WireTap> wireTaps = new HashMap<String, WireTap>();
+    boolean active = true;
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP) {
         this.ctx = ctx;
@@ -546,6 +547,11 @@ public class MessageQueue extends AbstractQueue {
 
     // Must own the queueSemaphore's monitor
     private void notifyWaiters() {
+        if (!active) {
+            if (ctx.queueSpace.enabled)
+                ctx.queueSpace.trace(getQueueName(), "notifyWaiters, Queue is paused");
+            return; // Queue is paused
+        }
         if (ctx.queueSpace.enabled)
             ctx.queueSpace.trace(getQueueName(), "notifyWaiters, activeMsgProcList: " + activeMsgProcList + ", size(): " + msgProcessors[activeMsgProcList].size());
         List currentProcessors = msgProcessors[activeMsgProcList];
@@ -2051,10 +2057,16 @@ public class MessageQueue extends AbstractQueue {
                     ctx.queueSpace.trace(getQueueName(), "registerMessageProcessor, consumerMode is ACTIVESTANDBY and activeReceiverId (" + activeReceiverId + ") !=  messageProcessor.getReceiverId() (" + messageProcessor.getReceiverId() + ")");
                 storeMessageProcessor(messageProcessor);
             } else {
-                if (messageProcessor.isBulkMode())
-                    _registerBulkMessageProcessor(messageProcessor);
-                else
-                    _registerMessageProcessor(messageProcessor);
+                if (!active) {
+                    if (ctx.queueSpace.enabled)
+                        ctx.queueSpace.trace(getQueueName(), "registerMessageProcessor, Queue is paused, store message processor");
+                    storeMessageProcessor(messageProcessor);
+                } else {
+                    if (messageProcessor.isBulkMode())
+                        _registerBulkMessageProcessor(messageProcessor);
+                    else
+                        _registerMessageProcessor(messageProcessor);
+                }
             }
         } finally {
             queueLock.unlock();
@@ -2069,6 +2081,28 @@ public class MessageQueue extends AbstractQueue {
                 msgProcessors[activeMsgProcList].set(id, null);
                 messageProcessor.setRegistrationId(-1);
             }
+        } finally {
+            queueLock.unlock();
+        }
+    }
+
+    public boolean isActive() {
+        lockAndWaitAsyncFinished();
+        try {
+            return active;
+        } finally {
+            queueLock.unlock();
+        }
+    }
+
+    public void activate(boolean b) {
+        lockAndWaitAsyncFinished();
+        try {
+            active = b;
+            if (flowController != null)
+                ((FlowControllerImpl) flowController).active(b);
+            if (active)
+                notifyWaiters();
         } finally {
             queueLock.unlock();
         }

@@ -45,7 +45,7 @@ public class GroupInactivityTimeout {
      * @return this
      */
     public GroupInactivityTimeout days(int n) {
-        millis += 24 * 60 * 60 * n * 1000;
+        millis += 24 * 60 * 60 * (long) n * 1000;
         return this;
     }
 
@@ -56,7 +56,7 @@ public class GroupInactivityTimeout {
      * @return this
      */
     public GroupInactivityTimeout hours(int n) {
-        millis += 60 * 60 * n * 1000;
+        millis += 60 * 60 * (long) n * 1000;
         return this;
     }
 
@@ -67,7 +67,7 @@ public class GroupInactivityTimeout {
      * @return this
      */
     public GroupInactivityTimeout minutes(int n) {
-        millis += 60 * n * 1000;
+        millis += 60 * (long) n * 1000;
         return this;
     }
 
@@ -78,7 +78,7 @@ public class GroupInactivityTimeout {
      * @return this
      */
     public GroupInactivityTimeout seconds(int n) {
-        millis += n * 1000;
+        millis += (long) n * 1000;
         return this;
     }
 

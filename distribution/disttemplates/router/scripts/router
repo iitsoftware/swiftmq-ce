@@ -1,17 +1,20 @@
 #!/bin/bash
+version=$(java -version 2>&1 \
+  | head -1 \
+  | cut -d'"' -f2 \
+  | sed 's/^1\.//' \
+  | cut -d'.' -f1
+)
+
+if [ $version -lt "11" ]; then
+  echo "Java 11 or higher is required."
+  exit 1
+fi
+
 JAVAHOME=`java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome`
-ISJAVA8=`java -cp ../jars/swiftmq.jar com.swiftmq.IsJava8`
-OPENS=""
+CLASSP="../jars/swiftmq.jar"
+OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
 PRECONFIG="-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml"
-if [ $ISJAVA8 = "false" ]
-then
-  OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
-fi
-if [ "$1" = "java9" ]
-then
-  echo "Please do not use 'java9' as parameter anymore."
-  shift
-fi
 if [ "$1" != "" ]
 then
   PRECONFIG="$PRECONFIG,$1"
@@ -27,4 +30,4 @@ if [[ ! -e ../certs/.certimported ]]; then
 fi
 
 echo "Starting SwiftMQ. Please have a look at data/log/stdout.log ..."
-exec java -server -Xmx2G  $ROUTEROPT -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+exec java -server -Xmx2G  $ROUTEROPT -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log

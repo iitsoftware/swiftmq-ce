@@ -75,7 +75,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedPTPTestCase
         {
           try
           {
-            sem.wait();
+            sem.wait(20000);
           } catch (Exception ignored)
           {
           }
@@ -124,7 +124,7 @@ public class PTPSendSingleQueueOM extends SimpleConnectedPTPTestCase
         {
           try
           {
-            sem.wait();
+            sem.wait(20000);
           } catch (Exception ignored)
           {
           }
