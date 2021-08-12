@@ -404,6 +404,15 @@ public class StableStore implements TimerListener, MgmtListener {
             addToFreePool(page.pageNo);
     }
 
+    public void free(int pageNo) throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/free, pageNo=" + pageNo);
+        if (pageNo > numberPages)
+            throwException("free pageNo " + pageNo + " is out of range [0.." + (numberPages) + "]");
+        writePage(createPage(pageNo));
+        if (freePoolEnabled)
+            addToFreePool(pageNo);
+    }
+
     public void deleteStore() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/deleteStore");
         freePool.clear();
