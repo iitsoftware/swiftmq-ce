@@ -38,8 +38,7 @@ public class StableStore implements TimerListener, MgmtListener {
     public static final String FILENAME = "page.db";
     protected StoreContext ctx;
     protected String path;
-    protected IntRingBuffer[] freePool;
-    protected volatile int nFree = 0;
+    protected IntRingBuffer freePool;
     protected RandomAccessFile file;
     protected String filename;
     protected volatile long fileLength;
@@ -58,6 +57,7 @@ public class StableStore implements TimerListener, MgmtListener {
     private boolean offline = false;
     private boolean freePoolEnabled = true;
     private volatile boolean checkPointActive = false;
+    private boolean syncPageDbEnabled = true;
 
     public StableStore(StoreContext ctx, String path, int initialPages) throws Exception {
         this(ctx, path, initialPages, false, true);
@@ -79,19 +79,10 @@ public class StableStore implements TimerListener, MgmtListener {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/creating done.");
     }
 
-    IntRingBuffer[] getFreePool() {
-        return freePool;
-    }
-
-    int getnFree() {
-        return nFree;
-    }
-
     private void init() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init ...");
-        nFree = 0;
         if (freePoolEnabled)
-            freePool = new IntRingBuffer[10];
+            freePool = new IntRingBuffer(16384);
         filename = path + File.separatorChar + FILENAME;
         emptyData = new byte[Page.PAGE_SIZE];
         emptyData[0] = 1; // emtpy
@@ -164,6 +155,10 @@ public class StableStore implements TimerListener, MgmtListener {
         this.freePoolEnabled = freePoolEnabled;
     }
 
+    public void setSyncPageDbEnabled(boolean syncPageDbEnabled) {
+        this.syncPageDbEnabled = syncPageDbEnabled;
+    }
+
     public void adminToolActivated() {
         mgmtToolAttached = true;
         startTimer();
@@ -176,9 +171,9 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public void performTimeAction() {
         try {
-            freeProp.setValue(Integer.valueOf(nFree));
-            usedProp.setValue(Integer.valueOf(numberPages - nFree));
-            fileSizeProp.setValue(Integer.valueOf((int) fileLength / 1024));
+            freeProp.setValue(freePool.getSize());
+            usedProp.setValue(numberPages - freePool.getSize());
+            fileSizeProp.setValue((int) (fileLength / (1024 * 1024)));
         } catch (Exception e) {
         }
     }
@@ -186,29 +181,18 @@ public class StableStore implements TimerListener, MgmtListener {
     private void addToFreePool(int pageNo) {
         if (!freePoolEnabled)
             return;
-        int idx = pageNo / 100;
-        if (idx > freePool.length - 1) {
-            IntRingBuffer[] b = new IntRingBuffer[idx + 10];
-            System.arraycopy(freePool, 0, b, 0, freePool.length);
-            freePool = b;
-        }
-        if (freePool[idx] == null)
-            freePool[idx] = new IntRingBuffer(100);
-        freePool[idx].add(pageNo);
-        nFree++;
+        freePool.add(pageNo);
     }
 
     private int getFirstFree() {
-        if (!freePoolEnabled || nFree == 0)
+        if (!freePoolEnabled)
             return -1;
-        for (int i = 0; i < freePool.length; i++) {
-            IntRingBuffer b = freePool[i];
-            if (b != null && b.getSize() > 0) {
-                nFree--;
-                return b.remove();
-            }
-        }
-        return -1;
+        return freePool.getSize() > 0 ? freePool.remove() : -1;
+    }
+
+    private void seek(int pageNo) throws Exception {
+        long seekPoint = (long) pageNo * (long) Page.PAGE_SIZE;
+        file.seek(seekPoint);
     }
 
     private void initialize(int nPages) throws Exception {
@@ -270,8 +254,7 @@ public class StableStore implements TimerListener, MgmtListener {
     protected Page loadPage(int pageNo) throws Exception {
         Page p = createPage(pageNo);
         p.data = new byte[Page.PAGE_SIZE];
-        long seekPoint = (long) pageNo * (long) Page.PAGE_SIZE;
-        file.seek(seekPoint);
+        seek(pageNo);
         file.readFully(p.data);
         p.empty = p.data[0] == 1;
         if (ctx.traceSpace.enabled)
@@ -285,7 +268,7 @@ public class StableStore implements TimerListener, MgmtListener {
             if (p.empty)
                 System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
             p.data[0] = (byte) (p.empty ? 1 : 0);
-            file.seek((long) p.pageNo * (long) Page.PAGE_SIZE);
+            seek(p.pageNo);
             file.write(p.data);
             p.dirty = false;
             long length = (long) (p.pageNo + 1) * (long) Page.PAGE_SIZE;
@@ -302,7 +285,7 @@ public class StableStore implements TimerListener, MgmtListener {
             if (p.empty)
                 System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
             p.data[0] = (byte) (p.empty ? 1 : 0);
-            f.seek((long) p.pageNo * (long) Page.PAGE_SIZE);
+            seek(p.pageNo);
             f.write(p.data);
             p.dirty = false;
         } catch (IOException e) {
@@ -311,6 +294,8 @@ public class StableStore implements TimerListener, MgmtListener {
     }
 
     public void sync() throws Exception {
+        if (!syncPageDbEnabled)
+            return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/sync...");
         file.getFD().sync();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/sync done.");
@@ -337,10 +322,8 @@ public class StableStore implements TimerListener, MgmtListener {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/buildFreePageList...");
         for (int i = 0; i < numberPages; i++) {
             Page p = loadPage(i);
-            if (p.empty && i > 0) // never put the root index page into the free page list!
-            {
+            if (p.empty && i > 0) // never put the root index page into the free page list!{
                 addToFreePool(p.pageNo);
-            }
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", toString() + "/buildFreePageList, freePageNumbers.size=" + getNumberFreePages());
@@ -354,8 +337,7 @@ public class StableStore implements TimerListener, MgmtListener {
     public void shrink() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink...");
         shrinkFile();
-        freePool = new IntRingBuffer[10];
-        nFree = 0;
+        freePool = new IntRingBuffer(16384);
         buildFreePageList();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink done");
     }
@@ -365,7 +347,7 @@ public class StableStore implements TimerListener, MgmtListener {
     }
 
     int getNumberFreePages() {
-        return nFree;
+        return freePoolEnabled ? freePool.getSize() : 0;
     }
 
     protected Page create() throws Exception {
@@ -424,8 +406,7 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public void deleteStore() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/deleteStore");
-        for (int i = 0; i < freePool.length; i++)
-            freePool[i] = null;
+        freePool.clear();
         numberPages = 0;
         file.setLength(0);
         fileLength = 0;
@@ -463,10 +444,8 @@ public class StableStore implements TimerListener, MgmtListener {
                 mgmtSwiftlet.removeMgmtListener(this);
             stopTimer();
         }
-        if (freePoolEnabled) {
-            for (int i = 0; i < freePool.length; i++)
-                freePool[i] = null;
-        }
+        if (freePoolEnabled)
+            freePool.clear();
         numberPages = 0;
         fileLength = 0;
         file.close();

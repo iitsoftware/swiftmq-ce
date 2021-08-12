@@ -141,7 +141,7 @@
                       description="Number of Used Pages"/>
             <property name="file-size"
                       type="java.lang.Integer"
-                      display="File Size (KB)"
+                      display="File Size (MB)"
                       default="0"
                       description="Size of this File in KB"/>
                 </entitytemplate>
