@@ -23,7 +23,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class Page {
-    public static final int PAGE_SIZE = 2 * 1024;
+    public static final int PAGE_SIZE = 16 * 1024;
     public final static int HEADER_LENGTH = 1;
     public int pageNo = -1;
     public boolean dirty = false;
