@@ -28,18 +28,17 @@ import com.swiftmq.swiftlet.event.SwiftletManagerEvent;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.mgmt.event.MgmtListener;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.collection.IntRingBuffer;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.TreeSet;
 
 public class StableStore implements TimerListener, MgmtListener {
     public static final String FILENAME = "page.db";
     protected StoreContext ctx;
     protected String path;
-    //    protected IntRingBuffer freePool;
-    protected TreeSet<Integer> freePool;
+    protected IntRingBuffer freePool;
     protected RandomAccessFile file;
     protected String filename;
     protected volatile long fileLength;
@@ -83,7 +82,7 @@ public class StableStore implements TimerListener, MgmtListener {
     private void init() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init ...");
         if (freePoolEnabled)
-            freePool = new TreeSet<Integer>();
+            freePool = new IntRingBuffer(16384);
         filename = path + File.separatorChar + FILENAME;
         emptyData = new byte[Page.PAGE_SIZE];
         emptyData[0] = 1; // emtpy
@@ -172,8 +171,8 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public void performTimeAction() {
         try {
-            freeProp.setValue(freePool.size());
-            usedProp.setValue(numberPages - freePool.size());
+            freeProp.setValue(freePool.getSize());
+            usedProp.setValue(numberPages - freePool.getSize());
             fileSizeProp.setValue((int) (fileLength / (1024 * 1024)));
         } catch (Exception e) {
         }
@@ -188,7 +187,7 @@ public class StableStore implements TimerListener, MgmtListener {
     private int getFirstFree() {
         if (!freePoolEnabled)
             return -1;
-        return freePool.size() > 0 ? freePool.pollFirst() : -1;
+        return freePool.getSize() > 0 ? freePool.remove() : -1;
     }
 
     private void seek(int pageNo) throws Exception {
@@ -338,7 +337,7 @@ public class StableStore implements TimerListener, MgmtListener {
     public void shrink() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink...");
         shrinkFile();
-        freePool = new TreeSet<>();
+        freePool = new IntRingBuffer(16384);
         buildFreePageList();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink done");
     }
@@ -348,7 +347,7 @@ public class StableStore implements TimerListener, MgmtListener {
     }
 
     int getNumberFreePages() {
-        return freePoolEnabled ? freePool.size() : 0;
+        return freePoolEnabled ? freePool.getSize() : 0;
     }
 
     protected Page create() throws Exception {
