@@ -79,7 +79,7 @@ public class CacheManager {
 
     private void addSlot(int pageNo, Slot slot) {
         if (pageNo >= slots.length) {
-            Slot[] s = new Slot[pageNo + 128];
+            Slot[] s = new Slot[pageNo + minSize];
             System.arraycopy(slots, 0, s, 0, slots.length);
             slots = s;
         }
