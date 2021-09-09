@@ -44,7 +44,6 @@ public class TopicSubscription {
     boolean announced = false;
     boolean removePending = false;
     boolean durable = false;
-    boolean forceCopy = false;
     String destination = null;
     com.swiftmq.swiftlet.queue.QueueSender queueSender = null;
     TopicManager topicManager = null;
@@ -72,14 +71,6 @@ public class TopicSubscription {
         this.broker = broker;
         this.destination = topicInfo.getRouterName();
         remote = true;
-    }
-
-    public boolean isForceCopy() {
-        return forceCopy;
-    }
-
-    public void setForceCopy(boolean forceCopy) {
-        this.forceCopy = forceCopy;
     }
 
     public boolean isDurable() {

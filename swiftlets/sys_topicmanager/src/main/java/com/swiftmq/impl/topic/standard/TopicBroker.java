@@ -739,9 +739,9 @@ public class TopicBroker extends AbstractQueue {
                                 // publish to subTransaction
                                 try {
                                     subTransaction.setPersistentMessageIncluded(isPersistent);
-                                    if (sub.isRemote() || sub.isForceCopy()) {
+                                    if (sub.isRemote()) {
                                         if (ctx.traceSpace.enabled)
-                                            ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "publishToNode, sub=" + sub + ", remote/forceCopy, therefore publish AS copy");
+                                            ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "publishToNode, sub=" + sub + ", remote, therefore publish AS copy");
                                         subTransaction.publish(copyMessage(message));
                                     } else {
                                         if (ctx.traceSpace.enabled)

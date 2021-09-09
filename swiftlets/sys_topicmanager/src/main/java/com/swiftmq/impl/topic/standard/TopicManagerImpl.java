@@ -294,11 +294,6 @@ public class TopicManagerImpl extends TopicManager
 
     public synchronized int subscribe(TopicImpl topic, Selector selector, boolean noLocal, String queueName, ActiveLogin activeLogin)
             throws AuthenticationException {
-        return subscribe(topic, selector, noLocal, queueName, activeLogin, false);
-    }
-
-    public synchronized int subscribe(TopicImpl topic, Selector selector, boolean noLocal, String queueName, ActiveLogin activeLogin, boolean forceCopy)
-            throws AuthenticationException {
         int subscriberId = 0;
         String brokerQueueName = null;
         String topicName = null;
@@ -316,7 +311,6 @@ public class TopicManagerImpl extends TopicManager
                 tokenizeTopicName(topicName, TOPIC_DELIMITER),
                 noLocal, selector, activeLogin, queueName);
         subscription.setBroker(rootBroker);
-        subscription.setForceCopy(forceCopy);
         topicSubscriptions.set(subscriberId, subscription);
         rootBroker.subscribe(subscription);
 
