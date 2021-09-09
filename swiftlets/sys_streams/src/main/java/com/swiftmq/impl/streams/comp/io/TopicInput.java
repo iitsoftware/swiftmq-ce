@@ -250,7 +250,7 @@ public class TopicInput implements DestinationInput {
             queueName = ctx.ctx.topicManager.subscribeDurable(durableName, topic, ms, false, dlogin);
         } else {
             queueName = ctx.ctx.queueManager.createTemporaryQueue();
-            subscriberId = ctx.ctx.topicManager.subscribe(destinationName, ms, false, queueName);
+            subscriberId = ctx.ctx.topicManager.subscribe(destinationName, ms, false, queueName, true);
         }
         QueueReceiver receiver = ctx.ctx.queueManager.createQueueReceiver(queueName, (ActiveLogin) null, null);
         messageProcessor = new QueueMessageProcessor(ctx, this, receiver, null);
