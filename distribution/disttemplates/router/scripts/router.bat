@@ -24,4 +24,9 @@ if not exist ../certs/.certimported (
    @echo $null > ../certs/.certimported
 )
 
-java -server -Xmx2G %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
+set JVMPARAM=-Xmx2G
+IF NOT "%SWIFTMQ_JVMPARAM"=="" (
+  set JVMPARAM=%SWIFTMQ_JVMPARAM%
+)
+
+java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
