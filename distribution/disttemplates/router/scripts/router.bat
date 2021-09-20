@@ -25,7 +25,7 @@ if not exist ../certs/.certimported (
 )
 
 set JVMPARAM=-Xmx2G
-IF NOT "%SWIFTMQ_JVMPARAM"=="" (
+IF DEFINED SWIFTMQ_JVMPARAM (
   set JVMPARAM=%SWIFTMQ_JVMPARAM%
 )
 
