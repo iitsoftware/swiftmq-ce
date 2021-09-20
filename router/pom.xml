@@ -7,19 +7,19 @@
   <parent>
   	  <groupId>com.swiftmq</groupId>
 	  <artifactId>swiftmq-ce</artifactId>
-    <version>12.3.2</version>
+    <version>12.3.3</version>
       <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>com.swiftmq</groupId>
   <artifactId>router</artifactId>
-  <version>12.3.2</version>
+  <version>12.3.3</version>
   
   <dependencies>
     <dependency>
       <groupId>com.swiftmq</groupId>
       <artifactId>swiftmq-client</artifactId>
-      <version>12.3.2</version>
+      <version>12.3.3</version>
     </dependency>
     <dependency>
       <groupId>org.graalvm.sdk</groupId>

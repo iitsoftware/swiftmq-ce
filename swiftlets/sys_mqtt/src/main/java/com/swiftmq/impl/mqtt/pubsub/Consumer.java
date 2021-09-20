@@ -50,7 +50,7 @@ public class Consumer {
 
     protected QueueReceiver createReceiver(int subscriptionId) throws Exception {
         queueName = ctx.queueManager.createTemporaryQueue();
-        subscriberId = ctx.topicManager.subscribe(topic, null, false, queueName, session.getMqttConnection().getActiveLogin());
+        subscriberId = ctx.topicManager.subscribe(topic, null, false, queueName, session.getMqttConnection().getActiveLogin(), true);
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/createReceiver, queueName=" + queueName + ", subsciberId=" + subscriberId);
         return ctx.queueManager.createQueueReceiver(queueName, session.getMqttConnection().getActiveLogin(), null);
