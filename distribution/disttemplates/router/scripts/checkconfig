@@ -16,5 +16,5 @@ if [[ ! -e /swiftmq/data/log ]]; then
    mkdir /swiftmq/data/log
 fi
 
-rsync -a /swiftmq/optional-swiftlets/extension/ /swiftmq/data/deploy/
+rsync -av /swiftmq/optional-swiftlets/extension/ /swiftmq/data/deploy/
 cd /swiftmq/scripts
