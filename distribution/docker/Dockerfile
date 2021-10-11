@@ -1,5 +1,5 @@
 FROM ghcr.io/graalvm/graalvm-ce:latest
-RUN yum install rsync
+RUN microdnf install rsync
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
