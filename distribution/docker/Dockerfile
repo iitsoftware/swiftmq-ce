@@ -1,4 +1,6 @@
 FROM ghcr.io/graalvm/graalvm-ce:latest
+RUN apt-get update && apt-get upgrade -y && apt-get install -y rsync git
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
