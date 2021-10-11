@@ -1,5 +1,6 @@
 FROM alpine:latest
 FROM ghcr.io/graalvm/graalvm-ce:latest
+ENV PATH="${PATH}:/sbin"
 RUN apk update && apk add rsync
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
