@@ -16,11 +16,5 @@ if [[ ! -e /swiftmq/data/log ]]; then
    mkdir /swiftmq/data/log
 fi
 
-PWD=`pwd`
-cd /swiftmq/optional-swiftlets/extension
-for D in */; do
-    if [[ ! -e /swiftmq/data/deploy/${D} ]]; then
-        cp -Rf /swiftmq/optional-swiftlets/extension/${D} /swiftmq/data/deploy/. >/dev/null 2>&1
-    fi
-done
+rsync -a /swiftmq/optional-swiftlets/extension/ /swiftmq/data/deploy/
 cd /swiftmq/scripts
