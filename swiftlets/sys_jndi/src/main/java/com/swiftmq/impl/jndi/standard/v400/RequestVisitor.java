@@ -74,6 +74,7 @@ public class RequestVisitor implements JNDIRequestVisitor {
         msg.setJMSDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
         msg.setJMSDestination(new TopicImpl(JNDISwiftlet.JNDI_TOPIC));
         msg.setJMSPriority(MessageImpl.MAX_PRIORITY);
+        msg.setJMSExpiration(System.currentTimeMillis() + 60000);
         if (replyTo != null)
             msg.setJMSReplyTo(replyTo);
         msg.setReadOnly(false);
