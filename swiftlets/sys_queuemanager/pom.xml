@@ -6,13 +6,13 @@
   <parent>
   	  <groupId>com.swiftmq</groupId>
 	  <artifactId>swiftmq-ce</artifactId>
-    <version>12.3.4</version>
+    <version>12.3.5</version>
       <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <groupId>com.swiftmq.swiftlets</groupId>
   <artifactId>sys_queuemanager</artifactId>
-  <version>12.3.4</version>
+  <version>12.3.5</version>
 
   <properties>
       <jar.finalName>${project.artifactId}</jar.finalName>
@@ -22,7 +22,7 @@
     <dependency>
       <groupId>com.swiftmq</groupId>
       <artifactId>swiftmq-client</artifactId>
-      <version>12.3.4</version>
+      <version>12.3.5</version>
     </dependency>
   </dependencies>
   <build>

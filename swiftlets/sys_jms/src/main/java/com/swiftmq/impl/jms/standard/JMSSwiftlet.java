@@ -124,6 +124,8 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         String connectIP = (String) listener.getProperty("connectaddress").getValue();
         if (connectIP != null && connectIP.trim().length() == 0)
             connectIP = null;
+        int connectPort = (Integer) listener.getProperty("connectport").getValue();
+        int connectPort2 = (Integer) listener.getProperty("connectport2").getValue();
         String clientId = (String) cfEntity.getProperty("jms-client-id").getValue();
         if (clientId != null && clientId.trim().length() == 0)
             clientId = null;
@@ -318,7 +320,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         com.swiftmq.jms.v750.ConnectionFactoryImpl cf7 = new com.swiftmq.jms.v750.ConnectionFactoryImpl(listener.getName(),
                 socketFactoryClass,
                 connectIP != null ? connectIP : bindAddress != null ? bindAddress : hostname,
-                port,
+                connectPort != -1 ? connectPort : port,
                 keepAliveInterval,
                 clientId,
                 smqpProducerReplyInterval,
@@ -336,7 +338,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
                 outputExtendSize,
                 false);
         cf7.setHostname2(connectIP2 != null ? connectIP2 : bindAddress2 != null ? bindAddress2 : hostname2);
-        cf7.setPort2(port2);
+        cf7.setPort2(connectPort2 != -1 ? connectPort2 : port2);
         cf7.setReconnectEnabled(reconnectEnabled);
         cf7.setMaxRetries(maxRetries);
         cf7.setRetryDelay(retryDelay);
