@@ -24,19 +24,19 @@
   <parent>
   	  <groupId>com.swiftmq</groupId>
 	  <artifactId>swiftmq-ce</artifactId>
-    <version>12.3.4</version>
+    <version>12.3.5</version>
       <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>com.swiftmq</groupId>
   <artifactId>testsuite</artifactId>
-  <version>12.3.4</version>
+  <version>12.3.5</version>
   
   <dependencies>
     <dependency>
       <groupId>com.swiftmq</groupId>
        <artifactId>router</artifactId>
-      <version>12.3.4</version>
+      <version>12.3.5</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
