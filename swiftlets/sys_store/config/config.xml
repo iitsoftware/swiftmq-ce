@@ -140,7 +140,7 @@
                       default="0"
                       description="Number of Used Pages"/>
             <property name="file-size"
-                      type="java.lang.Integer"
+                      type="java.lang.Long"
                       display="File Size (KB)"
                       default="0"
                       description="Size of this File in KB"/>

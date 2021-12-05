@@ -117,12 +117,12 @@ public class StableStore implements TimerListener, MgmtListener {
             usedProp = entity.getProperty("used-pages");
             fileSizeProp = entity.getProperty("file-size");
             sizeCollectProp = ctx.dbEntity.getProperty("size-collect-interval");
-            collectInterval = (long) ((Long) sizeCollectProp.getValue()).longValue();
+            collectInterval = (long) (Long) sizeCollectProp.getValue();
             startTimer();
             PropertyChangeListener propChangeListener = new PropertyChangeListener() {
                 public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
                     stopTimer();
-                    collectInterval = ((Long) newValue).longValue();
+                    collectInterval = (Long) newValue;
                     startTimer();
                 }
             };
@@ -176,9 +176,9 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public void performTimeAction() {
         try {
-            freeProp.setValue(Integer.valueOf(nFree));
-            usedProp.setValue(Integer.valueOf(numberPages - nFree));
-            fileSizeProp.setValue(Integer.valueOf((int) fileLength / 1024));
+            freeProp.setValue(nFree);
+            usedProp.setValue(numberPages - nFree);
+            fileSizeProp.setValue(fileLength / 1024);
         } catch (Exception e) {
         }
     }

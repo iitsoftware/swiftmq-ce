@@ -49,6 +49,12 @@ public class AsyncProxy implements java.lang.reflect.InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (method.getName().equals("hashCode"))
+            return hashCode();
+        if (method.getName().equals("equals"))
+            return equals(args[0]);
+        if (method.getName().equals("toString"))
+            return toString();
         stream.getStreamCtx().streamProcessor.dispatch(new POExecute(null, () -> {
             try {
                 method.invoke(obj, args);
