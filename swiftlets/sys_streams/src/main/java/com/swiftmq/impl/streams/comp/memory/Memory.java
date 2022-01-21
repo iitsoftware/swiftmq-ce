@@ -409,7 +409,14 @@ public abstract class Memory {
     public Memory reverse() throws Exception {
         List<Entry> list = all();
         Collections.reverse(list);
-        return create(ctx, list);
+        Memory result = create(ctx);
+        list.forEach(entry -> {
+            try {
+                result.add(entry.message);
+            } catch (Exception ignored) {
+            }
+        });
+        return result;
     }
 
     /**
@@ -470,7 +477,14 @@ public abstract class Memory {
                 return val1.compareTo(val2);
             }
         });
-        return create(ctx, list);
+        Memory result = create(ctx);
+        list.forEach(entry -> {
+            try {
+                result.add(entry.message);
+            } catch (Exception ignored) {
+            }
+        });
+        return result;
     }
 
     /**
