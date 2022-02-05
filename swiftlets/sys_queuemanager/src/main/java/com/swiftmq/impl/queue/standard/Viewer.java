@@ -24,7 +24,6 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.TreeCommands;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.queue.MessageEntry;
-import com.swiftmq.swiftlet.queue.QueueBrowser;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
@@ -41,7 +40,7 @@ import java.util.*;
 public class Viewer
         implements CommandExecutor {
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd MMM yyyy HH:mm:ss.SSS Z");
-    static final int MAX_RESULT = 200;
+    static final int MAX_RESULT = 100;
     static String COMMAND = "view";
     static String PATTERN = "view <queue> <start> (<stop>|*) [<selector>] [truncate <kb>]";
     static String DESCRIPTION = "View Messages";
@@ -56,15 +55,15 @@ public class Viewer
         return new Command(COMMAND, PATTERN, DESCRIPTION, true, this, true, true);
     }
 
-    private QueueBrowser createBrowser(String[] cmd, String selectorString) throws Exception {
-        if (!ctx.queueManager.isQueueDefined(cmd[1]))
-            throw new Exception("Unknown queue: " + cmd[1]);
+    private ViewCollector createCollector(String queueName, String selectorString, int from) throws Exception {
+        if (!ctx.queueManager.isQueueDefined(queueName))
+            throw new Exception("Unknown queue: " + queueName);
         MessageSelector selector = null;
         if (selectorString != null) {
             selector = new MessageSelector(selectorString);
             selector.compile();
         }
-        return ctx.queueManager.createQueueBrowser(cmd[1], null, selector);
+        return new ViewCollector(ctx.queueManager.getQueueForInternalUse(queueName), from, selector, MAX_RESULT);
     }
 
     private String replaceInvalidXMLChars(String in) {
@@ -76,12 +75,7 @@ public class Viewer
 
         for (int i = 0; i < in.length(); i++) {
             c = in.charAt(i);
-            if ((c == 0x9) ||
-                    (c == 0xA) ||
-                    (c == 0xD) ||
-                    ((c >= 0x20) && (c <= 0xD7FF)) ||
-                    ((c >= 0xE000) && (c <= 0xFFFD)) ||
-                    ((c >= 0x10000) && (c <= 0x10FFFF)))
+            if (c == 0x9 || c == 0xA || c == 0xD || c >= 0x20 && c <= 0xD7FF || c >= 0xE000 && c <= 0xFFFD)
                 out.append(c);
             else
                 out.append("?");
@@ -338,7 +332,6 @@ public class Viewer
         writer.write(doc);
         writer.flush();
         writer.close();
-
         List list = new ArrayList();
         list.add(TreeCommands.RESULT);
         StringTokenizer t = new StringTokenizer(sw.toString(), "\n");
@@ -347,23 +340,15 @@ public class Viewer
         return (String[]) list.toArray(new String[list.size()]);
     }
 
-    private String[] createResult(QueueBrowser browser, int from, int to, int truncSize) throws Exception {
+    private String[] createResult(ViewCollector collector, int from, int truncSize) throws Exception {
         Document doc = DocumentHelper.createDocument();
         Element root = DocumentHelper.createElement("result");
-        int displayCount = 0;
-        for (int i = 0; i <= to; i++) {
-            MessageEntry entry = browser.getNextMessage();
-            if (entry == null)
-                break;
-            if (i >= from) {
-                displayCount++;
-                if (displayCount > MAX_RESULT)
-                    throw new Exception("Result Size exceeds Maximum of " + MAX_RESULT + " Messages. Use <from> and <to> to reduce it appropriate!");
-                createMessageOutput(entry, root, i, truncSize);
-            }
+        ViewEntry entry = null;
+        while ((entry = collector.next()) != null) {
+            createMessageOutput(entry.messageEntry, root, entry.index, truncSize);
         }
         doc.setRootElement(root);
-        doc.addComment(" " + displayCount + " messages displayed, " + browser.getNumberQueueMessages() + " messages total in queue ");
+        doc.addComment(" " + collector.resultSize() + " messages displayed, " + collector.queueSize() + " messages total in queue ");
         doc.addComment(" If necessary, message body [partly] truncated to " + truncSize + " characters ");
         return docToArray(doc);
     }
@@ -376,9 +361,6 @@ public class Viewer
             int from = Integer.parseInt(cmd[2]);
             if (from < 0)
                 throw new Exception("<startidx> must be >= 0");
-            int to = cmd[3].equals("*") ? Integer.MAX_VALUE : Integer.parseInt(cmd[3]);
-            if (to < from)
-                throw new Exception("<stopidx> is less than <startidx>");
             int truncSize = 2048;
             boolean fail = false;
             String selector = null;
@@ -403,9 +385,9 @@ public class Viewer
                 throw new Exception("Invalid command, please try 'view <queue> <startidx> (<stopidx>|*) [<selector>] [truncate <n>]'");
             if (truncSize < 1)
                 throw new Exception("Invalid truncate size: " + truncSize);
-            QueueBrowser browser = createBrowser(cmd, selector);
-            result = createResult(browser, from, to, truncSize);
-            browser.close();
+            ViewCollector collector = createCollector(cmd[1], selector, from);
+            result = createResult(collector, from, truncSize);
+            collector.close();
         } catch (Exception e) {
             result = new String[]{TreeCommands.ERROR, e.getMessage()};
         }
