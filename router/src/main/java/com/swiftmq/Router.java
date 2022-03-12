@@ -20,6 +20,10 @@ package com.swiftmq;
 import com.swiftmq.swiftlet.SwiftletManager;
 
 public class Router {
+    static {
+        java.security.Security.setProperty("networkaddress.cache.ttl", System.getProperty("networkaddress.cache.ttl", "30"));
+    }
+
     public static void main(java.lang.String[] args) {
         if (args.length == 0) {
             System.err.println("usage: java com.swiftmq.Router <configfile> [<swiftmq-dir>]");
@@ -28,7 +32,7 @@ public class Router {
 
         try {
             if (args.length > 1)
-                    SwiftletManager.getInstance().setWorkingDirectory(args[1]);
+                SwiftletManager.getInstance().setWorkingDirectory(args[1]);
 
             SwiftletManager.getInstance().startRouter(args[0]);
         } catch (Exception e) {
