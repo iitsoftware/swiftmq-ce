@@ -778,6 +778,8 @@ public class TopicManagerImpl extends TopicManager
             ctx.remoteSubscriberList.setEntityRemoveListener(new EntityRemoveListener() {
                 public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException {
                     removeRemoteSubscriptions(delEntity.getName());
+                    if (ctx.announceSender != null)
+                        ctx.announceSender.routerRemoved(delEntity.getName());
                 }
             });
             new TopicAnnounceSender(ctx);
