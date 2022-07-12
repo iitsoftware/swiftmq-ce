@@ -129,6 +129,12 @@ public class TopicAnnounceSender
         }
     }
 
+    public void routerRemoved(String routername) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/topicCreated: " + routername);
+        pipelineQueue.enqueue(new PODestinationRemoved(routername));
+    }
+
     public void topicCreated(String topicName) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/topicCreated: " + topicName);
@@ -237,7 +243,7 @@ public class TopicAnnounceSender
 
     public void visit(PODestinationRemoved po) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
-        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.get(po.getDestination());
+        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.remove(po.getDestination());
         if (rtm != null) {
             rtm.close();
         }

@@ -123,6 +123,13 @@
                   type="java.lang.String"
                   display="Connect IP Address (NAT)"
                   description="Listener Connect IP Address for NAT"/>
+        <property name="connectport"
+                  read-only="true"
+                  type="java.lang.Integer"
+                  display="Connect Port (NAT)"
+                  description="Listener Connect Port for NAT"
+                  mandatory="false"
+                  default="-1"/>
         <property name="bindaddress"
                   read-only="true"
                   type="java.lang.String"
@@ -144,6 +151,13 @@
                   type="java.lang.String"
                   display="Connect IP Address (NAT) 2nd HA Instance"
                   description="Listener Connect IP Address for NAT of the 2nd HA Instance"/>
+        <property name="connectport2"
+                  read-only="true"
+                  type="java.lang.Integer"
+                  display="Connect Port (NAT) 2nd HA Instance"
+                  description="Listener Connect Port for NAT of the 2nd HA Instance"
+                  mandatory="false"
+                  default="-1"/>
         <property name="bindaddress2"
                   read-only="true"
                   type="java.lang.String"

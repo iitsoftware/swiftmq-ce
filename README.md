@@ -62,12 +62,7 @@ Unpack the test suite and `cd scripts`. Then run:
 
 The test suite runs several hundred tests against the JMS API or the AMQP 1.0 protocol, respectively. 
 
-## Community Support
-
-We use [Stackoverflow](https://www.stackoverflow.com) for the community support. If you have any questions or need
-help, post it there under tag `swiftmq`. 
-
-## Reporting Bugs
+## Community Support / Reporting Bugs
 
 Please use the [Issue Tracker](https://github.com/iitsoftware/swiftmq-ce/issues) to file any bugs. 
 
