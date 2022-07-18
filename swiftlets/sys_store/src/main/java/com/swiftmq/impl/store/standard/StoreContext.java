@@ -23,6 +23,9 @@ import com.swiftmq.impl.store.standard.cache.ShrinkProcessor;
 import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.ReferenceMap;
 import com.swiftmq.impl.store.standard.log.LogManager;
+import com.swiftmq.impl.store.standard.pagesize.PageSize;
+import com.swiftmq.impl.store.standard.pagesize.RecommendProcessor;
+import com.swiftmq.impl.store.standard.pagesize.StoreConverter;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.transaction.TransactionManager;
@@ -48,6 +51,7 @@ public class StoreContext {
     public RecoveryManager recoveryManager = null;
     public BackupProcessor backupProcessor = null;
     public ShrinkProcessor shrinkProcessor = null;
+    public RecommendProcessor recommendProcessor = null;
     public TimerSwiftlet timerSwiftlet = null;
     public SchedulerSwiftlet schedulerSwiftlet = null;
     public TraceSwiftlet traceSwiftlet = null;
@@ -67,6 +71,7 @@ public class StoreContext {
     public SwapFileFactory swapFileFactory = null;
     public String swapPath = null;
     public ReferenceMap referenceMap = null;
+    public StoreConverter storeConverter = null;
 
     public StoreContext(StoreSwiftletImpl storeSwiftlet, Configuration config) {
         this.storeSwiftlet = storeSwiftlet;
@@ -85,6 +90,7 @@ public class StoreContext {
         backupList = (EntityList) config.getEntity("usage").getEntity("backup");
         filesList = (EntityList) config.getEntity("usage").getEntity("files");
         referenceMap = new ReferenceMap(this);
+        PageSize.init(dbEntity);
     }
 
     public StoreContext() {

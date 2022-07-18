@@ -15,22 +15,12 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.index;
+package com.swiftmq.impl.store.standard.pagesize.po;
 
-import com.swiftmq.impl.store.standard.StoreContext;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class RootIndexPage extends IndexPage {
+public interface EventVisitor extends POVisitor {
+    public void visit(StartRecommend po);
 
-    public RootIndexPage(StoreContext ctx, int pageNo) {
-        super(ctx, pageNo);
-    }
-
-    protected IndexEntry createIndexEntry() {
-        return new RootIndexEntry();
-    }
-
-    public String toString() {
-        return "[RootIndexPage" + super.toString() + "]";
-    }
+    public void visit(Close po);
 }
-

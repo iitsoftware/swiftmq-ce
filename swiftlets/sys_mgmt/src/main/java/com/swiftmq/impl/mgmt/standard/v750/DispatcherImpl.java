@@ -20,9 +20,8 @@ package com.swiftmq.impl.mgmt.standard.v750;
 import com.swiftmq.impl.mgmt.standard.Dispatcher;
 import com.swiftmq.impl.mgmt.standard.SwiftletContext;
 import com.swiftmq.impl.mgmt.standard.auth.AuthenticatorImpl;
-import com.swiftmq.impl.mgmt.standard.auth.Role;
-import com.swiftmq.impl.mgmt.standard.po.*;
 import com.swiftmq.impl.mgmt.standard.po.EventObject;
+import com.swiftmq.impl.mgmt.standard.po.*;
 import com.swiftmq.jms.BytesMessageImpl;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.QueueImpl;
@@ -392,71 +391,9 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/visit, request: " + request + " ...");
         connectRequest = request;
         ConnectReply reply = (ConnectReply) request.createReply();
-        reply.setOk(true);
-        reply.setRouterName(SwiftletManager.getInstance().getRouterName());
-        reply.setLeaseTimeout(LEASE_EXPIRATION);
-        reply.setAuthRequired(ctx.authEnabled);
-        if (((Boolean) ctx.root.getProperty("admin-roles-enabled").getValue()).booleanValue()) {
-            if (userName == null) {
-                reply.setOk(false);
-                reply.setException(new Exception("JMSXUserID not set in message!"));
-                send(reply);
-                return;
-            }
-            Entity roleEntity = ctx.root.getEntity("roles").getEntity(userName);
-            if (roleEntity != null)
-                authenticator = new AuthenticatorImpl(ctx, new Role(ctx, roleEntity));
-            else {
-                reply.setOk(false);
-                reply.setException(new Exception("No role defined for user: " + userName));
-                send(reply);
-                return;
-            }
-        }
-        if (ctx.authEnabled) {
-            reply.setCrFactory(ctx.challengeResponseFactory.getClass().getName());
-            challenge = ctx.challengeResponseFactory.createChallenge(ctx.password);
-            reply.setChallenge(challenge);
-        } else {
-            authenticated = true;
-            started = true;
-            createUsageEntity();
-        }
+        reply.setOk(false);
+        reply.setException(new Exception("The old Explorer has retired and isn't supported anymore. Please use SwiftMQ Explorer App of Flow Director."));
         send(reply);
-        if (started) {
-            if (connectRequest.isSubscribeRouterConfig()) {
-                try {
-                    RouterConfigInstance routerConfigInstance = copy(RouterConfiguration.Singleton());
-                    roleStrip(routerConfigInstance);
-                    dos.rewind();
-                    Dumpalizer.dump(dos, routerConfigInstance);
-                    send(new RouterConfigRequest(connectRequest.getConnectId(), SwiftletManager.getInstance().getRouterName(), dos.getBuffer(), dos.getCount()));
-                } catch (Exception e) {
-                    valid = false;
-                    authenticated = false;
-                    started = false;
-                }
-            }
-            if (connectRequest.isSubscribeRouteInfos() && ctx.routingSwiftlet != null) {
-                try {
-                    Route[] routes = ctx.routingSwiftlet.getRoutes();
-                    if (routes != null) {
-                        for (int i = 0; i < routes.length; i++) {
-                            if (routes[i].isActive()) {
-                                send(new RouterAvailableRequest(routes[i].getDestination()));
-                                announcedRouters.add(routes[i].getDestination());
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    valid = false;
-                    authenticated = false;
-                    started = false;
-                }
-            }
-        }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/visit, request: " + request + " done");
     }
 
     public void visit(AuthRequest request) {

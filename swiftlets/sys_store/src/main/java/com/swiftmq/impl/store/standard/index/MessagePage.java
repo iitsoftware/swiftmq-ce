@@ -19,51 +19,57 @@
 package com.swiftmq.impl.store.standard.index;
 
 import com.swiftmq.impl.store.standard.cache.Page;
+import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 public class MessagePage {
     static final int POS_PREV_PAGE = Page.HEADER_LENGTH;
     static final int POS_NEXT_PAGE = POS_PREV_PAGE + 4;
     static final int POS_LENGTH = POS_NEXT_PAGE + 4;
-    static final int START_DATA = POS_LENGTH + 4;
+    public static final int START_DATA = POS_LENGTH + 4;
 
     int nextPage = -1;
     int prevPage = -1;
     int length = 0;
 
-    Page page = null;
+    public Page page = null;
 
-    MessagePage(Page page) {
+    public MessagePage(Page page) {
         this.page = page;
         prevPage = Util.readInt(page.data, POS_PREV_PAGE);
         nextPage = Util.readInt(page.data, POS_NEXT_PAGE);
         length = Util.readInt(page.data, POS_LENGTH);
     }
 
-    int getNextPage() {
+    public int getNextPage() {
         return nextPage;
     }
 
-    void setNextPage(int l) {
+    public void setNextPage(int l) {
         nextPage = l;
         Util.writeInt(nextPage, page.data, POS_NEXT_PAGE);
     }
 
-    int getPrevPage() {
+    public int getPrevPage() {
         return prevPage;
     }
 
-    void setPrevPage(int l) {
+    public void setPrevPage(int l) {
         prevPage = l;
         Util.writeInt(prevPage, page.data, POS_PREV_PAGE);
     }
 
-    int getLength() {
+    public int getLength() {
         return length;
     }
 
-    void setLength(int length) {
+    public void setLength(int length) {
         this.length = length;
         Util.writeInt(length, page.data, POS_LENGTH);
+    }
+
+    public void writeData(DataByteArrayOutputStream dbos) throws Exception {
+        int len = getLength() - START_DATA;
+        dbos.write(page.data, START_DATA, len);
     }
 
     public String toString() {

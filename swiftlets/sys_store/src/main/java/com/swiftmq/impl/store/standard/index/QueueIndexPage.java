@@ -20,7 +20,7 @@ package com.swiftmq.impl.store.standard.index;
 import com.swiftmq.impl.store.standard.StoreContext;
 
 public class QueueIndexPage extends IndexPage {
-    protected QueueIndexPage(StoreContext ctx, int pageNo) {
+    public QueueIndexPage(StoreContext ctx, int pageNo) {
         super(ctx, pageNo);
     }
 
