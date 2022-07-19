@@ -36,6 +36,8 @@ public class JobRegistrar {
         jobGroup.addJobFactory(jf.getName(), jf);
         jf = new ShrinkJobFactory(ctx);
         jobGroup.addJobFactory(jf.getName(), jf);
+        jf = new RecommendJobFactory(ctx);
+        jobGroup.addJobFactory(jf.getName(), jf);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/register done");
     }
 
