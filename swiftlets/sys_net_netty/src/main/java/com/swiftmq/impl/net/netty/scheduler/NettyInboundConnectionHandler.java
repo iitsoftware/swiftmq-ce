@@ -18,7 +18,6 @@
 package com.swiftmq.impl.net.netty.scheduler;
 
 import com.swiftmq.impl.net.netty.Countable;
-import com.swiftmq.impl.net.netty.CountableInput;
 import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.net.protocol.ChunkListener;
 import com.swiftmq.net.protocol.ProtocolInputHandler;
@@ -104,12 +103,15 @@ public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter 
     @Override
     public void chunkCompleted(byte[] b, int offset, int len) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/chunk completed");
-        if (bais == null) {
-            zombi = false;
-            bais = new DataByteArrayInputStream();
-        }
-        bais.setBuffer(b, offset, len);
         try {
+            long maxChunkSize = ctx.maxChunkSize.get();
+            if (maxChunkSize != -1 && len > maxChunkSize)
+                throw new Exception("Input message size (" + len + ") exceeds max-chunk-size (" + ctx.maxChunkSize.get() + ")");
+            if (bais == null) {
+                zombi = false;
+                bais = new DataByteArrayInputStream();
+            }
+            bais.setBuffer(b, offset, len);
             inboundHandler.dataAvailable(connection, bais);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/Exception, EXITING: " + e);
