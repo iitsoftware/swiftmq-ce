@@ -395,7 +395,7 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
         if (request.getToolName() != null && request.getToolName().equals("SwiftMQ Explorer")) {
             reply.setOk(false);
             reply.setException(new Exception("The old SwiftMQ Explorer has retired and isn't supported anymore. Please use Explorer App of Flow Director."));
-            ctx.logSwiftlet.logError(ctx.mgmtSwiftlet.getName(), toString() + "The old SwiftMQ Explorer has retired and isn't supported anymore. Please use Explorer App of Flow Director.");
+            ctx.logSwiftlet.logError(ctx.mgmtSwiftlet.getName(), "*** The old SwiftMQ Explorer has retired and isn't supported anymore. Please use Explorer App of Flow Director. ***");
             send(reply);
             return;
         }
