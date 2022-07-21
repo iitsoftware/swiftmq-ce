@@ -20,12 +20,17 @@ package com.swiftmq.impl.store.standard.pagesize;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.*;
+import com.swiftmq.mgmt.Entity;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class StoreConverter {
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd:HH:mm:ss");
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0000000");
     private final String pagedbDir;
     private StoreContext ctx;
     private int currentSize = 0;
@@ -184,23 +189,36 @@ public class StoreConverter {
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/convertMessagePages done");
     }
 
-    public void determineRecommendedPageSize() throws Exception {
-        ctx.logSwiftlet.logInformation("sys$store", toString() + "/determineRecommendedPageSize ...");
+    public void scanPageDB() throws Exception {
+        ctx.logSwiftlet.logInformation("sys$store", toString() + "/scanPageDB ...");
         messageSizes.clear();
         iterateRootIndex(this::countMessageSizes);
         long totalSizeInKB = 0;
         long totalMsgs = 0;
+        String[] names = ctx.scanList.getEntityNames();
+        if (names != null) {
+            for (String name : names) {
+                ctx.scanList.removeEntity(ctx.scanList.getEntity(name));
+            }
+        }
+        String dateString = DATE_FORMAT.format(new Date());
         for (Map.Entry<Integer, Integer> entry : messageSizes.entrySet()) {
             Integer sizeInKB = entry.getKey();
             Integer count = entry.getValue();
-            ctx.logSwiftlet.logInformation("sys$store", toString() + "/determineRecommendedPageSize/--- Message Size in KB: " + sizeInKB + ", Number Messages: " + count);
+            ctx.logSwiftlet.logInformation("sys$store", toString() + "/scanPageDB/--- Message Size in KB: " + sizeInKB + ", Number Messages: " + count);
+            Entity entity = ctx.scanList.createEntity();
+            entity.setName(dateString + "-" + DECIMAL_FORMAT.format(sizeInKB));
+            entity.createCommands();
+            ctx.scanList.addEntity(entity);
+            entity.getProperty("size").setValue(sizeInKB);
+            entity.getProperty("number-messages").setValue(count);
             totalSizeInKB += (long) sizeInKB * (long) count;
             totalMsgs += count;
         }
         int recommended = Math.min(Math.max((int) ((((totalSizeInKB * 1024) / totalMsgs / 2048) + 1) * 2048), 2048), PageSize.maxPageSize());
         PageSize.setRecommended(recommended);
-        ctx.logSwiftlet.logInformation("sys$store", toString() + "/determineRecommendedPageSize/*** Current Page Size: " + PageSize.getCurrent() + " / Recommended Page Size: " + recommended);
-        ctx.logSwiftlet.logInformation("sys$store", toString() + "/determineRecommendedPageSize done");
+        ctx.logSwiftlet.logInformation("sys$store", toString() + "/scanPageDB/*** Current Page Size: " + PageSize.getCurrent() + " / Recommended Page Size: " + recommended);
+        ctx.logSwiftlet.logInformation("sys$store", toString() + "/scanPageDB done");
     }
 
     public String toString() {

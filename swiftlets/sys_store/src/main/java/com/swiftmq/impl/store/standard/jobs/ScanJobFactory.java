@@ -26,16 +26,16 @@ import com.swiftmq.swiftlet.scheduler.JobParameter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RecommendJobFactory implements JobFactory {
+public class ScanJobFactory implements JobFactory {
     StoreContext ctx = null;
     Map parameters = new HashMap();
 
-    public RecommendJobFactory(StoreContext ctx) {
+    public ScanJobFactory(StoreContext ctx) {
         this.ctx = ctx;
     }
 
     public String getName() {
-        return "Recommend";
+        return "Scan";
     }
 
     public String getDescription() {
@@ -52,7 +52,7 @@ public class RecommendJobFactory implements JobFactory {
 
     public Job getJobInstance() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/getJobInstance");
-        return new RecommendJob(ctx);
+        return new ScanJob(ctx);
     }
 
     public void finished(Job job, JobException e) {

@@ -24,7 +24,7 @@ import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.ReferenceMap;
 import com.swiftmq.impl.store.standard.log.LogManager;
 import com.swiftmq.impl.store.standard.pagesize.PageSize;
-import com.swiftmq.impl.store.standard.pagesize.RecommendProcessor;
+import com.swiftmq.impl.store.standard.pagesize.ScanProcessor;
 import com.swiftmq.impl.store.standard.pagesize.StoreConverter;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
@@ -51,7 +51,7 @@ public class StoreContext {
     public RecoveryManager recoveryManager = null;
     public BackupProcessor backupProcessor = null;
     public ShrinkProcessor shrinkProcessor = null;
-    public RecommendProcessor recommendProcessor = null;
+    public ScanProcessor scanProcessor = null;
     public TimerSwiftlet timerSwiftlet = null;
     public SchedulerSwiftlet schedulerSwiftlet = null;
     public TraceSwiftlet traceSwiftlet = null;
@@ -68,6 +68,7 @@ public class StoreContext {
     public Entity durableEntity = null;
     public EntityList backupList = null;
     public EntityList filesList = null;
+    public EntityList scanList = null;
     public SwapFileFactory swapFileFactory = null;
     public String swapPath = null;
     public ReferenceMap referenceMap = null;
@@ -89,6 +90,7 @@ public class StoreContext {
         swapEntity = config.getEntity("swap");
         backupList = (EntityList) config.getEntity("usage").getEntity("backup");
         filesList = (EntityList) config.getEntity("usage").getEntity("files");
+        scanList = (EntityList) config.getEntity("usage").getEntity("scan");
         referenceMap = new ReferenceMap(this);
         PageSize.init(dbEntity);
     }

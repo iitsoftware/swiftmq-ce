@@ -20,7 +20,7 @@ package com.swiftmq.impl.store.standard.pagesize.po;
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface EventVisitor extends POVisitor {
-    public void visit(StartRecommend po);
+    public void visit(StartScan po);
 
     public void visit(Close po);
 }

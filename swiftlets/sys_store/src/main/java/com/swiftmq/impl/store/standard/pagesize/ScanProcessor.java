@@ -21,19 +21,19 @@ import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
 import com.swiftmq.impl.store.standard.pagesize.po.Close;
 import com.swiftmq.impl.store.standard.pagesize.po.EventVisitor;
-import com.swiftmq.impl.store.standard.pagesize.po.StartRecommend;
+import com.swiftmq.impl.store.standard.pagesize.po.StartScan;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.PipelineQueue;
 
-public class RecommendProcessor implements EventVisitor, CheckPointFinishedListener {
+public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
     static final String TP_SHRINK = "sys$store.shrink";
     StoreContext ctx = null;
     PipelineQueue pipelineQueue = null;
     boolean recommendActive = false;
 
-    public RecommendProcessor(StoreContext ctx) {
+    public ScanProcessor(StoreContext ctx) {
         this.ctx = ctx;
         pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SHRINK), TP_SHRINK, this);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
@@ -45,7 +45,7 @@ public class RecommendProcessor implements EventVisitor, CheckPointFinishedListe
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/checkpointFinished ...");
         try {
-            ctx.storeConverter.determineRecommendedPageSize();
+            ctx.storeConverter.scanPageDB();
             SwiftletManager.getInstance().saveConfiguration();
             recommendActive = false;
         } catch (Exception e) {
@@ -60,7 +60,7 @@ public class RecommendProcessor implements EventVisitor, CheckPointFinishedListe
         pipelineQueue.enqueue(po);
     }
 
-    public void visit(StartRecommend po) {
+    public void visit(StartScan po) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
         if (recommendActive) {
             // reject it

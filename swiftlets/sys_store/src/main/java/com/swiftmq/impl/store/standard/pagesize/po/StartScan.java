@@ -21,9 +21,9 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class StartRecommend extends POObject {
+public class StartScan extends POObject {
 
-    public StartRecommend(Semaphore semaphore) {
+    public StartScan(Semaphore semaphore) {
         super(null, semaphore);
     }
 

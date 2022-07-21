@@ -31,9 +31,9 @@ import com.swiftmq.impl.store.standard.index.RootIndex;
 import com.swiftmq.impl.store.standard.jobs.JobRegistrar;
 import com.swiftmq.impl.store.standard.log.*;
 import com.swiftmq.impl.store.standard.pagesize.PageSize;
-import com.swiftmq.impl.store.standard.pagesize.RecommendProcessor;
+import com.swiftmq.impl.store.standard.pagesize.ScanProcessor;
 import com.swiftmq.impl.store.standard.pagesize.StoreConverter;
-import com.swiftmq.impl.store.standard.pagesize.po.StartRecommend;
+import com.swiftmq.impl.store.standard.pagesize.po.StartScan;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactoryImpl;
@@ -300,44 +300,40 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
             checkBackupPath();
             ctx.shrinkProcessor = new ShrinkProcessor(ctx);
             CommandRegistry commandRegistry = ctx.dbEntity.getCommandRegistry();
-            CommandExecutor shrinkExecutor = new CommandExecutor() {
-                public String[] execute(String[] context, Entity entity, String[] cmd) {
-                    if (cmd.length != 1)
-                        return new String[]{TreeCommands.ERROR, "Invalid command, please try 'shrink'"};
-                    Semaphore sem = new Semaphore();
-                    StartShrink po = new StartShrink(sem);
-                    ctx.shrinkProcessor.enqueue(po);
-                    sem.waitHere();
-                    String[] result = null;
-                    if (po.isSuccess())
-                        result = new String[]{TreeCommands.INFO, "Shrink initiated."};
-                    else
-                        result = new String[]{TreeCommands.ERROR, po.getException()};
-                    return result;
-                }
+            CommandExecutor shrinkExecutor = (context, entity, cmd) -> {
+                if (cmd.length != 1)
+                    return new String[]{TreeCommands.ERROR, "Invalid command, please try 'shrink'"};
+                Semaphore sem = new Semaphore();
+                StartShrink po = new StartShrink(sem);
+                ctx.shrinkProcessor.enqueue(po);
+                sem.waitHere();
+                String[] result = null;
+                if (po.isSuccess())
+                    result = new String[]{TreeCommands.INFO, "Shrink initiated."};
+                else
+                    result = new String[]{TreeCommands.ERROR, po.getException()};
+                return result;
             };
             Command shrinkCommand = new Command("shrink", "shrink", "Perform Shrink Now", true, shrinkExecutor, true, false);
             commandRegistry.addCommand(shrinkCommand);
 
-            ctx.recommendProcessor = new RecommendProcessor(ctx);
-            CommandExecutor recommendExecutor = new CommandExecutor() {
-                public String[] execute(String[] context, Entity entity, String[] cmd) {
-                    if (cmd.length != 1)
-                        return new String[]{TreeCommands.ERROR, "Invalid command, please try 'recommend'"};
-                    Semaphore sem = new Semaphore();
-                    StartRecommend po = new StartRecommend(sem);
-                    ctx.recommendProcessor.enqueue(po);
-                    sem.waitHere();
-                    String[] result = null;
-                    if (po.isSuccess())
-                        result = new String[]{TreeCommands.INFO, "Recommending new page size initiated."};
-                    else
-                        result = new String[]{TreeCommands.ERROR, po.getException()};
-                    return result;
-                }
+            ctx.scanProcessor = new ScanProcessor(ctx);
+            CommandExecutor scanExecutor = (context, entity, cmd) -> {
+                if (cmd.length != 1)
+                    return new String[]{TreeCommands.ERROR, "Invalid command, please try 'scan'"};
+                Semaphore sem = new Semaphore();
+                StartScan po = new StartScan(sem);
+                ctx.scanProcessor.enqueue(po);
+                sem.waitHere();
+                String[] result = null;
+                if (po.isSuccess())
+                    result = new String[]{TreeCommands.INFO, "Scanning page.db initiated."};
+                else
+                    result = new String[]{TreeCommands.ERROR, po.getException()};
+                return result;
             };
-            Command recommendCommand = new Command("recommend", "recommend", "Perform Page Size Recommendation", true, recommendExecutor, true, false);
-            commandRegistry.addCommand(recommendCommand);
+            Command scanCommand = new Command("scan", "scan", "Scan page.db", true, scanExecutor, true, false);
+            commandRegistry.addCommand(scanCommand);
 
             SwiftletManager.getInstance().addSwiftletManagerListener("sys$scheduler", new SwiftletManagerAdapter() {
                 public void swiftletStarted(SwiftletManagerEvent event) {
@@ -371,7 +367,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown...");
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping recommend processor...");
-            ctx.recommendProcessor.close();
+            ctx.scanProcessor.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping backup processor...");
             ctx.backupProcessor.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");

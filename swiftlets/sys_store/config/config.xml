@@ -149,26 +149,45 @@
                   display="Files"
                   description="Files"
                   dynamic-properties="used-pages free-pages">
-          <entitytemplate name="file"
-                          display="File"
-                          description="Filet">
-            <property name="free-pages"
-                      type="java.lang.Integer"
-                      display="Free Pages"
-                      default="0"
-                      description="Number of Free Pages"/>
-            <property name="used-pages"
-                      type="java.lang.Integer"
-                      display="Used Pages"
-                      default="0"
-                      description="Number of Used Pages"/>
-            <property name="file-size"
-                      type="java.lang.Long"
-                      display="File Size (KB)"
-                      default="0"
-                      description="Size of this File in KB"/>
-                </entitytemplate>
-       </entitylist>
+        <entitytemplate name="file"
+                        display="File"
+                        description="File">
+          <property name="free-pages"
+                    type="java.lang.Integer"
+                    display="Free Pages"
+                    default="0"
+                    description="Number of Free Pages"/>
+          <property name="used-pages"
+                    type="java.lang.Integer"
+                    display="Used Pages"
+                    default="0"
+                    description="Number of Used Pages"/>
+          <property name="file-size"
+                    type="java.lang.Long"
+                    display="File Size (KB)"
+                    default="0"
+                    description="Size of this File in KB"/>
+        </entitytemplate>
+      </entitylist>
+      <entitylist name="scan"
+                  display="Scan Result"
+                  description="Result of the page.db scan"
+                  dynamic-properties="size number-messages">
+        <entitytemplate name="latestscan"
+                        display="Scan"
+                        description="Scan Result">
+          <property name="size"
+                    type="java.lang.Integer"
+                    display="Message Size (KB)"
+                    default="0"
+                    description="Message Size (KB)"/>
+          <property name="number-messages"
+                    type="java.lang.Integer"
+                    display="Number Messages"
+                    default="0"
+                    description="Number of Messages with this size"/>
+        </entitytemplate>
+      </entitylist>
     </entity>
 	</configuration>
 </swiftlet>
