@@ -53,7 +53,7 @@
     <property name="max-chunk-size"
               type="java.lang.Long"
               display="Maximum Chunk Size (Bytes)"
-              description="Maximum size of a network chunk (chunk = message in JMS) to avoid OutOfMemory errors."
+              description="Maximum size of a network chunk (chunk = message in JMS) to limit the incoming message size router-wide."
               default="-1"/>
     <entitylist name="usage" display="Connections" description="Active Connections">
       <entitytemplate name="usage" display="Connection" description="Active Connection">
