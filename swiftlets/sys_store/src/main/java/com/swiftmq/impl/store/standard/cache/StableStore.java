@@ -18,6 +18,7 @@
 package com.swiftmq.impl.store.standard.cache;
 
 import com.swiftmq.impl.store.standard.StoreContext;
+import com.swiftmq.impl.store.standard.pagesize.PageSize;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.mgmt.PropertyChangeException;
@@ -28,17 +29,17 @@ import com.swiftmq.swiftlet.event.SwiftletManagerEvent;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.mgmt.event.MgmtListener;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.tools.collection.IntRingBuffer;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class StableStore implements TimerListener, MgmtListener {
     public static final String FILENAME = "page.db";
     protected StoreContext ctx;
     protected String path;
-    protected IntRingBuffer[] freePool;
+    protected SortedSet<Integer> freePages = new TreeSet<>();
     protected volatile int nFree = 0;
     protected RandomAccessFile file;
     protected String filename;
@@ -79,63 +80,29 @@ public class StableStore implements TimerListener, MgmtListener {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/creating done.");
     }
 
-    IntRingBuffer[] getFreePool() {
-        return freePool;
-    }
-
     int getnFree() {
         return nFree;
     }
 
-    private void init() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init ...");
-        nFree = 0;
-        if (freePoolEnabled)
-            freePool = new IntRingBuffer[10];
-        filename = path + File.separatorChar + FILENAME;
-        emptyData = new byte[Page.PAGE_SIZE];
-        emptyData[0] = 1; // emtpy
-        for (int i = 1; i < Page.PAGE_SIZE; i++)
-            emptyData[i] = 0;
-        file = new RandomAccessFile(filename, "rw");
-        fileLength = file.length();
-        if (fileLength > 0) {
-            numberPages = (int) (fileLength / Page.PAGE_SIZE);
-            if (!offline)
-                shrinkFile();
-        } else
-            initialize(initialPages);
-        sync();
-        if (freePoolEnabled)
-            buildFreePageList();
-        if (!offline) {
-            Entity entity = ctx.filesList.createEntity();
-            entity.setName(FILENAME);
-            entity.createCommands();
-            ctx.filesList.addEntity(entity);
-            freeProp = entity.getProperty("free-pages");
-            usedProp = entity.getProperty("used-pages");
-            fileSizeProp = entity.getProperty("file-size");
-            sizeCollectProp = ctx.dbEntity.getProperty("size-collect-interval");
-            collectInterval = (long) (Long) sizeCollectProp.getValue();
-            startTimer();
-            PropertyChangeListener propChangeListener = new PropertyChangeListener() {
-                public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                    stopTimer();
-                    collectInterval = (Long) newValue;
-                    startTimer();
-                }
-            };
-            sizeCollectProp.setPropertyChangeListener(propChangeListener);
-            swiftletManagerAdapter = new SwiftletManagerAdapter() {
-                public void swiftletStarted(SwiftletManagerEvent event) {
-                    mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");
-                    mgmtSwiftlet.addMgmtListener(StableStore.this);
-                }
-            };
-            SwiftletManager.getInstance().addSwiftletManagerListener("sys$mgmt", swiftletManagerAdapter);
-        }
-        ctx.logSwiftlet.logInformation("sys$store", toString() + "/init done, size=" + numberPages + ", freePages=" + getNumberFreePages());
+    private static byte[] makeEmptyArray(int size) {
+        byte[] data = new byte[size];
+        data[0] = 1; // emtpy
+        for (int i = 1; i < size; i++)
+            data[i] = 0;
+        return data;
+    }
+
+    private static Page loadPage(RandomAccessFile file, int pageNo, int size) throws Exception {
+        Page p = new Page();
+        p.pageNo = pageNo;
+        p.empty = true;
+        p.dirty = false;
+        p.data = new byte[size];
+        long seekPoint = (long) pageNo * (long) size;
+        file.seek(seekPoint);
+        file.readFully(p.data);
+        p.empty = p.data[0] == 1;
+        return p;
     }
 
     private void startTimer() {
@@ -183,32 +150,97 @@ public class StableStore implements TimerListener, MgmtListener {
         }
     }
 
+    private static void writePage(RandomAccessFile f, Page page, int newSize, byte[] empty) throws Exception {
+        Page p = page.copy(newSize);
+        if (p.empty)
+            System.arraycopy(empty, 0, p.data, 0, empty.length);
+        p.data[0] = (byte) (p.empty ? 1 : 0);
+        f.seek((long) p.pageNo * (long) newSize);
+        f.write(p.data);
+        p.dirty = false;
+    }
+
+    public static void copyToNewSize(String sourceFilename, String destFilename, int oldSize, int newSize) throws Exception {
+        RandomAccessFile sourceFile = new RandomAccessFile(sourceFilename, "r");
+        int nPages = (int) (sourceFile.length() / oldSize);
+        byte[] empty = makeEmptyArray(newSize);
+        RandomAccessFile destFile = new RandomAccessFile(destFilename, "rw");
+        for (int i = 0; i < nPages; i++) {
+            writePage(destFile, loadPage(sourceFile, i, oldSize), newSize, empty);
+        }
+        destFile.getFD().sync();
+        destFile.close();
+        sourceFile.close();
+    }
+
+    private void init() throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init ...");
+        nFree = 0;
+        filename = path + File.separatorChar + FILENAME;
+        emptyData = makeEmptyArray(PageSize.getCurrent());
+        file = new RandomAccessFile(filename, "rw");
+        fileLength = file.length();
+        if (fileLength > 0) {
+            numberPages = (int) (fileLength / PageSize.getCurrent());
+            if (!offline)
+                shrinkFile();
+        } else
+            initialize(initialPages);
+        sync();
+        if (freePoolEnabled)
+            buildFreePageList();
+        if (!offline) {
+            Entity entity = ctx.filesList.createEntity();
+            entity.setName(FILENAME);
+            entity.createCommands();
+            ctx.filesList.addEntity(entity);
+            freeProp = entity.getProperty("free-pages");
+            usedProp = entity.getProperty("used-pages");
+            fileSizeProp = entity.getProperty("file-size");
+            sizeCollectProp = ctx.dbEntity.getProperty("size-collect-interval");
+            collectInterval = (long) (Long) sizeCollectProp.getValue();
+            startTimer();
+            PropertyChangeListener propChangeListener = new PropertyChangeListener() {
+                public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
+                    stopTimer();
+                    collectInterval = (Long) newValue;
+                    startTimer();
+                }
+            };
+            sizeCollectProp.setPropertyChangeListener(propChangeListener);
+            swiftletManagerAdapter = new SwiftletManagerAdapter() {
+                public void swiftletStarted(SwiftletManagerEvent event) {
+                    mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");
+                    mgmtSwiftlet.addMgmtListener(StableStore.this);
+                }
+            };
+            SwiftletManager.getInstance().addSwiftletManagerListener("sys$mgmt", swiftletManagerAdapter);
+        }
+        ctx.logSwiftlet.logInformation("sys$store", toString() + "/init done, pageSize=" + PageSize.getCurrent() + ", size=" + numberPages + ", freePages=" + getNumberFreePages());
+    }
+
+    private void panic(Exception e) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/panic: " + e);
+        System.err.println("PANIC, EXITING: " + e);
+        e.printStackTrace();
+        SwiftletManager.getInstance().disableShutdownHook();
+        System.exit(-1);
+    }
+
     private void addToFreePool(int pageNo) {
         if (!freePoolEnabled)
             return;
-        int idx = pageNo / 100;
-        if (idx > freePool.length - 1) {
-            IntRingBuffer[] b = new IntRingBuffer[idx + 10];
-            System.arraycopy(freePool, 0, b, 0, freePool.length);
-            freePool = b;
-        }
-        if (freePool[idx] == null)
-            freePool[idx] = new IntRingBuffer(100);
-        freePool[idx].add(pageNo);
+        freePages.add(pageNo);
         nFree++;
     }
 
     private int getFirstFree() {
         if (!freePoolEnabled || nFree == 0)
             return -1;
-        for (int i = 0; i < freePool.length; i++) {
-            IntRingBuffer b = freePool[i];
-            if (b != null && b.getSize() > 0) {
-                nFree--;
-                return b.remove();
-            }
-        }
-        return -1;
+        Integer pageNo = freePages.first();
+        freePages.remove(pageNo);
+        nFree--;
+        return pageNo;
     }
 
     private void initialize(int nPages) throws Exception {
@@ -221,14 +253,18 @@ public class StableStore implements TimerListener, MgmtListener {
             writePage(p);
         }
         numberPages = nPages;
+//        String filename = path + File.separatorChar + PageSize.SIZE_FILE_CURRENT;
+//        File f = new File(filename);
+//        if (!f.exists()) {
+//            try {
+//                PageSize.saveCurrentSize(filename, PageSize.getCurrent());
+//            } catch (Exception ignored) {
+//            }
+//        }
     }
 
-    private void panic(Exception e) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/panic: " + e);
-        System.err.println("PANIC, EXITING: " + e);
-        e.printStackTrace();
-        SwiftletManager.getInstance().disableShutdownHook();
-        System.exit(-1);
+    public void setNumberPages(int numberPages) {
+        this.numberPages = numberPages;
     }
 
     public Page createPage(int pageNo) {
@@ -236,13 +272,13 @@ public class StableStore implements TimerListener, MgmtListener {
         p.pageNo = pageNo;
         p.empty = true;
         p.dirty = false;
-        p.data = new byte[Page.PAGE_SIZE];
+        p.data = new byte[PageSize.getCurrent()];
         System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
         return p;
     }
 
     protected void ensurePage(int pageNo) throws Exception {
-        long length = (long) (pageNo + 1) * (long) Page.PAGE_SIZE;
+        long length = (long) (pageNo + 1) * (long) PageSize.getCurrent();
         if (fileLength < length) {
             try {
                 file.setLength(length);
@@ -253,84 +289,20 @@ public class StableStore implements TimerListener, MgmtListener {
         }
     }
 
-    public void truncateToPage(int pageNo) throws Exception {
-        try {
-            long length = (long) (pageNo + 1) * (long) Page.PAGE_SIZE;
-            file.setLength(length);
-            fileLength = length;
-        } catch (Exception e) {
-            panic(e);
-        }
-    }
-
-    public void setNumberPages(int numberPages) {
-        this.numberPages = numberPages;
-    }
-
-    protected Page loadPage(int pageNo) throws Exception {
-        Page p = createPage(pageNo);
-        p.data = new byte[Page.PAGE_SIZE];
-        long seekPoint = (long) pageNo * (long) Page.PAGE_SIZE;
-        file.seek(seekPoint);
-        file.readFully(p.data);
-        p.empty = p.data[0] == 1;
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/loadPage, pageNo=" + pageNo + ", empty=" + p.empty);
-        return p;
-    }
-
-    protected void writePage(Page p) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/writePage, page=" + p);
-        try {
-            if (p.empty)
-                System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
-            p.data[0] = (byte) (p.empty ? 1 : 0);
-            file.seek((long) p.pageNo * (long) Page.PAGE_SIZE);
-            file.write(p.data);
-            p.dirty = false;
-            long length = (long) (p.pageNo + 1) * (long) Page.PAGE_SIZE;
-            if (length > fileLength)
-                fileLength = length;
-        } catch (Exception e) {
-            panic(e);
-        }
-    }
-
-    protected void writePage(RandomAccessFile f, Page p) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/writePage, page=" + p);
-        try {
-            if (p.empty)
-                System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
-            p.data[0] = (byte) (p.empty ? 1 : 0);
-            f.seek((long) p.pageNo * (long) Page.PAGE_SIZE);
-            f.write(p.data);
-            p.dirty = false;
-        } catch (IOException e) {
-            panic(e);
-        }
-    }
-
     public void sync() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/sync...");
         file.getFD().sync();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/sync done.");
     }
 
-    public void shrinkFile() throws Exception {
-        int shrinked = numberPages;
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/shrinkFile, before: numberPages=" + numberPages);
-        for (int i = numberPages - 1; i >= initialPages; i--) {
-            Page p = loadPage(i);
-            if (p.empty)
-                shrinked--;
-            else
-                break;
+    public void truncateToPage(int pageNo) throws Exception {
+        try {
+            long length = (long) (pageNo + 1) * (long) PageSize.getCurrent();
+            file.setLength(length);
+            fileLength = length;
+        } catch (Exception e) {
+            panic(e);
         }
-        numberPages = shrinked;
-        truncateToPage(numberPages - 1);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/shrinkFile, after: numberPages=" + numberPages);
     }
 
     private void buildFreePageList() throws Exception {
@@ -351,13 +323,15 @@ public class StableStore implements TimerListener, MgmtListener {
         throw new Exception(msg);
     }
 
-    public void shrink() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink...");
-        shrinkFile();
-        freePool = new IntRingBuffer[10];
-        nFree = 0;
-        buildFreePageList();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink done");
+    protected Page loadPage(int pageNo) throws Exception {
+        Page p = createPage(pageNo);
+        long seekPoint = (long) pageNo * (long) PageSize.getCurrent();
+        file.seek(seekPoint);
+        file.readFully(p.data);
+        p.empty = p.data[0] == 1;
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/loadPage, pageNo=" + pageNo + ", empty=" + p.empty);
+        return p;
     }
 
     public int getNumberPages() {
@@ -422,10 +396,50 @@ public class StableStore implements TimerListener, MgmtListener {
             addToFreePool(page.pageNo);
     }
 
+    protected void writePage(Page p) throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/writePage, page=" + p);
+        try {
+            if (p.empty)
+                System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
+            p.data[0] = (byte) (p.empty ? 1 : 0);
+            file.seek((long) p.pageNo * (long) PageSize.getCurrent());
+            file.write(p.data);
+            p.dirty = false;
+            long length = (long) (p.pageNo + 1) * (long) PageSize.getCurrent();
+            if (length > fileLength)
+                fileLength = length;
+        } catch (Exception e) {
+            panic(e);
+        }
+    }
+
+    public void shrinkFile() throws Exception {
+        int shrinked = numberPages;
+        ctx.logSwiftlet.logInformation("sys$store", toString() + "/shrinkFile, before: numberPages=" + numberPages);
+        for (int i = numberPages - 1; i >= initialPages; i--) {
+            Page p = loadPage(i);
+            if (p.empty)
+                shrinked--;
+            else
+                break;
+        }
+        numberPages = shrinked;
+        truncateToPage(numberPages - 1);
+        ctx.logSwiftlet.logInformation("sys$store", toString() + "/shrinkFile, after: numberPages=" + numberPages);
+    }
+
+    public void shrink() throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink...");
+        shrinkFile();
+        freePages.clear();
+        nFree = 0;
+        buildFreePageList();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink done");
+    }
+
     public void deleteStore() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/deleteStore");
-        for (int i = 0; i < freePool.length; i++)
-            freePool[i] = null;
+        freePages.clear();
         numberPages = 0;
         file.setLength(0);
         fileLength = 0;
@@ -434,7 +448,7 @@ public class StableStore implements TimerListener, MgmtListener {
     public void copy(String destPath) throws Exception {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", toString() + "/copy to " + (destPath + File.separatorChar + FILENAME) + " ...");
-        int nPages = (int) (file.length() / Page.PAGE_SIZE);
+        int nPages = (int) (file.length() / PageSize.getCurrent());
         int shrinked = nPages;
         for (int i = nPages - 1; i >= 0; i--) {
             Page p = loadPage(i);
@@ -443,10 +457,11 @@ public class StableStore implements TimerListener, MgmtListener {
             else
                 break;
         }
+        byte[] empty = makeEmptyArray(PageSize.getCurrent());
         String destFilename = destPath + File.separatorChar + FILENAME;
         RandomAccessFile destFile = new RandomAccessFile(destFilename, "rw");
         for (int i = 0; i < shrinked; i++) {
-            writePage(destFile, loadPage(i));
+            writePage(destFile, loadPage(i), PageSize.getCurrent(), empty);
         }
         destFile.getFD().sync();
         destFile.close();
@@ -463,10 +478,8 @@ public class StableStore implements TimerListener, MgmtListener {
                 mgmtSwiftlet.removeMgmtListener(this);
             stopTimer();
         }
-        if (freePoolEnabled) {
-            for (int i = 0; i < freePool.length; i++)
-                freePool[i] = null;
-        }
+        if (freePoolEnabled)
+            freePages.clear();
         numberPages = 0;
         fileLength = 0;
         file.close();

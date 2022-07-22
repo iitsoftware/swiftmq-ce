@@ -15,22 +15,23 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.index;
+package com.swiftmq.impl.store.standard.pagesize.po;
 
-import com.swiftmq.impl.store.standard.StoreContext;
+import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class RootIndexPage extends IndexPage {
+public class StartScan extends POObject {
 
-    public RootIndexPage(StoreContext ctx, int pageNo) {
-        super(ctx, pageNo);
+    public StartScan(Semaphore semaphore) {
+        super(null, semaphore);
     }
 
-    protected IndexEntry createIndexEntry() {
-        return new RootIndexEntry();
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
     }
 
     public String toString() {
-        return "[RootIndexPage" + super.toString() + "]";
+        return "[StartRecommend]";
     }
 }
-

@@ -28,6 +28,7 @@ import com.swiftmq.util.SwiftUtilities;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ManagementProcessor implements EntityWatchListener, PropertyWatchListener {
@@ -172,14 +173,17 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
     public void propertyValueChanged(Property property) {
         if (!input.hasChangeCallback())
             return;
-        if (property.getValue() != null && prevValue != null &&
-                !property.getValue().equals(prevValue) || prevValue == null) {
+        Object value = property.getValue();
+        if (value == null && Objects.equals(property.getType(), String.class))
+            value = "null";
+        if (value != null && prevValue != null &&
+                !Objects.equals(property.getValue(), prevValue) || prevValue == null) {
             Message message = ctx.messageBuilder.message()
                     .property(ManagementInput.PROP_OPER).set(ManagementInput.VAL_CHANGE)
                     .property(ManagementInput.PROP_CTX).set(input.context())
                     .property(ManagementInput.PROP_TIME).set(System.currentTimeMillis())
                     .property("name").set(property.getParent().getName())
-                    .property(property.getName().replace("-", "_")).set(property.getValue());
+                    .property(property.getName().replace("-", "_")).set(value);
             List<String> propIncludes = input.getPropIncludes();
             if (propIncludes != null) {
                 for (int i = 0; i < propIncludes.size(); i++) {
@@ -208,14 +212,17 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
             if (!input.hasChangeCallback())
                 return;
             Object prevValue = prevValues.get(property.getName());
-            if (property.getValue() != null && prevValue != null &&
-                    !property.getValue().equals(prevValue) || prevValue == null) {
+            Object value = property.getValue();
+            if (value == null && Objects.equals(property.getType(), String.class))
+                value = "null";
+            if (value != null && prevValue != null &&
+                    !Objects.equals(property.getValue(), prevValue) || prevValue == null) {
                 Message message = ctx.messageBuilder.message()
                         .property(ManagementInput.PROP_OPER).set(ManagementInput.VAL_CHANGE)
                         .property(ManagementInput.PROP_CTX).set(input.context())
                         .property("name").set(entity.getName())
                         .property(ManagementInput.PROP_TIME).set(System.currentTimeMillis())
-                        .property(property.getName().replace("-", "_")).set(property.getValue());
+                        .property(property.getName().replace("-", "_")).set(value);
                 List<String> propIncludes = input.getPropIncludes();
                 if (propIncludes != null) {
                     for (int i = 0; i < propIncludes.size(); i++) {
@@ -227,7 +234,10 @@ public class ManagementProcessor implements EntityWatchListener, PropertyWatchLi
                     }
                 }
                 sendMessage(message);
-                prevValues.put(property.getName(), property.getValue());
+                if (property.getValue() == null)
+                    prevValues.remove(property.getName());
+                else
+                    prevValues.put(property.getName(), property.getValue());
             }
         }
 

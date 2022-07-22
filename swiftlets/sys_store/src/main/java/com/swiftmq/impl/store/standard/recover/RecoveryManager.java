@@ -21,6 +21,7 @@ import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.Page;
 import com.swiftmq.impl.store.standard.index.IndexAnalyzer;
 import com.swiftmq.impl.store.standard.log.*;
+import com.swiftmq.impl.store.standard.pagesize.PageSize;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.io.FileWriter;
@@ -41,9 +42,9 @@ public class RecoveryManager {
 
     public RecoveryManager(StoreContext ctx) {
         this.ctx = ctx;
-        emptyData = new byte[Page.PAGE_SIZE];
+        emptyData = new byte[PageSize.getCurrent()];
         emptyData[0] = 1; // emtpy
-        for (int i = 1; i < Page.PAGE_SIZE; i++)
+        for (int i = 1; i < PageSize.getCurrent(); i++)
             emptyData[i] = 0;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/create");
     }

@@ -29,6 +29,7 @@ import com.swiftmq.tools.util.DataStreamInputStream;
 import com.swiftmq.tools.util.IdGenerator;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.Dom4JDriver;
+import com.thoughtworks.xstream.security.AnyTypePermission;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -93,6 +94,7 @@ public class Importer
                 throw new Exception("Input directory doesn't exists: " + localDir);
 
             xStream = new XStream(new Dom4JDriver());
+            xStream.addPermission(AnyTypePermission.ANY);
             xStream.allowTypesByWildcard(new String[]{".*"});
 
             QueueSender sender = ctx.queueManager.createQueueSender(queueName, null);
@@ -142,6 +144,7 @@ public class Importer
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return new String[]{TreeCommands.ERROR, e.getMessage()};
         }
         return new String[]{TreeCommands.INFO, nMsgs + " messages imported."};

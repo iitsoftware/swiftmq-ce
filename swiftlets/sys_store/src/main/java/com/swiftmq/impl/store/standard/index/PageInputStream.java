@@ -18,7 +18,6 @@
 package com.swiftmq.impl.store.standard.index;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.cache.Page;
 import com.swiftmq.tools.collection.IntRingBuffer;
 import com.swiftmq.tools.util.LengthCaptureDataInput;
 
@@ -35,9 +34,10 @@ public class PageInputStream implements LengthCaptureDataInput {
     IntRingBuffer pageList = new IntRingBuffer(5);
     MessagePage actPage = null;
     int pos = 0;
+    int length = 0;
     long captureLength = 0;
 
-    PageInputStream(StoreContext ctx) {
+    public PageInputStream(StoreContext ctx) {
         this.ctx = ctx;
     }
 
@@ -53,7 +53,7 @@ public class PageInputStream implements LengthCaptureDataInput {
         this.pageRecorder = pageRecorder;
     }
 
-    void setRootPageNo(int rootPageNo) throws Exception {
+    public void setRootPageNo(int rootPageNo) throws Exception {
         this.rootPageNo = rootPageNo;
         actPage = null;
         pos = 0;
@@ -61,12 +61,13 @@ public class PageInputStream implements LengthCaptureDataInput {
     }
 
     private void flipPage(int pageNo) throws IOException {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/flipPage, pageNo=" + pageNo + " ...");
         try {
             actPage = new MessagePage(ctx.cacheManager.fetchAndPin(pageNo));
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$store", toString() + "/flipPage, pageNo=" + pageNo + ", data length=" + actPage.getLength() + " ...");
             pageList.add(pageNo);
             pos = MessagePage.START_DATA;
+            length = actPage.getLength();
         } catch (Exception e) {
             throw new IOException(e.toString());
         }
@@ -79,7 +80,7 @@ public class PageInputStream implements LengthCaptureDataInput {
     }
 
     public int read() throws IOException {
-        if (pos > Page.PAGE_SIZE - 1) {
+        if (pos > length) {
             int next = actPage.getNextPage();
             if (next == -1)
                 return -1;
@@ -96,18 +97,18 @@ public class PageInputStream implements LengthCaptureDataInput {
 
     public void readFully(byte b[], int off, int len) throws IOException {
         captureLength += len;
-        if (pos + len <= Page.PAGE_SIZE) {
+        if (pos + len <= length) {
             System.arraycopy(actPage.page.data, pos, b, off, len);
             pos += len;
         } else {
             while (len > 0) {
-                if (pos == Page.PAGE_SIZE) {
+                if (pos == length) {
                     int next = actPage.getNextPage();
                     if (next == -1)
                         throw new EOFException();
                     flipPage(next);
                 }
-                int m = Math.min(Page.PAGE_SIZE - pos, len);
+                int m = Math.min(length - pos, len);
                 System.arraycopy(actPage.page.data, pos, b, off, m);
                 off += m;
                 len -= m;

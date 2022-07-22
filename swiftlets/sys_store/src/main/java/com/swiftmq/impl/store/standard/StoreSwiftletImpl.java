@@ -30,6 +30,10 @@ import com.swiftmq.impl.store.standard.index.QueueIndex;
 import com.swiftmq.impl.store.standard.index.RootIndex;
 import com.swiftmq.impl.store.standard.jobs.JobRegistrar;
 import com.swiftmq.impl.store.standard.log.*;
+import com.swiftmq.impl.store.standard.pagesize.PageSize;
+import com.swiftmq.impl.store.standard.pagesize.ScanProcessor;
+import com.swiftmq.impl.store.standard.pagesize.StoreConverter;
+import com.swiftmq.impl.store.standard.pagesize.po.StartScan;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactoryImpl;
@@ -239,6 +243,9 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
             throws SwiftletException {
         try {
             ctx = new StoreContext(this, config);
+            ctx.storeConverter = new StoreConverter(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()));
+            if (PageSize.isResizeOnStartup())
+                ctx.storeConverter.convertStore();
             ctx.swapFileFactory = createSwapFileFactory();
             ctx.swapPath = SwiftUtilities.addWorkingDir((String) ctx.swapEntity.getProperty("path").getValue());
             swapMaxLength = ((Long) ctx.swapEntity.getProperty("roll-over-size").getValue()).longValue();
@@ -251,7 +258,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
 
             ctx.recoveryManager = new RecoveryManager(ctx);
             ctx.stableStore = createStableStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()),
-                    ((Integer) ctx.dbEntity.getProperty("initial-page-size").getValue()).intValue());
+                    ((Integer) ctx.dbEntity.getProperty("initial-db-size-pages").getValue()).intValue());
 
             Property minCacheSizeProp = ctx.cacheEntity.getProperty("min-size");
             Property maxCacheSizeProp = ctx.cacheEntity.getProperty("max-size");
@@ -286,30 +293,47 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
                     ((Long) ctx.txEntity.getProperty("checkpoint-size").getValue()).longValue(),
                     ((Boolean) ctx.txEntity.getProperty("force-sync").getValue()).booleanValue());
             ctx.recoveryManager.restart(isRecoverOnStartup());
+            ctx.storeConverter.convertMessagePages();
             rootIndex = new RootIndex(ctx, 0);
             ctx.preparedLog = new PreparedLogQueue(ctx, rootIndex.getQueueIndex(PREPARED_LOG_QUEUE));
             ctx.backupProcessor = new BackupProcessor(ctx);
             checkBackupPath();
             ctx.shrinkProcessor = new ShrinkProcessor(ctx);
             CommandRegistry commandRegistry = ctx.dbEntity.getCommandRegistry();
-            CommandExecutor shrinkExecutor = new CommandExecutor() {
-                public String[] execute(String[] context, Entity entity, String[] cmd) {
-                    if (cmd.length != 1)
-                        return new String[]{TreeCommands.ERROR, "Invalid command, please try 'shrink'"};
-                    Semaphore sem = new Semaphore();
-                    StartShrink po = new StartShrink(sem);
-                    ctx.shrinkProcessor.enqueue(po);
-                    sem.waitHere();
-                    String[] result = null;
-                    if (po.isSuccess())
-                        result = new String[]{TreeCommands.INFO, "Shrink initiated."};
-                    else
-                        result = new String[]{TreeCommands.ERROR, po.getException()};
-                    return result;
-                }
+            CommandExecutor shrinkExecutor = (context, entity, cmd) -> {
+                if (cmd.length != 1)
+                    return new String[]{TreeCommands.ERROR, "Invalid command, please try 'shrink'"};
+                Semaphore sem = new Semaphore();
+                StartShrink po = new StartShrink(sem);
+                ctx.shrinkProcessor.enqueue(po);
+                sem.waitHere();
+                String[] result = null;
+                if (po.isSuccess())
+                    result = new String[]{TreeCommands.INFO, "Shrink initiated."};
+                else
+                    result = new String[]{TreeCommands.ERROR, po.getException()};
+                return result;
             };
-            Command backupCommand = new Command("shrink", "shrink", "Perform Shrink Now", true, shrinkExecutor, true, false);
-            commandRegistry.addCommand(backupCommand);
+            Command shrinkCommand = new Command("shrink", "shrink", "Perform Shrink Now", true, shrinkExecutor, true, false);
+            commandRegistry.addCommand(shrinkCommand);
+
+            ctx.scanProcessor = new ScanProcessor(ctx);
+            CommandExecutor scanExecutor = (context, entity, cmd) -> {
+                if (cmd.length != 1)
+                    return new String[]{TreeCommands.ERROR, "Invalid command, please try 'scan'"};
+                Semaphore sem = new Semaphore();
+                StartScan po = new StartScan(sem);
+                ctx.scanProcessor.enqueue(po);
+                sem.waitHere();
+                String[] result = null;
+                if (po.isSuccess())
+                    result = new String[]{TreeCommands.INFO, "Scanning page.db initiated."};
+                else
+                    result = new String[]{TreeCommands.ERROR, po.getException()};
+                return result;
+            };
+            Command scanCommand = new Command("scan", "scan", "Scan page.db", true, scanExecutor, true, false);
+            commandRegistry.addCommand(scanCommand);
 
             SwiftletManager.getInstance().addSwiftletManagerListener("sys$scheduler", new SwiftletManagerAdapter() {
                 public void swiftletStarted(SwiftletManagerEvent event) {
@@ -342,6 +366,8 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown...");
         try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping recommend processor...");
+            ctx.scanProcessor.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping backup processor...");
             ctx.backupProcessor.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");

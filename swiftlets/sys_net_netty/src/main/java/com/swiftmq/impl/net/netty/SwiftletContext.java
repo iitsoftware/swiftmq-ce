@@ -28,6 +28,8 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class SwiftletContext {
     public static final String TP_CONNMGR = "sys$net.connection.mgr";
     public static final String TP_CONNHANDLER = "sys$net.connection.handler";
@@ -41,6 +43,7 @@ public class SwiftletContext {
     public NetworkSwiftletImpl networkSwiftlet = null;
     public TraceSwiftlet traceSwiftlet = null;
     public TraceSpace traceSpace = null;
+    public AtomicLong maxChunkSize = new AtomicLong();
 
     public SwiftletContext(Configuration config, NetworkSwiftletImpl networkSwiftlet) throws Exception {
         this.config = config;
@@ -52,5 +55,7 @@ public class SwiftletContext {
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
         timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
+        maxChunkSize.set((Long) root.getProperty("max-chunk-size").getValue());
+        root.getProperty("max-chunk-size").setPropertyChangeListener((property, oldValue, newValue) -> maxChunkSize.set((Long) newValue));
     }
 }
