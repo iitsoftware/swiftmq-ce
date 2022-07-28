@@ -20,7 +20,7 @@ package com.swiftmq.impl.store.standard.index;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.Page;
 import com.swiftmq.impl.store.standard.log.UpdatePortionLogAction;
-import com.swiftmq.impl.store.standard.pagesize.PageSize;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 
 import java.util.Iterator;
 import java.util.List;
@@ -102,6 +102,10 @@ public abstract class IndexPage implements Iterator {
             pos += entry.getLength();
         }
         return b.toString();
+    }
+
+    public void setPageNo(int pageNo) {
+        this.pageNo = pageNo;
     }
 
     public void setJournal(List journal) {

@@ -19,13 +19,13 @@ package com.swiftmq.impl.store.standard;
 
 import com.swiftmq.impl.store.standard.backup.BackupProcessor;
 import com.swiftmq.impl.store.standard.cache.CacheManager;
-import com.swiftmq.impl.store.standard.cache.ShrinkProcessor;
 import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.ReferenceMap;
 import com.swiftmq.impl.store.standard.log.LogManager;
-import com.swiftmq.impl.store.standard.pagesize.PageSize;
-import com.swiftmq.impl.store.standard.pagesize.ScanProcessor;
-import com.swiftmq.impl.store.standard.pagesize.StoreConverter;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
+import com.swiftmq.impl.store.standard.pagedb.StoreConverter;
+import com.swiftmq.impl.store.standard.pagedb.scan.ScanProcessor;
+import com.swiftmq.impl.store.standard.pagedb.shrink.ShrinkProcessor;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.transaction.TransactionManager;

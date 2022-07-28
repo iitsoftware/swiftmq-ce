@@ -23,17 +23,16 @@ import com.swiftmq.impl.store.standard.backup.po.ChangePath;
 import com.swiftmq.impl.store.standard.backup.po.ScanSaveSets;
 import com.swiftmq.impl.store.standard.backup.po.StartBackup;
 import com.swiftmq.impl.store.standard.cache.CacheManager;
-import com.swiftmq.impl.store.standard.cache.ShrinkProcessor;
 import com.swiftmq.impl.store.standard.cache.StableStore;
-import com.swiftmq.impl.store.standard.cache.po.StartShrink;
 import com.swiftmq.impl.store.standard.index.QueueIndex;
 import com.swiftmq.impl.store.standard.index.RootIndex;
 import com.swiftmq.impl.store.standard.jobs.JobRegistrar;
 import com.swiftmq.impl.store.standard.log.*;
-import com.swiftmq.impl.store.standard.pagesize.PageSize;
-import com.swiftmq.impl.store.standard.pagesize.ScanProcessor;
-import com.swiftmq.impl.store.standard.pagesize.StoreConverter;
-import com.swiftmq.impl.store.standard.pagesize.po.StartScan;
+import com.swiftmq.impl.store.standard.pagedb.StoreConverter;
+import com.swiftmq.impl.store.standard.pagedb.scan.ScanProcessor;
+import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
+import com.swiftmq.impl.store.standard.pagedb.shrink.ShrinkProcessor;
+import com.swiftmq.impl.store.standard.pagedb.shrink.po.StartShrink;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactoryImpl;
@@ -239,16 +238,64 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return true;
     }
 
+    public void startStore() throws Exception {
+        ctx.recoveryManager = new RecoveryManager(ctx);
+        ctx.stableStore = createStableStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()),
+                (Integer) ctx.dbEntity.getProperty("initial-db-size-pages").getValue());
+        Property minCacheSizeProp = ctx.cacheEntity.getProperty("min-size");
+        Property maxCacheSizeProp = ctx.cacheEntity.getProperty("max-size");
+        int minCacheSize = (Integer) minCacheSizeProp.getValue();
+        int maxCacheSize = (Integer) maxCacheSizeProp.getValue();
+        if (minCacheSize > maxCacheSize)
+            throw new Exception("Cache/min-size is invalid, must be less than max-size!");
+        minCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
+            public void propertyChanged(Property property, Object oldValue, Object newValue)
+                    throws PropertyChangeException {
+                int n = (Integer) newValue;
+                if (n > (Integer) ctx.cacheEntity.getProperty("max-size").getValue())
+                    throw new PropertyChangeException("min-size is invalid, must be less than max-size!");
+            }
+        });
+        maxCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
+            public void propertyChanged(Property property, Object oldValue, Object newValue)
+                    throws PropertyChangeException {
+                int n = (Integer) newValue;
+                if (n < (Integer) ctx.cacheEntity.getProperty("min-size").getValue())
+                    throw new PropertyChangeException("max-size is invalid, must be greater than min-size!");
+            }
+        });
+
+        ctx.cacheManager = new CacheManager(ctx, ctx.stableStore, minCacheSize, maxCacheSize);
+        ctx.transactionManager = new TransactionManager(ctx);
+        ctx.logManager = createLogManagerFactory().createLogManager(ctx, ctx.transactionManager,
+                SwiftUtilities.addWorkingDir((String) ctx.txEntity.getProperty("path").getValue()),
+                (Long) ctx.txEntity.getProperty("checkpoint-size").getValue(),
+                (Boolean) ctx.txEntity.getProperty("force-sync").getValue());
+        ctx.recoveryManager.restart(isRecoverOnStartup());
+    }
+
+    public void stopStore() throws Exception {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");
+        Semaphore sem = new Semaphore();
+        ctx.logManager.enqueue(new CloseLogOperation(sem));
+        sem.waitHere();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...done");
+        ctx.logManager.stopQueue();
+        ctx.cacheManager.close();
+    }
+
     protected void startup(Configuration config)
             throws SwiftletException {
         try {
             ctx = new StoreContext(this, config);
             ctx.storeConverter = new StoreConverter(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()));
-            if (PageSize.isResizeOnStartup())
-                ctx.storeConverter.convertStore();
+
+            // Phase 1: Store/Cache inactive
+            ctx.storeConverter.phaseOne();
+
             ctx.swapFileFactory = createSwapFileFactory();
             ctx.swapPath = SwiftUtilities.addWorkingDir((String) ctx.swapEntity.getProperty("path").getValue());
-            swapMaxLength = ((Long) ctx.swapEntity.getProperty("roll-over-size").getValue()).longValue();
+            swapMaxLength = (Long) ctx.swapEntity.getProperty("roll-over-size").getValue();
 
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "startup...");
 
@@ -256,44 +303,11 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
 
             deleteSwaps();
 
-            ctx.recoveryManager = new RecoveryManager(ctx);
-            ctx.stableStore = createStableStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()),
-                    ((Integer) ctx.dbEntity.getProperty("initial-db-size-pages").getValue()).intValue());
+            startStore();
 
-            Property minCacheSizeProp = ctx.cacheEntity.getProperty("min-size");
-            Property maxCacheSizeProp = ctx.cacheEntity.getProperty("max-size");
-            int minCacheSize = ((Integer) minCacheSizeProp.getValue()).intValue();
-            int maxCacheSize = ((Integer) maxCacheSizeProp.getValue()).intValue();
-            if (minCacheSize > maxCacheSize)
-                throw new Exception("Cache/min-size is invalid, must be less than max-size!");
-            minCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
-                public void propertyChanged(Property property, Object oldValue, Object newValue)
-                        throws PropertyChangeException {
-                    int n = ((Integer) newValue).intValue();
-                    if (n > ((Integer) ctx.cacheEntity.getProperty("max-size").getValue()).intValue())
-                        throw new PropertyChangeException("min-size is invalid, must be less than max-size!");
-                }
-            });
-            maxCacheSizeProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
-                public void propertyChanged(Property property, Object oldValue, Object newValue)
-                        throws PropertyChangeException {
-                    int n = ((Integer) newValue).intValue();
-                    if (n < ((Integer) ctx.cacheEntity.getProperty("min-size").getValue()).intValue())
-                        throw new PropertyChangeException("max-size is invalid, must be greater than min-size!");
-                }
-            });
+            // Phase 2: Store & Cache are active with the new Page Size
+            ctx.storeConverter.phaseTwo();
 
-//      ctx.preparedLog = new PreparedLogFile(ctx, SwiftUtilities.addWorkingDir((String) ctx.xaEntity.getProperty("path").getValue()),
-//                                            ((Boolean) ctx.xaEntity.getProperty("force-sync").getValue()).booleanValue());
-
-            ctx.cacheManager = new CacheManager(ctx, ctx.stableStore, minCacheSize, maxCacheSize);
-            ctx.transactionManager = new TransactionManager(ctx);
-            ctx.logManager = createLogManagerFactory().createLogManager(ctx, ctx.transactionManager,
-                    SwiftUtilities.addWorkingDir((String) ctx.txEntity.getProperty("path").getValue()),
-                    ((Long) ctx.txEntity.getProperty("checkpoint-size").getValue()).longValue(),
-                    ((Boolean) ctx.txEntity.getProperty("force-sync").getValue()).booleanValue());
-            ctx.recoveryManager.restart(isRecoverOnStartup());
-            ctx.storeConverter.convertMessagePages();
             rootIndex = new RootIndex(ctx, 0);
             ctx.preparedLog = new PreparedLogQueue(ctx, rootIndex.getQueueIndex(PREPARED_LOG_QUEUE));
             ctx.backupProcessor = new BackupProcessor(ctx);
@@ -346,6 +360,12 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
                     jobRegistrar.unregister();
                 }
             });
+
+            // Ensure to save the new current page size
+            if (ctx.storeConverter.isConverted()) {
+                SwiftletManager.getInstance().addKernelStartupListener(() -> ctx.timerSwiftlet.addInstantTimerListener(120000, () -> SwiftletManager.getInstance().saveConfiguration()));
+            }
+
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "startup...done");
         } catch (Exception e) {
             e.printStackTrace();
@@ -366,17 +386,13 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown...");
         try {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping recommend processor...");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping scan processor...");
             ctx.scanProcessor.close();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping shrink processor...");
+            ctx.shrinkProcessor.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping backup processor...");
             ctx.backupProcessor.close();
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");
-            Semaphore sem = new Semaphore();
-            ctx.logManager.enqueue(new CloseLogOperation(sem));
-            sem.waitHere();
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...done");
-            ctx.logManager.stopQueue();
-            ctx.cacheManager.close();
+            stopStore();
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }

@@ -18,7 +18,7 @@
 package com.swiftmq.impl.store.standard.cache;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.pagesize.PageSize;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.mgmt.PropertyChangeException;
@@ -80,7 +80,7 @@ public class StableStore implements TimerListener, MgmtListener {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/creating done.");
     }
 
-    int getnFree() {
+    public int getnFree() {
         return nFree;
     }
 
@@ -230,6 +230,7 @@ public class StableStore implements TimerListener, MgmtListener {
     private void addToFreePool(int pageNo) {
         if (!freePoolEnabled)
             return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/addToFreePool, pageNo=" + pageNo);
         freePages.add(pageNo);
         nFree++;
     }
@@ -240,6 +241,7 @@ public class StableStore implements TimerListener, MgmtListener {
         Integer pageNo = freePages.first();
         freePages.remove(pageNo);
         nFree--;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/getFirstFree, pageNo=" + pageNo);
         return pageNo;
     }
 
@@ -253,14 +255,6 @@ public class StableStore implements TimerListener, MgmtListener {
             writePage(p);
         }
         numberPages = nPages;
-//        String filename = path + File.separatorChar + PageSize.SIZE_FILE_CURRENT;
-//        File f = new File(filename);
-//        if (!f.exists()) {
-//            try {
-//                PageSize.saveCurrentSize(filename, PageSize.getCurrent());
-//            } catch (Exception ignored) {
-//            }
-//        }
     }
 
     public void setNumberPages(int numberPages) {

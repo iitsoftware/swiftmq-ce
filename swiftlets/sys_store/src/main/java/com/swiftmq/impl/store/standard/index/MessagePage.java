@@ -19,7 +19,8 @@
 package com.swiftmq.impl.store.standard.index;
 
 import com.swiftmq.impl.store.standard.cache.Page;
-import com.swiftmq.tools.util.DataByteArrayOutputStream;
+
+import java.io.DataOutput;
 
 public class MessagePage {
     static final int POS_PREV_PAGE = Page.HEADER_LENGTH;
@@ -67,7 +68,7 @@ public class MessagePage {
         Util.writeInt(length, page.data, POS_LENGTH);
     }
 
-    public void writeData(DataByteArrayOutputStream dbos) throws Exception {
+    public void writeData(DataOutput dbos) throws Exception {
         int len = getLength() - START_DATA;
         dbos.write(page.data, START_DATA, len);
     }

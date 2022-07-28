@@ -21,7 +21,7 @@ import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.Page;
 import com.swiftmq.impl.store.standard.index.IndexAnalyzer;
 import com.swiftmq.impl.store.standard.log.*;
-import com.swiftmq.impl.store.standard.pagesize.PageSize;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.io.FileWriter;

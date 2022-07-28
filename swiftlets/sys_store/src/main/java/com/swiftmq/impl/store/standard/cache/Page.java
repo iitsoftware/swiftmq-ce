@@ -18,7 +18,7 @@
 
 package com.swiftmq.impl.store.standard.cache;
 
-import com.swiftmq.impl.store.standard.pagesize.PageSize;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 
 import java.io.DataInput;
 import java.io.DataOutput;

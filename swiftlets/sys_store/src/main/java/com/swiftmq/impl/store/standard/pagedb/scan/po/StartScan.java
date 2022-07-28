@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2022 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,12 +15,23 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.pagesize.po;
+package com.swiftmq.impl.store.standard.pagedb.scan.po;
 
+import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public interface EventVisitor extends POVisitor {
-    public void visit(StartScan po);
+public class StartScan extends POObject {
 
-    public void visit(Close po);
+    public StartScan(Semaphore semaphore) {
+        super(null, semaphore);
+    }
+
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
+
+    public String toString() {
+        return "[StartRecommend]";
+    }
 }

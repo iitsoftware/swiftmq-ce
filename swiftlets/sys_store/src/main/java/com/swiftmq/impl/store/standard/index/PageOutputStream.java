@@ -21,7 +21,7 @@ import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.Page;
 import com.swiftmq.impl.store.standard.log.InsertLogAction;
 import com.swiftmq.impl.store.standard.log.UpdatePortionLogAction;
-import com.swiftmq.impl.store.standard.pagesize.PageSize;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.tools.collection.RingBuffer;
 
 import java.io.DataOutput;

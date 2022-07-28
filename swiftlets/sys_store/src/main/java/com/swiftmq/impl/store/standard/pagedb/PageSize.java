@@ -15,7 +15,7 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.pagesize;
+package com.swiftmq.impl.store.standard.pagedb;
 
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;

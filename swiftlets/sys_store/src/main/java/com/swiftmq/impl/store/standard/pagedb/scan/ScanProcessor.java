@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2022 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,24 +15,25 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.cache;
+package com.swiftmq.impl.store.standard.pagedb.scan;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.cache.po.Close;
-import com.swiftmq.impl.store.standard.cache.po.EventVisitor;
-import com.swiftmq.impl.store.standard.cache.po.StartShrink;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
+import com.swiftmq.impl.store.standard.pagedb.scan.po.Close;
+import com.swiftmq.impl.store.standard.pagedb.scan.po.EventVisitor;
+import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
+import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.PipelineQueue;
 
-public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener {
+public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
     static final String TP_SHRINK = "sys$store.shrink";
     StoreContext ctx = null;
     PipelineQueue pipelineQueue = null;
-    boolean shrinkActive = false;
+    boolean scanActive = false;
 
-    public ShrinkProcessor(StoreContext ctx) {
+    public ScanProcessor(StoreContext ctx) {
         this.ctx = ctx;
         pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SHRINK), TP_SHRINK, this);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
@@ -44,12 +45,12 @@ public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/checkpointFinished ...");
         try {
-            ctx.cacheManager.shrink();
-            ctx.stableStore.shrink();
-            shrinkActive = false;
+            ctx.storeConverter.scanPageDB();
+            SwiftletManager.getInstance().saveConfiguration();
+            scanActive = false;
         } catch (Exception e) {
             e.printStackTrace();
-            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), toString() + "/exception during shrink: " + e);
+            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), toString() + "/exception during scan: " + e);
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/checkpointFinished done");
@@ -59,15 +60,15 @@ public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener
         pipelineQueue.enqueue(po);
     }
 
-    public void visit(StartShrink po) {
+    public void visit(StartScan po) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
-        if (shrinkActive) {
+        if (scanActive) {
             // reject it
-            String msg = "Can't start Shrink: another Shrink is active right now!";
+            String msg = "Can't start scan: another scan is active right now!";
             po.setException(msg);
             po.setSuccess(false);
         } else {
-            shrinkActive = true;
+            scanActive = true;
             ctx.transactionManager.initiateCheckPoint(this);
             po.setSuccess(true);
         }
@@ -93,6 +94,6 @@ public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener
     }
 
     public String toString() {
-        return "ShrinkProcessor";
+        return "ScanProcessor";
     }
 }

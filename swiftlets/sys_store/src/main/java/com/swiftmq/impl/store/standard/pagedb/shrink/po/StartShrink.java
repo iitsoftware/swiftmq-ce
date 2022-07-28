@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2022 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,15 +15,15 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.pagesize.po;
+package com.swiftmq.impl.store.standard.pagedb.shrink.po;
 
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class StartScan extends POObject {
+public class StartShrink extends POObject {
 
-    public StartScan(Semaphore semaphore) {
+    public StartShrink(Semaphore semaphore) {
         super(null, semaphore);
     }
 
@@ -32,6 +32,6 @@ public class StartScan extends POObject {
     }
 
     public String toString() {
-        return "[StartRecommend]";
+        return "[StartShrink]";
     }
 }

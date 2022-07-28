@@ -18,7 +18,7 @@
 package com.swiftmq.impl.store.standard.jobs;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.cache.po.StartShrink;
+import com.swiftmq.impl.store.standard.pagedb.shrink.po.StartShrink;
 import com.swiftmq.swiftlet.scheduler.Job;
 import com.swiftmq.swiftlet.scheduler.JobException;
 import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
