@@ -58,7 +58,12 @@
                   description="Maximum Page Size"
                   min="2048"
                   default="262144"/>
-        <property name="page-resize-on-startup"
+        <property name="perform-compact-on-startup"
+                  type="java.lang.Boolean"
+                  display="Perform Compact on page.db on Startup"
+                  description="Perform a compact of the page.db on startup if current page size is equal to recommended page size"
+                  default="false"/>
+        <property name="perform-resize-on-startup"
                   type="java.lang.Boolean"
                   display="Perform Page Resize on Startup"
                   description="Perform a page resize on startup if the recommended size is greater than the current page size"

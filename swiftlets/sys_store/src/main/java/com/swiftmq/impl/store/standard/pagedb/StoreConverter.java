@@ -121,24 +121,24 @@ public class StoreConverter {
     }
 
     public void phaseOne() throws Exception {
-        if (!PageSize.isResizeOnStartup())
-            return;
-        if (!isDiskSpaceSufficient())
-            return;
-        if (currentSize == recommendedSize)
-            ctx.logSwiftlet.logInformation("sys$store", toString() + "/Compacting page.db ...");
-        else
-            ctx.logSwiftlet.logInformation("sys$store", toString() + "/Converting page.db from page size " + currentSize + " to " + recommendedSize + " ...");
-        File old = new File(pageDBOld);
-        if (old.exists())
-            old.delete();
-        if (currentSize < recommendedSize)
-            convertToLargePageSize();
-        else
-            spoolOutOldStore();
-        PageSize.setCurrent(recommendedSize);
-        ctx.dbEntity.getProperty("page-size-current").setValue(recommendedSize);
-        converted = true;
+        if (currentSize == recommendedSize ? PageSize.isCompactOnStartup() : PageSize.isResizeOnStartup()) {
+            if (!isDiskSpaceSufficient())
+                return;
+            if (currentSize == recommendedSize)
+                ctx.logSwiftlet.logInformation("sys$store", toString() + "/Compacting page.db ...");
+            else
+                ctx.logSwiftlet.logInformation("sys$store", toString() + "/Converting page.db from page size " + currentSize + " to " + recommendedSize + " ...");
+            File old = new File(pageDBOld);
+            if (old.exists())
+                old.delete();
+            if (currentSize < recommendedSize)
+                convertToLargePageSize();
+            else
+                spoolOutOldStore();
+            PageSize.setCurrent(recommendedSize);
+            ctx.dbEntity.getProperty("page-size-current").setValue(recommendedSize);
+            converted = true;
+        }
     }
 
     public void phaseTwo() throws Exception {
@@ -174,15 +174,14 @@ public class StoreConverter {
     private void spoolInNewStore() throws Exception {
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/spoolInNewStore ...");
         RootIndex rootIndex = new RootIndex(ctx, 0);
-        List journal = new ArrayList();
-        rootIndex.setJournal(journal);
+        rootIndex.setJournal(new ArrayList());
         for (Map.Entry<String, Integer> entry : spoolQueues.entrySet()) {
             String queueName = entry.getKey();
             int nMessages = entry.getValue();
             ctx.logSwiftlet.logInformation("sys$store", toString() + "/spoolInNewStore queueName=" + queueName + ", nMessages=" + nMessages);
             ensureSpoolFile(queueName);
             QueueIndex queueIndex = rootIndex.getQueueIndex(queueName);
-            queueIndex.setJournal(journal);
+            queueIndex.setJournal(new ArrayList());
             byte[] b = new byte[16];
             for (int i = 0; i < nMessages; i++) {
                 currentSpoolFile.readFully(b);

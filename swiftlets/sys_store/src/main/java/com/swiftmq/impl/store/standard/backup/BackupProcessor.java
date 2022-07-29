@@ -20,6 +20,7 @@ package com.swiftmq.impl.store.standard.backup;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.backup.po.*;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityAddException;
 import com.swiftmq.mgmt.EntityList;
@@ -222,7 +223,7 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         } else {
             // start backup
             backupActive = true;
-            currentSaveSet = path + File.separatorChar + fmt.format(new Date());
+            currentSaveSet = path + File.separatorChar + fmt.format(new Date()) + PageSize.getCurrent();
             ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), toString() + "/Backup started, save set: " + currentSaveSet);
             new File(currentSaveSet).mkdir();
             finishedListener = po.getFinishedListener();

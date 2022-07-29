@@ -28,6 +28,7 @@ public class PageSize {
     private static Property pageSizeCurrentProp = null;
     private static Property pageSizeRecommendedProp = null;
     private static Property resizeOnStartupProp = null;
+    private static Property compactOnStartupProp = null;
     private static Property pageSizeMaxProp = null;
 
     public static void init(Entity dbEntity) {
@@ -35,7 +36,8 @@ public class PageSize {
         current.set((Integer) pageSizeCurrentProp.getValue());
         pageSizeRecommendedProp = dbEntity.getProperty("page-size-recommended");
         recommended.set((Integer) pageSizeRecommendedProp.getValue());
-        resizeOnStartupProp = dbEntity.getProperty("page-resize-on-startup");
+        resizeOnStartupProp = dbEntity.getProperty("perform-resize-on-startup");
+        compactOnStartupProp = dbEntity.getProperty("perform-compact-on-startup");
         pageSizeMaxProp = dbEntity.getProperty("page-size-max");
     }
 
@@ -45,6 +47,10 @@ public class PageSize {
 
     public static boolean isResizeOnStartup() {
         return (Boolean) resizeOnStartupProp.getValue();
+    }
+
+    public static boolean isCompactOnStartup() {
+        return (Boolean) compactOnStartupProp.getValue();
     }
 
     public static int getCurrent() {
