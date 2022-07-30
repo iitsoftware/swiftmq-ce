@@ -182,8 +182,8 @@ public class StableStore implements TimerListener, MgmtListener {
         fileLength = file.length();
         if (fileLength > 0) {
             numberPages = (int) (fileLength / PageSize.getCurrent());
-//            if (!offline)
-//                shrinkFile();
+            if (!offline)
+                shrinkFile();
         } else
             initialize(initialPages);
         sync();
