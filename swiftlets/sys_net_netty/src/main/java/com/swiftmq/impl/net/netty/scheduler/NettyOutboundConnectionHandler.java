@@ -103,15 +103,15 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
 
     @Override
     public void channelRead(ChannelHandlerContext context, Object msg) throws Exception {
-        if (inputHandler == null)
-            throw new IOException("Connection not yet ready (no input handler)");
-        byte[] buffer = inputHandler.getBuffer();
-        int offset = inputHandler.getOffset();
-        ByteBuf in = (ByteBuf) msg;
-        int readableBytes = in.readableBytes();
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$net", toString() + "/channelRead, readableBytes: " + readableBytes);
         try {
+            if (inputHandler == null)
+                throw new IOException("Connection not yet ready (no input handler)");
+            byte[] buffer = inputHandler.getBuffer();
+            int offset = inputHandler.getOffset();
+            ByteBuf in = (ByteBuf) msg;
+            int readableBytes = in.readableBytes();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$net", toString() + "/channelRead, readableBytes: " + readableBytes);
             in.readBytes(buffer, offset, readableBytes);
             inputHandler.setBytesWritten(readableBytes);
             countableInput.addByteCount(readableBytes);
