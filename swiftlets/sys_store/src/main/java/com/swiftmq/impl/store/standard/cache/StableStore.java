@@ -180,6 +180,7 @@ public class StableStore implements TimerListener, MgmtListener {
         emptyData = makeEmptyArray(PageSize.getCurrent());
         file = new RandomAccessFile(filename, "rw");
         fileLength = file.length();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init, fileLength=" + fileLength);
         if (fileLength > 0) {
             numberPages = (int) (fileLength / PageSize.getCurrent());
             if (!offline)

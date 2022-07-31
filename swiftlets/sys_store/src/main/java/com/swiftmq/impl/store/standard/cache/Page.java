@@ -55,7 +55,8 @@ public class Page {
         out.writeInt(pageNo);
         out.writeBoolean(dirty);
         out.writeBoolean(empty);
-        out.write(data, 0, PageSize.getCurrent());
+        if (!empty)
+            out.write(data, 0, PageSize.getCurrent());
     }
 
     public void read(DataInput in) throws IOException {
@@ -63,7 +64,8 @@ public class Page {
         dirty = in.readBoolean();
         empty = in.readBoolean();
         data = new byte[PageSize.getCurrent()];
-        in.readFully(data);
+        if (!empty)
+            in.readFully(data);
     }
 
     public String toString() {

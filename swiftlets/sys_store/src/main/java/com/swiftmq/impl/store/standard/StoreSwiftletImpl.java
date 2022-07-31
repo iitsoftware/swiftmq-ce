@@ -234,11 +234,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return new LogManagerFactoryImpl();
     }
 
-    protected boolean isRecoverOnStartup() {
-        return true;
-    }
-
-    public void startStore() throws Exception {
+    public void startStore(boolean withRecovery) throws Exception {
         ctx.recoveryManager = new RecoveryManager(ctx);
         ctx.stableStore = createStableStore(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()),
                 (Integer) ctx.dbEntity.getProperty("initial-db-size-pages").getValue());
@@ -271,7 +267,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
                 SwiftUtilities.addWorkingDir((String) ctx.txEntity.getProperty("path").getValue()),
                 (Long) ctx.txEntity.getProperty("checkpoint-size").getValue(),
                 (Boolean) ctx.txEntity.getProperty("force-sync").getValue());
-        ctx.recoveryManager.restart(isRecoverOnStartup());
+        ctx.recoveryManager.restart(withRecovery);
     }
 
     public void stopStore() throws Exception {
@@ -281,6 +277,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         sem.waitHere();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...done");
         ctx.logManager.stopQueue();
+        ctx.cacheManager.flush();
         ctx.cacheManager.close();
     }
 
@@ -289,9 +286,6 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         try {
             ctx = new StoreContext(this, config);
             ctx.storeConverter = new StoreConverter(ctx, SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()));
-
-            // Phase 1: Store/Cache inactive
-            ctx.storeConverter.phaseOne();
 
             ctx.swapFileFactory = createSwapFileFactory();
             ctx.swapPath = SwiftUtilities.addWorkingDir((String) ctx.swapEntity.getProperty("path").getValue());
@@ -303,7 +297,14 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
 
             deleteSwaps();
 
-            startStore();
+            // Required for recovery of transactions
+            startStore(true);
+            stopStore();
+
+            // Phase 1: Store/Cache inactive
+            ctx.storeConverter.phaseOne();
+
+            startStore(false);
 
             // Phase 2: Store & Cache are active with the new Page Size
             ctx.storeConverter.phaseTwo();

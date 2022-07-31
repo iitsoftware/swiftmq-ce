@@ -20,9 +20,11 @@ package com.swiftmq.impl.store.standard.pagedb;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.*;
+import com.swiftmq.impl.store.standard.log.CommitLogRecord;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.swiftlet.store.StoreEntry;
+import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import java.io.File;
@@ -157,7 +159,7 @@ public class StoreConverter {
     private void spoolOutOldStore() throws Exception {
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/spoolOutOldStore ...");
         deleteSpoolFiles();
-        ctx.storeSwiftlet.startStore();
+        ctx.storeSwiftlet.startStore(false);
         iterateRootIndex(this::spoolOutMessage);
         ctx.cacheManager.flush();
         ctx.storeSwiftlet.stopStore();
@@ -174,16 +176,16 @@ public class StoreConverter {
     private void spoolInNewStore() throws Exception {
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/spoolInNewStore ...");
         RootIndex rootIndex = new RootIndex(ctx, 0);
-        rootIndex.setJournal(new ArrayList());
         for (Map.Entry<String, Integer> entry : spoolQueues.entrySet()) {
             String queueName = entry.getKey();
             int nMessages = entry.getValue();
             ctx.logSwiftlet.logInformation("sys$store", toString() + "/spoolInNewStore queueName=" + queueName + ", nMessages=" + nMessages);
             ensureSpoolFile(queueName);
             QueueIndex queueIndex = rootIndex.getQueueIndex(queueName);
-            queueIndex.setJournal(new ArrayList());
             byte[] b = new byte[16];
             for (int i = 0; i < nMessages; i++) {
+                List journal = new ArrayList();
+                queueIndex.setJournal(journal);
                 currentSpoolFile.readFully(b);
                 StoreEntry storeEntry = new StoreEntry();
                 storeEntry.priority = Util.readInt(b, 0);
@@ -191,14 +193,20 @@ public class StoreConverter {
                 storeEntry.expirationTime = Util.readLong(b, 8);
                 storeEntry.message = MessageImpl.createInstance(currentSpoolFile.readInt());
                 storeEntry.message.readContent(currentSpoolFile);
+                long txId = ctx.transactionManager.createTxId();
+                Semaphore sem = new Semaphore();
                 queueIndex.add(storeEntry);
-                queueIndex.unloadPages();
-                if (i % 1000 == 0)
-                    ctx.cacheManager.flush();
+                CommitLogRecord logRecord = new CommitLogRecord(txId, sem, journal, () -> {
+                    try {
+                        queueIndex.unloadPages();
+                    } catch (Exception ignored) {
+                    }
+                }, null);
+                ctx.recoveryManager.commit(logRecord);
+                sem.waitHere();
+                ctx.transactionManager.removeTxId(txId);
             }
-            ctx.cacheManager.flush();
         }
-        ctx.cacheManager.reset();
         deleteSpoolFiles();
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/spoolInNewStore done");
     }

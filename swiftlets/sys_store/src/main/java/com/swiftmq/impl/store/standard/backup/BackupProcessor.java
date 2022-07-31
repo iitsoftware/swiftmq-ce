@@ -223,7 +223,7 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         } else {
             // start backup
             backupActive = true;
-            currentSaveSet = path + File.separatorChar + fmt.format(new Date()) + PageSize.getCurrent();
+            currentSaveSet = path + File.separatorChar + fmt.format(new Date()) + "_" + PageSize.getCurrent();
             ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), toString() + "/Backup started, save set: " + currentSaveSet);
             new File(currentSaveSet).mkdir();
             finishedListener = po.getFinishedListener();
