@@ -364,7 +364,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
 
             // Ensure to save the new current page size
             if (ctx.storeConverter.isConverted()) {
-                SwiftletManager.getInstance().addKernelStartupListener(() -> ctx.timerSwiftlet.addInstantTimerListener(120000, () -> SwiftletManager.getInstance().saveConfiguration()));
+                SwiftletManager.getInstance().setConfigDirty(true);
             }
 
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "startup...done");
