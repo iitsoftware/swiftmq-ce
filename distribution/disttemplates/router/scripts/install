@@ -1,0 +1,39 @@
+#!/bin/bash
+ARCH="amd64"
+if [ `arch` == "arm64" ]
+then
+  ARCH="aarch64"
+fi
+OSTYPE=`uname | tr "[:upper:]" "[:lower:]"`
+EXTRACTED="#GRAALVMRELEASE#"
+JAVA_HOME="`pwd`/../${EXTRACTED}"
+if [ -d "${JAVA_HOME}" ]
+then
+  if [ "$1" == "-d" ]
+  then
+    rm -Rf ${JAVA_HOME}
+  else
+    echo "${EXTRACTED} is already installed."
+    exit -1
+  fi
+fi
+DOWNLOADURL="#GRAALVMURL#"
+echo "Installing ${EXTRACTED} ..."
+curl -L -o ../graalvm.tar.gz ${DOWNLOADURL}
+tar xf ../graalvm.tar.gz --directory ../
+rm -f ../graalvm.tar.gz
+EXECUTABLES="${JAVA_HOME}/bin"
+if [ "${OSTYPE}" == "darwin" ]
+then
+  echo "To remove the quarantine attributes from the GraalVM files, please provide your sudo password below (if prompted)."
+  sudo xattr -r -d com.apple.quarantine ${JAVA_HOME}
+  EXECUTABLES="${JAVA_HOME}/Contents/Home/bin"
+fi
+echo "Installing Graal.js which is necessary to execute SwiftMQ Streams ..."
+${EXECUTABLES}/gu install js
+echo "The following version of GraalVM has been installed for this SwiftMQ Router:"
+${EXECUTABLES}/java -version
+echo ${JAVA_HOME} > .javahome
+echo ${EXECUTABLES} > .executables
+echo "Installation complete."
+
