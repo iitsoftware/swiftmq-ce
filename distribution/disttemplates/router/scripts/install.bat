@@ -9,7 +9,7 @@ IF "%MISSING_REQUIREMENTS%"=="true" (
 )
 set ARCH=amd64
 set OSTYPE=windows
-set EXTRACTED=graalvm-ce-java17-22.2.0
+set EXTRACTED=#GRAALVMRELEASE#
 set JAVA_HOME=%cd%/../%EXTRACTED%
 if exist "%JAVA_HOME%" (
   if "%1" == "-d" (
@@ -19,7 +19,7 @@ if exist "%JAVA_HOME%" (
     exit
   )
 )
-set DOWNLOADURL="https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-22.2.0/graalvm-ce-java17-windows-amd64-22.2.0.zip"
+set DOWNLOADURL=#GRAALVMURL#.zip
 @echo Installing %EXTRACTED% ...
 curl -L -o graalvm.zip %DOWNLOADURL%
 tar xf graalvm.zip --directory ../
