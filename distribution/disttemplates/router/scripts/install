@@ -17,7 +17,7 @@ then
     exit -1
   fi
 fi
-DOWNLOADURL="#GRAALVMURL#"
+DOWNLOADURL="#GRAALVMURL#.tar.gz"
 echo "Installing ${EXTRACTED} ..."
 curl -L -o ../graalvm.tar.gz ${DOWNLOADURL}
 tar xf ../graalvm.tar.gz --directory ../
