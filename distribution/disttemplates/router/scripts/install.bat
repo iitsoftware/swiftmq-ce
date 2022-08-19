@@ -7,8 +7,6 @@ IF "%MISSING_REQUIREMENTS%"=="true" (
   echo The above commands are missing on your computer. Please install it and execute this script again.
   exit /b
 )
-set ARCH=amd64
-set OSTYPE=windows
 set EXTRACTED=#GRAALVMRELEASE#
 set JAVA_HOME=%cd%/../%EXTRACTED%
 if exist "%JAVA_HOME%" (
