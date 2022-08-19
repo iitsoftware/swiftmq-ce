@@ -46,6 +46,6 @@ if %jver% LSS 11 (
     exit
 )
 for /f "tokens=*" %%i in ('java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome') do set JAVAHOME=%%i
-echo "You are using the default Java installation at '%JAVA_HOME%'!"
-echo "Please consider to use the 'install' script in this folder to install GraalVM!"
+echo You are using the default Java installation at '%JAVA_HOME%'!
+echo Please consider to use the 'install' script in this folder to install GraalVM!
 goto main
