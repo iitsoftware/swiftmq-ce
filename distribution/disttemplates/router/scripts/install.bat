@@ -15,7 +15,7 @@ if exist "%JAVA_HOME%" (
   if "%1" == "-d" (
     rmdir /Q /S "%JAVA_HOME%"
   ) else (
-    @echo "%EXTRACTED% is already installed."
+    @echo %EXTRACTED% is already installed.
     exit
   )
 )
