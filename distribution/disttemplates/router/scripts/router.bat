@@ -19,12 +19,12 @@ set JVMPARAM=-Xmx2G
 IF DEFINED SWIFTMQ_JVMPARAM (
   set JVMPARAM=%SWIFTMQ_JVMPARAM%
 )
-echo "Starting SwiftMQ with '%JVMPARAM%' with '%JAVA_HOME%'."
-echo "Please have a look at data/log/stdout.log ..."
+echo Starting SwiftMQ with '%JVMPARAM%' with '%JAVA_HOME%'.
+echo Please have a look at data/log/stdout.log ...
 if "%EXECUTABLES%" == "" (
-    java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
+    java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 ) else (
-    %EXECUTABLES%/java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
+    %EXECUTABLES%/java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 )
 exit
 
