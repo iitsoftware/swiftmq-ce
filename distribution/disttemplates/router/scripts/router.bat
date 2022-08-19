@@ -19,7 +19,8 @@ set JVMPARAM=-Xmx2G
 IF DEFINED SWIFTMQ_JVMPARAM (
   set JVMPARAM=%SWIFTMQ_JVMPARAM%
 )
-
+echo "Starting SwiftMQ with '%JVMPARAM%' with '%JAVA_HOME%'."
+echo "Please have a look at data/log/stdout.log ..."
 if "%EXECUTABLES%" == "" (
     java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml
 ) else (
@@ -45,4 +46,6 @@ if %jver% LSS 11 (
     exit
 )
 for /f "tokens=*" %%i in ('java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome') do set JAVAHOME=%%i
+echo "You are using the default Java installation at '%JAVA_HOME%'!"
+echo "Please consider to use the 'install' script in this folder to install GraalVM!"
 goto main
