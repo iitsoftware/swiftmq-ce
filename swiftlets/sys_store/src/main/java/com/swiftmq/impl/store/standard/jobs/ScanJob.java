@@ -18,7 +18,7 @@
 package com.swiftmq.impl.store.standard.jobs;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.pagedb.shrink.po.StartShrink;
+import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
 import com.swiftmq.swiftlet.scheduler.Job;
 import com.swiftmq.swiftlet.scheduler.JobException;
 import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
@@ -26,13 +26,13 @@ import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.Properties;
 
-public class ShrinkJob implements Job {
+public class ScanJob implements Job {
     StoreContext ctx = null;
     boolean stopCalled = false;
     Properties properties = null;
     JobTerminationListener jobTerminationListener = null;
 
-    public ShrinkJob(StoreContext ctx) {
+    public ScanJob(StoreContext ctx) {
         this.ctx = ctx;
     }
 
@@ -42,8 +42,8 @@ public class ShrinkJob implements Job {
         this.jobTerminationListener = jobTerminationListener;
         this.properties = properties;
         Semaphore sem = new Semaphore();
-        StartShrink po = new StartShrink(sem);
-        ctx.shrinkProcessor.enqueue(po);
+        StartScan po = new StartScan(sem);
+        ctx.scanProcessor.enqueue(po);
         sem.waitHere();
         if (po.isSuccess())
             jobTerminationListener.jobTerminated();
@@ -60,6 +60,6 @@ public class ShrinkJob implements Job {
     }
 
     public String toString() {
-        return "[ShrinkJob, properties=" + properties + "]";
+        return "[ScanJob, properties=" + properties + "]";
     }
 }

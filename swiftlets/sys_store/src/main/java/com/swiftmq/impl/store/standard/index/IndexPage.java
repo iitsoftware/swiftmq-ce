@@ -20,6 +20,7 @@ package com.swiftmq.impl.store.standard.index;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.Page;
 import com.swiftmq.impl.store.standard.log.UpdatePortionLogAction;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 
 import java.util.Iterator;
 import java.util.List;
@@ -103,6 +104,10 @@ public abstract class IndexPage implements Iterator {
         return b.toString();
     }
 
+    public void setPageNo(int pageNo) {
+        this.pageNo = pageNo;
+    }
+
     public void setJournal(List journal) {
         this.journal = journal;
     }
@@ -135,11 +140,11 @@ public abstract class IndexPage implements Iterator {
         return (page);
     }
 
-    int getNextPage() {
+    public int getNextPage() {
         return nextPage;
     }
 
-    void setNextPage(int l) {
+    public void setNextPage(int l) {
         if (page == null)
             load();
         nextPage = l;
@@ -155,11 +160,11 @@ public abstract class IndexPage implements Iterator {
         journal.add(new UpdatePortionLogAction(pageNo, POS_NEXT_PAGE, bi, ai));
     }
 
-    int getPrevPage() {
+    public int getPrevPage() {
         return prevPage;
     }
 
-    void setPrevPage(int l) {
+    public void setPrevPage(int l) {
         if (page == null)
             load();
         prevPage = l;
@@ -175,28 +180,28 @@ public abstract class IndexPage implements Iterator {
         journal.add(new UpdatePortionLogAction(pageNo, POS_PREV_PAGE, bi, ai));
     }
 
-    int getNumberEntries() {
+    public int getNumberEntries() {
         if (page == null)
             load();
         return nEntries;
     }
 
-    int getNumberValidEntries() {
+    public int getNumberValidEntries() {
         if (page == null)
             load();
         return nValid;
     }
 
-    int getFirstFreePosition() {
+    public int getFirstFreePosition() {
         if (page == null)
             load();
         return firstFree;
     }
 
-    int available() {
+    public int available() {
         if (page == null)
             load();
-        return Page.PAGE_SIZE - firstFree;
+        return PageSize.getCurrent() - firstFree;
     }
 
     /**

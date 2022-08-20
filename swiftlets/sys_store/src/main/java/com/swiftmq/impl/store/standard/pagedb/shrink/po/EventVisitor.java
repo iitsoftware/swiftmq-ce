@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2022 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,22 +15,12 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.index;
+package com.swiftmq.impl.store.standard.pagedb.shrink.po;
 
-import com.swiftmq.impl.store.standard.StoreContext;
+import com.swiftmq.tools.pipeline.POVisitor;
 
-public class RootIndexPage extends IndexPage {
+public interface EventVisitor extends POVisitor {
+    public void visit(StartShrink po);
 
-    public RootIndexPage(StoreContext ctx, int pageNo) {
-        super(ctx, pageNo);
-    }
-
-    protected IndexEntry createIndexEntry() {
-        return new RootIndexEntry();
-    }
-
-    public String toString() {
-        return "[RootIndexPage" + super.toString() + "]";
-    }
+    public void visit(Close po);
 }
-

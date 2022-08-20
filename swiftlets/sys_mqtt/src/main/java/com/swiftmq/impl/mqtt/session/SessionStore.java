@@ -26,6 +26,7 @@ import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.tools.util.IdGenerator;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.Dom4JDriver;
+import com.thoughtworks.xstream.security.AnyTypePermission;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
@@ -45,6 +46,7 @@ public class SessionStore {
         if (!ctx.queueManager.isQueueDefined(STORE_QUEUE))
             ctx.queueManager.createQueue(STORE_QUEUE, (ActiveLogin) null);
         xStream = new XStream(new Dom4JDriver());
+        xStream.addPermission(AnyTypePermission.ANY);
         xStream.allowTypesByWildcard(new String[]{"com.swiftmq.**"});
         xStream.setClassLoader(getClass().getClassLoader());
         if (ctx.traceSpace.enabled)

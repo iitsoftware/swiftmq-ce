@@ -28,10 +28,10 @@
                     description="Path of the Database (page.db)"
                     mandatory="true"
                     reboot-required="true"/>
-        <property name="initial-page-size"
+        <property name="initial-db-size-pages"
                   type="java.lang.Integer"
-                  display="Initial Page Size"
-                  description="Initial Page Size Database"
+                  display="Initial Database Size (Pages)"
+                  description="Initial Size of the Database in Pages"
                   min="10"
                   default="25600"
                   reboot-required="true"/>
@@ -40,6 +40,34 @@
                   display="Size Collect Interval"
                   description="Interval to collect the Usage"
                   default="1000"/>
+        <property name="page-size-current"
+                  type="java.lang.Integer"
+                  display="Current Page Size (Bytes)"
+                  description="Current Size of the Database Pages"
+                  default="2048"
+                  read-only="true"/>
+        <property name="page-size-recommended"
+                  type="java.lang.Integer"
+                  display="Recommended Page Size (Bytes)"
+                  description="Recommended Size of the Database Pages"
+                  default="2048"
+                  read-only="true"/>
+        <property name="page-size-max"
+                  type="java.lang.Integer"
+                  display="Maximum Page Size (Bytes)"
+                  description="Maximum Page Size"
+                  min="2048"
+                  default="262144"/>
+        <property name="perform-compact-on-startup"
+                  type="java.lang.Boolean"
+                  display="Perform Compact on page.db on Startup"
+                  description="Perform a compact of the page.db on startup if current page size is equal to recommended page size"
+                  default="false"/>
+        <property name="perform-resize-on-startup"
+                  type="java.lang.Boolean"
+                  display="Perform Page Resize on Startup"
+                  description="Perform a page resize on startup if the recommended size is greater than the current page size"
+                  default="false"/>
       </entity>
 		<entity name="cache" display="Cache" description="Cache Settings">
 			<property name="min-size"
@@ -126,26 +154,45 @@
                   display="Files"
                   description="Files"
                   dynamic-properties="used-pages free-pages">
-          <entitytemplate name="file"
-                          display="File"
-                          description="Filet">
-            <property name="free-pages"
-                      type="java.lang.Integer"
-                      display="Free Pages"
-                      default="0"
-                      description="Number of Free Pages"/>
-            <property name="used-pages"
-                      type="java.lang.Integer"
-                      display="Used Pages"
-                      default="0"
-                      description="Number of Used Pages"/>
-            <property name="file-size"
-                      type="java.lang.Long"
-                      display="File Size (KB)"
-                      default="0"
-                      description="Size of this File in KB"/>
-                </entitytemplate>
-       </entitylist>
+        <entitytemplate name="file"
+                        display="File"
+                        description="File">
+          <property name="free-pages"
+                    type="java.lang.Integer"
+                    display="Free Pages"
+                    default="0"
+                    description="Number of Free Pages"/>
+          <property name="used-pages"
+                    type="java.lang.Integer"
+                    display="Used Pages"
+                    default="0"
+                    description="Number of Used Pages"/>
+          <property name="file-size"
+                    type="java.lang.Long"
+                    display="File Size (KB)"
+                    default="0"
+                    description="Size of this File in KB"/>
+        </entitytemplate>
+      </entitylist>
+      <entitylist name="scan"
+                  display="Scan Result"
+                  description="Result of the page.db scan"
+                  dynamic-properties="size number-messages">
+        <entitytemplate name="latestscan"
+                        display="Scan"
+                        description="Scan Result">
+          <property name="size"
+                    type="java.lang.Integer"
+                    display="Message Size (KB)"
+                    default="0"
+                    description="Message Size (KB)"/>
+          <property name="number-messages"
+                    type="java.lang.Integer"
+                    display="Number Messages"
+                    default="0"
+                    description="Number of Messages with this size"/>
+        </entitytemplate>
+      </entitylist>
     </entity>
 	</configuration>
 </swiftlet>

@@ -18,12 +18,13 @@
 
 package com.swiftmq.impl.store.standard.cache;
 
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
 public class Page {
-    public static final int PAGE_SIZE = 2048;
     public final static int HEADER_LENGTH = 1;
     public int pageNo = -1;
     public boolean dirty = false;
@@ -35,8 +36,18 @@ public class Page {
         p.pageNo = pageNo;
         p.dirty = dirty;
         p.empty = empty;
-        p.data = new byte[PAGE_SIZE];
-        System.arraycopy(data, 0, p.data, 0, PAGE_SIZE);
+        p.data = new byte[PageSize.getCurrent()];
+        System.arraycopy(data, 0, p.data, 0, PageSize.getCurrent());
+        return p;
+    }
+
+    public Page copy(int newSize) {
+        Page p = new Page();
+        p.pageNo = pageNo;
+        p.dirty = dirty;
+        p.empty = empty;
+        p.data = new byte[newSize];
+        System.arraycopy(data, 0, p.data, 0, data.length);
         return p;
     }
 
@@ -44,15 +55,17 @@ public class Page {
         out.writeInt(pageNo);
         out.writeBoolean(dirty);
         out.writeBoolean(empty);
-        out.write(data, 0, PAGE_SIZE);
+        if (!empty)
+            out.write(data, 0, PageSize.getCurrent());
     }
 
     public void read(DataInput in) throws IOException {
         pageNo = in.readInt();
         dirty = in.readBoolean();
         empty = in.readBoolean();
-        data = new byte[PAGE_SIZE];
-        in.readFully(data);
+        data = new byte[PageSize.getCurrent()];
+        if (!empty)
+            in.readFully(data);
     }
 
     public String toString() {

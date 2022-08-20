@@ -1,19 +1,27 @@
 #!/bin/bash
-version=$(java -version 2>&1 \
-  | head -1 \
-  | cut -d'"' -f2 \
-  | sed 's/^1\.//' \
-  | cut -d'.' -f1
-)
+if [ -f ".executables" ]
+then
+  JAVA_HOME=$(cat .javahome)
+  EXECUTABLES=$(cat .executables)
+else
+  version=$(java -version 2>&1 \
+    | head -1 \
+    | cut -d'"' -f2 \
+    | sed 's/^1\.//' \
+    | cut -d'.' -f1
+  )
 
-if [ $version -lt "11" ]; then
-  echo "Java 11 or higher is required."
-  exit 1
+  if [ $version -lt "11" ]; then
+    echo "Java 11 or higher is required."
+    exit 1
+  fi
+
+  JAVAHOME=`java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome`
+  echo "You are using the default Java installation at '$JAVA_HOME'!"
+  echo "Please consider to use the 'install' script in this folder to install GraalVM!"
 fi
-
-JAVAHOME=`java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome`
 CLASSP="../jars/swiftmq.jar"
-OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning"
+OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS -Dnashorn.args=--no-deprecation-warning"
 PRECONFIG="-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml"
 if [ "$1" != "" ]
 then
@@ -34,5 +42,17 @@ if [ "$SWIFTMQ_JVMPARAM" != "" ]; then
   JVMPARAM="$SWIFTMQ_JVMPARAM"
 fi
 
-echo "Starting SwiftMQ with '$JVMPARAM'. Please have a look at data/log/stdout.log ..."
-exec java -server $JVMPARAM  $ROUTEROPT -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+if [ "${proxyhost}" != "" ] && [ "${proxyport}" != "" ]
+then
+  echo "Setting http/s proxy to ${proxyhost}:${proxyport}"
+  PROXY="-Dhttp.proxyHost=${proxyhost} -Dhttp.proxyPort=${proxyport} -Dhttps.proxyHost=${proxyhost} -Dhttps.proxyPort=${proxyport}"
+fi
+
+echo "Starting SwiftMQ with '$JVMPARAM' with '$JAVA_HOME'."
+echo "Please have a look at data/log/stdout.log ..."
+if [ "${EXECUTABLES}" != "" ]
+then
+  exec ${EXECUTABLES}/java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+else
+  exec java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+fi

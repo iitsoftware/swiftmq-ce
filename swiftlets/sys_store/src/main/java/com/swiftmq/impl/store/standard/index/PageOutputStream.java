@@ -21,6 +21,7 @@ import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.Page;
 import com.swiftmq.impl.store.standard.log.InsertLogAction;
 import com.swiftmq.impl.store.standard.log.UpdatePortionLogAction;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.tools.collection.RingBuffer;
 
 import java.io.DataOutput;
@@ -73,7 +74,7 @@ public class PageOutputStream implements DataOutput {
                 mp.setPrevPage(-1);
             mp.setNextPage(-1);
             actPage = mp;
-            available = Page.PAGE_SIZE - MessagePage.START_DATA;
+            available = PageSize.getCurrent() - MessagePage.START_DATA;
             pos = MessagePage.START_DATA;
             journal.add(new InsertLogAction(page.pageNo));
         } catch (Exception e) {

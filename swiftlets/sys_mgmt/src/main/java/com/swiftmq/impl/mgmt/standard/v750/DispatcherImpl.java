@@ -21,8 +21,8 @@ import com.swiftmq.impl.mgmt.standard.Dispatcher;
 import com.swiftmq.impl.mgmt.standard.SwiftletContext;
 import com.swiftmq.impl.mgmt.standard.auth.AuthenticatorImpl;
 import com.swiftmq.impl.mgmt.standard.auth.Role;
-import com.swiftmq.impl.mgmt.standard.po.*;
 import com.swiftmq.impl.mgmt.standard.po.EventObject;
+import com.swiftmq.impl.mgmt.standard.po.*;
 import com.swiftmq.jms.BytesMessageImpl;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.QueueImpl;
@@ -392,6 +392,13 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/visit, request: " + request + " ...");
         connectRequest = request;
         ConnectReply reply = (ConnectReply) request.createReply();
+        if (request.getToolName() != null && request.getToolName().equals("SwiftMQ Explorer")) {
+            reply.setOk(false);
+            reply.setException(new Exception("The old SwiftMQ Explorer has retired and isn't supported anymore. Please use Explorer App of Flow Director."));
+            ctx.logSwiftlet.logError(ctx.mgmtSwiftlet.getName(), "*** The old SwiftMQ Explorer has retired and isn't supported anymore. Please use Explorer App of Flow Director. ***");
+            send(reply);
+            return;
+        }
         reply.setOk(true);
         reply.setRouterName(SwiftletManager.getInstance().getRouterName());
         reply.setLeaseTimeout(LEASE_EXPIRATION);
