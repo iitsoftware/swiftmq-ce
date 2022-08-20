@@ -20,7 +20,7 @@ IF DEFINED SWIFTMQ_JVMPARAM (
   set JVMPARAM=%SWIFTMQ_JVMPARAM%
 )
 if defined proxyhost (
-  if defined proxyhport (
+  if defined proxyport (
     echo Setting http/s proxy to %proxyhost%:%proxyport%
     set PROXY=-Dhttp.proxyHost=%proxyhost% -Dhttp.proxyPort=%proxyport% -Dhttps.proxyHost=%proxyhost% -Dhttps.proxyPort=%proxyport%
   )
