@@ -22,7 +22,7 @@ if defined proxyhost (
   if defined proxyport (
     echo Using proxy %proxyhost%:%proxyport%
     set CURLPROXY=--proxy %proxyhost%:%proxyport%
-    set GUPROXY="--vm.Dhttp.proxyHost=%proxyhost% --vm.Dhttp.proxyPort=%proxyport% --vm.Dhttps.proxyHost=%proxyhost% --vm.Dhttps.proxyPort=%proxyport%
+    set GUPROXY=--vm.Dhttp.proxyHost=%proxyhost% --vm.Dhttp.proxyPort=%proxyport% --vm.Dhttps.proxyHost=%proxyhost% --vm.Dhttps.proxyPort=%proxyport%
   )
 )
 @echo Installing %EXTRACTED% ...
