@@ -19,7 +19,7 @@ if exist "%JAVA_HOME%" (
 )
 set DOWNLOADURL=#GRAALVMURL#.zip
 if defined proxyhost (
-  if defined proxyhport (
+  if defined proxyport (
     echo Using proxy %proxyhost%:%proxyport%
     set CURLPROXY=--proxy %proxyhost%:%proxyport%
     set GUPROXY="--vm.Dhttp.proxyHost=%proxyhost% --vm.Dhttp.proxyPort=%proxyport% --vm.Dhttps.proxyHost=%proxyhost% --vm.Dhttps.proxyPort=%proxyport%
@@ -35,7 +35,7 @@ set EXECUTABLES=%JAVA_HOME%/bin
 @echo !JAVA_HOME!>.javahome
 @echo !EXECUTABLES!>.executables
 @echo Installing Graal.js which is necessary to execute SwiftMQ Streams ...
-%EXECUTABLES%/gu $GUPROXY% install js
+%EXECUTABLES%/gu %GUPROXY% install js
 @echo Installation complete.
 exit
 rem Ensures that the system has a specific program installed on the PATH.
