@@ -42,11 +42,17 @@ if [ "$SWIFTMQ_JVMPARAM" != "" ]; then
   JVMPARAM="$SWIFTMQ_JVMPARAM"
 fi
 
+if [ "${proxyhost}" != "" ] && [ "${proxyport}" != "" ]
+then
+  echo "Setting http/s proxy to ${proxyhost}:${proxyport}"
+  PROXY="-Dhttp.proxyHost=${proxyhost} -Dhttp.proxyPort=${proxyport} -Dhttps.proxyHost=${proxyhost} -Dhttps.proxyPort=${proxyport}"
+fi
+
 echo "Starting SwiftMQ with '$JVMPARAM' with '$JAVA_HOME'."
 echo "Please have a look at data/log/stdout.log ..."
 if [ "${EXECUTABLES}" != "" ]
 then
-  exec ${EXECUTABLES}/java -server $JVMPARAM  $ROUTEROPT -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+  exec ${EXECUTABLES}/java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 else
-  exec java -server $JVMPARAM  $ROUTEROPT -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+  exec java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 fi

@@ -19,12 +19,19 @@ set JVMPARAM=-Xmx2G
 IF DEFINED SWIFTMQ_JVMPARAM (
   set JVMPARAM=%SWIFTMQ_JVMPARAM%
 )
+if defined proxyhost (
+  if defined proxyhport (
+    echo Setting http/s proxy to %proxyhost%:%proxyport%
+    set PROXY=-Dhttp.proxyHost=%proxyhost% -Dhttp.proxyPort=%proxyport% -Dhttps.proxyHost=%proxyhost% -Dhttps.proxyPort=%proxyport%
+  )
+)
+
 echo Starting SwiftMQ with '%JVMPARAM%' with '%JAVA_HOME%'.
 echo Please have a look at data/log/stdout.log ...
 if "%EXECUTABLES%" == "" (
-    java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+    java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 ) else (
-    %EXECUTABLES%/java -server %JVMPARAM% %ROUTEROPT% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+    %EXECUTABLES%/java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 )
 exit
 
