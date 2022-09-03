@@ -217,6 +217,18 @@ public class CLI {
         }
         return this;
     }
+    private String escape(String raw) {
+        String escaped = raw;
+        escaped = escaped.replace("\\", "\\\\");
+        escaped = escaped.replace("\"", "\\\"");
+        escaped = escaped.replace("\b", "\\b");
+        escaped = escaped.replace("\f", "\\f");
+        escaped = escaped.replace("\n", "\\n");
+        escaped = escaped.replace("\r", "\\r");
+        escaped = escaped.replace("\t", "\\t");
+        // TODO: escape other non-printing characters using uXXXX notation
+        return escaped;
+    }
 
     /**
      * Executes a CLI command on the local router's management tree and returns the result as an Json Array.
@@ -254,7 +266,7 @@ public class CLI {
             if (i != 0)
                 sb.append(",");
             sb.append('"');
-            sb.append(result[i].replaceAll("\"", Matcher.quoteReplacement("\\\"")));
+            sb.append(escape(result[i]));
             sb.append('"');
         }
         if (command.equals("help")) {
