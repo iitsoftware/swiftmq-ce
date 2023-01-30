@@ -774,6 +774,7 @@ public class TopicManagerImpl extends TopicManager
         ctx.activeDurableList = (EntityList) root.getEntity("usage").getEntity("durables");
         ctx.activeSubscriberList = (EntityList) root.getEntity("usage").getEntity("subscriber");
         ctx.remoteSubscriberList = (EntityList) root.getEntity("usage").getEntity("subscriber-remote");
+        ctx.announceFilterList = (EntityList) root.getEntity("announce-filters");
         if (ctx.remoteSubscriberList != null) {
             ctx.remoteSubscriberList.setEntityRemoveListener(new EntityRemoveListener() {
                 public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException {

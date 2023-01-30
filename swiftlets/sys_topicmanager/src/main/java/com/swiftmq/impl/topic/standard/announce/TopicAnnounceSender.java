@@ -52,9 +52,11 @@ public class TopicAnnounceSender
     DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
     TopicInfoFactory factory = new TopicInfoFactory();
     TopicInfoConverter converter = new TopicInfoConverter();
+    AnnounceFilters announceFilters = null;
 
     public TopicAnnounceSender(TopicManagerContext ctx) {
         this.ctx = ctx;
+        this.announceFilters = new AnnounceFilters(ctx);
         pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_TOPICANNOUNCER), TP_TOPICANNOUNCER, this);
         pipelineQueue.stopQueue();
         ctx.activeSubscriberList.addEntityWatchListener(this);
@@ -257,19 +259,21 @@ public class TopicAnnounceSender
             try {
                 for (Iterator iter = announceSubs.entrySet().iterator(); iter.hasNext(); ) {
                     AnnounceSubscription as = (AnnounceSubscription) ((Map.Entry) iter.next()).getValue();
-                    // Send create info
-                    VersionedDumpable vd = TopicInfoFactory.createTopicInfo(po.getDestination(), SwiftletManager.getInstance().getRouterName(), as.topicName, ctx.topicManager.tokenizeTopicName(as.topicName), true);
-                    rtm.process(toVersioned(vd));
-                    // Evtl. send subscription info
-                    if (as.cnt > 0) {
-                        vd = TopicInfoFactory.createTopicInfo(po.getDestination(), SwiftletManager.getInstance().getRouterName(), as.topicName, ctx.topicManager.tokenizeTopicName(as.topicName), as.cnt);
-                        rtm.process(vd);
-                    }
-                    if (!rtm.isValid()) {
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                        rtm.close();
-                        rtmList.remove(po.getDestination());
+                    if (announceFilters.isAnnounceEnabled(po.getDestination(), as.topicName)) {
+                        // Send create info
+                        VersionedDumpable vd = TopicInfoFactory.createTopicInfo(po.getDestination(), SwiftletManager.getInstance().getRouterName(), as.topicName, ctx.topicManager.tokenizeTopicName(as.topicName), true);
+                        rtm.process(toVersioned(vd));
+                        // Evtl. send subscription info
+                        if (as.cnt > 0) {
+                            vd = TopicInfoFactory.createTopicInfo(po.getDestination(), SwiftletManager.getInstance().getRouterName(), as.topicName, ctx.topicManager.tokenizeTopicName(as.topicName), as.cnt);
+                            rtm.process(vd);
+                        }
+                        if (!rtm.isValid()) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                            rtm.close();
+                            rtmList.remove(po.getDestination());
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -302,24 +306,26 @@ public class TopicAnnounceSender
             for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
                 Map.Entry entry = (Map.Entry) iter.next();
                 String dest = (String) entry.getKey();
-                RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
-                VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, true);
-                try {
-                    rtm.process(vd);
-                    if (!rtm.isValid()) {
+                if (announceFilters.isAnnounceEnabled(dest, tt[0])) {
+                    RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
+                    VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, true);
+                    try {
+                        rtm.process(vd);
+                        if (!rtm.isValid()) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                            rtm.close();
+                            iter.remove();
+                        }
+                    } catch (Exception e) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                        rtm.close();
-                        iter.remove();
-                    }
-                } catch (Exception e) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
-                    if (!rtm.isValid()) {
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                        rtm.close();
-                        iter.remove();
+                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                        if (!rtm.isValid()) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                            rtm.close();
+                            iter.remove();
+                        }
                     }
                 }
             }
@@ -337,24 +343,26 @@ public class TopicAnnounceSender
                 for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
                     Map.Entry entry = (Map.Entry) iter.next();
                     String dest = (String) entry.getKey();
-                    RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
-                    VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
-                    try {
-                        rtm.process(vd);
-                        if (!rtm.isValid()) {
+                    if (announceFilters.isAnnounceEnabled(dest, as.topicName)) {
+                        RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
+                        VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
+                        try {
+                            rtm.process(vd);
+                            if (!rtm.isValid()) {
+                                if (ctx.traceSpace.enabled)
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                rtm.close();
+                                iter.remove();
+                            }
+                        } catch (Exception e) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                            rtm.close();
-                            iter.remove();
-                        }
-                    } catch (Exception e) {
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
-                        if (!rtm.isValid()) {
-                            if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                            rtm.close();
-                            iter.remove();
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                            if (!rtm.isValid()) {
+                                if (ctx.traceSpace.enabled)
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                rtm.close();
+                                iter.remove();
+                            }
                         }
                     }
                 }
@@ -376,41 +384,7 @@ public class TopicAnnounceSender
             for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
                 Map.Entry entry = (Map.Entry) iter.next();
                 String dest = (String) entry.getKey();
-                RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
-                VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
-                try {
-                    rtm.process(vd);
-                    if (!rtm.isValid()) {
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                        rtm.close();
-                        iter.remove();
-                    }
-                } catch (Exception e) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
-                    if (!rtm.isValid()) {
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                        rtm.close();
-                        iter.remove();
-                    }
-                }
-            }
-        }
-    }
-
-    public void visit(POSubscriptionRemoved po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
-        String[] tt = ctx.topicManager.tokenizeTopicName(po.getTopicName());
-        AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(tt[0]);
-        if (as != null) {
-            as.cnt = Math.max(0, as.cnt - 1);
-            if (as.cnt == 0) {
-                // Announce all
-                for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry) iter.next();
-                    String dest = (String) entry.getKey();
+                if (announceFilters.isAnnounceEnabled(dest, as.topicName)) {
                     RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
                     VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
                     try {
@@ -436,35 +410,75 @@ public class TopicAnnounceSender
         }
     }
 
+    public void visit(POSubscriptionRemoved po) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
+        String[] tt = ctx.topicManager.tokenizeTopicName(po.getTopicName());
+        AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(tt[0]);
+        if (as != null) {
+            as.cnt = Math.max(0, as.cnt - 1);
+            if (as.cnt == 0) {
+                // Announce all
+                for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
+                    Map.Entry entry = (Map.Entry) iter.next();
+                    String dest = (String) entry.getKey();
+                    if (announceFilters.isAnnounceEnabled(dest, as.topicName)) {
+                        RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
+                        VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
+                        try {
+                            rtm.process(vd);
+                            if (!rtm.isValid()) {
+                                if (ctx.traceSpace.enabled)
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                rtm.close();
+                                iter.remove();
+                            }
+                        } catch (Exception e) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                            if (!rtm.isValid()) {
+                                if (ctx.traceSpace.enabled)
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                rtm.close();
+                                iter.remove();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void visit(POAnnounceSubscriptions po) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
         TopicInfo remoteTI = po.getTopicInfo();
         RemoteTopicManager rtm = (RemoteTopicManager) rtmList.get(remoteTI.getRouterName());
-        if (rtm != null) {
-            AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(remoteTI.getTopicName());
-            if (as != null && as.cnt > 0) {
-                VersionedDumpable vd = TopicInfoFactory.createTopicInfo(remoteTI.getRouterName(), SwiftletManager.getInstance().getRouterName(), as.topicName, ctx.topicManager.tokenizeTopicName(as.topicName), as.cnt);
-                try {
-                    rtm.process(vd);
-                    if (!rtm.isValid()) {
+        if (announceFilters.isAnnounceEnabled(remoteTI.getRouterName(), remoteTI.getTopicName())) {
+            if (rtm != null) {
+                AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(remoteTI.getTopicName());
+                if (as != null && as.cnt > 0) {
+                    VersionedDumpable vd = TopicInfoFactory.createTopicInfo(remoteTI.getRouterName(), SwiftletManager.getInstance().getRouterName(), as.topicName, ctx.topicManager.tokenizeTopicName(as.topicName), as.cnt);
+                    try {
+                        rtm.process(vd);
+                        if (!rtm.isValid()) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                            rtm.close();
+                            rtmList.remove(remoteTI.getRouterName());
+                        }
+                    } catch (Exception e) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                        rtm.close();
-                        rtmList.remove(remoteTI.getRouterName());
-                    }
-                } catch (Exception e) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
-                    if (!rtm.isValid()) {
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
-                        rtm.close();
-                        rtmList.remove(remoteTI.getRouterName());
+                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                        if (!rtm.isValid()) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                            rtm.close();
+                            rtmList.remove(remoteTI.getRouterName());
+                        }
                     }
                 }
-            }
-        } else if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + " no RTM object found!");
+            } else if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + " no RTM object found!");
+        }
     }
     // <-- Visitor methods
 

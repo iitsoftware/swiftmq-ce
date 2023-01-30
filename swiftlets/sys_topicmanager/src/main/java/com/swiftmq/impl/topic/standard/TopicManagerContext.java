@@ -48,4 +48,5 @@ public class TopicManagerContext {
     public EntityList activeDurableList = null;
     public EntityList activeSubscriberList = null;
     public EntityList remoteSubscriberList = null;
+    public EntityList announceFilterList = null;
 }
