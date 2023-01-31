@@ -30,6 +30,11 @@
       <entitytemplate name="router-name-filter"
                       display="Router Name Filter"
                       description="Router Name (SQL-LIKE predicate)">
+        <property name="routername"
+                  type="java.lang.String"
+                  display="Router Name Predicate"
+                  description="SQL LIKE Predicate to match router names"
+                  mandatory="true"/>
         <property name="filter-type"
                   type="java.lang.String"
                   display="Filter Type"

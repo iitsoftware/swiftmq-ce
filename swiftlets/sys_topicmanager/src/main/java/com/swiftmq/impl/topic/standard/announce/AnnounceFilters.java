@@ -19,9 +19,8 @@ package com.swiftmq.impl.topic.standard.announce;
 
 import com.swiftmq.impl.topic.standard.TopicManagerContext;
 import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.tools.sql.LikeComparator;
-
-import java.util.Arrays;
 
 public class AnnounceFilters {
     TopicManagerContext ctx;
@@ -30,17 +29,22 @@ public class AnnounceFilters {
         this.ctx = ctx;
     }
 
-    private Entity getRouterFilter(String routername) {
-        Entity result = null;
-        if (ctx.announceFilterList != null) {
-            String[] names = ctx.announceFilterList.getEntityNames();
+    private Entity findEntity(EntityList list, String name, String propName) {
+        if (list != null) {
+            String[] names = list.getEntityNames();
             if (names != null) {
-                String name = Arrays.asList(names).stream().filter(s -> LikeComparator.compare(routername, s, '\\')).findFirst().orElse(null);
-                if (name != null)
-                    result = ctx.announceFilterList.getEntity(name);
+                for (String s : names) {
+                    Entity entity = list.getEntity(s);
+                    if (LikeComparator.compare(name, propName.equals("name") ? entity.getName() : entity.getProperty(propName).getValue().toString(), '\\'))
+                        return entity;
+                }
             }
         }
-        return result;
+        return null;
+    }
+
+    private Entity getRouterFilter(String routername) {
+        return findEntity(ctx.announceFilterList, routername, "routername");
     }
 
     public boolean isAnnounceEnabled(String routername, String topicname) {
@@ -57,12 +61,9 @@ public class AnnounceFilters {
         }
         String type = (String) routerFilter.getProperty("filter-type").getValue();
         boolean enabled = !type.equals("include");
-        String[] names = routerFilter.getEntity("topic-filters").getEntityNames();
-        if (names != null) {
-            String name = Arrays.asList(names).stream().filter(s -> LikeComparator.compare(topicname, s, '\\')).findFirst().orElse(null);
-            if (name != null)
-                enabled = type.equals("include");
-        }
+        Entity entity = findEntity((EntityList) routerFilter.getEntity("topic-filters"), topicname, "name");
+        if (entity != null)
+            enabled = type.equals("include");
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), "AnnounceFilter/routername=" + routername + ", topicname=" + topicname + ", enabled=" + enabled);
         return enabled;
