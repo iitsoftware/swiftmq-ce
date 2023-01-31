@@ -25,7 +25,6 @@ import com.swiftmq.mgmt.PropertyChangeException;
 import com.swiftmq.net.client.IntraVMConnection;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.event.KernelStartupListener;
 import com.swiftmq.swiftlet.event.SwiftletManagerAdapter;
 import com.swiftmq.swiftlet.event.SwiftletManagerEvent;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
@@ -141,16 +140,17 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
     private void startListenerAndConnectors() throws Exception {
         for (int id : listenersToStart) {
             TCPListener listener = ioScheduler.getListener(id);
-            ctx.logSwiftlet.logInformation(getName(), "Starting listener on port " + listener.getMetaData().getPort());
+            ctx.logSwiftlet.logInformation(getName(), "Starting listener on port " + listener.getMetaData().getPort() + " [" + listener.getMetaData().getSwiftlet().getName() + "]");
             listener.start();
         }
         listenersToStart.clear();
         for (int id : connectorsToStart) {
             TCPConnector connector = ioScheduler.getConnector(id);
-            ctx.logSwiftlet.logInformation(getName(), "Starting connector to " + connector.getMetaData().getHostname() + ":" + connector.getMetaData().getPort());
+            ctx.logSwiftlet.logInformation(getName(), "Starting connector to " + connector.getMetaData().getHostname() + ":" + connector.getMetaData().getPort() + " [" + connector.getMetaData().getSwiftlet().getName() + "]");
             connector.start();
         }
         connectorsToStart.clear();
+        started = true;
     }
 
     @Override
@@ -224,9 +224,9 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
                     }
                 }
             });
-            SwiftletManager.getInstance().addKernelStartupListener(new KernelStartupListener() {
+            SwiftletManager.getInstance().addSwiftletManagerListener(SwiftletManager.getInstance().getLastSwiftlet(), new SwiftletManagerAdapter() {
                 @Override
-                public void kernelStarted() {
+                public void swiftletStarted(SwiftletManagerEvent evt) {
                     try {
                         startListenerAndConnectors();
                     } catch (Exception e) {
@@ -237,7 +237,6 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
-        started = true;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup DONE");
 
     }
