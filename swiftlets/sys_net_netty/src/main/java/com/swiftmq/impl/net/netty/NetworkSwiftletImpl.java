@@ -88,7 +88,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPListener: MetaData=" + metaData);
         int id = ioScheduler.createListener(metaData);
         metaData.setId(id);
-        if (!delayed) {
+        if (!delayed || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
             TCPListener l = ioScheduler.getListener(id);
             l.start();
         } else
@@ -124,7 +124,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPConnector: MetaData=" + metaData);
         int id = ioScheduler.createConnector(metaData);
         metaData.setId(id);
-        if (!delayed) {
+        if (!delayed || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
             TCPConnector c = ioScheduler.getConnector(id);
             c.start();
         } else
@@ -160,7 +160,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
 
     @Override
     public void startDelayed() throws Exception {
-        if (!delayed)
+        if (delayed)
             startListenerAndConnectors();
     }
 
