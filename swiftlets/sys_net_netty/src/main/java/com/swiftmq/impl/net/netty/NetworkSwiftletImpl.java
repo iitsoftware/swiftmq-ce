@@ -44,7 +44,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
     boolean reuseServerSocket = true;
     boolean dnsResolve = true;
     long zombiConnectionTimeout = 0;
-    boolean started = false;
+    boolean delayed = true;
     List<Integer> listenersToStart = new ArrayList<>();
     List<Integer> connectorsToStart = new ArrayList<>();
 
@@ -88,7 +88,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPListener: MetaData=" + metaData);
         int id = ioScheduler.createListener(metaData);
         metaData.setId(id);
-        if (started) {
+        if (!delayed) {
             TCPListener l = ioScheduler.getListener(id);
             l.start();
         } else
@@ -124,7 +124,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPConnector: MetaData=" + metaData);
         int id = ioScheduler.createConnector(metaData);
         metaData.setId(id);
-        if (started) {
+        if (!delayed) {
             TCPConnector c = ioScheduler.getConnector(id);
             c.start();
         } else
@@ -150,7 +150,18 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
             connector.start();
         }
         connectorsToStart.clear();
-        started = true;
+        delayed = false;
+    }
+
+    @Override
+    public void setDelayed(boolean delayed) {
+        this.delayed = delayed;
+    }
+
+    @Override
+    public void startDelayed() throws Exception {
+        if (!delayed)
+            startListenerAndConnectors();
     }
 
     @Override
@@ -224,16 +235,18 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
                     }
                 }
             });
-            SwiftletManager.getInstance().addSwiftletManagerListener(SwiftletManager.getInstance().getLastSwiftlet(), new SwiftletManagerAdapter() {
-                @Override
-                public void swiftletStarted(SwiftletManagerEvent evt) {
-                    try {
-                        startListenerAndConnectors();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+            if (!SwiftletManager.getInstance().isHA()) {
+                SwiftletManager.getInstance().addSwiftletManagerListener(SwiftletManager.getInstance().getLastSwiftlet(), new SwiftletManagerAdapter() {
+                    @Override
+                    public void swiftletStarted(SwiftletManagerEvent evt) {
+                        try {
+                            startListenerAndConnectors();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-            });
+                });
+            }
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
@@ -243,7 +256,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
 
     @Override
     protected void shutdown() throws SwiftletException {
-        started = false;
+        delayed = true;
         // true when shutdown while standby
         if (ctx == null)
             return;
