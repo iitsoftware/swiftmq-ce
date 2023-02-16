@@ -22,10 +22,7 @@ import com.swiftmq.mgmt.*;
 import com.swiftmq.util.SwiftUtilities;
 
 import javax.management.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class EntityMBean implements DynamicMBean, EntityWatchListener {
     SwiftletContext ctx = null;
@@ -62,7 +59,7 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
     private Command findCommand(CommandRegistry cr, String name) {
         if (cr == null)
             return null;
-        ArrayList list = cr.getCommands();
+        List list = cr.getCommands();
         if (list == null)
             return null;
         for (int i = 0; i < list.size(); i++) {
@@ -74,7 +71,7 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
     }
 
     private MBeanAttributeInfo[] createAttributeInfo() {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         Map props = entity.getProperties();
         if (props != null && props.size() > 0) {
             for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
@@ -90,7 +87,7 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
         ArrayList list = new ArrayList();
         CommandRegistry cmdReg = entity.getCommandRegistry();
         if (cmdReg != null) {
-            ArrayList cmdList = cmdReg.getCommands();
+            List cmdList = cmdReg.getCommands();
             if (cmdList != null) {
                 for (int i = 0; i < cmdList.size(); i++) {
                     Command cmd = (Command) cmdList.get(i);
@@ -103,7 +100,7 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
         if (entity.getParent() != null && entity.getParent() instanceof EntityList) {
             CommandRegistry cr = entity.getParent().getCommandRegistry();
             if (cr != null) {
-                ArrayList al = cr.getCommands();
+                List al = cr.getCommands();
                 if (al != null) {
                     for (int i = 0; i < al.size(); i++) {
                         Command c = (Command) al.get(i);

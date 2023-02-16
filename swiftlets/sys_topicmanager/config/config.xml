@@ -14,7 +14,7 @@
     <property name="direct-subscriber-selection"
               type="java.lang.Boolean"
               display="Direct Subscriber Selection"
-              description="Select Subscribers directly and do NOT interpret the Publisher's Topicname as SQL-Like Predicate"
+              description="Select Subscribers directly and do NOT interpret the Publisher's Topic Name as SQL-Like Predicate"
               default="true"/>
     <entitylist name="topics"
                 display="Topics"
@@ -22,6 +22,33 @@
       <entitytemplate name="topic"
                       display="Topic"
                       description="Topic Definition">
+      </entitytemplate>
+    </entitylist>
+    <entitylist name="announce-filters"
+                display="Announce Filters"
+                description="Topic Announce Filters">
+      <entitytemplate name="router-name-filter"
+                      display="Router Name Filter"
+                      description="Router Name (SQL-LIKE predicate)">
+        <property name="routername"
+                  type="java.lang.String"
+                  display="Router Name Predicate"
+                  description="SQL LIKE Predicate to match router names"
+                  mandatory="true"/>
+        <property name="filter-type"
+                  type="java.lang.String"
+                  display="Filter Type"
+                  description="Filter Type"
+                  choice="include exclude"
+                  default="exclude"/>
+        <entitylist name="topic-filters"
+                    display="Topic Filters"
+                    description="Topic Filters">
+          <entitytemplate name="topic-name-filter"
+                          display="Topic Name Filter"
+                          description="Topic Name (SQL-LIKE predicate)">
+          </entitytemplate>
+        </entitylist>
       </entitytemplate>
     </entitylist>
     <entitylist name="slow-subscriber-conditions"

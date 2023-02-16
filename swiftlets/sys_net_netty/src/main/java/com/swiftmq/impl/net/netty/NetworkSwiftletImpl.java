@@ -32,6 +32,9 @@ import com.swiftmq.swiftlet.mgmt.event.MgmtListener;
 import com.swiftmq.swiftlet.net.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListener {
     SwiftletContext ctx = null;
     protected IntraVMScheduler ivmScheduler = null;
@@ -41,6 +44,9 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
     boolean reuseServerSocket = true;
     boolean dnsResolve = true;
     long zombiConnectionTimeout = 0;
+    boolean delayed = true;
+    List<Integer> listenersToStart = new ArrayList<>();
+    List<Integer> connectorsToStart = new ArrayList<>();
 
     private void collectChanged(long oldInterval, long newInterval) {
         if (!collectOn)
@@ -82,8 +88,11 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPListener: MetaData=" + metaData);
         int id = ioScheduler.createListener(metaData);
         metaData.setId(id);
-        TCPListener l = ioScheduler.getListener(id);
-        l.start();
+        if (!delayed || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
+            TCPListener l = ioScheduler.getListener(id);
+            l.start();
+        } else
+            listenersToStart.add(id);
     }
 
     @Override
@@ -115,14 +124,44 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPConnector: MetaData=" + metaData);
         int id = ioScheduler.createConnector(metaData);
         metaData.setId(id);
-        TCPConnector c = ioScheduler.getConnector(id);
-        c.start();
+        if (!delayed || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
+            TCPConnector c = ioScheduler.getConnector(id);
+            c.start();
+        } else
+            connectorsToStart.add(id);
     }
 
     @Override
     public void removeTCPConnector(ConnectorMetaData metaData) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "removeTCPConnector: MetaData=" + metaData);
         ioScheduler.removeConnector(metaData.getId());
+    }
+
+    private void startListenerAndConnectors() throws Exception {
+        for (int id : listenersToStart) {
+            TCPListener listener = ioScheduler.getListener(id);
+            ctx.logSwiftlet.logInformation(getName(), "Starting listener on port " + listener.getMetaData().getPort() + " [" + listener.getMetaData().getSwiftlet().getName() + "]");
+            listener.start();
+        }
+        listenersToStart.clear();
+        for (int id : connectorsToStart) {
+            TCPConnector connector = ioScheduler.getConnector(id);
+            ctx.logSwiftlet.logInformation(getName(), "Starting connector to " + connector.getMetaData().getHostname() + ":" + connector.getMetaData().getPort() + " [" + connector.getMetaData().getSwiftlet().getName() + "]");
+            connector.start();
+        }
+        connectorsToStart.clear();
+        delayed = false;
+    }
+
+    @Override
+    public void setDelayed(boolean delayed) {
+        this.delayed = delayed;
+    }
+
+    @Override
+    public void startDelayed() throws Exception {
+        if (delayed)
+            startListenerAndConnectors();
     }
 
     @Override
@@ -196,16 +235,28 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
                     }
                 }
             });
+            if (!SwiftletManager.getInstance().isHA()) {
+                SwiftletManager.getInstance().addSwiftletManagerListener(SwiftletManager.getInstance().getLastSwiftlet(), new SwiftletManagerAdapter() {
+                    @Override
+                    public void swiftletStarted(SwiftletManagerEvent evt) {
+                        try {
+                            startListenerAndConnectors();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
-
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup DONE");
 
     }
 
     @Override
     protected void shutdown() throws SwiftletException {
+        delayed = true;
         // true when shutdown while standby
         if (ctx == null)
             return;
