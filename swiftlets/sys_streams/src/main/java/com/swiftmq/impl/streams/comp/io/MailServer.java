@@ -82,6 +82,29 @@ public class MailServer {
         return this;
     }
 
+    private void _connect(boolean ssl) throws Exception {
+        boolean smtpAuthEnabled = username != null;
+        Properties props = new Properties();
+        props.setProperty("mail.smtp.host", host);
+        props.setProperty("mail.smtp.auth", String.valueOf(smtpAuthEnabled));
+        if (ssl)
+            props.setProperty("mail.smtp.ssl.enable", "true");
+        try {
+            session = Session.getInstance(props, smtpAuthEnabled ? new SMTPPasswordAuthenticator(username, password) : null);
+            session.setDebug(ctx.ctx.traceSpace.enabled);
+            transport = session.getTransport(ssl ? "smtps" : "smtp");
+            transport.connect();
+            EntityList mailList = (EntityList) ctx.usage.getEntity("mailservers");
+            usage = mailList.createEntity();
+            usage.setName(host);
+            usage.createCommands();
+            mailList.addEntity(usage);
+        } catch (Exception e) {
+            disconnect();
+            throw e;
+        }
+    }
+
     /**
      * Does the actual connect to the mail server.
      *
@@ -89,22 +112,11 @@ public class MailServer {
      * @throws Exception
      */
     public MailServer connect() throws Exception {
-        boolean smtpAuthEnabled = username != null;
-        Properties props = new Properties();
-        props.setProperty("mail.smtp.host", host);
-        props.setProperty("mail.smtp.auth", String.valueOf(smtpAuthEnabled));
-        session = Session.getInstance(props, smtpAuthEnabled ? new SMTPPasswordAuthenticator(username, password) : null);
-        session.setDebug(ctx.ctx.traceSpace.enabled);
-        transport = session.getTransport("smtp");
-        transport.connect();
         try {
-            EntityList mailList = (EntityList) ctx.usage.getEntity("mailservers");
-            usage = mailList.createEntity();
-            usage.setName(host);
-            usage.createCommands();
-            mailList.addEntity(usage);
+            _connect(false);
         } catch (Exception e) {
-            e.printStackTrace();
+            ctx.stream.log().warning("Connect non-ssl failed(" + e.getMessage() + "), trying ssl ...");
+            _connect(true);
         }
         return this;
     }
