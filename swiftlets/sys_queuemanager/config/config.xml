@@ -309,6 +309,11 @@
                   description="Current Flow Control Delay"
                   type="java.lang.Long"
                   default="0"/>
+        <property name="latency"
+                  display="Latency"
+                  description="Current average Latency of Messages in this Queue (average delta between produce and consume)"
+                  type="java.lang.Long"
+                  default="0"/>
         <property name="mcache-messages"
                   type="java.lang.Integer"
                   display="Current Cache Size Messages"
