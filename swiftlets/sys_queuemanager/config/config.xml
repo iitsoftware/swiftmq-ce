@@ -310,7 +310,7 @@
                   type="java.lang.Long"
                   default="0"/>
         <property name="latency"
-                  display="Latency"
+                  display="Latency (ms)"
                   description="Current average Latency of Messages in this Queue (average delta between produce and consume)"
                   type="java.lang.Long"
                   default="0"/>
