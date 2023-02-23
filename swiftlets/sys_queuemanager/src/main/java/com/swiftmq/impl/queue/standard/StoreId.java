@@ -75,6 +75,10 @@ public class StoreId extends MessageIndex {
         return (persistentKey);
     }
 
+    public void setEntryTime(long entryTime) {
+        this.entryTime = entryTime;
+    }
+
     public long getLatency(long exitTime) {
         return exitTime - entryTime;
     }

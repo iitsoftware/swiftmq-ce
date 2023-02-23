@@ -389,6 +389,8 @@ public class MessageQueue extends AbstractQueue {
         if (!temporary && persistenceMode != AbstractQueue.AS_MESSAGE)
             overwritePersistence(message);
         StoreId storeId = new StoreId(getNextMsgId(), MessageImpl.MAX_PRIORITY - message.getJMSPriority(), 1, message.getJMSDeliveryMode() == DeliveryMode.PERSISTENT, message.getJMSExpiration(), null);
+        if (message.getJMSTimestamp() > 0)
+            storeId.setEntryTime(message.getJMSTimestamp());
 
         // Don't write to disk for temp. queues
         if (temporary)
