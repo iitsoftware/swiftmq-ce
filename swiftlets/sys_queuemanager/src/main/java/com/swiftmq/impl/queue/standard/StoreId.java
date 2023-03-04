@@ -25,12 +25,14 @@ public class StoreId extends MessageIndex {
     long expirationTime = 0;
     long msgSize = 0;
     transient Object persistentKey = null;
+    transient long entryTime;
 
     public StoreId(long id, int priority, int deliveryCount, boolean persistent, long expirationTime, Object persistentKey) {
         super(id, priority, deliveryCount);
         this.persistent = persistent;
         this.expirationTime = expirationTime;
         this.persistentKey = persistentKey;
+        this.entryTime = System.currentTimeMillis();
     }
 
     public void setPersistent(boolean persistent) {
@@ -71,6 +73,14 @@ public class StoreId extends MessageIndex {
 
     public Object getPersistentKey() {
         return (persistentKey);
+    }
+
+    public void setEntryTime(long entryTime) {
+        this.entryTime = entryTime;
+    }
+
+    public long getLatency(long exitTime) {
+        return exitTime - entryTime;
     }
 
     public String toString() {

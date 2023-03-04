@@ -79,6 +79,7 @@ public class MessageQueue extends AbstractQueue {
     int monitorAlertThreshold = -1;
     Map<String, WireTap> wireTaps = new HashMap<String, WireTap>();
     boolean active = true;
+    QueueLatency queueLatency = new QueueLatency();
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP) {
         this.ctx = ctx;
@@ -388,6 +389,8 @@ public class MessageQueue extends AbstractQueue {
         if (!temporary && persistenceMode != AbstractQueue.AS_MESSAGE)
             overwritePersistence(message);
         StoreId storeId = new StoreId(getNextMsgId(), MessageImpl.MAX_PRIORITY - message.getJMSPriority(), 1, message.getJMSDeliveryMode() == DeliveryMode.PERSISTENT, message.getJMSExpiration(), null);
+        if (message.getJMSTimestamp() > 0)
+            storeId.setEntryTime(message.getJMSTimestamp());
 
         // Don't write to disk for temp. queues
         if (temporary)
@@ -500,6 +503,7 @@ public class MessageQueue extends AbstractQueue {
                 removeFromViews(storeId);
             }
         }
+        queueLatency.addLatency(storeId.getLatency(System.currentTimeMillis()));
 
         return transaction;
     }
@@ -1414,6 +1418,17 @@ public class MessageQueue extends AbstractQueue {
         lockAndWaitAsyncFinished();
         try {
             return totalProduced;
+        } finally {
+            queueLock.unlock();
+        }
+    }
+
+    public long getAndResetAverageLatency() {
+        lockAndWaitAsyncFinished();
+        try {
+            long avg = queueLatency.getAverage();
+            queueLatency.reset();
+            return avg;
         } finally {
             queueLock.unlock();
         }

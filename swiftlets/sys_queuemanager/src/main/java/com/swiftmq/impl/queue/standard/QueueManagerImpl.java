@@ -76,6 +76,7 @@ public class QueueManagerImpl extends QueueManager
     public static final String PROP_ACLEANUP_INTERVAL = "acleanup-interval";
     public static final String PROP_AFLOWCONTROL_QUEUE_SIZE = "aflowcontrol-start-queuesize";
     public static final String PROP_AMESSAGES_MAXIMUM = "amax-messages";
+    public static final String PROP_LATENCY = "latency";
     public static final String PROP_MCACHE_MESSAGES = "mcache-messages";
     public static final String PROP_MCACHE_SIZE_KB = "mcache-size-kb";
     public static final String PROP_MESSAGECOUNT = "messagecount";
@@ -904,6 +905,12 @@ public class QueueManagerImpl extends QueueManager
                             int actTP = ac.getProducedTotal();
                             if (oldTP != actTP) {
                                 prop.setValue(new Integer(actTP));
+                            }
+                            prop = queueEntity.getProperty(PROP_LATENCY);
+                            long oldLT = ((Long) prop.getValue()).longValue();
+                            long actLT = ac.getAndResetAverageLatency();
+                            if (oldLT != actLT) {
+                                prop.setValue(actLT);
                             }
                             prop = queueEntity.getProperty(PROP_MCACHE_MESSAGES);
                             int oldCM = ((Integer) prop.getValue()).intValue();
