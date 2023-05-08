@@ -20,7 +20,6 @@ package com.swiftmq.impl.net.netty.scheduler;
 import com.swiftmq.impl.net.netty.SSLContextFactory;
 import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.swiftlet.net.ConnectorMetaData;
-import com.swiftmq.swiftlet.net.event.ConnectionListener;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -83,9 +82,11 @@ public class NettyTCPConnector extends TCPConnector {
         .option(ChannelOption.TCP_NODELAY, getMetaData().isUseTcpNoDelay());
         try {
             channelFuture = clientBootstrap.connect().sync();
+            ctx.logSwiftlet.logInformation("sys$net", super.toString() + ", connection created: " + connection.toString());
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$net", super.toString() + "/connect, exception: " + e.toString());
+                ctx.traceSpace.trace("sys$net", super.toString() + ", connect, exception: " + e.toString());
+            ctx.logSwiftlet.logInformation("sys$net", super.toString() + ", connect, exception: " + e.toString());
             channelFuture = null;
             connectionHandler = null;
             connection = null;
@@ -96,6 +97,7 @@ public class NettyTCPConnector extends TCPConnector {
     public void close() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$net", super.toString() + "/close");
+        ctx.logSwiftlet.logInformation("sys$net", super.toString() + ", close");
         super.close();
         if (channelFuture != null)
             channelFuture.channel().close();

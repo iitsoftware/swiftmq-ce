@@ -60,7 +60,7 @@ public class NettyTCPListener extends TCPListener {
         connection.setMetaData(getMetaData());
         connectionListener.connected(connection);
         ctx.networkSwiftlet.getConnectionManager().addConnection(connection);
-        ctx.logSwiftlet.logInformation(super.toString(), "connection accepted: " + connection.toString());
+        ctx.logSwiftlet.logInformation("sys$net", super.toString() + ", connection accepted: " + connection.toString());
         return connection;
     }
 
