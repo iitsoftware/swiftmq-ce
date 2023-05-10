@@ -407,15 +407,10 @@ public abstract class Memory {
      * @throws Exception
      */
     public Memory reverse() throws Exception {
-        List<Entry> list = all();
-        Collections.reverse(list);
         Memory result = create(ctx);
-        list.forEach(entry -> {
-            try {
-                result.add(entry.message);
-            } catch (Exception ignored) {
-            }
-        });
+        for (int i = size() - 1; i >= 0; i--) {
+            result.add(at(i));
+        }
         return result;
     }
 
