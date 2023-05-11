@@ -86,7 +86,6 @@ public class NettyTCPConnector extends TCPConnector {
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$net", super.toString() + ", connect, exception: " + e.toString());
-            ctx.logSwiftlet.logInformation("sys$net", super.toString() + ", connect, exception: " + e.toString());
             channelFuture = null;
             connectionHandler = null;
             connection = null;
@@ -97,7 +96,6 @@ public class NettyTCPConnector extends TCPConnector {
     public void close() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$net", super.toString() + "/close");
-        ctx.logSwiftlet.logInformation("sys$net", super.toString() + ", close");
         super.close();
         if (channelFuture != null)
             channelFuture.channel().close();
