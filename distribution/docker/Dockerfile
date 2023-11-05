@@ -1,5 +1,4 @@
-FROM ghcr.io/graalvm/graalvm-ce:22.2.0
-RUN gu install js
+FROM container-registry.oracle.com/graalvm/jdk:21
 RUN microdnf install rsync
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
