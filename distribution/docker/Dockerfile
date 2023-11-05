@@ -3,7 +3,7 @@ RUN microdnf install -y rsync gzip
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
-RUN mkdir /swiftmq/preconfig mkdir /swiftmq/initialconfig mkdir /swiftmq/initialpreconfig
+RUN mkdir -p /swiftmq/preconfig mkdir /swiftmq/initialconfig mkdir /swiftmq/initialpreconfig
 COPY /swiftmq/data/config/routerconfig.xml /swiftmq/initialconfig/.
 COPY /swiftmq/data/preconfig/* /swiftmq/initialpreconfig/.
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
