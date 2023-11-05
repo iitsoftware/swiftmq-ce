@@ -2,7 +2,8 @@ FROM container-registry.oracle.com/graalvm/jdk:21
 RUN microdnf install rsync
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
-RUN tar xvfz /swiftmq.tar.gz
+RUN ls -l
+RUN tar xvfz swiftmq.tar.gz
 RUN mkdir /swiftmq/preconfig
 RUN mkdir /swiftmq/initialconfig
 RUN mkdir /swiftmq/initialpreconfig
