@@ -34,8 +34,6 @@ set EXECUTABLES=%JAVA_HOME%/bin
 %EXECUTABLES%/java -version
 @echo !JAVA_HOME!>.javahome
 @echo !EXECUTABLES!>.executables
-@echo Installing Graal.js which is necessary to execute SwiftMQ Streams ...
-%EXECUTABLES%/gu %GUPROXY% install js
 @echo Installation complete.
 exit
 rem Ensures that the system has a specific program installed on the PATH.

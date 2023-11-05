@@ -1,6 +1,6 @@
 #!/bin/bash
-ARCH="amd64"
-if [ `arch` == "arm64" ]
+ARCH="x64"
+if [ `arch` == "x64" ]
 then
   ARCH="aarch64"
 fi
@@ -35,8 +35,6 @@ then
   sudo xattr -r -d com.apple.quarantine ${JAVA_HOME}
   EXECUTABLES="${JAVA_HOME}/Contents/Home/bin"
 fi
-echo "Installing Graal.js which is necessary to execute SwiftMQ Streams ..."
-${EXECUTABLES}/gu ${GUPROXY} install js
 echo "The following version of GraalVM has been installed for this SwiftMQ Router:"
 ${EXECUTABLES}/java -version
 echo ${JAVA_HOME} > .javahome
