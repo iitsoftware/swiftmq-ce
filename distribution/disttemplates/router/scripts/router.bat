@@ -2,7 +2,7 @@
 if exist .executables (goto graalinstalled) else (goto graalnotinstalled)
 
 :main
-set OPENS=--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning
+set OPENS=--module-path=../graalvm --add-modules=org.graalvm.polyglot --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning
 
 set PRECONFIG=-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml
 IF NOT "%~1"=="" (
@@ -29,9 +29,9 @@ if defined proxyhost (
 echo Starting SwiftMQ with '%JVMPARAM%' with '%JAVA_HOME%'.
 echo Please have a look at data/log/stdout.log ...
 if "%EXECUTABLES%" == "" (
-    java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+    java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar;../graalvm com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 ) else (
-    %EXECUTABLES%/java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+    %EXECUTABLES%/java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar;../graalvm com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 )
 exit
 

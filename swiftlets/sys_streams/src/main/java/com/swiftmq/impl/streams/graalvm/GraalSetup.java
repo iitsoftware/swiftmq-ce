@@ -31,7 +31,9 @@ public class GraalSetup {
 
     public static ScriptEngine engine(ClassLoader cl) throws Exception {
         return GraalJSScriptEngine.create(null, Context.newBuilder("js")
-                .allowExperimentalOptions(true).option("js.nashorn-compat", "true")
+                .allowExperimentalOptions(true)
+                .option("js.nashorn-compat", "true")
+                .option("js.ecmascript-version", "latest")
                 .allowAllAccess(true)
                 .allowHostAccess(getHostAccess())
                 .hostClassLoader(cl));

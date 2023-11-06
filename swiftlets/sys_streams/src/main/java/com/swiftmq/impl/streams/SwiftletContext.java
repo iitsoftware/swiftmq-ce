@@ -34,6 +34,7 @@ import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.util.SwiftUtilities;
+import org.graalvm.home.Version;
 
 import java.io.File;
 
@@ -82,11 +83,13 @@ public class SwiftletContext {
         Runtime.Version version = Runtime.version();
         JAVAVERSION = version.feature();
         try {
-            ISGRAAL = org.graalvm.home.Version.getCurrent().isRelease();
+            ISGRAAL = Version.getCurrent().isRelease();
         } catch (Exception e) {
             ISGRAAL = false;
         }
         HASENGINE = JAVAVERSION < 15 || ISGRAAL;
         logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", running on GraalVM: " + ISGRAAL);
+        if (ISGRAAL)
+            logSwiftlet.logInformation(streamsSwiftlet.getName(), "GraalVM Version: " + Version.getCurrent());
     }
 }

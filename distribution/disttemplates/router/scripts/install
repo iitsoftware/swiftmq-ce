@@ -1,11 +1,15 @@
 #!/bin/bash
 ARCH="x64"
-if [ `arch` == "x64" ]
+if [ `arch` == "arm64" ]
 then
   ARCH="aarch64"
 fi
 OSTYPE=`uname | tr "[:upper:]" "[:lower:]"`
-EXTRACTED="#GRAALVMRELEASE#"
+if [ $OSTYPE == "darwin" ]
+then
+  OSTYPE="macos"
+fi
+EXTRACTED="graalvm-jdk-21"
 JAVA_HOME="`pwd`/../${EXTRACTED}"
 if [ -d "${JAVA_HOME}" ]
 then
@@ -17,19 +21,19 @@ then
     exit -1
   fi
 fi
-DOWNLOADURL="#GRAALVMURL#.tar.gz"
+DOWNLOADURL="https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_${OSTYPE}-${ARCH}_bin.tar.gz"
 if [ "${proxyhost}" != "" ] && [ "${proxyport}" != "" ]
 then
   echo "Using proxy ${proxyhost}:${proxyport}"
   CURLPROXY="--proxy ${proxyhost}:${proxyport}"
-  GUPROXY="--vm.Dhttp.proxyHost=${proxyhost} --vm.Dhttp.proxyPort=${proxyport} --vm.Dhttps.proxyHost=${proxyhost} --vm.Dhttps.proxyPort=${proxyport}"
 fi
 echo "Installing ${EXTRACTED} ..."
 curl ${CURLPROXY} -L -o ../graalvm.tar.gz ${DOWNLOADURL}
-tar xf ../graalvm.tar.gz --directory ../
+mkdir ../${EXTRACTED}
+tar xf ../graalvm.tar.gz --directory ../${EXTRACTED} --strip-components=1
 rm -f ../graalvm.tar.gz
 EXECUTABLES="${JAVA_HOME}/bin"
-if [ "${OSTYPE}" == "darwin" ]
+if [ "${OSTYPE}" == "macos" ]
 then
   echo "To remove the quarantine attributes from the GraalVM files, please provide your sudo password below (if prompted)."
   sudo xattr -r -d com.apple.quarantine ${JAVA_HOME}

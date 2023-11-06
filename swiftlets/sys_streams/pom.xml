@@ -50,18 +50,8 @@
       <version>1.7.25</version>
     </dependency>
     <dependency>
-      <groupId>org.graalvm.sdk</groupId>
-      <artifactId>graal-sdk</artifactId>
-      <version>23.1.1</version>
-    </dependency>
-    <dependency>
       <groupId>org.graalvm.js</groupId>
       <artifactId>js-scriptengine</artifactId>
-      <version>23.1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.graalvm.polyglot</groupId>
-      <artifactId>polyglot</artifactId>
       <version>23.1.1</version>
     </dependency>
     <dependency>
@@ -114,6 +104,7 @@
                      <exclude>org.dom4j:*</exclude>
                      <exclude>com.thoughtworks.xstream:*</exclude>
                      <exclude>io.netty:*</exclude>
+                     <exclude>org.graalvm.*:*</exclude>
                    </excludes>
                  </artifactSet>
                  <outputFile>${project.build.directory}/${project.artifactId}_fat.jar</outputFile>

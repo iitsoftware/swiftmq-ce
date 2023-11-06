@@ -1,27 +1,11 @@
 #!/bin/bash
-if [ -f ".executables" ]
-then
-  JAVA_HOME=$(cat .javahome)
-  EXECUTABLES=$(cat .executables)
-else
-  version=$(java -version 2>&1 \
-    | head -1 \
-    | cut -d'"' -f2 \
-    | sed 's/^1\.//' \
-    | cut -d'.' -f1
-  )
-
-  if [ $version -lt "11" ]; then
-    echo "Java 11 or higher is required."
-    exit 1
-  fi
-
-  JAVAHOME=`java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome`
-  echo "You are using the default Java installation at '$JAVA_HOME'!"
-  echo "Please consider to use the 'install' script in this folder to install GraalVM!"
+if [ ! -f ./.executables ]; then
+  ./install -d
 fi
-CLASSP="../jars/swiftmq.jar"
-OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS -Dnashorn.args=--no-deprecation-warning"
+JAVA_HOME=$(cat .javahome)
+EXECUTABLES=$(cat .executables)
+CLASSP="../jars/swiftmq.jar:../graalvm/*"
+OPENS="--module-path=../graalvm --add-modules=org.graalvm.polyglot --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS -Dnashorn.args=--no-deprecation-warning"
 PRECONFIG="-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml"
 if [ "$1" != "" ]
 then

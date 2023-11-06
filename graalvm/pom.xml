@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.swiftmq</groupId>
+    <artifactId>swiftmq-ce</artifactId>
+    <version>12.5.4</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <groupId>com.swiftmq</groupId>
+  <artifactId>graalvm</artifactId>
+  <version>12.5.4</version>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+      <version>23.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.polyglot</groupId>
+      <artifactId>polyglot</artifactId>
+      <version>23.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.polyglot</groupId>
+      <artifactId>js</artifactId>
+      <version>23.1.0</version>
+      <type>pom</type>
+    </dependency><!-- add additional languages if needed -->
+    <dependency>
+      <groupId>org.graalvm.polyglot</groupId>
+      <artifactId>tools</artifactId>
+      <version>23.1.0</version>
+      <type>pom</type>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version> <!-- Use the appropriate version -->
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <excludeTransitive>false</excludeTransitive>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <excludeClassifiers>sources,javadoc</excludeClassifiers>
+              <excludeTypes>pom</excludeTypes> <!-- Exclude POM files -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

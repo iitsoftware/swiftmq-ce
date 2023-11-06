@@ -10,6 +10,7 @@
   <version>12.5.4</version>
 
   <modules>
+    <module>graalvm</module>
     <module>router</module>
     <module>swiftlets/sys_amqp</module>
     <module>swiftlets/sys_authentication</module>
