@@ -41,18 +41,5 @@ set /p JAVA_HOME=<.javahome
 goto main
 
 :graalnotinstalled
-where java >nul 2>nul
-if %errorlevel%==1 (
-    @echo Please install Java 11 or later before using SwiftMQ! From Java 15 onwards you need GraalVM: https://graalvm.org
-    exit
-)
-
-for /f tokens^=2-5^ delims^=.-_^" %%j in ('java -fullversion 2^>^&1') do set "jver=%%j"
-if %jver% LSS 11 (
-    @echo Please install Java 11 or later before using SwiftMQ! From Java 15 onwards you need GraalVM: https://graalvm.org
-    exit
-)
-for /f "tokens=*" %%i in ('java -cp ../jars/swiftmq.jar com.swiftmq.JavaHome') do set JAVAHOME=%%i
-echo You are using the default Java installation at '%JAVA_HOME%'!
-echo Please consider to use the 'install' script in this folder to install GraalVM!
+call install.bat -d
 goto main

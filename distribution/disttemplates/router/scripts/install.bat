@@ -17,7 +17,7 @@ if exist "%JAVA_HOME%" (
     exit
   )
 )
-set DOWNLOADURL=#GRAALVMURL#.zip
+set DOWNLOADURL=#GRAALVMURL#/#GRAALVMRELEASE#_windows-x64_bin.zip
 if defined proxyhost (
   if defined proxyport (
     echo Using proxy %proxyhost%:%proxyport%

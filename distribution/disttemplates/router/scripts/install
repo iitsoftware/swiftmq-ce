@@ -9,7 +9,7 @@ if [ $OSTYPE == "darwin" ]
 then
   OSTYPE="macos"
 fi
-EXTRACTED="graalvm-jdk-21"
+EXTRACTED="#GRAALVMRELEASE#"
 JAVA_HOME="`pwd`/../${EXTRACTED}"
 if [ -d "${JAVA_HOME}" ]
 then
@@ -21,7 +21,7 @@ then
     exit -1
   fi
 fi
-DOWNLOADURL="https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_${OSTYPE}-${ARCH}_bin.tar.gz"
+DOWNLOADURL="#GRAALVMURL#/#GRAALVMRELEASE#_${OSTYPE}-${ARCH}_bin.tar.gz"
 if [ "${proxyhost}" != "" ] && [ "${proxyport}" != "" ]
 then
   echo "Using proxy ${proxyhost}:${proxyport}"
