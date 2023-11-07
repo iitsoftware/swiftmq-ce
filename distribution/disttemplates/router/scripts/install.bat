@@ -27,7 +27,22 @@ if defined proxyhost (
 )
 @echo Installing %EXTRACTED% ...
 curl %CURLPROXY% -L -o graalvm.zip %DOWNLOADURL%
-tar -xf graalvm.tar.gz -C ../%EXTRACTED% --strip-components=1
+set TEMP_DIR=TempExtractDir
+mkdir ..\%TEMP_DIR%
+tar -xf ../graalvm.tar.gz -C ../%TEMP_DIR%
+for /d %%i in (..\%TEMP_DIR%\*) do (
+    set FIRST_LEVEL_DIR=%%~nxi
+    goto :copyfiles
+)
+
+:copyfiles
+:: Check if we found the directory and move the contents
+if not "%FIRST_LEVEL_DIR%"=="" (
+    xcopy /E /I ..\%TEMP_DIR%\%FIRST_LEVEL_DIR%\* ..\%EXTRACTED%\
+    rmdir /S /Q ..\%TEMP_DIR%
+) else (
+    echo Could not find the first level directory.
+)
 del "graalvm.zip"
 set EXECUTABLES=%JAVA_HOME%/bin
 @echo The following version of GraalVM has been installed for this SwiftMQ Router:
