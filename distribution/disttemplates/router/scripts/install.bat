@@ -51,7 +51,7 @@ set EXECUTABLES=%JAVA_HOME%/bin
 @echo !JAVA_HOME!>.javahome
 @echo !EXECUTABLES!>.executables
 @echo Installation complete.
-exit
+exit /b
 rem Ensures that the system has a specific program installed on the PATH.
 :check_requirement
 set "MISSING_REQUIREMENT=true"
