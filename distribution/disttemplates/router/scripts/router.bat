@@ -1,7 +1,8 @@
 @echo off
-if exist .executables (goto graalinstalled) else (goto graalnotinstalled)
+if not exist .executables call install.bat -d
 
-:main
+set /p EXECUTABLES=<.executables
+set /p JAVA_HOME=<.javahome
 set OPENS=--module-path=../graalvm --add-modules=org.graalvm.polyglot --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning
 
 set PRECONFIG=-Dswiftmq.preconfig=../data/preconfig/upgrade-to-12.1.0.xml
@@ -33,13 +34,3 @@ if "%EXECUTABLES%" == "" (
 ) else (
     %EXECUTABLES%/java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar;../graalvm com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 )
-exit
-
-:graalinstalled
-set /p EXECUTABLES=<.executables
-set /p JAVA_HOME=<.javahome
-goto main
-
-:graalnotinstalled
-call install.bat -d
-goto main
