@@ -27,7 +27,7 @@ if defined proxyhost (
 )
 @echo Installing %EXTRACTED% ...
 curl %CURLPROXY% -L -o graalvm.zip %DOWNLOADURL%
-tar xf graalvm.zip --directory ../
+tar -xf graalvm.tar.gz -C ../%EXTRACTED% --strip-components=1
 del "graalvm.zip"
 set EXECUTABLES=%JAVA_HOME%/bin
 @echo The following version of GraalVM has been installed for this SwiftMQ Router:
