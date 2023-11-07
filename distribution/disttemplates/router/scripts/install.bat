@@ -29,7 +29,8 @@ if defined proxyhost (
 curl %CURLPROXY% -L -o graalvm.zip %DOWNLOADURL%
 set TEMP_DIR=TempExtractDir
 mkdir ..\%TEMP_DIR%
-tar -xf ../graalvm.tar.gz -C ../%TEMP_DIR%
+mkdir ..\%EXTRACTED%
+tar -xf graalvm.zip -C ../%TEMP_DIR%
 for /d %%i in (..\%TEMP_DIR%\*) do (
     set FIRST_LEVEL_DIR=%%~nxi
     goto :copyfiles
@@ -38,7 +39,7 @@ for /d %%i in (..\%TEMP_DIR%\*) do (
 :copyfiles
 :: Check if we found the directory and move the contents
 if not "%FIRST_LEVEL_DIR%"=="" (
-    xcopy /E /I ..\%TEMP_DIR%\%FIRST_LEVEL_DIR%\* ..\%EXTRACTED%\
+    xcopy /E /I /Q ..\%TEMP_DIR%\%FIRST_LEVEL_DIR%\* ..\%EXTRACTED%\
     rmdir /S /Q ..\%TEMP_DIR%
 ) else (
     echo Could not find the first level directory.
