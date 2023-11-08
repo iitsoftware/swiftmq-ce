@@ -7,6 +7,7 @@ RUN mkdir -p /swiftmq/preconfig mkdir /swiftmq/initialconfig mkdir /swiftmq/init
 COPY /swiftmq/data/config/routerconfig.xml /swiftmq/initialconfig/.
 COPY /swiftmq/data/preconfig/* /swiftmq/initialpreconfig/.
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
+ENV SWIFTMQ_IN_DOCKER true
 WORKDIR /swiftmq/scripts
 CMD ./checkconfig && exec ./router $SWIFTMQ_PRECONFIG
 

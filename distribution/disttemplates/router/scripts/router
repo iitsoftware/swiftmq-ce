@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ ! -f ./.executables ]; then
+if [ "$SWIFTMQ_IN_DOCKER" != "true" ] && [ ! -f ./.executables ]; then
   ./install -d
 fi
 JAVA_HOME=$(cat .javahome)
