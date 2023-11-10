@@ -300,7 +300,7 @@
                       description="Client Network Output Extend Size"
                       mandatory="false"
                       min="1024"
-                      default="65536"/>
+                      default="1400"/>
             <property name="smqp-producer-reply-interval"
                       read-only="true"
                       type="java.lang.Integer"
