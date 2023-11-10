@@ -216,7 +216,7 @@
                   description="Router Network Output Buffer Size"
                   mandatory="false"
                   min="1024"
-                  default="1400"/>
+                  default="131072"/>
         <property name="router-output-extend-size"
                   read-only="true"
                   type="java.lang.Integer"
@@ -292,7 +292,7 @@
                       description="Client Network Output Buffer Size"
                       mandatory="false"
                       min="1024"
-                      default="1400"/>
+                      default="131072"/>
             <property name="client-output-extend-size"
                       read-only="true"
                       type="java.lang.Integer"
@@ -300,7 +300,7 @@
                       description="Client Network Output Extend Size"
                       mandatory="false"
                       min="1024"
-                      default="1400"/>
+                      default="131072"/>
             <property name="smqp-producer-reply-interval"
                       read-only="true"
                       type="java.lang.Integer"

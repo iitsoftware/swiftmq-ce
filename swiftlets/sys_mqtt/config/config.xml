@@ -73,7 +73,7 @@
                     description="Router Network Output Buffer Size"
                     mandatory="false"
                     min="1024"
-                    default="1400"/>
+                    default="131072"/>
           <property name="router-output-extend-size"
                     type="java.lang.Integer"
                     display="Router Network Output Extend Size"
