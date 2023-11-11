@@ -192,12 +192,12 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         }
     }
 
-    private void createPoolChangeListeners(PoolDispatcher pool, Entity poolEntity) {
+    private void createPoolChangeListeners(Pool pool, Entity poolEntity) {
         Property prop = poolEntity.getProperty("max-threads");
         prop.setPropertyChangeListener(new PropertyChangeAdapter(pool) {
 
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                PoolDispatcher p = (PoolDispatcher) configObject;
+                Pool p = (Pool) configObject;
                 int n = ((Integer) newValue).intValue();
                 if (n < p.getMinThreads())
                     throw new PropertyChangeException("max-threads must be greater or equal to min-threads");
@@ -208,7 +208,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         prop.setPropertyChangeListener(new PropertyChangeAdapter(pool) {
 
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                PoolDispatcher p = (PoolDispatcher) configObject;
+                Pool p = (Pool) configObject;
                 int n = ((Integer) newValue).intValue();
                 p.setThreshold(n);
             }
@@ -217,7 +217,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         prop.setPropertyChangeListener(new PropertyChangeAdapter(pool) {
 
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                PoolDispatcher p = (PoolDispatcher) configObject;
+                Pool p = (Pool) configObject;
                 int n = ((Integer) newValue).intValue();
                 p.setAddThreads(n);
             }
@@ -243,7 +243,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
                         ", addThreads=" + addThreads +
                         ", prio=" + prio +
                         ", idletimeout=" + ttl);
-            PoolDispatcher pool = new PoolDispatcher(getName(), poolName, kernelPool, min, max, threshold, addThreads, prio, ttl);
+            Pool pool = new Pool(getName(), poolName, kernelPool, min, max, threshold, addThreads, prio, ttl);
             pools.put(poolName, pool);
             Entity qEntity = usageList.createEntity();
             qEntity.setName(poolName);
@@ -259,7 +259,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
                 list.setEntityAddListener(new EntityChangeAdapter(pool) {
                     public void onEntityAdd(Entity parent, Entity newEntity)
                             throws EntityAddException {
-                        PoolDispatcher myPd = (PoolDispatcher) configObject;
+                        Pool myPd = (Pool) configObject;
                         if (myPd.isKernelPool())
                             throw new EntityAddException("You cannot create a thread assignment for a kernel pool dynamically.");
                         synchronized (threadNameMaps) {
@@ -272,7 +272,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
                 list.setEntityRemoveListener(new EntityChangeAdapter(pool) {
                     public void onEntityRemove(Entity parent, Entity delEntity)
                             throws EntityRemoveException {
-                        PoolDispatcher myPd = (PoolDispatcher) configObject;
+                        Pool myPd = (Pool) configObject;
                         if (myPd.isKernelPool())
                             throw new EntityRemoveException("You cannot remove a thread assignment from a kernel pool dynamically.");
                         synchronized (threadNameMaps) {
@@ -298,7 +298,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
 
         EntityList poolList = (EntityList) root.getEntity("pools");
         createPool(DEFAULT_POOL, null, poolList.getTemplate());
-        PoolDispatcher dp = (PoolDispatcher) pools.get(DEFAULT_POOL);
+        Pool dp = (Pool) pools.get(DEFAULT_POOL);
         dp.setKernelPool(true);
 
         String[] poolNames = getDefinedPoolnames(poolList);
@@ -323,9 +323,9 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         poolList.setEntityRemoveListener(new EntityChangeAdapter(null) {
             public void onEntityRemove(Entity parent, Entity delEntity)
                     throws EntityRemoveException {
-                PoolDispatcher pd = null;
+                Pool pd = null;
                 synchronized (pools) {
-                    pd = (PoolDispatcher) pools.get(delEntity.getName());
+                    pd = (Pool) pools.get(delEntity.getName());
                     if (pd.isKernelPool())
                         throw new EntityRemoveException("You cannot remove a kernel pool dynamically.");
                     pd.close();
