@@ -101,22 +101,29 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
         ctx.logSwiftlet.logInformation("sys$net", toString()+"/Got exception: "+cause);
     }
 
-    @Override
     public void channelRead(ChannelHandlerContext context, Object msg) throws Exception {
+        if (inputHandler == null)
+            throw new IOException("Connection not yet ready (no input handler)");
+        ByteBuf in = (ByteBuf) msg;
         try {
-            if (inputHandler == null)
-                throw new IOException("Connection not yet ready (no input handler)");
-            byte[] buffer = inputHandler.getBuffer();
-            int offset = inputHandler.getOffset();
-            ByteBuf in = (ByteBuf) msg;
-            int readableBytes = in.readableBytes();
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$net", toString() + "/channelRead, readableBytes: " + readableBytes);
-            in.readBytes(buffer, offset, readableBytes);
-            inputHandler.setBytesWritten(readableBytes);
-            countableInput.addByteCount(readableBytes);
+            while (in.isReadable()) { // Loop while there's data to read
+                byte[] buffer = inputHandler.getBuffer();
+                int offset = inputHandler.getOffset();
+                int readableBytes = in.readableBytes();
+                int bytesToRead = Math.min(buffer.length - offset, readableBytes);
+
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$net", toString() + "/channelRead, readableBytes: " + readableBytes + ", bytesToRead: " + bytesToRead);
+
+                in.readBytes(buffer, offset, bytesToRead);
+                inputHandler.setBytesWritten(bytesToRead);
+                countableInput.addByteCount(bytesToRead);
+            }
         } finally {
-            ReferenceCountUtil.release(msg);
+            // Only release if fully consumed
+            if (!in.isReadable()) {
+                ReferenceCountUtil.release(msg);
+            }
         }
     }
 
