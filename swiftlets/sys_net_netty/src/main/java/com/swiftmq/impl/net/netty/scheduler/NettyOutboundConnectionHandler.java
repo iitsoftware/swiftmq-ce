@@ -120,10 +120,7 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
                 countableInput.addByteCount(bytesToRead);
             }
         } finally {
-            // Only release if fully consumed
-            if (!in.isReadable()) {
-                ReferenceCountUtil.release(msg);
-            }
+            ReferenceCountUtil.release(msg);
         }
     }
 
