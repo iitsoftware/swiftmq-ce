@@ -32,19 +32,19 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 
 import java.io.File;
 import java.io.RandomAccessFile;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.PriorityQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StableStore implements TimerListener, MgmtListener {
     public static final String FILENAME = "page.db";
     protected StoreContext ctx;
     protected String path;
-    protected SortedSet<Integer> freePages = new TreeSet<>();
-    protected volatile int nFree = 0;
+    protected PriorityQueue<Integer> freePages = new PriorityQueue<>();
+    protected final AtomicInteger nFree = new AtomicInteger();
     protected RandomAccessFile file;
     protected String filename;
     protected volatile long fileLength;
-    protected volatile int numberPages = 0;
+    protected final AtomicInteger numberPages = new AtomicInteger();
     protected int initialPages = 0;
     protected byte[] emptyData = null;
     private Property sizeCollectProp = null;
@@ -81,7 +81,7 @@ public class StableStore implements TimerListener, MgmtListener {
     }
 
     public int getnFree() {
-        return nFree;
+        return nFree.get();
     }
 
     private static byte[] makeEmptyArray(int size) {
@@ -144,7 +144,7 @@ public class StableStore implements TimerListener, MgmtListener {
     public void performTimeAction() {
         try {
             freeProp.setValue(nFree);
-            usedProp.setValue(numberPages - nFree);
+            usedProp.setValue(numberPages.get() - nFree.get());
             fileSizeProp.setValue(fileLength / 1024);
         } catch (Exception e) {
         }
@@ -175,14 +175,14 @@ public class StableStore implements TimerListener, MgmtListener {
 
     private void init() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init ...");
-        nFree = 0;
+        nFree.set(0);
         filename = path + File.separatorChar + FILENAME;
         emptyData = makeEmptyArray(PageSize.getCurrent());
         file = new RandomAccessFile(filename, "rw");
         fileLength = file.length();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init, fileLength=" + fileLength);
         if (fileLength > 0) {
-            numberPages = (int) (fileLength / PageSize.getCurrent());
+            numberPages.set((int) (fileLength / PageSize.getCurrent()));
             if (!offline)
                 shrinkFile();
         } else
@@ -232,34 +232,33 @@ public class StableStore implements TimerListener, MgmtListener {
         if (!freePoolEnabled)
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/addToFreePool, pageNo=" + pageNo);
-        freePages.add(pageNo);
-        nFree++;
+        freePages.offer(pageNo);
+        nFree.getAndIncrement();
     }
 
     private int getFirstFree() {
-        if (!freePoolEnabled || nFree == 0)
+        if (!freePoolEnabled || nFree.get() == 0)
             return -1;
-        Integer pageNo = freePages.first();
-        freePages.remove(pageNo);
-        nFree--;
+        Integer pageNo = freePages.poll();
+        nFree.getAndDecrement();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/getFirstFree, pageNo=" + pageNo);
         return pageNo;
     }
 
     private void initialize(int nPages) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/initialize, nPages=" + nPages);
-        if (numberPages > 0)
+        if (numberPages.get() > 0)
             throwException("can't initialize - page store contains " + numberPages + " pages");
         ensurePage(nPages - 1);
         for (int i = 0; i < nPages; i++) {
             Page p = createPage(i);
             writePage(p);
         }
-        numberPages = nPages;
+        numberPages.set(nPages);
     }
 
     public void setNumberPages(int numberPages) {
-        this.numberPages = numberPages;
+        this.numberPages.set(numberPages);
     }
 
     public Page createPage(int pageNo) {
@@ -302,7 +301,7 @@ public class StableStore implements TimerListener, MgmtListener {
 
     private void buildFreePageList() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/buildFreePageList...");
-        for (int i = 0; i < numberPages; i++) {
+        for (int i = 0; i < numberPages.get(); i++) {
             Page p = loadPage(i);
             if (p.empty && i > 0) // never put the root index page into the free page list!
             {
@@ -330,11 +329,11 @@ public class StableStore implements TimerListener, MgmtListener {
     }
 
     public int getNumberPages() {
-        return numberPages;
+        return numberPages.get();
     }
 
     int getNumberFreePages() {
-        return nFree;
+        return nFree.get();
     }
 
     protected Page create() throws Exception {
@@ -344,8 +343,8 @@ public class StableStore implements TimerListener, MgmtListener {
         if (pn != -1) {
             p = createPage(pn);
         } else {
-            p = createPage(numberPages);
-            numberPages++;
+            p = createPage(numberPages.get());
+            numberPages.getAndIncrement();
             writePage(p);
         }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/create, page=" + p);
@@ -354,14 +353,14 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public void ensure(int pageNo) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/ensure, pageNo=" + pageNo);
-        if (pageNo > numberPages - 1) {
+        if (pageNo > numberPages.get() - 1) {
             ensurePage(pageNo);
-            for (int i = numberPages; i <= pageNo; i++) {
+            for (int i = numberPages.get(); i <= pageNo; i++) {
                 Page p = createPage(i);
                 writePage(p);
                 addToFreePool(pageNo);
             }
-            numberPages = pageNo + 1;
+            numberPages.set(pageNo + 1);
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", toString() + "/ensure, numberPages=" + numberPages);
@@ -369,21 +368,21 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public Page get(int pageNo) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/get, pageNo=" + pageNo);
-        if (pageNo > numberPages)
+        if (pageNo > numberPages.get())
             throwException("get pageNo " + pageNo + " is out of range [0.." + (numberPages) + "]");
         return loadPage(pageNo);
     }
 
     public void put(Page page) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/put, page=" + page);
-        if (page.pageNo > numberPages)
+        if (page.pageNo > numberPages.get())
             throwException("put pageNo " + page.pageNo + " is out of range [0.." + (numberPages) + "]");
         writePage(page);
     }
 
     public void free(Page page) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/free, page=" + page);
-        if (page.pageNo > numberPages)
+        if (page.pageNo > numberPages.get())
             throwException("free pageNo " + page.pageNo + " is out of range [0.." + (numberPages) + "]");
         page.empty = true;
         writePage(page);
@@ -409,17 +408,17 @@ public class StableStore implements TimerListener, MgmtListener {
     }
 
     public void shrinkFile() throws Exception {
-        int shrinked = numberPages;
+        int shrinked = numberPages.get();
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/shrinkFile, before: numberPages=" + numberPages);
-        for (int i = numberPages - 1; i >= initialPages; i--) {
+        for (int i = numberPages.get() - 1; i >= initialPages; i--) {
             Page p = loadPage(i);
             if (p.empty)
                 shrinked--;
             else
                 break;
         }
-        numberPages = shrinked;
-        truncateToPage(numberPages - 1);
+        numberPages.set(shrinked);
+        truncateToPage(numberPages.get() - 1);
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/shrinkFile, after: numberPages=" + numberPages);
     }
 
@@ -427,7 +426,7 @@ public class StableStore implements TimerListener, MgmtListener {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink...");
         shrinkFile();
         freePages.clear();
-        nFree = 0;
+        nFree.set(0);
         buildFreePageList();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink done");
     }
@@ -435,7 +434,7 @@ public class StableStore implements TimerListener, MgmtListener {
     public void deleteStore() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/deleteStore");
         freePages.clear();
-        numberPages = 0;
+        numberPages.set(0);
         file.setLength(0);
         fileLength = 0;
     }
@@ -475,7 +474,7 @@ public class StableStore implements TimerListener, MgmtListener {
         }
         if (freePoolEnabled)
             freePages.clear();
-        numberPages = 0;
+        numberPages.set(0);
         fileLength = 0;
         file.close();
     }
