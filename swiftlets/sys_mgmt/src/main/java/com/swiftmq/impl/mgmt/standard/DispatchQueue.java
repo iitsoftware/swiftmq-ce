@@ -240,13 +240,6 @@ public class DispatchQueue
                     ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " got ProtocolRequest: " + r);
                 ProtocolReply reply = (ProtocolReply) r.createReply();
                 switch (r.getVersion()) {
-                    case 400:
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " create v400 Dispatcher");
-                        d = new com.swiftmq.impl.mgmt.standard.v400.DispatcherImpl(ctx, event.getQueueName());
-                        dispatchers.put(event.getQueueName(), d);
-                        reply.setOk(true);
-                        break;
                     case 750:
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " create v750 Dispatcher");

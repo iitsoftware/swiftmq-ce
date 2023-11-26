@@ -17,7 +17,6 @@
 
 package jms.ha.persistent.ptp.cluster.xa.preparecommit.singledest;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import jms.ha.persistent.ptp.cluster.xa.preparecommit.Sender;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
@@ -28,7 +27,6 @@ public class Suite extends ActiveTestSuite
 {
   public void run(TestResult testResult)
   {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
     super.run(testResult);
   }
 

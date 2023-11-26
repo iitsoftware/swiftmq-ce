@@ -17,7 +17,6 @@
 
 package jms.ha.persistent.ptp.cc.singlesession.autoack;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import jms.ha.persistent.ptp.cc.Sender;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
@@ -28,7 +27,6 @@ public class Suite extends ActiveTestSuite
 {
   public void run(TestResult testResult)
   {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
     super.run(testResult);
   }
 

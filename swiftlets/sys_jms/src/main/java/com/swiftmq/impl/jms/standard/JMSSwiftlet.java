@@ -144,75 +144,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         int outputBufferSize = ((Integer) cfEntity.getProperty("client-output-buffer-size").getValue()).intValue();
         int outputExtendSize = ((Integer) cfEntity.getProperty("client-output-extend-size").getValue()).intValue();
 
-        com.swiftmq.jms.v400.ConnectionFactoryImpl cf1 = new com.swiftmq.jms.v400.ConnectionFactoryImpl(listener.getName(),
-                socketFactoryClass,
-                connectIP != null ? connectIP : bindAddress != null ? bindAddress : hostname,
-                port,
-                keepAliveInterval,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                inputBufferSize,
-                inputExtendSize,
-                outputBufferSize,
-                outputExtendSize,
-                false);
-        DataByteArrayOutputStream dos1 = new DataByteArrayOutputStream();
-        dos1.writeInt(cf1.getDumpId());
-        cf1.writeContent(dos1);
-
-        com.swiftmq.jms.v500.ConnectionFactoryImpl cf2 = new com.swiftmq.jms.v500.ConnectionFactoryImpl(listener.getName(),
-                socketFactoryClass,
-                connectIP != null ? connectIP : bindAddress != null ? bindAddress : hostname,
-                port,
-                keepAliveInterval,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                inputBufferSize,
-                inputExtendSize,
-                outputBufferSize,
-                outputExtendSize,
-                false);
-        DataByteArrayOutputStream dos2 = new DataByteArrayOutputStream();
-        dos2.writeInt(cf2.getDumpId());
-        cf2.writeContent(dos2);
-
-        com.swiftmq.jms.v510.ConnectionFactoryImpl cf3 = new com.swiftmq.jms.v510.ConnectionFactoryImpl(listener.getName(),
-                socketFactoryClass,
-                connectIP != null ? connectIP : bindAddress != null ? bindAddress : hostname,
-                port,
-                keepAliveInterval,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                inputBufferSize,
-                inputExtendSize,
-                outputBufferSize,
-                outputExtendSize,
-                false);
-        DataByteArrayOutputStream dos3 = new DataByteArrayOutputStream();
-        dos3.writeInt(cf3.getDumpId());
-        cf3.writeContent(dos3);
-
         String hostname2 = (String) listener.getProperty("hostname2").getValue();
         int port2 = ((Integer) listener.getProperty("port2").getValue()).intValue();
         String bindAddress2 = (String) listener.getProperty("bindaddress2").getValue();
@@ -226,96 +157,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         long retryDelay = ((Long) cfEntity.getProperty("reconnect-delay").getValue()).longValue();
         boolean duplicateMessageDetection = ((Boolean) cfEntity.getProperty("duplicate-message-detection").getValue()).booleanValue();
         int duplicateBacklogSize = ((Integer) cfEntity.getProperty("duplicate-backlog-size").getValue()).intValue();
-
-        com.swiftmq.jms.v600.ConnectionFactoryImpl cf4 = new com.swiftmq.jms.v600.ConnectionFactoryImpl(listener.getName(),
-                socketFactoryClass,
-                connectIP != null ? connectIP : bindAddress != null ? bindAddress : hostname,
-                port,
-                keepAliveInterval,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                inputBufferSize,
-                inputExtendSize,
-                outputBufferSize,
-                outputExtendSize,
-                false);
-        cf4.setHostname2(connectIP2 != null ? connectIP2 : bindAddress2 != null ? bindAddress2 : hostname2);
-        cf4.setPort2(port2);
-        cf4.setReconnectEnabled(reconnectEnabled);
-        cf4.setMaxRetries(maxRetries);
-        cf4.setRetryDelay(retryDelay);
-        cf4.setDuplicateMessageDetection(duplicateMessageDetection);
-        cf4.setDuplicateBacklogSize(duplicateBacklogSize);
-        DataByteArrayOutputStream dos4 = new DataByteArrayOutputStream();
-        dos4.writeInt(cf4.getDumpId());
-        cf4.writeContent(dos4);
-
-        com.swiftmq.jms.v610.ConnectionFactoryImpl cf5 = new com.swiftmq.jms.v610.ConnectionFactoryImpl(listener.getName(),
-                socketFactoryClass,
-                connectIP != null ? connectIP : bindAddress != null ? bindAddress : hostname,
-                port,
-                keepAliveInterval,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                inputBufferSize,
-                inputExtendSize,
-                outputBufferSize,
-                outputExtendSize,
-                false);
-        cf5.setHostname2(connectIP2 != null ? connectIP2 : bindAddress2 != null ? bindAddress2 : hostname2);
-        cf5.setPort2(port2);
-        cf5.setReconnectEnabled(reconnectEnabled);
-        cf5.setMaxRetries(maxRetries);
-        cf5.setRetryDelay(retryDelay);
-        cf5.setDuplicateMessageDetection(duplicateMessageDetection);
-        cf5.setDuplicateBacklogSize(duplicateBacklogSize);
-        DataByteArrayOutputStream dos5 = new DataByteArrayOutputStream();
-        dos5.writeInt(cf5.getDumpId());
-        cf5.writeContent(dos5);
-
-        com.swiftmq.jms.v630.ConnectionFactoryImpl cf6 = new com.swiftmq.jms.v630.ConnectionFactoryImpl(listener.getName(),
-                socketFactoryClass,
-                connectIP != null ? connectIP : bindAddress != null ? bindAddress : hostname,
-                port,
-                keepAliveInterval,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                inputBufferSize,
-                inputExtendSize,
-                outputBufferSize,
-                outputExtendSize,
-                false);
-        cf6.setHostname2(connectIP2 != null ? connectIP2 : bindAddress2 != null ? bindAddress2 : hostname2);
-        cf6.setPort2(port2);
-        cf6.setReconnectEnabled(reconnectEnabled);
-        cf6.setMaxRetries(maxRetries);
-        cf6.setRetryDelay(retryDelay);
-        cf6.setDuplicateMessageDetection(duplicateMessageDetection);
-        cf6.setDuplicateBacklogSize(duplicateBacklogSize);
-        DataByteArrayOutputStream dos6 = new DataByteArrayOutputStream();
-        dos6.writeInt(cf6.getDumpId());
-        cf6.writeContent(dos6);
 
         com.swiftmq.jms.v750.ConnectionFactoryImpl cf7 = new com.swiftmq.jms.v750.ConnectionFactoryImpl(listener.getName(),
                 socketFactoryClass,
@@ -349,12 +190,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         cf7.writeContent(dos7);
 
         Versionable versionable = new Versionable();
-        versionable.addVersioned(400, new Versioned(400, dos1.getBuffer(), dos1.getCount()), "com.swiftmq.jms.v400.CFFactory");
-        versionable.addVersioned(500, new Versioned(500, dos2.getBuffer(), dos2.getCount()), "com.swiftmq.jms.v500.CFFactory");
-        versionable.addVersioned(510, new Versioned(510, dos3.getBuffer(), dos3.getCount()), "com.swiftmq.jms.v510.CFFactory");
-        versionable.addVersioned(600, new Versioned(600, dos4.getBuffer(), dos4.getCount()), "com.swiftmq.jms.v600.CFFactory");
-        versionable.addVersioned(610, new Versioned(610, dos5.getBuffer(), dos5.getCount()), "com.swiftmq.jms.v610.CFFactory");
-        versionable.addVersioned(630, new Versioned(630, dos6.getBuffer(), dos6.getCount()), "com.swiftmq.jms.v630.CFFactory");
         versionable.addVersioned(750, new Versioned(750, dos7.getBuffer(), dos7.getCount()), "com.swiftmq.jms.v750.CFFactory");
         ctx.jndiSwiftlet.registerJNDIObject(cfEntity.getName(), versionable);
     }
@@ -405,143 +240,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         boolean jmsMessageTimestampEnabled = ((Boolean) cfEntity.getProperty("jms-default-message-timestamp-enabled").getValue()).booleanValue();
         boolean useThreadContextCL = ((Boolean) cfEntity.getProperty("thread-context-classloader-for-getobject").getValue()).booleanValue();
 
-        com.swiftmq.jms.v400.ConnectionFactoryImpl cf1 = new com.swiftmq.jms.v400.ConnectionFactoryImpl(INTRAVM_LISTENER,
-                null,
-                null,
-                0,
-                0,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                0,
-                0,
-                0,
-                0,
-                true);
-        DataByteArrayOutputStream dos1 = new DataByteArrayOutputStream();
-        dos1.writeInt(cf1.getDumpId());
-        cf1.writeContent(dos1);
-
-        com.swiftmq.jms.v500.ConnectionFactoryImpl cf2 = new com.swiftmq.jms.v500.ConnectionFactoryImpl(INTRAVM_LISTENER,
-                null,
-                null,
-                0,
-                0,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                0,
-                0,
-                0,
-                0,
-                true);
-        DataByteArrayOutputStream dos2 = new DataByteArrayOutputStream();
-        dos2.writeInt(cf2.getDumpId());
-        cf2.writeContent(dos2);
-
-        com.swiftmq.jms.v510.ConnectionFactoryImpl cf3 = new com.swiftmq.jms.v510.ConnectionFactoryImpl(INTRAVM_LISTENER,
-                null,
-                null,
-                0,
-                0,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                0,
-                0,
-                0,
-                0,
-                true);
-        DataByteArrayOutputStream dos3 = new DataByteArrayOutputStream();
-        dos3.writeInt(cf3.getDumpId());
-        cf3.writeContent(dos3);
-
-        com.swiftmq.jms.v600.ConnectionFactoryImpl cf4 = new com.swiftmq.jms.v600.ConnectionFactoryImpl(INTRAVM_LISTENER,
-                null,
-                null,
-                0,
-                0,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                0,
-                0,
-                0,
-                0,
-                true);
-        DataByteArrayOutputStream dos4 = new DataByteArrayOutputStream();
-        dos4.writeInt(cf4.getDumpId());
-        cf4.writeContent(dos4);
-
-        com.swiftmq.jms.v610.ConnectionFactoryImpl cf5 = new com.swiftmq.jms.v610.ConnectionFactoryImpl(INTRAVM_LISTENER,
-                null,
-                null,
-                0,
-                0,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                0,
-                0,
-                0,
-                0,
-                true);
-        DataByteArrayOutputStream dos5 = new DataByteArrayOutputStream();
-        dos5.writeInt(cf5.getDumpId());
-        cf5.writeContent(dos5);
-
-        com.swiftmq.jms.v630.ConnectionFactoryImpl cf6 = new com.swiftmq.jms.v630.ConnectionFactoryImpl(INTRAVM_LISTENER,
-                null,
-                null,
-                0,
-                0,
-                clientId,
-                smqpProducerReplyInterval,
-                smqpConsumerCacheSize,
-                jmsDeliveryMode,
-                jmsPriority,
-                jmsTTL,
-                jmsMessageIdEnabled,
-                jmsMessageTimestampEnabled,
-                useThreadContextCL,
-                0,
-                0,
-                0,
-                0,
-                true);
-        DataByteArrayOutputStream dos6 = new DataByteArrayOutputStream();
-        dos6.writeInt(cf6.getDumpId());
-        cf6.writeContent(dos6);
 
         com.swiftmq.jms.v750.ConnectionFactoryImpl cf7 = new com.swiftmq.jms.v750.ConnectionFactoryImpl(INTRAVM_LISTENER,
                 null,
@@ -568,12 +266,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         cf7.writeContent(dos7);
 
         Versionable versionable = new Versionable();
-        versionable.addVersioned(400, new Versioned(400, dos1.getBuffer(), dos1.getCount()), "com.swiftmq.jms.v400.CFFactory");
-        versionable.addVersioned(500, new Versioned(500, dos2.getBuffer(), dos2.getCount()), "com.swiftmq.jms.v500.CFFactory");
-        versionable.addVersioned(510, new Versioned(510, dos3.getBuffer(), dos3.getCount()), "com.swiftmq.jms.v510.CFFactory");
-        versionable.addVersioned(600, new Versioned(600, dos4.getBuffer(), dos4.getCount()), "com.swiftmq.jms.v600.CFFactory");
-        versionable.addVersioned(610, new Versioned(610, dos5.getBuffer(), dos5.getCount()), "com.swiftmq.jms.v610.CFFactory");
-        versionable.addVersioned(630, new Versioned(630, dos6.getBuffer(), dos6.getCount()), "com.swiftmq.jms.v630.CFFactory");
         versionable.addVersioned(750, new Versioned(750, dos7.getBuffer(), dos7.getCount()), "com.swiftmq.jms.v750.CFFactory");
         ctx.jndiSwiftlet.registerJNDIObject(cfEntity.getName(), versionable);
     }
@@ -808,24 +500,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
     public VersionedJMSConnection createJMSConnection(int version, Entity usage, Connection connection) {
         VersionedJMSConnection vc = null;
         switch (version) {
-            case 400:
-                vc = new com.swiftmq.impl.jms.standard.v400.JMSConnection(ctx, usage, connection);
-                break;
-            case 500:
-                vc = new com.swiftmq.impl.jms.standard.v500.JMSConnection(ctx, usage, connection);
-                break;
-            case 510:
-                vc = new com.swiftmq.impl.jms.standard.v510.JMSConnection(ctx, usage, connection);
-                break;
-            case 600:
-                vc = new com.swiftmq.impl.jms.standard.v600.JMSConnection(ctx, usage, connection);
-                break;
-            case 610:
-                vc = new com.swiftmq.impl.jms.standard.v610.JMSConnection(ctx, usage, connection);
-                break;
-            case 630:
-                vc = new com.swiftmq.impl.jms.standard.v630.JMSConnection(ctx, usage, connection);
-                break;
             case 750:
                 vc = new com.swiftmq.impl.jms.standard.v750.JMSConnection(ctx, usage, connection);
                 break;

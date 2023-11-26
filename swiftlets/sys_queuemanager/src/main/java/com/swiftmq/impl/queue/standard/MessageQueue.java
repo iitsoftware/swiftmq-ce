@@ -912,9 +912,9 @@ public class MessageQueue extends AbstractQueue {
                         }
                         if (flowController != null) {
                             if (type == TransactionId.PULL_TRANSACTION)
-                                flowController.setReceiveMessageCount(preparedList.size());
+                                getFlowController().setReceiveMessageCount(preparedList.size());
                             else
-                                flowController.setSentMessageCount(preparedList.size());
+                                getFlowController().setSentMessageCount(preparedList.size());
                         }
                         preparedList.clear();
                     } catch (Exception e) {
@@ -926,8 +926,8 @@ public class MessageQueue extends AbstractQueue {
                         notifyWaiters();
                 }
             }
-            if (flowController != null)
-                flowController.setQueueSize(queueContent.size());
+            if (getFlowController() != null)
+                getFlowController().setQueueSize(queueContent.size());
         } finally {
             queueLock.unlock();
         }
@@ -961,8 +961,8 @@ public class MessageQueue extends AbstractQueue {
                         }
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " SUCCESSFUL");
-                        if (flowController != null)
-                            flowController.setSentMessageCount(txList.size());
+                        if (getFlowController() != null)
+                            getFlowController().setSentMessageCount(txList.size());
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " queueSemaphore.notify()");
                     } else { //PULL_TRANSACTION
@@ -970,8 +970,8 @@ public class MessageQueue extends AbstractQueue {
                             storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) txList.get(i));
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " SUCCESSFUL");
-                        if (flowController != null)
-                            flowController.setReceiveMessageCount(txList.size());
+                        if (getFlowController() != null)
+                            getFlowController().setReceiveMessageCount(txList.size());
                     }
                 }
                 beforeTransactionComplete();
@@ -986,8 +986,8 @@ public class MessageQueue extends AbstractQueue {
             } catch (Exception e1) {
                 throw new QueueException(e1.toString());
             }
-            if (flowController != null)
-                flowController.setQueueSize(queueContent.size());
+            if (getFlowController() != null)
+                getFlowController().setQueueSize(queueContent.size());
         } finally {
             queueLock.unlock();
         }
@@ -1023,15 +1023,15 @@ public class MessageQueue extends AbstractQueue {
                         }
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " SUCCESSFUL");
-                        if (flowController != null)
-                            flowController.setSentMessageCount(txList.size());
+                        if (getFlowController() != null)
+                            getFlowController().setSentMessageCount(txList.size());
                     } else { //PULL_TRANSACTION
                         for (int i = 0; i < txList.size(); i++)
                             storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) txList.get(i));
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " SUCCESSFUL");
-                        if (flowController != null)
-                            flowController.setReceiveMessageCount(txList.size());
+                        if (getFlowController() != null)
+                            getFlowController().setReceiveMessageCount(txList.size());
                         removeTxId(transactionId);
                     }
                 }
@@ -1043,10 +1043,10 @@ public class MessageQueue extends AbstractQueue {
                             queueLock.lock();
                             try {
                                 transactionId.clear();
-                                if (flowController != null) {
-                                    flowController.setQueueSize(queueContent.size());
+                                if (getFlowController() != null) {
+                                    getFlowController().setQueueSize(queueContent.size());
                                     if (success)
-                                        next.setResult(Long.valueOf(flowController.getNewDelay()));
+                                        next.setResult(Long.valueOf(getFlowController().getNewDelay()));
                                     else
                                         next.setException(getException());
                                 }
@@ -1065,9 +1065,9 @@ public class MessageQueue extends AbstractQueue {
                     // notify waiting get's
                     if (transactionId.getTransactionType() == TransactionId.PUSH_TRANSACTION)
                         notifyWaiters();
-                    if (flowController != null) {
-                        flowController.setQueueSize(queueContent.size());
-                        callback.setResult(Long.valueOf(flowController.getNewDelay()));
+                    if (getFlowController() != null) {
+                        getFlowController().setQueueSize(queueContent.size());
+                        callback.setResult(Long.valueOf(getFlowController().getNewDelay()));
                     }
                     callback.notifyCallbackStack(true);
                 }
@@ -1945,8 +1945,8 @@ public class MessageQueue extends AbstractQueue {
             }
             return;
         } else {
-            if (flowController != null && messageProcessor.isAutoCommit())
-                flowController.setReceiveMessageCount(numberMessages);
+            if (getFlowController() != null && messageProcessor.isAutoCommit())
+                getFlowController().setReceiveMessageCount(numberMessages);
         }
         messageProcessor.setCurrentBulkSize(currentBulkSize);
         messageProcessor.processMessages(numberMessages);
@@ -2035,8 +2035,8 @@ public class MessageQueue extends AbstractQueue {
                     return;
                 }
             } else {
-                if (flowController != null)
-                    flowController.setReceiveMessageCount(1);
+                if (getFlowController() != null)
+                    getFlowController().setReceiveMessageCount(1);
             }
         } else {
             long timeout = messageProcessor.getTimeout();
@@ -2114,8 +2114,8 @@ public class MessageQueue extends AbstractQueue {
         lockAndWaitAsyncFinished();
         try {
             active = b;
-            if (flowController != null)
-                ((FlowControllerImpl) flowController).active(b);
+            if (getFlowController() != null)
+                ((FlowControllerImpl) getFlowController()).active(b);
             if (active)
                 notifyWaiters();
         } finally {
@@ -2228,8 +2228,8 @@ public class MessageQueue extends AbstractQueue {
                         if (srt != null)
                             srt.commit();
                         txList.remove(storeId);
-                        if (flowController != null)
-                            flowController.setReceiveMessageCount(1);
+                        if (getFlowController() != null)
+                            getFlowController().setReceiveMessageCount(1);
                     }
                     if (ctx.queueSpace.enabled)
                         ctx.queueSpace.trace(getQueueName(), "acknowledgeMessage txId=" + transactionId + " messageIndex=" + messageIndex + " SUCCESSFUL");
@@ -2268,8 +2268,8 @@ public class MessageQueue extends AbstractQueue {
                         final StoreId sid = storeId;
                         callback.setResult(Long.valueOf(storeId.getMsgSize()));
                         txList.remove(sid);
-                        if (flowController != null)
-                            flowController.setReceiveMessageCount(1);
+                        if (getFlowController() != null)
+                            getFlowController().setReceiveMessageCount(1);
                         StoreReadTransaction srt = null;
                         if (pStore != null && storeId.isPersistent())
                             srt = pStore.createReadTransaction(false);
@@ -2337,8 +2337,8 @@ public class MessageQueue extends AbstractQueue {
                         }
                     }
                     callback.setResult(Long.valueOf(size));
-                    if (flowController != null)
-                        flowController.setReceiveMessageCount(n);
+                    if (getFlowController() != null)
+                        getFlowController().setReceiveMessageCount(n);
                     if (srt != null) {
                         asyncActive = true;
                         srt.commit(new AsyncCompletionCallback(callback) {

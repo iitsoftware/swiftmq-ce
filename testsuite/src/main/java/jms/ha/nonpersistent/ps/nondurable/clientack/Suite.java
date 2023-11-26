@@ -17,7 +17,6 @@
 
 package jms.ha.nonpersistent.ps.nondurable.clientack;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
@@ -27,7 +26,6 @@ public class Suite extends ActiveTestSuite
 {
   public void run(TestResult testResult)
   {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
     super.run(testResult);
   }
 

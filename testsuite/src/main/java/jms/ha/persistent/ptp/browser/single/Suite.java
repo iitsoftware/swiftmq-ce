@@ -17,7 +17,6 @@
 
 package jms.ha.persistent.ptp.browser.single;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import jms.ha.persistent.ptp.browser.Browser;
 import jms.ha.persistent.ptp.browser.DrainQueue;
 import jms.ha.persistent.ptp.browser.Sender;
@@ -29,7 +28,6 @@ public class Suite extends TestSuite
 {
   public void run(TestResult testResult)
   {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
     super.run(testResult);
   }
 

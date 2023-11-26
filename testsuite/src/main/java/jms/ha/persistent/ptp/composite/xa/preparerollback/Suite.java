@@ -17,21 +17,19 @@
 
 package jms.ha.persistent.ptp.composite.xa.preparerollback;
 
-import com.swiftmq.tools.tracking.MessageTracker;
+import jms.base.Checker;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import jms.base.Checker;
 
-import javax.jms.Message;
 import javax.jms.JMSException;
+import javax.jms.Message;
 
 public class Suite extends ActiveTestSuite
 {
   public void run(TestResult testResult)
   {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
     super.run(testResult);
   }
 
