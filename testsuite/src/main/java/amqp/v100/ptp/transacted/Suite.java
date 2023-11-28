@@ -20,24 +20,20 @@ package amqp.v100.ptp.transacted;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(amqp.v100.ptp.transacted.acquisition.Suite.suite());
-    suite.addTest(amqp.v100.ptp.transacted.retirement.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(amqp.v100.ptp.transacted.acquisition.Suite.suite());
+        suite.addTest(amqp.v100.ptp.transacted.retirement.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "transacted";
-  }
+    public String toString() {
+        return "transacted";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

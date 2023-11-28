@@ -19,38 +19,34 @@ package jms.func.requestreply.receive.unidentified.ptp;
 
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.*;
+import javax.jms.QueueSender;
+import javax.jms.Session;
+import javax.jms.TemporaryQueue;
+import javax.jms.TextMessage;
 
-public class Replier extends SimpleConnectedPTPTestCase
-{
-  QueueSender replySender = null;
+public class Replier extends SimpleConnectedPTPTestCase {
+    QueueSender replySender = null;
 
-  public Replier(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    replySender = qs.createSender(null);
-  }
-
-  public void testReply()
-  {
-    try
-    {
-      for (int i = 0; i < 10000; i++)
-      {
-        TextMessage msg = (TextMessage) receiver.receive();
-        msg.clearBody();
-        msg.setText("Re: " + msg.getText());
-        replySender.send((TemporaryQueue) msg.getJMSReplyTo(), msg);
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Replier(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        replySender = qs.createSender(null);
+    }
+
+    public void testReply() {
+        try {
+            for (int i = 0; i < 10000; i++) {
+                TextMessage msg = (TextMessage) receiver.receive();
+                msg.clearBody();
+                msg.setText("Re: " + msg.getText());
+                replySender.send((TemporaryQueue) msg.getJMSReplyTo(), msg);
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

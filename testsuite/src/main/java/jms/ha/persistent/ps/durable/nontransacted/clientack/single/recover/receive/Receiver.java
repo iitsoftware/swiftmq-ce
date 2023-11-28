@@ -25,108 +25,93 @@ import javax.jms.Session;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-public class Receiver extends SimpleConnectedPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  TopicSession s1 = null;
-  TopicSession s2 = null;
-  TopicSession s3 = null;
-  TopicSubscriber subscriber1 = null;
-  TopicSubscriber subscriber2 = null;
-  TopicSubscriber subscriber3 = null;
+public class Receiver extends SimpleConnectedPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    TopicSession s1 = null;
+    TopicSession s2 = null;
+    TopicSession s3 = null;
+    TopicSubscriber subscriber1 = null;
+    TopicSubscriber subscriber2 = null;
+    TopicSubscriber subscriber3 = null;
 
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void beforeCreateSession() throws Exception
-  {
-    s1 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
-    s2 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
-    s3 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  protected void afterCreateSession() throws Exception
-  {
-    s1.close();
-    s2.close();
-    s3.close();
-  }
-
-  protected void beforeCreateReceiver() throws Exception
-  {
-    subscriber1 = ts.createSubscriber(topic);
-    subscriber2 = ts.createSubscriber(topic);
-    subscriber3 = ts.createSubscriber(topic);
-  }
-
-  protected void afterCreateReceiver() throws Exception
-  {
-    subscriber1.close();
-    subscriber2.close();
-    subscriber3.close();
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE, true, false, true);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
-
-  public void receive()
-  {
-    try
-    {
-      boolean recover = false;
-      int n = 0, m = 0;
-      while (n < nMsgs)
-      {
-        Message msg = subscriber.receive();
-        if (msg == null)
-          throw new Exception("null message received!");
-        if (recover)
-        {
-          System.out.println("during recover, ignore: " + msg.getIntProperty("no"));
-          m++;
-          if (m == 10)
-          {
-            System.out.println("recover session!");
-            ts.recover();
-            recover = false;
-            m = 0;
-          }
-          continue;
-        }
-        System.out.println("accepted: " + msg.getIntProperty("no"));
-        verifier.add(msg);
-        n++;
-        if (n % 10 == 0)
-        {
-          System.out.println("ack message!");
-          msg.acknowledge();
-          recover = true;
-        }
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Receiver(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    s1 = null;
-    s2 = null;
-    s3 = null;
-    subscriber1 = null;
-    subscriber2 = null;
-    subscriber3 = null;
-    super.tearDown();
-  }
+    protected void beforeCreateSession() throws Exception {
+        s1 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
+        s2 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
+        s3 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
+    }
+
+    protected void afterCreateSession() throws Exception {
+        s1.close();
+        s2.close();
+        s3.close();
+    }
+
+    protected void beforeCreateReceiver() throws Exception {
+        subscriber1 = ts.createSubscriber(topic);
+        subscriber2 = ts.createSubscriber(topic);
+        subscriber3 = ts.createSubscriber(topic);
+    }
+
+    protected void afterCreateReceiver() throws Exception {
+        subscriber1.close();
+        subscriber2.close();
+        subscriber3.close();
+    }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE, true, false, true);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+    }
+
+    public void receive() {
+        try {
+            boolean recover = false;
+            int n = 0, m = 0;
+            while (n < nMsgs) {
+                Message msg = subscriber.receive();
+                if (msg == null)
+                    throw new Exception("null message received!");
+                if (recover) {
+                    System.out.println("during recover, ignore: " + msg.getIntProperty("no"));
+                    m++;
+                    if (m == 10) {
+                        System.out.println("recover session!");
+                        ts.recover();
+                        recover = false;
+                        m = 0;
+                    }
+                    continue;
+                }
+                System.out.println("accepted: " + msg.getIntProperty("no"));
+                verifier.add(msg);
+                n++;
+                if (n % 10 == 0) {
+                    System.out.println("ack message!");
+                    msg.acknowledge();
+                    recover = true;
+                }
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        s1 = null;
+        s2 = null;
+        s3 = null;
+        subscriber1 = null;
+        subscriber2 = null;
+        subscriber3 = null;
+        super.tearDown();
+    }
 
 }
 

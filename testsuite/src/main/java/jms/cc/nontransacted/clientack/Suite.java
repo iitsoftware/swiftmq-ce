@@ -17,27 +17,24 @@
 
 package jms.cc.nontransacted.clientack;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.cc.nontransacted.clientack.ps.Suite.suite());
-    suite.addTest(jms.cc.nontransacted.clientack.psdur.Suite.suite());
-    suite.addTest(jms.cc.nontransacted.clientack.ptp.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.cc.nontransacted.clientack.ps.Suite.suite());
+        suite.addTest(jms.cc.nontransacted.clientack.psdur.Suite.suite());
+        suite.addTest(jms.cc.nontransacted.clientack.ptp.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "clientack";
-  }
+    public String toString() {
+        return "clientack";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -25,49 +25,41 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import java.util.Enumeration;
 
-public class Browser extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.func.selector.load.nmsgs", "25000"));
-  MsgNoVerifier verifier = null;
-  int partition = -1;
-  QueueBrowser browser = null;
+public class Browser extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.func.selector.load.nmsgs", "25000"));
+    MsgNoVerifier verifier = null;
+    int partition = -1;
+    QueueBrowser browser = null;
 
-  public Browser(String name, int partition)
-  {
-    super(name);
-    this.partition = partition;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
-    browser = qs.createBrowser(queue, "partition = " + partition);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
-
-  public void browse()
-  {
-    try
-    {
-      for (Enumeration _enum = browser.getEnumeration(); _enum.hasMoreElements();)
-      {
-        Message msg = (Message) _enum.nextElement();
-        if (msg == null)
-          throw new Exception("null message received!");
-        verifier.add(msg);
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Browser(String name, int partition) {
+        super(name);
+        this.partition = partition;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    browser.close();
-    verifier = null;
-    browser = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
+        browser = qs.createBrowser(queue, "partition = " + partition);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+    }
+
+    public void browse() {
+        try {
+            for (Enumeration _enum = browser.getEnumeration(); _enum.hasMoreElements(); ) {
+                Message msg = (Message) _enum.nextElement();
+                if (msg == null)
+                    throw new Exception("null message received!");
+                verifier.add(msg);
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        browser.close();
+        verifier = null;
+        browser = null;
+        super.tearDown();
+    }
 }

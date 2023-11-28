@@ -20,26 +20,22 @@ package jms.ha.persistent.ps.durable;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ps.durable.cc.Suite.suite());
-    suite.addTest(jms.ha.persistent.ps.durable.nontransacted.Suite.suite());
-    suite.addTest(jms.ha.persistent.ps.durable.transacted.Suite.suite());
-    suite.addTest(jms.ha.persistent.ps.durable.xa.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ps.durable.cc.Suite.suite());
+        suite.addTest(jms.ha.persistent.ps.durable.nontransacted.Suite.suite());
+        suite.addTest(jms.ha.persistent.ps.durable.transacted.Suite.suite());
+        suite.addTest(jms.ha.persistent.ps.durable.xa.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "durable";
-  }
+    public String toString() {
+        return "durable";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

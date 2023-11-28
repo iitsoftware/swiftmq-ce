@@ -117,6 +117,7 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
     }
 
     public synchronized void setTransactionTimeout(long timeout) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "setTransactionTimeout: " + timeout);
         if (txTimeout != timeout) {
             long to = getTransactionTimeout();
             if (to > 0)
@@ -129,7 +130,10 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
     }
 
     public synchronized long getTransactionTimeout() {
-        return txTimeout <= 0 ? defaultTxTimeout : txTimeout;
+        long timeout = txTimeout <= 0 ? defaultTxTimeout : txTimeout;
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(getName(), "getTransactionTimeout: " + timeout + ", txTimeout=" + txTimeout + ", defaultTxTimeout=" + defaultTxTimeout);
+        return timeout;
     }
 
     public synchronized boolean isHeuristicCompleted(XidImpl xid) {

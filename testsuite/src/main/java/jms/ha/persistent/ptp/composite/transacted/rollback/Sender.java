@@ -19,69 +19,54 @@ package jms.ha.persistent.ptp.composite.transacted.rollback;
 
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.QueueSender;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
-public class Sender extends SimpleConnectedPTPTestCase
-{
-  String myQueueName = System.getProperty("jndi.composite.queue");
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.composite.nmsgs", "20000"));
-  QueueSender mySender = null;
+public class Sender extends SimpleConnectedPTPTestCase {
+    String myQueueName = System.getProperty("jndi.composite.queue");
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.composite.nmsgs", "20000"));
+    QueueSender mySender = null;
 
-  public Sender(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.AUTO_ACKNOWLEDGE, false, false);
-    mySender = qs.createSender(getQueue(myQueueName));
-  }
-
-  public void send()
-  {
-    try
-    {
-      boolean rollback = false;
-      int n = 0;
-      while (n < nMsgs)
-      {
-        TextMessage msg = qs.createTextMessage();
-        msg.setIntProperty("no", n);
-        if (n % 100 == 0)
-          msg.setStringProperty("Prop", "X");
-        msg.setText("Msg: " + n);
-        mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        if ((n + 1) % 10 == 0)
-        {
-          if (rollback)
-          {
-            rollback = false;
-            n -= 10;
-            qs.rollback();
-          } else
-          {
-            qs.commit();
-            rollback = true;
-          }
-        }
-        n++;
-      }
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Sender(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    mySender.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(true, Session.AUTO_ACKNOWLEDGE, false, false);
+        mySender = qs.createSender(getQueue(myQueueName));
+    }
+
+    public void send() {
+        try {
+            boolean rollback = false;
+            int n = 0;
+            while (n < nMsgs) {
+                TextMessage msg = qs.createTextMessage();
+                msg.setIntProperty("no", n);
+                if (n % 100 == 0)
+                    msg.setStringProperty("Prop", "X");
+                msg.setText("Msg: " + n);
+                mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                if ((n + 1) % 10 == 0) {
+                    if (rollback) {
+                        rollback = false;
+                        n -= 10;
+                        qs.rollback();
+                    } else {
+                        qs.commit();
+                        rollback = true;
+                    }
+                }
+                n++;
+            }
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        mySender.close();
+        super.tearDown();
+    }
 }
 

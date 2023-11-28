@@ -21,701 +21,609 @@ import jms.base.SimpleConnectedUnifiedPTPTestCase;
 
 import javax.jms.*;
 
-public class PTPMultipleQueues extends SimpleConnectedUnifiedPTPTestCase
-{
-  Queue m1 = null;
-  Queue m2 = null;
-  Queue m3 = null;
-  Queue m4 = null;
-  Queue m5 = null;
-  MessageProducer uiproducer = null;
-  MessageProducer qsm1 = null;
-  MessageProducer qsm2 = null;
-  MessageProducer qsm3 = null;
-  MessageProducer qsm4 = null;
-  MessageProducer qsm5 = null;
-  MessageConsumer qrm1 = null;
-  MessageConsumer qrm2 = null;
-  MessageConsumer qrm3 = null;
-  MessageConsumer qrm4 = null;
-  MessageConsumer qrm5 = null;
+public class PTPMultipleQueues extends SimpleConnectedUnifiedPTPTestCase {
+    Queue m1 = null;
+    Queue m2 = null;
+    Queue m3 = null;
+    Queue m4 = null;
+    Queue m5 = null;
+    MessageProducer uiproducer = null;
+    MessageProducer qsm1 = null;
+    MessageProducer qsm2 = null;
+    MessageProducer qsm3 = null;
+    MessageProducer qsm4 = null;
+    MessageProducer qsm5 = null;
+    MessageConsumer qrm1 = null;
+    MessageConsumer qrm2 = null;
+    MessageConsumer qrm3 = null;
+    MessageConsumer qrm4 = null;
+    MessageConsumer qrm5 = null;
 
-  public PTPMultipleQueues(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE);
-    createQueue("m1");
-    createQueue("m2");
-    createQueue("m3");
-    createQueue("m4");
-    createQueue("m5");
-    m1 = (Queue) ctx.lookup("m1@router");
-    m2 = (Queue) ctx.lookup("m2@router");
-    m3 = (Queue) ctx.lookup("m3@router");
-    m4 = (Queue) ctx.lookup("m4@router");
-    m5 = (Queue) ctx.lookup("m5@router");
-    uiproducer = qs.createProducer(null);
-    qsm1 = qs.createProducer(m1);
-    qsm2 = qs.createProducer(m2);
-    qsm3 = qs.createProducer(m3);
-    qsm4 = qs.createProducer(m4);
-    qsm5 = qs.createProducer(m5);
-    qrm1 = qs.createConsumer(m1);
-    qrm2 = qs.createConsumer(m2);
-    qrm3 = qs.createConsumer(m3);
-    qrm4 = qs.createConsumer(m4);
-    qrm5 = qs.createConsumer(m5);
-  }
-
-  public void testPTPCommitUnidentifiedNP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        uiproducer.send(m1, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m2, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m3, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m4, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m5, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-      msg = (TextMessage) qrm1.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm3.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm4.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm5.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public PTPMultipleQueues(String name) {
+        super(name);
     }
-  }
 
-  public void testPTPCommitIdentifiedNP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        qsm1.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm2.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm3.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm4.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm5.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-      msg = (TextMessage) qrm1.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm3.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm4.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm5.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE);
+        createQueue("m1");
+        createQueue("m2");
+        createQueue("m3");
+        createQueue("m4");
+        createQueue("m5");
+        m1 = (Queue) ctx.lookup("m1@router");
+        m2 = (Queue) ctx.lookup("m2@router");
+        m3 = (Queue) ctx.lookup("m3@router");
+        m4 = (Queue) ctx.lookup("m4@router");
+        m5 = (Queue) ctx.lookup("m5@router");
+        uiproducer = qs.createProducer(null);
+        qsm1 = qs.createProducer(m1);
+        qsm2 = qs.createProducer(m2);
+        qsm3 = qs.createProducer(m3);
+        qsm4 = qs.createProducer(m4);
+        qsm5 = qs.createProducer(m5);
+        qrm1 = qs.createConsumer(m1);
+        qrm2 = qs.createConsumer(m2);
+        qrm3 = qs.createConsumer(m3);
+        qrm4 = qs.createConsumer(m4);
+        qrm5 = qs.createConsumer(m5);
     }
-  }
 
-  public void testPTPCommitUnidentifiedP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        uiproducer.send(m1, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m2, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m3, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m4, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        uiproducer.send(m5, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
+    public void testPTPCommitUnidentifiedNP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                uiproducer.send(m1, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m2, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m3, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m4, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m5, msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-      msg = (TextMessage) qrm1.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm3.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm4.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm5.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
+            msg = (TextMessage) qrm1.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm3.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm4.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm5.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  public void testPTPCommitIdentifiedP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        qsm1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm3.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm4.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm5.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
+    public void testPTPCommitIdentifiedNP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                qsm1.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm2.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm3.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm4.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm5.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-      msg = (TextMessage) qrm1.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm3.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm4.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm5.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
+            msg = (TextMessage) qrm1.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm3.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm4.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm5.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  public void testPTPCommitSendReceiveNP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        qsm1.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm2.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm3.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm4.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm5.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
+    public void testPTPCommitUnidentifiedP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                uiproducer.send(m1, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m2, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m3, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m4, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                uiproducer.send(m5, msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-
-      msg = (TextMessage) qrm1.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm3.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm4.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm5.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
+            msg = (TextMessage) qrm1.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm3.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm4.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm5.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  public void testPTPCommitSendReceiveP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        qsm1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm3.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm4.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm5.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
+    public void testPTPCommitIdentifiedP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                qsm1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm3.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm4.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm5.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.commit();
-
-      msg = (TextMessage) qrm1.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm3.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm4.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) qrm5.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
+            msg = (TextMessage) qrm1.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm3.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm4.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm5.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  public void testPTPRollbackSendReceiveNP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        qsm1.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm2.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm3.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm4.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm5.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
+    public void testPTPCommitSendReceiveNP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                qsm1.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm2.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm3.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm4.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm5.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.rollback();
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
 
-      msg = (TextMessage) consumer.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
 
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-      qs.commit();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+            msg = (TextMessage) qrm1.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm3.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm4.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm5.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  public void testPTPRollbackSendReceiveP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        qsm1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm3.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm4.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        qsm5.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
+    public void testPTPCommitSendReceiveP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                qsm1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm3.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm4.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm5.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
 
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      qs.rollback();
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
 
-      msg = (TextMessage) consumer.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.commit();
 
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm2.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm3.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm4.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) qrm5.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-      qs.commit();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+            msg = (TextMessage) qrm1.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm3.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm4.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) qrm5.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    uiproducer.close();
-    qsm1.close();
-    qsm2.close();
-    qsm3.close();
-    qsm4.close();
-    qsm5.close();
-    qrm1.close();
-    qrm2.close();
-    qrm3.close();
-    qrm4.close();
-    qrm5.close();
-    deleteQueue("m1");
-    deleteQueue("m2");
-    deleteQueue("m3");
-    deleteQueue("m4");
-    deleteQueue("m5");
-    super.tearDown();
-  }
+    public void testPTPRollbackSendReceiveNP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                qsm1.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm2.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm3.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm4.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm5.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
+
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.rollback();
+
+            msg = (TextMessage) consumer.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+            qs.commit();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    public void testPTPRollbackSendReceiveP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                qsm1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm3.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm4.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                qsm5.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
+
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            qs.rollback();
+
+            msg = (TextMessage) consumer.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm2.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm3.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm4.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) qrm5.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+            qs.commit();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        uiproducer.close();
+        qsm1.close();
+        qsm2.close();
+        qsm3.close();
+        qsm4.close();
+        qsm5.close();
+        qrm1.close();
+        qrm2.close();
+        qrm3.close();
+        qrm4.close();
+        qrm5.close();
+        deleteQueue("m1");
+        deleteQueue("m2");
+        deleteQueue("m3");
+        deleteQueue("m4");
+        deleteQueue("m5");
+        super.tearDown();
+    }
 }
 

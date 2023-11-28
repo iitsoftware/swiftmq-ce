@@ -17,39 +17,35 @@
 
 package jms.base;
 
-import javax.jms.*;
-import java.util.*;
+import javax.jms.JMSException;
+import javax.jms.ServerSession;
+import javax.jms.ServerSessionPool;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ServerSessionPoolImpl implements ServerSessionPool
-{
-  List queue = new ArrayList();
-  ExecutorService executorService = Executors.newCachedThreadPool();
+public class ServerSessionPoolImpl implements ServerSessionPool {
+    List queue = new ArrayList();
+    ExecutorService executorService = Executors.newCachedThreadPool();
 
-  public ExecutorService getExecutorService()
-  {
-    return executorService;
-  }
-
-  public synchronized void addServerSession(ServerSession serverSession)
-  {
-    queue.add(serverSession);
-    if (queue.size() == 1)
-      notify();
-  }
-
-  public synchronized ServerSession getServerSession() throws JMSException
-  {
-    if (queue.size() == 0)
-    {
-      try
-      {
-        wait();
-      } catch (InterruptedException e)
-      {
-      }
+    public ExecutorService getExecutorService() {
+        return executorService;
     }
-    return (ServerSession) queue.remove(0);
-  }
+
+    public synchronized void addServerSession(ServerSession serverSession) {
+        queue.add(serverSession);
+        if (queue.size() == 1)
+            notify();
+    }
+
+    public synchronized ServerSession getServerSession() throws JMSException {
+        if (queue.size() == 0) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+            }
+        }
+        return (ServerSession) queue.remove(0);
+    }
 }

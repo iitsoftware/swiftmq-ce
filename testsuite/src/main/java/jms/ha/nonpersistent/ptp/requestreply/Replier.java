@@ -19,55 +19,41 @@ package jms.ha.nonpersistent.ptp.requestreply;
 
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.JMSException;
-import javax.jms.QueueSender;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
-public class Replier extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+public class Replier extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
 
-  public Replier(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-  }
-
-  public void reply()
-  {
-    try
-    {
-      boolean finished = false;
-      while (!finished)
-      {
-        TextMessage msg = (TextMessage) receiver.receive();
-        finished = msg.getBooleanProperty("finished");
-        if (!finished)
-        {
-          try
-          {
-            QueueSender replySender = qs.createSender((TemporaryQueue) msg.getJMSReplyTo());
-            String s = msg.getText();
-            msg.clearBody();
-            msg.setText("Re: " + s);
-            replySender.send(msg);
-            replySender.close();
-          } catch (JMSException e)
-          {
-            // no problem (reconnected)
-          }
-        }
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Replier(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+    }
+
+    public void reply() {
+        try {
+            boolean finished = false;
+            while (!finished) {
+                TextMessage msg = (TextMessage) receiver.receive();
+                finished = msg.getBooleanProperty("finished");
+                if (!finished) {
+                    try {
+                        QueueSender replySender = qs.createSender((TemporaryQueue) msg.getJMSReplyTo());
+                        String s = msg.getText();
+                        msg.clearBody();
+                        msg.setText("Re: " + s);
+                        replySender.send(msg);
+                        replySender.close();
+                    } catch (JMSException e) {
+                        // no problem (reconnected)
+                    }
+                }
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

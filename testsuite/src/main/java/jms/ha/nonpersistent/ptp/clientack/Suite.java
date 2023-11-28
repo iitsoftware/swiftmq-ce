@@ -22,29 +22,24 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    super.run(testResult);
-  }
+public class Suite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Receiver("receive"));
-    suite.addTest(new jms.ha.nonpersistent.ptp.Sender("send"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Receiver("receive"));
+        suite.addTest(new jms.ha.nonpersistent.ptp.Sender("send"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "clientack";
-  }
+    public String toString() {
+        return "clientack";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

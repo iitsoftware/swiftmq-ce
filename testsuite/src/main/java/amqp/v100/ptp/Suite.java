@@ -20,26 +20,22 @@ package amqp.v100.ptp;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(amqp.v100.ptp.dedicatedsession.Suite.suite());
-    suite.addTest(amqp.v100.ptp.singlesession.Suite.suite());
-    suite.addTest(amqp.v100.ptp.requestreply.Suite.suite());
-    suite.addTest(amqp.v100.ptp.transacted.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(amqp.v100.ptp.dedicatedsession.Suite.suite());
+        suite.addTest(amqp.v100.ptp.singlesession.Suite.suite());
+        suite.addTest(amqp.v100.ptp.requestreply.Suite.suite());
+        suite.addTest(amqp.v100.ptp.transacted.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "ptp";
-  }
+    public String toString() {
+        return "ptp";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

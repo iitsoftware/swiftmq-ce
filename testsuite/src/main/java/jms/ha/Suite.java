@@ -20,24 +20,20 @@ package jms.ha;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "jms/ha";
-  }
+    public String toString() {
+        return "jms/ha";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

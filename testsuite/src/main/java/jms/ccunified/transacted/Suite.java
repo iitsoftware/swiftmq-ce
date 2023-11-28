@@ -17,27 +17,24 @@
 
 package jms.ccunified.transacted;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ccunified.transacted.ps.Suite.suite());
-    suite.addTest(jms.ccunified.transacted.psdur.Suite.suite());
-    suite.addTest(jms.ccunified.transacted.ptp.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ccunified.transacted.ps.Suite.suite());
+        suite.addTest(jms.ccunified.transacted.psdur.Suite.suite());
+        suite.addTest(jms.ccunified.transacted.ptp.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "transacted";
-  }
+    public String toString() {
+        return "transacted";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

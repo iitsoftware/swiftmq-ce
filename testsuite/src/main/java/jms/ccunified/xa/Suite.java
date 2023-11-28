@@ -17,28 +17,25 @@
 
 package jms.ccunified.xa;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ccunified.xa.multiple.ptp.Suite.suite());
-    suite.addTest(jms.ccunified.xa.ps.Suite.suite());
-    suite.addTest(jms.ccunified.xa.psdur.Suite.suite());
-    suite.addTest(jms.ccunified.xa.ptp.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ccunified.xa.multiple.ptp.Suite.suite());
+        suite.addTest(jms.ccunified.xa.ps.Suite.suite());
+        suite.addTest(jms.ccunified.xa.psdur.Suite.suite());
+        suite.addTest(jms.ccunified.xa.ptp.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "xa";
-  }
+    public String toString() {
+        return "xa";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

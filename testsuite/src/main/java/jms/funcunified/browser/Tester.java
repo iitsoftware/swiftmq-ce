@@ -22,51 +22,42 @@ import jms.base.SimpleConnectedUnifiedPTPTestCase;
 import javax.jms.*;
 import java.util.Enumeration;
 
-public class Tester extends SimpleConnectedUnifiedPTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  public void test()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setIntProperty("id", i);
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      qs.commit();
-
-
-      QueueBrowser browser = qs.createBrowser(queue);
-      int cnt = 0;
-      Enumeration _enum = browser.getEnumeration();
-      while (_enum.hasMoreElements())
-      {
-        TextMessage m = (TextMessage) _enum.nextElement();
-        cnt++;
-      }
-      assertTrue("Invalid msg count in browser, received: " + cnt + ", expected 10", cnt == 10);
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive();
-      }
-      qs.commit();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class Tester extends SimpleConnectedUnifiedPTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE);
+    }
+
+    public void test() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setIntProperty("id", i);
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            qs.commit();
+
+
+            QueueBrowser browser = qs.createBrowser(queue);
+            int cnt = 0;
+            Enumeration _enum = browser.getEnumeration();
+            while (_enum.hasMoreElements()) {
+                TextMessage m = (TextMessage) _enum.nextElement();
+                cnt++;
+            }
+            assertTrue("Invalid msg count in browser, received: " + cnt + ", expected 10", cnt == 10);
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive();
+            }
+            qs.commit();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

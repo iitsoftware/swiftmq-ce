@@ -20,23 +20,19 @@ package jms.ha.persistent.ptp.cc.multiqueue.multisession.autoack;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class SuiteForward2 extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new SuiteForward2();
-    suite.addTest(new Forwarder("forward", "testqueue1@router", "testqueue2@router"));
-    return suite;
-  }
+public class SuiteForward2 extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new SuiteForward2();
+        suite.addTest(new Forwarder("forward", "testqueue1@router", "testqueue2@router"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "autoack";
-  }
+    public String toString() {
+        return "autoack";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

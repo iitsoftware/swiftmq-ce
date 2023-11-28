@@ -20,25 +20,21 @@ package jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multi
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.nonrecover.Suite.suite());
-    suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.recover.Suite.suite());
-    suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.singletopic.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.nonrecover.Suite.suite());
+        suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.recover.Suite.suite());
+        suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.singletopic.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "multisession";
-  }
+    public String toString() {
+        return "multisession";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

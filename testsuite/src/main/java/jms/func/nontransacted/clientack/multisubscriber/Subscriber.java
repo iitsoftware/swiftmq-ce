@@ -24,67 +24,51 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-public class Subscriber extends SimpleConnectedPSTestCase
-{
-  Object sem = new Object();
-  int cnt = 0;
+public class Subscriber extends SimpleConnectedPSTestCase {
+    Object sem = new Object();
+    int cnt = 0;
 
-  public Subscriber(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  public void testSubscribe()
-  {
-    try
-    {
-      subscriber.setMessageListener(null);
-      subscriber.setMessageListener(new MessageListener()
-      {
-        public void onMessage(Message message)
-        {
-          synchronized (sem)
-          {
-            cnt++;
-            TextMessage tm = (TextMessage) message;
-            try
-            {
-              tm.acknowledge();
-            } catch (Exception jmse)
-            {
-              failFast(jmse.toString());
-            }
-            if (cnt == 20)
-            {
-              sem.notify();
-            }
-          }
-        }
-      });
-      synchronized (sem)
-      {
-        if (cnt != 20)
-        {
-          try
-          {
-            sem.wait(20000);
-          } catch (Exception ignored)
-          {
-          }
-        }
-      }
-      subscriber.setMessageListener(null);
-      TextMessage msg = (TextMessage) subscriber.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Subscriber(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE);
+    }
+
+    public void testSubscribe() {
+        try {
+            subscriber.setMessageListener(null);
+            subscriber.setMessageListener(new MessageListener() {
+                public void onMessage(Message message) {
+                    synchronized (sem) {
+                        cnt++;
+                        TextMessage tm = (TextMessage) message;
+                        try {
+                            tm.acknowledge();
+                        } catch (Exception jmse) {
+                            failFast(jmse.toString());
+                        }
+                        if (cnt == 20) {
+                            sem.notify();
+                        }
+                    }
+                }
+            });
+            synchronized (sem) {
+                if (cnt != 20) {
+                    try {
+                        sem.wait(20000);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            subscriber.setMessageListener(null);
+            TextMessage msg = (TextMessage) subscriber.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

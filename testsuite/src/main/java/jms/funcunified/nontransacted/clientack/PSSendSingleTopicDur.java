@@ -19,77 +19,63 @@ package jms.funcunified.nontransacted.clientack;
 
 import jms.base.SimpleConnectedUnifiedPSTestCase;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class PSSendSingleTopicDur extends SimpleConnectedUnifiedPSTestCase
-{
-  public PSSendSingleTopicDur(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE, true);
-  }
-
-  public void testPSSendSingleTopicDurNP()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      msg.acknowledge();
-
-      msg = (TextMessage) consumer.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class PSSendSingleTopicDur extends SimpleConnectedUnifiedPSTestCase {
+    public PSSendSingleTopicDur(String name) {
+        super(name);
     }
-  }
 
-  public void testPSSendSingleTopicDurP()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      msg.acknowledge();
-
-      msg = (TextMessage) consumer.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE, true);
     }
-  }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(PSSendSingleTopicDur.class);
-  }
+    public void testPSSendSingleTopicDurNP() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            msg.acknowledge();
+
+            msg = (TextMessage) consumer.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    public void testPSSendSingleTopicDurP() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            msg.acknowledge();
+
+            msg = (TextMessage) consumer.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
 }
 

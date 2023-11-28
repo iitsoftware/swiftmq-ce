@@ -17,36 +17,31 @@
 
 package jms.base;
 
-public class SimpleConnectedPTPClusterTestCase extends SimpleConnectedPTPTestCase
-{
-  public SimpleConnectedPTPClusterTestCase(String name)
-  {
-    super(name);
-  }
+public class SimpleConnectedPTPClusterTestCase extends SimpleConnectedPTPTestCase {
+    public SimpleConnectedPTPClusterTestCase(String name) {
+        super(name);
+    }
 
-  protected void setUp(boolean transacted, int ackMode, boolean createSender, boolean createReceiver) throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createQueueConnection(qcfName);
-    String queueName = System.getProperty("jndi.cluster.queue");
-    assertNotNull("missing property 'jndi.queue'", queueName);
-    queue = getQueue(queueName);
-    beforeCreateSession();
-    qs = qc.createQueueSession(transacted, ackMode);
-    afterCreateSession();
-    if (createSender)
-    {
-      beforeCreateSender();
-      sender = qs.createSender(queue);
-      afterCreateSender();
+    protected void setUp(boolean transacted, int ackMode, boolean createSender, boolean createReceiver) throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createQueueConnection(qcfName);
+        String queueName = System.getProperty("jndi.cluster.queue");
+        assertNotNull("missing property 'jndi.queue'", queueName);
+        queue = getQueue(queueName);
+        beforeCreateSession();
+        qs = qc.createQueueSession(transacted, ackMode);
+        afterCreateSession();
+        if (createSender) {
+            beforeCreateSender();
+            sender = qs.createSender(queue);
+            afterCreateSender();
+        }
+        if (createReceiver) {
+            beforeCreateReceiver();
+            receiver = qs.createReceiver(queue);
+            afterCreateReceiver();
+        }
+        qc.start();
     }
-    if (createReceiver)
-    {
-      beforeCreateReceiver();
-      receiver = qs.createReceiver(queue);
-      afterCreateReceiver();
-    }
-    qc.start();
-  }
 }

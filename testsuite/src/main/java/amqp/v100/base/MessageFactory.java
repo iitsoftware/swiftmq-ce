@@ -19,11 +19,10 @@ package amqp.v100.base;
 
 import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 
-public interface MessageFactory
-{
-  public AMQPMessage create(int sequenceNo) throws Exception;
+public interface MessageFactory {
+    public AMQPMessage create(int sequenceNo) throws Exception;
 
-  public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception;
+    public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception;
 
-  public void verify(AMQPMessage message) throws Exception;
+    public void verify(AMQPMessage message) throws Exception;
 }

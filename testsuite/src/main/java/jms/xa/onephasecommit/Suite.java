@@ -17,26 +17,23 @@
 
 package jms.xa.onephasecommit;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xa.onephasecommit.singledest.Suite.suite());
-    suite.addTest(jms.xa.onephasecommit.multidest.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xa.onephasecommit.singledest.Suite.suite());
+        suite.addTest(jms.xa.onephasecommit.multidest.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "onephasecommit";
-  }
+    public String toString() {
+        return "onephasecommit";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

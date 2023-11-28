@@ -17,114 +17,97 @@
 
 package jms.base;
 
-import javax.jms.Topic;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSubscriber;
-import javax.jms.XATopicConnection;
-import javax.jms.XATopicSession;
+import javax.jms.*;
 import javax.transaction.xa.XAResource;
 
-public class SimpleConnectedXAPSTestCase extends XAPSTestCase
-{
-  public XATopicConnection tc = null;
-  public XATopicSession ts = null;
-  public TopicPublisher publisher = null;
-  public TopicSubscriber subscriber = null;
-  public Topic topic = null;
-  public TopicPublisher[] addPublisher = null;
-  public TopicSubscriber[] addSubscriber = null;
-  public XAResource xares = null;
+public class SimpleConnectedXAPSTestCase extends XAPSTestCase {
+    public XATopicConnection tc = null;
+    public XATopicSession ts = null;
+    public TopicPublisher publisher = null;
+    public TopicSubscriber subscriber = null;
+    public Topic topic = null;
+    public TopicPublisher[] addPublisher = null;
+    public TopicSubscriber[] addSubscriber = null;
+    public XAResource xares = null;
 
-  public SimpleConnectedXAPSTestCase(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(0);
-  }
-
-  protected void setUp(int additionalTopics) throws Exception
-  {
-    String tcfName = System.getProperty("jndi.tcf");
-    assertNotNull("missing property 'jndi.tcf'", tcfName);
-    tc = createXATopicConnection(tcfName, "XAPSTest-" + nextId());
-    String topicName = System.getProperty("jndi.topic");
-    assertNotNull("missing property 'jndi.topic'", topicName);
-    topic = getTopic(topicName);
-    ts = tc.createXATopicSession();
-    publisher = ts.getTopicSession().createPublisher(topic);
-    subscriber = ts.getTopicSession().createDurableSubscriber(topic, "dur");
-    if (additionalTopics > 0)
-    {
-      addPublisher = new TopicPublisher[additionalTopics];
-      for (int i = 0; i < additionalTopics; i++)
-      {
-        addPublisher[i] = ts.getTopicSession().createPublisher(getTopic(topicName + i));
-      }
-      addSubscriber = new TopicSubscriber[additionalTopics];
-      for (int i = 0; i < additionalTopics; i++)
-      {
-        addSubscriber[i] = ts.getTopicSession().createDurableSubscriber(getTopic(topicName + i), "dur" + i);
-      }
+    public SimpleConnectedXAPSTestCase(String name) {
+        super(name);
     }
-    xares = ts.getXAResource();
-    tc.start();
-  }
 
-  protected void setUp(boolean createSubscriber, boolean createPublisher) throws Exception
-  {
-    String tcfName = System.getProperty("jndi.tcf");
-    assertNotNull("missing property 'jndi.tcf'", tcfName);
-    tc = createXATopicConnection(tcfName, "XAPSTest-" + nextId());
-    String topicName = System.getProperty("jndi.topic");
-    assertNotNull("missing property 'jndi.topic'", topicName);
-    topic = getTopic(topicName);
-    ts = tc.createXATopicSession();
-    if (createPublisher)
-      publisher = ts.getTopicSession().createPublisher(topic);
-    if (createSubscriber)
-      subscriber = ts.getTopicSession().createDurableSubscriber(topic, "dur");
-    xares = ts.getXAResource();
-    tc.start();
-  }
+    protected void setUp() throws Exception {
+        setUp(0);
+    }
 
-  protected void tearDown() throws Exception
-  {
-    if (subscriber != null)
-      subscriber.close();
-    if (publisher != null)
-      publisher.close();
-    if (addPublisher != null)
-    {
-      for (int i = 0; i < addPublisher.length; i++)
-      {
-        addPublisher[i].close();
-      }
+    protected void setUp(int additionalTopics) throws Exception {
+        String tcfName = System.getProperty("jndi.tcf");
+        assertNotNull("missing property 'jndi.tcf'", tcfName);
+        tc = createXATopicConnection(tcfName, "XAPSTest-" + nextId());
+        String topicName = System.getProperty("jndi.topic");
+        assertNotNull("missing property 'jndi.topic'", topicName);
+        topic = getTopic(topicName);
+        ts = tc.createXATopicSession();
+        publisher = ts.getTopicSession().createPublisher(topic);
+        subscriber = ts.getTopicSession().createDurableSubscriber(topic, "dur");
+        if (additionalTopics > 0) {
+            addPublisher = new TopicPublisher[additionalTopics];
+            for (int i = 0; i < additionalTopics; i++) {
+                addPublisher[i] = ts.getTopicSession().createPublisher(getTopic(topicName + i));
+            }
+            addSubscriber = new TopicSubscriber[additionalTopics];
+            for (int i = 0; i < additionalTopics; i++) {
+                addSubscriber[i] = ts.getTopicSession().createDurableSubscriber(getTopic(topicName + i), "dur" + i);
+            }
+        }
+        xares = ts.getXAResource();
+        tc.start();
     }
-    if (addSubscriber != null)
-    {
-      for (int i = 0; i < addSubscriber.length; i++)
-      {
-        addSubscriber[i].close();
-        ts.getTopicSession().unsubscribe("dur" + i);
-      }
+
+    protected void setUp(boolean createSubscriber, boolean createPublisher) throws Exception {
+        String tcfName = System.getProperty("jndi.tcf");
+        assertNotNull("missing property 'jndi.tcf'", tcfName);
+        tc = createXATopicConnection(tcfName, "XAPSTest-" + nextId());
+        String topicName = System.getProperty("jndi.topic");
+        assertNotNull("missing property 'jndi.topic'", topicName);
+        topic = getTopic(topicName);
+        ts = tc.createXATopicSession();
+        if (createPublisher)
+            publisher = ts.getTopicSession().createPublisher(topic);
+        if (createSubscriber)
+            subscriber = ts.getTopicSession().createDurableSubscriber(topic, "dur");
+        xares = ts.getXAResource();
+        tc.start();
     }
-    if (subscriber != null)
-      ts.getTopicSession().unsubscribe("dur");
-    ts.close();
-    tc.close();
-    tc = null;
-    ts = null;
-    publisher = null;
-    subscriber = null;
-    topic = null;
-    addPublisher = null;
-    addSubscriber = null;
-    xares = null;
-    super.tearDown();
-  }
+
+    protected void tearDown() throws Exception {
+        if (subscriber != null)
+            subscriber.close();
+        if (publisher != null)
+            publisher.close();
+        if (addPublisher != null) {
+            for (int i = 0; i < addPublisher.length; i++) {
+                addPublisher[i].close();
+            }
+        }
+        if (addSubscriber != null) {
+            for (int i = 0; i < addSubscriber.length; i++) {
+                addSubscriber[i].close();
+                ts.getTopicSession().unsubscribe("dur" + i);
+            }
+        }
+        if (subscriber != null)
+            ts.getTopicSession().unsubscribe("dur");
+        ts.close();
+        tc.close();
+        tc = null;
+        ts = null;
+        publisher = null;
+        subscriber = null;
+        topic = null;
+        addPublisher = null;
+        addSubscriber = null;
+        xares = null;
+        super.tearDown();
+    }
 
 }
 

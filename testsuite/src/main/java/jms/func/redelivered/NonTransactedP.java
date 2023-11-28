@@ -19,64 +19,57 @@ package jms.func.redelivered;
 
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class NonTransactedP extends SimpleConnectedPTPTestCase
-{
-  public NonTransactedP(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  public void testNonTransactedP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setIntProperty("id", i);
-        msg.setText("Msg: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-      int ids[] = new int[3];
-      for (int i = 0; i < 3; i++)
-      {
-        msg = (TextMessage) receiver.receive();
-        ids[i] = msg.getIntProperty("id");
-      }
-      qs.recover();
-
-      for (int i = 0; i < 3; i++)
-      {
-        msg = (TextMessage) receiver.receive();
-        int id = msg.getIntProperty("id");
-        assertTrue("Does not receive right msg, expected: " + ids[i] + ", received: " + id, id == ids[i]);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 3; i < 10; i++)
-      {
-        msg = (TextMessage) receiver.receive();
-        msg.acknowledge();
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg marked as redelivered", !redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 1);
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class NonTransactedP extends SimpleConnectedPTPTestCase {
+    public NonTransactedP(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE);
+    }
+
+    public void testNonTransactedP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setIntProperty("id", i);
+                msg.setText("Msg: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+            int ids[] = new int[3];
+            for (int i = 0; i < 3; i++) {
+                msg = (TextMessage) receiver.receive();
+                ids[i] = msg.getIntProperty("id");
+            }
+            qs.recover();
+
+            for (int i = 0; i < 3; i++) {
+                msg = (TextMessage) receiver.receive();
+                int id = msg.getIntProperty("id");
+                assertTrue("Does not receive right msg, expected: " + ids[i] + ", received: " + id, id == ids[i]);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 3; i < 10; i++) {
+                msg = (TextMessage) receiver.receive();
+                msg.acknowledge();
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg marked as redelivered", !redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 1);
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

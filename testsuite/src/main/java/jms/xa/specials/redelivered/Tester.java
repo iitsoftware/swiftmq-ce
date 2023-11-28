@@ -20,79 +20,73 @@ package jms.xa.specials.redelivered;
 import jms.base.SimpleConnectedXAPTPTestCase;
 import jms.base.XidImpl;
 
-import javax.jms.*;
-import javax.transaction.xa.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Tester extends SimpleConnectedXAPTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  public void testP()
-  {
-    try
-    {
-      Xid xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setIntProperty("id", i);
-        msg.setText("Msg: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.prepare(xid);
-      xares.commit(xid, false);
-
-      xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      int ids[] = new int[3];
-      for (int i = 0; i < 3; i++)
-      {
-        msg = (TextMessage) receiver.receive();
-        ids[i] = msg.getIntProperty("id");
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.prepare(xid);
-      xares.rollback(xid);
-
-      xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 3; i++)
-      {
-        msg = (TextMessage) receiver.receive();
-        int id = msg.getIntProperty("id");
-        assertTrue("Does not receive right msg, expected: " + ids[i] + ", received: " + id, id == ids[i]);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.prepare(xid);
-      xares.commit(xid, false);
-
-      xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      for (int i = 3; i < 10; i++)
-      {
-        msg = (TextMessage) receiver.receive();
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg marked as redelivered", !redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 1);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.prepare(xid);
-      xares.commit(xid, false);
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class Tester extends SimpleConnectedXAPTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
+
+    public void testP() {
+        try {
+            Xid xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setIntProperty("id", i);
+                msg.setText("Msg: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.prepare(xid);
+            xares.commit(xid, false);
+
+            xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            int ids[] = new int[3];
+            for (int i = 0; i < 3; i++) {
+                msg = (TextMessage) receiver.receive();
+                ids[i] = msg.getIntProperty("id");
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.prepare(xid);
+            xares.rollback(xid);
+
+            xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 3; i++) {
+                msg = (TextMessage) receiver.receive();
+                int id = msg.getIntProperty("id");
+                assertTrue("Does not receive right msg, expected: " + ids[i] + ", received: " + id, id == ids[i]);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.prepare(xid);
+            xares.commit(xid, false);
+
+            xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            for (int i = 3; i < 10; i++) {
+                msg = (TextMessage) receiver.receive();
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg marked as redelivered", !redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 1);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.prepare(xid);
+            xares.commit(xid, false);
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

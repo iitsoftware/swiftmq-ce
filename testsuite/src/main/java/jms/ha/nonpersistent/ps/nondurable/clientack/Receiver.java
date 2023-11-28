@@ -23,47 +23,39 @@ import jms.base.SimpleConnectedPSTestCase;
 import javax.jms.Message;
 import javax.jms.Session;
 
-public class Receiver extends SimpleConnectedPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
+public class Receiver extends SimpleConnectedPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
 
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE, false, false, true);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-    verifier.setCheckSequence(false);
-    verifier.setMissingOk(true);
-  }
-
-  public void receive()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Message msg = subscriber.receive(120000);
-        if (msg == null)
-          break;
-        verifier.add(msg);
-        msg.acknowledge();
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Receiver(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE, false, false, true);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+        verifier.setCheckSequence(false);
+        verifier.setMissingOk(true);
+    }
+
+    public void receive() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                Message msg = subscriber.receive(120000);
+                if (msg == null)
+                    break;
+                verifier.add(msg);
+                msg.acknowledge();
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        super.tearDown();
+    }
 }
 

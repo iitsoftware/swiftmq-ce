@@ -19,79 +19,70 @@ package jms.funcunified.transacted.mixed;
 
 import jms.base.SimpleConnectedUnifiedMixedTestCase;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class SendReceive extends SimpleConnectedUnifiedMixedTestCase
-{
+public class SendReceive extends SimpleConnectedUnifiedMixedTestCase {
 
-  public SendReceive(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE, true);
-  }
-
-  public void test()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producerQueue.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        producerTopic.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      ts.commit();
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumerQueue.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumerTopic.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      ts.rollback();
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumerQueue.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumerTopic.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-        boolean redelivered = msg.getJMSRedelivered();
-        assertTrue("Msg not marked as redelivered", redelivered);
-        int cnt = msg.getIntProperty("JMSXDeliveryCount");
-        assertTrue("Invalid delivery count: " + cnt, cnt == 2);
-      }
-      ts.commit();
-      msg = (TextMessage) consumerQueue.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      msg = (TextMessage) consumerTopic.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public SendReceive(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE, true);
+    }
+
+    public void test() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producerQueue.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                producerTopic.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            ts.commit();
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumerQueue.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumerTopic.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            ts.rollback();
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumerQueue.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumerTopic.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+                boolean redelivered = msg.getJMSRedelivered();
+                assertTrue("Msg not marked as redelivered", redelivered);
+                int cnt = msg.getIntProperty("JMSXDeliveryCount");
+                assertTrue("Invalid delivery count: " + cnt, cnt == 2);
+            }
+            ts.commit();
+            msg = (TextMessage) consumerQueue.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            msg = (TextMessage) consumerTopic.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 }
 

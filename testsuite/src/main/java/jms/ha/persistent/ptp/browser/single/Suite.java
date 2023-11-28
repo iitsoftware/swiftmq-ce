@@ -24,30 +24,25 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public void run(TestResult testResult)
-  {
-    super.run(testResult);
-  }
+public class Suite extends TestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Sender("send", "testqueue@router"));
-    suite.addTest(new Browser("browse", "testqueue@router"));
-    suite.addTest(new DrainQueue("drain"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Sender("send", "testqueue@router"));
+        suite.addTest(new Browser("browse", "testqueue@router"));
+        suite.addTest(new DrainQueue("drain"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "single";
-  }
+    public String toString() {
+        return "single";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

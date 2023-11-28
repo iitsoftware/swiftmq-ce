@@ -17,35 +17,32 @@
 
 package jms.xaunified;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xaunified.onephasecommit.Suite.suite());
-    suite.addTest(jms.xaunified.preparecommit.Suite.suite());
-    suite.addTest(jms.xaunified.preparerollback.Suite.suite());
-    suite.addTest(jms.xaunified.rollback.Suite.suite());
-    suite.addTest(jms.xaunified.endfailonephasecommit.Suite.suite());
-    suite.addTest(jms.xaunified.endfailprepare.Suite.suite());
-    suite.addTest(jms.xaunified.endfailrollback.Suite.suite());
-    suite.addTest(jms.xaunified.noendrollback.Suite.suite());
-    suite.addTest(jms.xaunified.suspendresume.Suite.suite());
-    suite.addTest(jms.xaunified.recover.Suite.suite());
-    suite.addTest(jms.xaunified.specials.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xaunified.onephasecommit.Suite.suite());
+        suite.addTest(jms.xaunified.preparecommit.Suite.suite());
+        suite.addTest(jms.xaunified.preparerollback.Suite.suite());
+        suite.addTest(jms.xaunified.rollback.Suite.suite());
+        suite.addTest(jms.xaunified.endfailonephasecommit.Suite.suite());
+        suite.addTest(jms.xaunified.endfailprepare.Suite.suite());
+        suite.addTest(jms.xaunified.endfailrollback.Suite.suite());
+        suite.addTest(jms.xaunified.noendrollback.Suite.suite());
+        suite.addTest(jms.xaunified.suspendresume.Suite.suite());
+        suite.addTest(jms.xaunified.recover.Suite.suite());
+        suite.addTest(jms.xaunified.specials.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "jms/xaunified";
-  }
+    public String toString() {
+        return "jms/xaunified";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

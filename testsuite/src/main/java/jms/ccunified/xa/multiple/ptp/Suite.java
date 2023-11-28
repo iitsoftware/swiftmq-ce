@@ -18,30 +18,27 @@
 package jms.ccunified.xa.multiple.ptp;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new MDBForwarder("test", "testqueue@router", "t0@router"));
-    suite.addTest(new MDBForwarder("test", "t0@router", "t1@router"));
-    suite.addTest(new MDBForwarder("test", "t1@router", "t2@router"));
-    suite.addTest(new MDBForwarder("test", "t2@router", "t3@router"));
-    suite.addTest(new MDBFinalReceiver("test", "t3@router"));
-    suite.addTest(new Sender("testSend"));
-    return suite;
-  }
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new MDBForwarder("test", "testqueue@router", "t0@router"));
+        suite.addTest(new MDBForwarder("test", "t0@router", "t1@router"));
+        suite.addTest(new MDBForwarder("test", "t1@router", "t2@router"));
+        suite.addTest(new MDBForwarder("test", "t2@router", "t3@router"));
+        suite.addTest(new MDBFinalReceiver("test", "t3@router"));
+        suite.addTest(new Sender("testSend"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "ptp";
-  }
+    public String toString() {
+        return "ptp";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

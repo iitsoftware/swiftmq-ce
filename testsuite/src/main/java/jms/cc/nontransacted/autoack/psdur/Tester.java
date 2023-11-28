@@ -17,6 +17,7 @@
 
 package jms.cc.nontransacted.autoack.psdur;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.PSTestCase;
 import jms.base.ServerSessionImpl;
 import jms.base.ServerSessionPoolImpl;
@@ -24,8 +25,7 @@ import jms.base.ServerSessionPoolImpl;
 import javax.jms.*;
 import javax.naming.InitialContext;
 
-public class Tester extends PSTestCase
-{
+public class Tester extends PSTestCase {
   InitialContext ctx = null;
   TopicConnection tc = null;
   TopicConnection tc1 = null;
@@ -35,14 +35,13 @@ public class Tester extends PSTestCase
   ConnectionConsumer cc = null;
   ServerSessionPoolImpl pool = null;
   int nMsgs = 0;
+  Semaphore sem = new Semaphore();
 
-  public Tester(String name)
-  {
+  public Tester(String name) {
     super(name);
   }
 
-  protected void setUp() throws Exception
-  {
+  protected void setUp() throws Exception {
     String tcfName = System.getProperty("jndi.tcf");
     assertNotNull("missing property 'jndi.tcf'", tcfName);
     tc = createTopicConnection(tcfName, "jms-cc-test", false);
@@ -50,8 +49,7 @@ public class Tester extends PSTestCase
     assertNotNull("missing property 'jndi.topic'", topicName);
     topic = getTopic(topicName);
     pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 10; i++)
-    {
+    for (int i = 0; i < 10; i++) {
       TopicSession qs = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       qs.setMessageListener(new Listener(i));
       pool.addServerSession(new ServerSessionImpl(pool, qs));
@@ -62,58 +60,46 @@ public class Tester extends PSTestCase
     publisher = qs.createPublisher(topic);
   }
 
-  synchronized void inc()
-  {
+  synchronized void inc() {
     nMsgs++;
+    System.out.println("Msg: " + nMsgs);
     if (nMsgs == 10000)
-      notify();
+      sem.notifySingleWaiter();
   }
 
-  public void test()
-  {
-    try
-    {
+  public void test() {
+    try {
+      tc.start();
       TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10000; i++)
-      {
+      for (int i = 0; i < 10000; i++) {
         msg.setText("Msg: " + (i + 1));
         publisher.publish(msg);
       }
 
-      tc.start();
-      synchronized (this)
-      {
-        try
-        {
-          wait();
-        } catch (InterruptedException e)
-        {
-        }
-      }
-    } catch (Exception e)
-    {
+      sem.waitHere();
+    } catch (Exception e) {
       failFast("Test failed: " + e.toString());
     }
   }
 
-  protected void tearDown() throws Exception
-  {
+  protected void tearDown() throws Exception {
+    sem.reset();
+    sem.waitHere(1000);
+    TopicSession ts = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+    ts.unsubscribe("autoack");
     tc.close();
     tc1.close();
     super.tearDown();
   }
 
-  private class Listener implements MessageListener
-  {
+  private class Listener implements MessageListener {
     int id;
 
-    public Listener(int id)
-    {
+    public Listener(int id) {
       this.id = id;
     }
 
-    public void onMessage(Message msg)
-    {
+    public void onMessage(Message msg) {
       inc();
     }
   }

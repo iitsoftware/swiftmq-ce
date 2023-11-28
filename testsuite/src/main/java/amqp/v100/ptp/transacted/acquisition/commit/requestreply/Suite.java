@@ -20,25 +20,21 @@ package amqp.v100.ptp.transacted.acquisition.commit.requestreply;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
 //    suite.addTest(amqp.v100.ptp.transacted.acquisition.commit.requestreply.at_most_once.Suite.suite());
-    suite.addTest(amqp.v100.ptp.transacted.acquisition.commit.requestreply.at_least_once.Suite.suite());
-    suite.addTest(amqp.v100.ptp.transacted.acquisition.commit.requestreply.exactly_once.Suite.suite());
-    return suite;
-  }
+        suite.addTest(amqp.v100.ptp.transacted.acquisition.commit.requestreply.at_least_once.Suite.suite());
+        suite.addTest(amqp.v100.ptp.transacted.acquisition.commit.requestreply.exactly_once.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "requestreply";
-  }
+    public String toString() {
+        return "requestreply";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -20,147 +20,130 @@ package jms.xaunified.suspendresume.multitx.singledest.ps;
 import jms.base.SimpleConnectedUnifiedXAPS1MTestCase;
 import jms.base.XidImpl;
 
-import javax.jms.*;
-import javax.transaction.xa.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Tester extends SimpleConnectedUnifiedXAPS1MTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  public void testNP()
-  {
-    try
-    {
-      Xid xid1 = new XidImpl();
-      xares.start(xid1, XAResource.TMNOFLAGS);
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 2; i++)
-      {
-        msg.setText("Msg1: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid1, XAResource.TMSUSPEND);
-      Xid xid2 = new XidImpl();
-      xares.start(xid2, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 3; i++)
-      {
-        msg.setText("Msg2: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid2, XAResource.TMSUSPEND);
-      xares.start(xid1, XAResource.TMRESUME);
-      xares.end(xid1, XAResource.TMSUCCESS);
-      xares.prepare(xid1);
-      xares.commit(xid1, false);
-      xares.start(xid2, XAResource.TMRESUME);
-      xares.end(xid2, XAResource.TMSUCCESS);
-      xares.prepare(xid2);
-      xares.commit(xid2, false);
-
-      xid1 = new XidImpl();
-      xares.start(xid1, XAResource.TMNOFLAGS);
-      for (int j = 0; j < 3; j++)
-      {
-        for (int i = 0; i < 3; i++)
-        {
-          msg = (TextMessage) consumer[j].receive(2000);
-          assertTrue("Received msg==null", msg != null);
-        }
-      }
-      xares.end(xid1, XAResource.TMSUSPEND);
-      xid2 = new XidImpl();
-      xares.start(xid2, XAResource.TMNOFLAGS);
-      for (int j = 0; j < 3; j++)
-      {
-        for (int i = 0; i < 2; i++)
-        {
-          msg = (TextMessage) consumer[j].receive(2000);
-          assertTrue("Received msg==null", msg != null);
-        }
-      }
-      xares.end(xid2, XAResource.TMSUSPEND);
-      xares.start(xid1, XAResource.TMRESUME);
-      xares.end(xid1, XAResource.TMSUCCESS);
-      xares.prepare(xid1);
-      xares.commit(xid1, false);
-      xares.start(xid2, XAResource.TMRESUME);
-      xares.end(xid2, XAResource.TMSUCCESS);
-      xares.prepare(xid2);
-      xares.commit(xid2, false);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+public class Tester extends SimpleConnectedUnifiedXAPS1MTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
 
-  public void testP()
-  {
-    try
-    {
-      Xid xid1 = new XidImpl();
-      xares.start(xid1, XAResource.TMNOFLAGS);
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 2; i++)
-      {
-        msg.setText("Msg1: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid1, XAResource.TMSUSPEND);
-      Xid xid2 = new XidImpl();
-      xares.start(xid2, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 3; i++)
-      {
-        msg.setText("Msg2: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid2, XAResource.TMSUSPEND);
-      xares.start(xid1, XAResource.TMRESUME);
-      xares.end(xid1, XAResource.TMSUCCESS);
-      xares.prepare(xid1);
-      xares.commit(xid1, false);
-      xares.start(xid2, XAResource.TMRESUME);
-      xares.end(xid2, XAResource.TMSUCCESS);
-      xares.prepare(xid2);
-      xares.commit(xid2, false);
+    public void testNP() {
+        try {
+            Xid xid1 = new XidImpl();
+            xares.start(xid1, XAResource.TMNOFLAGS);
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 2; i++) {
+                msg.setText("Msg1: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid1, XAResource.TMSUSPEND);
+            Xid xid2 = new XidImpl();
+            xares.start(xid2, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 3; i++) {
+                msg.setText("Msg2: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid2, XAResource.TMSUSPEND);
+            xares.start(xid1, XAResource.TMRESUME);
+            xares.end(xid1, XAResource.TMSUCCESS);
+            xares.prepare(xid1);
+            xares.commit(xid1, false);
+            xares.start(xid2, XAResource.TMRESUME);
+            xares.end(xid2, XAResource.TMSUCCESS);
+            xares.prepare(xid2);
+            xares.commit(xid2, false);
 
-      xid1 = new XidImpl();
-      xares.start(xid1, XAResource.TMNOFLAGS);
-      for (int j = 0; j < 3; j++)
-      {
-        for (int i = 0; i < 3; i++)
-        {
-          msg = (TextMessage) consumer[j].receive(2000);
-          assertTrue("Received msg==null", msg != null);
+            xid1 = new XidImpl();
+            xares.start(xid1, XAResource.TMNOFLAGS);
+            for (int j = 0; j < 3; j++) {
+                for (int i = 0; i < 3; i++) {
+                    msg = (TextMessage) consumer[j].receive(2000);
+                    assertTrue("Received msg==null", msg != null);
+                }
+            }
+            xares.end(xid1, XAResource.TMSUSPEND);
+            xid2 = new XidImpl();
+            xares.start(xid2, XAResource.TMNOFLAGS);
+            for (int j = 0; j < 3; j++) {
+                for (int i = 0; i < 2; i++) {
+                    msg = (TextMessage) consumer[j].receive(2000);
+                    assertTrue("Received msg==null", msg != null);
+                }
+            }
+            xares.end(xid2, XAResource.TMSUSPEND);
+            xares.start(xid1, XAResource.TMRESUME);
+            xares.end(xid1, XAResource.TMSUCCESS);
+            xares.prepare(xid1);
+            xares.commit(xid1, false);
+            xares.start(xid2, XAResource.TMRESUME);
+            xares.end(xid2, XAResource.TMSUCCESS);
+            xares.prepare(xid2);
+            xares.commit(xid2, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
         }
-      }
-      xares.end(xid1, XAResource.TMSUSPEND);
-      xid2 = new XidImpl();
-      xares.start(xid2, XAResource.TMNOFLAGS);
-      for (int j = 0; j < 3; j++)
-      {
-        for (int i = 0; i < 2; i++)
-        {
-          msg = (TextMessage) consumer[j].receive(2000);
-          assertTrue("Received msg==null", msg != null);
-        }
-      }
-      xares.end(xid2, XAResource.TMSUSPEND);
-      xares.start(xid1, XAResource.TMRESUME);
-      xares.end(xid1, XAResource.TMSUCCESS);
-      xares.prepare(xid1);
-      xares.commit(xid1, false);
-      xares.start(xid2, XAResource.TMRESUME);
-      xares.end(xid2, XAResource.TMSUCCESS);
-      xares.prepare(xid2);
-      xares.commit(xid2, false);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
     }
-  }
+
+    public void testP() {
+        try {
+            Xid xid1 = new XidImpl();
+            xares.start(xid1, XAResource.TMNOFLAGS);
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 2; i++) {
+                msg.setText("Msg1: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid1, XAResource.TMSUSPEND);
+            Xid xid2 = new XidImpl();
+            xares.start(xid2, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 3; i++) {
+                msg.setText("Msg2: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid2, XAResource.TMSUSPEND);
+            xares.start(xid1, XAResource.TMRESUME);
+            xares.end(xid1, XAResource.TMSUCCESS);
+            xares.prepare(xid1);
+            xares.commit(xid1, false);
+            xares.start(xid2, XAResource.TMRESUME);
+            xares.end(xid2, XAResource.TMSUCCESS);
+            xares.prepare(xid2);
+            xares.commit(xid2, false);
+
+            xid1 = new XidImpl();
+            xares.start(xid1, XAResource.TMNOFLAGS);
+            for (int j = 0; j < 3; j++) {
+                for (int i = 0; i < 3; i++) {
+                    msg = (TextMessage) consumer[j].receive(2000);
+                    assertTrue("Received msg==null", msg != null);
+                }
+            }
+            xares.end(xid1, XAResource.TMSUSPEND);
+            xid2 = new XidImpl();
+            xares.start(xid2, XAResource.TMNOFLAGS);
+            for (int j = 0; j < 3; j++) {
+                for (int i = 0; i < 2; i++) {
+                    msg = (TextMessage) consumer[j].receive(2000);
+                    assertTrue("Received msg==null", msg != null);
+                }
+            }
+            xares.end(xid2, XAResource.TMSUSPEND);
+            xares.start(xid1, XAResource.TMRESUME);
+            xares.end(xid1, XAResource.TMSUCCESS);
+            xares.prepare(xid1);
+            xares.commit(xid1, false);
+            xares.start(xid2, XAResource.TMRESUME);
+            xares.end(xid2, XAResource.TMSUCCESS);
+            xares.prepare(xid2);
+            xares.commit(xid2, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
 }

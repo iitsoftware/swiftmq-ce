@@ -21,67 +21,59 @@ import jms.base.MultisessionConnectedXAPTPTestCase;
 import jms.base.XidImpl;
 
 import javax.jms.*;
-import javax.transaction.xa.*;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Tester extends MultisessionConnectedXAPTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp(3);
-  }
-
-  public void testP()
-  {
-    try
-    {
-      Xid xid = new XidImpl();
-      XAResource xares1 = sessions[0].getXAResource();
-      QueueSender sender1 = sessions[0].getQueueSession().createSender(queue);
-      xares1.start(xid, XAResource.TMNOFLAGS);
-      TextMessage msg = sessions[0].createTextMessage();
-      for (int i = 0; i < 2; i++)
-      {
-        msg.setText("Msg1: " + i);
-        sender1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares1.end(xid, XAResource.TMSUSPEND);
-
-      XAResource xares2 = sessions[1].getXAResource();
-      QueueSender sender2 = sessions[1].getQueueSession().createSender(queue);
-      xares2.start(xid, XAResource.TMRESUME);
-      for (int i = 0; i < 3; i++)
-      {
-        msg.setText("Msg2: " + i);
-        sender2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares2.end(xid, XAResource.TMSUCCESS);
-
-      XAResource xares3 = sessions[2].getXAResource();
-      xares3.prepare(xid);
-      xares3.commit(xid, false);
-
-      xid = new XidImpl();
-      QueueReceiver receiver1 = sessions[0].getQueueSession().createReceiver(queue);
-      xares1.start(xid, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 5; i++)
-      {
-        msg = (TextMessage) receiver1.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      msg = (TextMessage) receiver1.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-      xares1.end(xid, XAResource.TMSUSPEND);
-      xares3.prepare(xid);
-      xares3.commit(xid, false);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+public class Tester extends MultisessionConnectedXAPTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        super.setUp(3);
+    }
+
+    public void testP() {
+        try {
+            Xid xid = new XidImpl();
+            XAResource xares1 = sessions[0].getXAResource();
+            QueueSender sender1 = sessions[0].getQueueSession().createSender(queue);
+            xares1.start(xid, XAResource.TMNOFLAGS);
+            TextMessage msg = sessions[0].createTextMessage();
+            for (int i = 0; i < 2; i++) {
+                msg.setText("Msg1: " + i);
+                sender1.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares1.end(xid, XAResource.TMSUSPEND);
+
+            XAResource xares2 = sessions[1].getXAResource();
+            QueueSender sender2 = sessions[1].getQueueSession().createSender(queue);
+            xares2.start(xid, XAResource.TMRESUME);
+            for (int i = 0; i < 3; i++) {
+                msg.setText("Msg2: " + i);
+                sender2.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares2.end(xid, XAResource.TMSUCCESS);
+
+            XAResource xares3 = sessions[2].getXAResource();
+            xares3.prepare(xid);
+            xares3.commit(xid, false);
+
+            xid = new XidImpl();
+            QueueReceiver receiver1 = sessions[0].getQueueSession().createReceiver(queue);
+            xares1.start(xid, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 5; i++) {
+                msg = (TextMessage) receiver1.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            msg = (TextMessage) receiver1.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+            xares1.end(xid, XAResource.TMSUSPEND);
+            xares3.prepare(xid);
+            xares3.commit(xid, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
 }

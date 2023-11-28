@@ -23,28 +23,23 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class SenderSuite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    super.run(testResult);
-  }
+public class SenderSuite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new SenderSuite();
-    suite.addTest(new Sender("send", "testqueue@router"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new SenderSuite();
+        suite.addTest(new Sender("send", "testqueue@router"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "singledest";
-  }
+    public String toString() {
+        return "singledest";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

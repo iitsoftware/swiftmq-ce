@@ -22,25 +22,21 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class SenderSuite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new jms.ha.persistent.ps.durable.nontransacted.autoack.SenderSuite();
-    suite.addTest(new Sender("send", "testtopic"));
-    suite.addTest(new Sender("send", "testtopic1"));
-    suite.addTest(new Sender("send", "testtopic2"));
-    return suite;
-  }
+public class SenderSuite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new jms.ha.persistent.ps.durable.nontransacted.autoack.SenderSuite();
+        suite.addTest(new Sender("send", "testtopic"));
+        suite.addTest(new Sender("send", "testtopic1"));
+        suite.addTest(new Sender("send", "testtopic2"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "autoack";
-  }
+    public String toString() {
+        return "autoack";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

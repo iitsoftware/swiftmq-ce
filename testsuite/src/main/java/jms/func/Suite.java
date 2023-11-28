@@ -17,32 +17,29 @@
 
 package jms.func;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.func.msg.Suite.suite());
-    suite.addTest(jms.func.prio.Suite.suite());
-    suite.addTest(jms.func.nontransacted.Suite.suite());
-    suite.addTest(jms.func.transacted.Suite.suite());
-    suite.addTest(jms.func.redelivered.Suite.suite());
-    suite.addTest(jms.func.selector.Suite.suite());
-    suite.addTest(jms.func.requestreply.Suite.suite());
-    suite.addTest(jms.func.browser.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.func.msg.Suite.suite());
+        suite.addTest(jms.func.prio.Suite.suite());
+        suite.addTest(jms.func.nontransacted.Suite.suite());
+        suite.addTest(jms.func.transacted.Suite.suite());
+        suite.addTest(jms.func.redelivered.Suite.suite());
+        suite.addTest(jms.func.selector.Suite.suite());
+        suite.addTest(jms.func.requestreply.Suite.suite());
+        suite.addTest(jms.func.browser.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Functionality";
-  }
+    public String toString() {
+        return "Functionality";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

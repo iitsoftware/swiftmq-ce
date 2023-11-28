@@ -22,31 +22,26 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    super.run(testResult);
-  }
+public class Suite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new jms.ha.persistent.ptp.routing.xa.preparecommit.router.Suite();
-    suite.addTest(new Sender("send", "testqueue@router2"));
-    suite.addTest(new Forwarder("forward", "testqueue@router", "testqueue1@router2"));
-    suite.addTest(new Forwarder("forward", "testqueue1@router", "testqueue2@router2"));
-    suite.addTest(new Forwarder("forward", "testqueue2@router", "testqueue3@router2"));
-    suite.addTest(new Consumer("consume", "testqueue3@router"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new jms.ha.persistent.ptp.routing.xa.preparecommit.router.Suite();
+        suite.addTest(new Sender("send", "testqueue@router2"));
+        suite.addTest(new Forwarder("forward", "testqueue@router", "testqueue1@router2"));
+        suite.addTest(new Forwarder("forward", "testqueue1@router", "testqueue2@router2"));
+        suite.addTest(new Forwarder("forward", "testqueue2@router", "testqueue3@router2"));
+        suite.addTest(new Consumer("consume", "testqueue3@router"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "router";
-  }
+    public String toString() {
+        return "router";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.ha.persistent.ptp.routing.xa.preparecommit.router.Suite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.ha.persistent.ptp.routing.xa.preparecommit.router.Suite.suite());
+    }
 }

@@ -17,30 +17,27 @@
 
 package jms.xa.specials.differentsessions;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xa.specials.differentsessions.exceptions.Suite.suite());
-    suite.addTest(jms.xa.specials.differentsessions.noendrollback.Suite.suite());
-    suite.addTest(jms.xa.specials.differentsessions.suspendresume.Suite.suite());
-    suite.addTest(jms.xa.specials.differentsessions.tmjoin.Suite.suite());
-    suite.addTest(jms.xa.specials.differentsessions.txtimeout.Suite.suite());
-    suite.addTest(jms.xa.specials.differentsessions.xaflowcontrol.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xa.specials.differentsessions.exceptions.Suite.suite());
+        suite.addTest(jms.xa.specials.differentsessions.noendrollback.Suite.suite());
+        suite.addTest(jms.xa.specials.differentsessions.suspendresume.Suite.suite());
+        suite.addTest(jms.xa.specials.differentsessions.tmjoin.Suite.suite());
+        suite.addTest(jms.xa.specials.differentsessions.txtimeout.Suite.suite());
+        suite.addTest(jms.xa.specials.differentsessions.xaflowcontrol.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "differentsessions";
-  }
+    public String toString() {
+        return "differentsessions";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

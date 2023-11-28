@@ -22,28 +22,23 @@ import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class ReceiverSuite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    super.run(testResult);
-  }
+public class ReceiverSuite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new ReceiverSuite();
-    suite.addTest(new Receiver("receive"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new ReceiverSuite();
+        suite.addTest(new Receiver("receive"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "receive";
-  }
+    public String toString() {
+        return "receive";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 
