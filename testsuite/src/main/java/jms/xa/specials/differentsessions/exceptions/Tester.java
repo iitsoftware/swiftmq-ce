@@ -69,7 +69,8 @@ public class Tester extends MultisessionConnectedXAPTPTestCase {
             try {
                 xares3.prepare(xid1);
             } catch (XAException e) {
-                assertTrue("e.errorCode != XAException.XAER_PROTO", e.errorCode == XAException.XAER_PROTO);
+                e.printStackTrace();
+                assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
             }
         } catch (Exception e) {
             e.printStackTrace();

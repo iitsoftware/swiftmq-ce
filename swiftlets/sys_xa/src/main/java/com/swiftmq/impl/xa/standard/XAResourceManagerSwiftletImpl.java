@@ -221,7 +221,14 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
     }
 
     public XAContext createXAContext(XidImpl xid) {
-        return contexts.putIfAbsent(xid, new XALiveContextImpl(ctx, xid, false));
+        return contexts.compute(xid, (key, existingValue) -> {
+            if (existingValue != null) {
+                // Context already exists, return null
+                return null;
+            }
+            // Create and return a new XALiveContextImpl
+            return new XALiveContextImpl(ctx, xid, false);
+        });
     }
 
     public XAContext getXAContext(XidImpl xid) {

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class XALiveContextImpl extends XAContextImpl {
     final AtomicBoolean prepared = new AtomicBoolean(false);
@@ -43,6 +44,7 @@ public class XALiveContextImpl extends XAContextImpl {
     final AtomicInteger nReg = new AtomicInteger();
     final AtomicBoolean registeredUsageList = new AtomicBoolean(false);
     long creationTime = 0;
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public XALiveContextImpl(SwiftletContext ctx, XidImpl xid, boolean prepared) {
         super(ctx, xid);
@@ -59,21 +61,27 @@ public class XALiveContextImpl extends XAContextImpl {
     }
 
     public int register(String description) throws XAContextException {
-        if (prepared.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in prepared state");
-        if (rollbackOnly.get())
-            throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction is marked as rollback-only");
-        if (wasTimeout.get())
-            throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
-        if (rolledBack.get())
-            throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction was rolled back from another thread");
-        if (closed.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
-        nReg.getAndIncrement();
-        int id = registrations.add(description);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/register, id=" + id + ", description: " + description);
-        return id;
+        lock.writeLock().lock();
+        try {
+            if (prepared.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in prepared state");
+            if (rollbackOnly.get())
+                throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction is marked as rollback-only");
+            if (wasTimeout.get())
+                throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
+            if (rolledBack.get())
+                throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction was rolled back from another thread");
+            if (closed.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
+            nReg.getAndIncrement();
+            int id = registrations.add(description);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/register, id=" + id + ", description: " + description);
+            return id;
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     void _addTransaction(AbstractQueue queue, Object transactionId) {
@@ -83,138 +91,168 @@ public class XALiveContextImpl extends XAContextImpl {
     }
 
     public void addTransaction(int id, String queueName, QueueTransaction queueTransaction) throws XAContextException {
-        if (prepared.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in prepared state");
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/addTransaction, id=" + id + ", queue=" + queueName + ", queueTransaction: " + queueTransaction);
-        transactions.add(queueTransaction);
+        lock.writeLock().lock();
+        try {
+            if (prepared.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in prepared state");
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/addTransaction, id=" + id + ", queue=" + queueName + ", queueTransaction: " + queueTransaction);
+            transactions.add(queueTransaction);
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     public void unregister(int id, boolean rollbackOnly) throws XAContextException {
-        if (registrations.get(id) == null)
-            throw new XAContextException(XAException.XAER_PROTO, "try to unregister an invalid id");
-        nReg.getAndDecrement();
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/unregister, id=" + id + ", description: " + registrations.get(id));
-        registrations.remove(id);
-        this.rollbackOnly.set(rollbackOnly);
-        if (rolledBack.get()) {
-            _rollback(false);
-            transactions.clear();
-            recoveryTransactions.clear();
-            if (wasTimeout.get())
-                throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
-            throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction was rolled back from another thread");
+        lock.writeLock().lock();
+        try {
+            if (registrations.get(id) == null)
+                throw new XAContextException(XAException.XAER_PROTO, "try to unregister an invalid id");
+            nReg.getAndDecrement();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/unregister, id=" + id + ", description: " + registrations.get(id));
+            registrations.remove(id);
+            this.rollbackOnly.set(rollbackOnly);
+            if (rolledBack.get()) {
+                _rollback(false);
+                transactions.clear();
+                recoveryTransactions.clear();
+                if (wasTimeout.get())
+                    throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
+                throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction was rolled back from another thread");
+            }
+            if (closed.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
+        } finally {
+            lock.writeLock().unlock();
         }
-        if (closed.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
+
     }
 
     // Will be called from a Timer
     void registerUsageList() {
-        if (registeredUsageList.get() || closed.get() || !prepared.get())
-            return;
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/registerUsageList...");
-        Entity entity = ctx.preparedUsageList.createEntity();
-        entity.setName(Integer.toString(incCount()));
-        entity.setDynamicObject(xid);
-        entity.createCommands();
+        lock.writeLock().lock();
         try {
-            ctx.preparedUsageList.addEntity(entity);
-            entity.getProperty("xid").setValue(signature);
-        } catch (Exception e) {
+            if (registeredUsageList.get() || closed.get() || !prepared.get())
+                return;
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/registerUsageList...");
+            Entity entity = ctx.preparedUsageList.createEntity();
+            entity.setName(Integer.toString(incCount()));
+            entity.setDynamicObject(xid);
+            entity.createCommands();
+            try {
+                ctx.preparedUsageList.addEntity(entity);
+                entity.getProperty("xid").setValue(signature);
+            } catch (Exception e) {
+            }
+            registeredUsageList.set(true);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/registerUsageList done");
+        } finally {
+            lock.writeLock().unlock();
         }
-        registeredUsageList.set(true);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/registerUsageList done");
+
     }
 
     public void prepare() throws XAContextException {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/prepare...");
-        if (rollbackOnly.get())
-            throw new XAContextException(XAException.XA_RBROLLBACK, "can't prepare XA transaction because it is set to 'rollback-only'");
-        if (wasTimeout.get())
-            throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
-        if (prepared.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is already in prepared state");
-        if (closed.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
-        if (nReg.get() > 0)
-            throw new XAContextException(XAException.XAER_PROTO, "can't prepare XA transaction because there are still " + nReg + " associations with it");
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/prepare...");
+            if (rollbackOnly.get())
+                throw new XAContextException(XAException.XA_RBROLLBACK, "can't prepare XA transaction because it is set to 'rollback-only'");
+            if (wasTimeout.get())
+                throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
+            if (prepared.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is already in prepared state");
+            if (closed.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
+            if (nReg.get() > 0)
+                throw new XAContextException(XAException.XAER_PROTO, "can't prepare XA transaction because there are still " + nReg + " associations with it");
 
-        // Recovery Transactions are already prepared!
-        // Only need to prepare the live tx...
-        for (QueueTransaction transaction : transactions) {
-            QueueTransaction t = transaction;
-            try {
-                t.prepare(xid);
-            } catch (Exception e) {
-                if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
-                    ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "prepare xid=" + signature + ", failed for queue: " + t.getQueueName());
+            // Recovery Transactions are already prepared!
+            // Only need to prepare the live tx...
+            for (QueueTransaction transaction : transactions) {
+                QueueTransaction t = transaction;
+                try {
+                    t.prepare(xid);
+                } catch (Exception e) {
+                    if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
+                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "prepare xid=" + signature + ", failed for queue: " + t.getQueueName());
+                }
             }
+            prepared.set(true);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/prepare done");
+        } finally {
+            lock.writeLock().unlock();
         }
-        prepared.set(true);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/prepare done");
+
     }
 
     public long commit(boolean onePhase) throws XAContextException {
-        long fcDelay = 0;
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/commit onePhase=" + onePhase + " ...");
-        if (wasTimeout.get())
-            throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
-        if (closed.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
-        if (rollbackOnly.get())
-            throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction is marked as rollback-only");
-        for (Object[] recoveryTransaction : recoveryTransactions) {
-            Object[] wrapper = recoveryTransaction;
-            try {
-                ((AbstractQueue) wrapper[0]).commit(wrapper[1], xid);
-                ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), toString() + "commit xid=" + signature);
-            } catch (Exception e) {
-                if (!ctx.queueManager.isTemporaryQueue(((AbstractQueue) wrapper[0]).getQueueName()))
-                    ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (two phase) xid=" + signature + ", failed for queue: " + ((AbstractQueue) wrapper[0]).getQueueName());
-            }
-        }
-        if (onePhase) {
-            if (prepared.get())
-                throw new XAContextException(XAException.XAER_PROTO, "can't use one phase commit, XA transaction is in prepared state");
-            for (QueueTransaction transaction : transactions) {
-                QueueTransaction t = transaction;
+        lock.writeLock().lock();
+        try {
+            long fcDelay = 0;
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/commit onePhase=" + onePhase + " ...");
+            if (wasTimeout.get())
+                throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
+            if (closed.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
+            if (rollbackOnly.get())
+                throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction is marked as rollback-only");
+            for (Object[] recoveryTransaction : recoveryTransactions) {
+                Object[] wrapper = recoveryTransaction;
                 try {
-                    t.commit();
-                    if (t instanceof QueuePushTransaction)
-                        fcDelay = Math.max(fcDelay, ((QueuePushTransaction) t).getFlowControlDelay());
+                    ((AbstractQueue) wrapper[0]).commit(wrapper[1], xid);
+                    ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), toString() + "commit xid=" + signature);
                 } catch (Exception e) {
-                    if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
-                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (one phase) xid=" + signature + ", failed for queue: " + t.getQueueName());
+                    if (!ctx.queueManager.isTemporaryQueue(((AbstractQueue) wrapper[0]).getQueueName()))
+                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (two phase) xid=" + signature + ", failed for queue: " + ((AbstractQueue) wrapper[0]).getQueueName());
                 }
             }
-        } else {
-            if (!prepared.get())
-                throw new XAContextException(XAException.XAER_PROTO, "can't use two phase commit, XA transaction is not in prepared state");
-            for (QueueTransaction transaction : transactions) {
-                QueueTransaction t = transaction;
-                try {
-                    t.commit(xid);
-                    if (t instanceof QueuePushTransaction)
-                        fcDelay = Math.max(fcDelay, ((QueuePushTransaction) t).getFlowControlDelay());
-                } catch (Exception e) {
-                    if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
-                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (two phase) xid=" + signature + ", failed for queue: " + t.getQueueName() + ", exception: " + e);
+            if (onePhase) {
+                if (prepared.get())
+                    throw new XAContextException(XAException.XAER_PROTO, "can't use one phase commit, XA transaction is in prepared state");
+                for (QueueTransaction transaction : transactions) {
+                    QueueTransaction t = transaction;
+                    try {
+                        t.commit();
+                        if (t instanceof QueuePushTransaction)
+                            fcDelay = Math.max(fcDelay, ((QueuePushTransaction) t).getFlowControlDelay());
+                    } catch (Exception e) {
+                        if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
+                            ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (one phase) xid=" + signature + ", failed for queue: " + t.getQueueName());
+                    }
                 }
+            } else {
+                if (!prepared.get())
+                    throw new XAContextException(XAException.XAER_PROTO, "can't use two phase commit, XA transaction is not in prepared state");
+                for (QueueTransaction transaction : transactions) {
+                    QueueTransaction t = transaction;
+                    try {
+                        t.commit(xid);
+                        if (t instanceof QueuePushTransaction)
+                            fcDelay = Math.max(fcDelay, ((QueuePushTransaction) t).getFlowControlDelay());
+                    } catch (Exception e) {
+                        if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
+                            ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (two phase) xid=" + signature + ", failed for queue: " + t.getQueueName() + ", exception: " + e);
+                    }
+                }
+                if (registeredUsageList.get())
+                    removeUsageEntity();
             }
-            if (registeredUsageList.get())
-                removeUsageEntity();
+            closed.set(true);
+            transactions.clear();
+            recoveryTransactions.clear();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/commit onePhase=" + onePhase + " done");
+            return fcDelay;
+        } finally {
+            lock.writeLock().unlock();
         }
-        closed.set(true);
-        transactions.clear();
-        recoveryTransactions.clear();
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/commit onePhase=" + onePhase + " done");
-        return fcDelay;
+
     }
 
     private void _rollback(boolean reportException) {
@@ -243,51 +281,69 @@ public class XALiveContextImpl extends XAContextImpl {
     }
 
     public void rollback() throws XAContextException {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback...");
-        if (wasTimeout.get())
-            throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
-        if (closed.get())
-            throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
-        _rollback(true);
-        if (registeredUsageList.get())
-            removeUsageEntity();
-        closed.set(true);
-        rolledBack.set(true);
-        transactions.clear();
-        recoveryTransactions.clear();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback done");
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback...");
+            if (wasTimeout.get())
+                throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
+            if (closed.get())
+                throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
+            _rollback(true);
+            if (registeredUsageList.get())
+                removeUsageEntity();
+            closed.set(true);
+            rolledBack.set(true);
+            transactions.clear();
+            recoveryTransactions.clear();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback done");
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     boolean timeout(long timeoutTime) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/timeout...");
-        if (xid.isRouting() || prepared.get() || closed.get() || creationTime > timeoutTime)
-            return false;
-        _rollback(false);
-        if (registeredUsageList.get())
-            removeUsageEntity();
-        closed.set(true);
-        rolledBack.set(true);
-        wasTimeout.set(true);
-        transactions.clear();
-        recoveryTransactions.clear();
-        ctx.logSwiftlet.logWarning(ctx.xaSwiftlet.getName(), toString() + "transaction timeout, transaction rolled back!");
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/timeout done");
-        return true;
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/timeout...");
+            if (xid.isRouting() || prepared.get() || closed.get() || creationTime > timeoutTime)
+                return false;
+            _rollback(false);
+            if (registeredUsageList.get())
+                removeUsageEntity();
+            closed.set(true);
+            rolledBack.set(true);
+            wasTimeout.set(true);
+            transactions.clear();
+            recoveryTransactions.clear();
+            ctx.logSwiftlet.logWarning(ctx.xaSwiftlet.getName(), toString() + "transaction timeout, transaction rolled back!");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/timeout done");
+            return true;
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close...");
-        if (closed.get())
-            return;
-        closed.set(true);
-        if (!prepared.get())
-            _rollback(false);
-        if (registeredUsageList.get())
-            removeUsageEntity();
-        closed.set(true);
-        transactions.clear();
-        recoveryTransactions.clear();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close done");
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close...");
+            if (closed.get())
+                return;
+            closed.set(true);
+            if (!prepared.get())
+                _rollback(false);
+            if (registeredUsageList.get())
+                removeUsageEntity();
+            closed.set(true);
+            transactions.clear();
+            recoveryTransactions.clear();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close done");
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     public String toString() {
