@@ -143,10 +143,10 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public void performTimeAction() {
         try {
-            freeProp.setValue(nFree);
+            freeProp.setValue(nFree.get());
             usedProp.setValue(numberPages.get() - nFree.get());
             fileSizeProp.setValue(fileLength / 1024);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
