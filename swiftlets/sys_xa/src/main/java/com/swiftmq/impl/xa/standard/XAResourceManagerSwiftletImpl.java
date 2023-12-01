@@ -30,84 +30,106 @@ import com.swiftmq.swiftlet.xa.XAContextException;
 import com.swiftmq.swiftlet.xa.XAResourceManagerSwiftlet;
 import com.swiftmq.swiftlet.xa.XidFilter;
 
-import java.util.*;
+import javax.transaction.xa.Xid;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet implements TimerListener {
     SwiftletContext ctx = null;
-    Map contexts = new HashMap();
+    Map<XidImpl, XAContext> contexts = new ConcurrentHashMap<>();
     long scanInterval = 0;
     long defaultTxTimeout = 0;
     long txTimeout = 0;
     TxTimer txTimer = new TxTimer();
+    Lock lock = new ReentrantLock();
 
     /* @deprecated these are deprecated methods to ensure backward compatibility with SwiftMQ 4.x */
-    public synchronized void addPreparedTransaction(XidImpl xid, String queueName, QueueTransaction queueTransaction) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "addPreparedTransaction, xid=" + xid + ", queueName=" + queueName + ", queueTransaction=" + queueTransaction + " ...");
-        XAContext xac = (XAContext) contexts.get(xid);
-        if (xac == null) {
-            xac = new XALiveContextImpl(ctx, xid, true);
-            contexts.put(xid, xac);
-        }
+    public void addPreparedTransaction(XidImpl xid, String queueName, QueueTransaction queueTransaction) {
+        lock.lock();
         try {
-            xac.setPrepared(false);
-            int id = xac.register(toString());
-            xac.addTransaction(id, queueName, queueTransaction);
-            xac.unregister(id, false);
-            xac.setPrepared(true);
-        } catch (XAContextException e) {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "addPreparedTransaction, exception: " + e);
-            ctx.logSwiftlet.logError(getName(), "addPreparedTransaction, xid=" + xid + ", exception: " + e);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "addPreparedTransaction, xid=" + xid + ", queueName=" + queueName + ", queueTransaction=" + queueTransaction + " ...");
+            XAContext xac = contexts.get(xid);
+            if (xac == null) {
+                xac = new XALiveContextImpl(ctx, xid, true);
+                contexts.put(xid, xac);
+            }
+            try {
+                xac.setPrepared(false);
+                int id = xac.register(toString());
+                xac.addTransaction(id, queueName, queueTransaction);
+                xac.unregister(id, false);
+                xac.setPrepared(true);
+            } catch (XAContextException e) {
+                if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "addPreparedTransaction, exception: " + e);
+                ctx.logSwiftlet.logError(getName(), "addPreparedTransaction, xid=" + xid + ", exception: " + e);
+            }
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "addPreparedTransaction, xid=" + xid + ", queueName=" + queueName + ", queueTransaction=" + queueTransaction + " done");
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "addPreparedTransaction, xid=" + xid + ", queueName=" + queueName + ", queueTransaction=" + queueTransaction + " done");
+
     }
 
-    public synchronized void commit(XidImpl xid) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, xid=" + xid + " ...");
-        XAContext xac = (XAContext) contexts.get(xid);
-        if (xac != null) {
-            try {
-                xac.commit(false);
-            } catch (XAContextException e) {
-                if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, exception: " + e);
-                ctx.logSwiftlet.logError(getName(), "commit, xid=" + xid + ", exception: " + e);
+    public void commit(XidImpl xid) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, xid=" + xid + " ...");
+            XAContext xac = contexts.get(xid);
+            if (xac != null) {
+                try {
+                    xac.commit(false);
+                } catch (XAContextException e) {
+                    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, exception: " + e);
+                    ctx.logSwiftlet.logError(getName(), "commit, xid=" + xid + ", exception: " + e);
+                }
+                removeXAContext(xid);
+            } else {
+                if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, xid not found: " + xid);
+                ctx.logSwiftlet.logWarning(getName(), "commit, xid not found: " + xid);
             }
-            removeXAContext(xid);
-        } else {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, xid not found: " + xid);
-            ctx.logSwiftlet.logWarning(getName(), "commit, xid not found: " + xid);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, xid=" + xid + " done");
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "commit, xid=" + xid + " done");
+
     }
 
-    public synchronized void rollback(XidImpl xid) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, xid=" + xid + " ...");
-        XAContext xac = (XAContext) contexts.get(xid);
-        if (xac != null) {
-            try {
-                xac.rollback();
-            } catch (XAContextException e) {
-                if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, exception: " + e);
-                ctx.logSwiftlet.logError(getName(), "rollback, xid=" + xid + ", exception: " + e);
+    public void rollback(XidImpl xid) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, xid=" + xid + " ...");
+            XAContext xac = contexts.get(xid);
+            if (xac != null) {
+                try {
+                    xac.rollback();
+                } catch (XAContextException e) {
+                    if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, exception: " + e);
+                    ctx.logSwiftlet.logError(getName(), "rollback, xid=" + xid + ", exception: " + e);
+                }
+                removeXAContext(xid);
+            } else {
+                if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, xid not found: " + xid);
+                ctx.logSwiftlet.logWarning(getName(), "rollback, xid not found: " + xid);
             }
-            removeXAContext(xid);
-        } else {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, xid not found: " + xid);
-            ctx.logSwiftlet.logWarning(getName(), "rollback, xid not found: " + xid);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, xid=" + xid + " done");
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "rollback, xid=" + xid + " done");
+
     }
     /* @deprecated end */
 
     public void performTimeAction() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction ...");
-        Map cloned = null;
-        synchronized (this) {
-            cloned = (Map) ((HashMap) contexts).clone();
-        }
-        for (Iterator iter = cloned.entrySet().iterator(); iter.hasNext(); ) {
-            XAContext xac = (XAContext) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<XidImpl, XAContext> xidXAContextEntry : contexts.entrySet()) {
+            XAContext xac = (XAContext) ((Map.Entry<?, ?>) xidXAContextEntry).getValue();
             if (xac.isPrepared() && xac instanceof XALiveContextImpl) {
                 if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction, register: " + xac);
                 ((XALiveContextImpl) xac).registerUsageList();
@@ -116,43 +138,55 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction done");
     }
 
-    public synchronized void setTransactionTimeout(long timeout) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "setTransactionTimeout: " + timeout);
-        if (txTimeout != timeout) {
-            long to = getTransactionTimeout();
-            if (to > 0)
-                ctx.timerSwiftlet.removeTimerListener(txTimer);
-            txTimeout = timeout;
-            to = getTransactionTimeout();
-            if (to > 0)
-                ctx.timerSwiftlet.addTimerListener(to, txTimer);
+    public void setTransactionTimeout(long timeout) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "setTransactionTimeout: " + timeout);
+            if (txTimeout != timeout) {
+                long to = getTransactionTimeout();
+                if (to > 0)
+                    ctx.timerSwiftlet.removeTimerListener(txTimer);
+                txTimeout = timeout;
+                to = getTransactionTimeout();
+                if (to > 0)
+                    ctx.timerSwiftlet.addTimerListener(to, txTimer);
+            }
+        } finally {
+            lock.unlock();
         }
+
     }
 
-    public synchronized long getTransactionTimeout() {
-        long timeout = txTimeout <= 0 ? defaultTxTimeout : txTimeout;
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "getTransactionTimeout: " + timeout + ", txTimeout=" + txTimeout + ", defaultTxTimeout=" + defaultTxTimeout);
-        return timeout;
+    public long getTransactionTimeout() {
+        lock.lock();
+        try {
+            long timeout = txTimeout <= 0 ? defaultTxTimeout : txTimeout;
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "getTransactionTimeout: " + timeout + ", txTimeout=" + txTimeout + ", defaultTxTimeout=" + defaultTxTimeout);
+            return timeout;
+        } finally {
+            lock.unlock();
+        }
+
     }
 
-    public synchronized boolean isHeuristicCompleted(XidImpl xid) {
+    public boolean isHeuristicCompleted(XidImpl xid) {
         return ctx.heuristicHandler.hasHeuristic(xid);
     }
 
-    public synchronized boolean isHeuristicCommit(XidImpl xid) {
+    public boolean isHeuristicCommit(XidImpl xid) {
         return ctx.heuristicHandler.wasCommit(xid);
     }
 
-    public synchronized boolean isHeuristicRollback(XidImpl xid) {
+    public boolean isHeuristicRollback(XidImpl xid) {
         return !ctx.heuristicHandler.wasCommit(xid);
     }
 
-    public synchronized List getHeuristicCompletedXids() {
+    public List getHeuristicCompletedXids() {
         return ctx.heuristicHandler.getXids();
     }
 
-    public synchronized void forget(XidImpl xid) {
+    public void forget(XidImpl xid) {
         try {
             ctx.heuristicHandler.removeHeuristic(xid);
         } catch (Exception e) {
@@ -161,50 +195,41 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
         }
     }
 
-    public synchronized boolean hasPreparedXid(XidImpl xid) {
-        XAContext xac = (XAContext) contexts.get(xid);
+    public boolean hasPreparedXid(XidImpl xid) {
+        XAContext xac = contexts.get(xid);
         return xac != null && xac.isPrepared();
     }
 
-    public synchronized List getPreparedXids() {
-        if (contexts.size() == 0)
-            return null;
-        List list = new ArrayList();
-        for (Iterator iter = contexts.entrySet().iterator(); iter.hasNext(); ) {
-            XAContext xac = (XAContext) ((Map.Entry) iter.next()).getValue();
+    public List<Xid> getPreparedXids() {
+        List<Xid> list = new ArrayList();
+        for (Map.Entry<XidImpl, XAContext> xidXAContextEntry : contexts.entrySet()) {
+            XAContext xac = (XAContext) ((Map.Entry) xidXAContextEntry).getValue();
             if (xac.isPrepared())
                 list.add(xac.getXid());
         }
         return list.size() == 0 ? null : list;
     }
 
-    public synchronized List getPreparedXids(XidFilter filter) {
-        if (contexts.size() == 0)
-            return null;
-        List list = new ArrayList();
-        for (Iterator iter = contexts.entrySet().iterator(); iter.hasNext(); ) {
-            XAContext xac = (XAContext) ((Map.Entry) iter.next()).getValue();
+    public List<Xid> getPreparedXids(XidFilter filter) {
+        List<Xid> list = new ArrayList();
+        for (Map.Entry<XidImpl, XAContext> xidXAContextEntry : contexts.entrySet()) {
+            XAContext xac = (XAContext) ((Map.Entry) xidXAContextEntry).getValue();
             if (xac.isPrepared() && filter.isMatch(xac.getXid()))
                 list.add(xac.getXid());
         }
         return list.size() == 0 ? null : list;
     }
 
-    public synchronized XAContext createXAContext(XidImpl xid) {
-        XAContext xac = (XAContext) contexts.get(xid);
-        if (xac != null)
-            return null;
-        xac = new XALiveContextImpl(ctx, xid, false);
-        contexts.put(xid, xac);
-        return xac;
+    public XAContext createXAContext(XidImpl xid) {
+        return contexts.putIfAbsent(xid, new XALiveContextImpl(ctx, xid, false));
     }
 
-    public synchronized XAContext getXAContext(XidImpl xid) {
-        return (XAContext) contexts.get(xid);
+    public XAContext getXAContext(XidImpl xid) {
+        return contexts.get(xid);
     }
 
-    public synchronized void removeXAContext(XidImpl xid) {
-        XAContext xac = (XAContext) contexts.remove(xid);
+    public void removeXAContext(XidImpl xid) {
+        XAContext xac = contexts.remove(xid);
         if (xac != null)
             xac.close();
     }
@@ -226,8 +251,8 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "buildPreparedTransactions, recordList: " + prepareRecordList);
         if (prepareRecordList != null && prepareRecordList.size() > 0) {
-            for (int i = 0; i < prepareRecordList.size(); i++) {
-                PrepareLogRecord record = (PrepareLogRecord) prepareRecordList.get(i);
+            for (Object o : prepareRecordList) {
+                PrepareLogRecord record = (PrepareLogRecord) o;
                 AbstractQueue queue = getPreparedQueue(record.getQueueName());
                 if (queue != null) {
                     XidImpl xid = record.getGlobalTxId();
@@ -310,7 +335,7 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
                 Entity e = ctx.preparedUsageList.getEntity(cmd[1]);
                 if (e == null)
                     return new String[]{TreeCommands.ERROR, "Unknown Entity: " + cmd[1]};
-                XAContext xac = (XAContext) contexts.get(e.getDynamicObject());
+                XAContext xac = contexts.get(e.getDynamicObject());
                 XidImpl xid = xac.getXid();
                 try {
                     xac.commit(false);
@@ -332,7 +357,7 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
                 Entity e = ctx.preparedUsageList.getEntity(cmd[1]);
                 if (e == null)
                     return new String[]{TreeCommands.ERROR, "Unknown Entity: " + cmd[1]};
-                XAContext xac = (XAContext) contexts.get(e.getDynamicObject());
+                XAContext xac = contexts.get(e.getDynamicObject());
                 XidImpl xid = xac.getXid();
                 try {
                     xac.rollback();
@@ -372,12 +397,8 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
         public void performTimeAction() {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "TxTimer/performTimeAction ...");
             long timeoutTime = System.currentTimeMillis() - getTransactionTimeout();
-            Map cloned = null;
-            synchronized (XAResourceManagerSwiftletImpl.this) {
-                cloned = (Map) ((HashMap) contexts).clone();
-            }
-            for (Iterator iter = cloned.entrySet().iterator(); iter.hasNext(); ) {
-                XAContext xac = (XAContext) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<XidImpl, XAContext> xidXAContextEntry : contexts.entrySet()) {
+                XAContext xac = (XAContext) ((Map.Entry) xidXAContextEntry).getValue();
                 if (xac instanceof XALiveContextImpl) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace(getName(), "TxTimer/performTimeAction, checking: " + xac);

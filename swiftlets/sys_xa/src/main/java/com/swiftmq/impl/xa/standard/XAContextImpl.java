@@ -24,13 +24,15 @@ import com.swiftmq.swiftlet.xa.XAContext;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class XAContextImpl implements XAContext {
-    static int cnt = 1;
+    static final AtomicInteger cnt = new AtomicInteger(1);
     SwiftletContext ctx = null;
     XidImpl xid = null;
     String signature = null;
-    boolean recovered = false;
+    final AtomicBoolean recovered = new AtomicBoolean(false);
 
     public XAContextImpl(SwiftletContext ctx, XidImpl xid) {
         this.ctx = ctx;
@@ -38,13 +40,14 @@ public abstract class XAContextImpl implements XAContext {
         signature = xid.toString();
     }
 
-    protected static synchronized int incCount() {
-        int i = cnt;
-        if (cnt == Integer.MAX_VALUE)
-            cnt = 1;
-        else
-            cnt++;
-        return i;
+    protected static int incCount() {
+        while (true) {
+            int current = cnt.get();
+            int next = (current == Integer.MAX_VALUE) ? 1 : current + 1;
+            if (cnt.compareAndSet(current, next)) {
+                return current;
+            }
+        }
     }
 
     private Entity lookupEntity(String signature) {
@@ -67,11 +70,11 @@ public abstract class XAContextImpl implements XAContext {
     }
 
     public void setRecovered(boolean recovered) {
-        this.recovered = recovered;
+        this.recovered.set(recovered);
     }
 
     public boolean isRecovered() {
-        return recovered;
+        return recovered.get();
     }
 
     public XidImpl getXid() {

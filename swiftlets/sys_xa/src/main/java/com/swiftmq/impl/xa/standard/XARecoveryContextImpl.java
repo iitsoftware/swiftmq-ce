@@ -26,14 +26,14 @@ import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.swiftlet.xa.XAContextException;
 
 import javax.transaction.xa.XAException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class XARecoveryContextImpl extends XAContextImpl {
-    List transactions = new ArrayList();
-    boolean closed = false;
+    List<Object[]> transactions = new CopyOnWriteArrayList<>();
+    final AtomicBoolean closed = new AtomicBoolean(false);
     // This context is necessary for HA recovery
     XALiveContextImpl liveContext = null;
 
@@ -58,7 +58,7 @@ public class XARecoveryContextImpl extends XAContextImpl {
         liveContext.unregister(id, rollbackOnly);
     }
 
-    synchronized void _addTransaction(AbstractQueue queue, Object transactionId) {
+    void _addTransaction(AbstractQueue queue, Object transactionId) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/_addTransaction, queue=" + queue + ", transactionId: " + transactionId);
         try {
@@ -79,8 +79,8 @@ public class XARecoveryContextImpl extends XAContextImpl {
                 queues.addEntity(queueEntity);
             } else {
                 Map entities = ctx.preparedUsageList.getEntities();
-                for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity xidEntity = (Entity) ((Map.Entry) iter.next()).getValue();
+                for (Object o : entities.entrySet()) {
+                    Entity xidEntity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                     EntityList queueList = (EntityList) xidEntity.getEntity("queues");
                     if ((xidEntity.getProperty("xid").getValue()).equals(signature) && queueList.getEntity(queue.getQueueName()) == null) {
                         Entity queueEntity = queueList.createEntity();
@@ -91,7 +91,7 @@ public class XARecoveryContextImpl extends XAContextImpl {
                     }
                 }
             }
-        } catch (EntityAddException e) {
+        } catch (EntityAddException ignored) {
         }
         transactions.add(new Object[]{queue, transactionId});
     }
@@ -108,15 +108,15 @@ public class XARecoveryContextImpl extends XAContextImpl {
         liveContext.prepare();
     }
 
-    public synchronized long commit(boolean onePhase) throws XAContextException {
+    public long commit(boolean onePhase) throws XAContextException {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/commit onePhase=" + onePhase + " ...");
-        if (closed)
+        if (closed.get())
             throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
         if (onePhase)
             throw new XAContextException(XAException.XAER_PROTO, "Operation is not supported on a XARecoveryContextImpl");
-        for (int i = 0; i < transactions.size(); i++) {
-            Object[] wrapper = (Object[]) transactions.get(i);
+        for (Object[] transaction : transactions) {
+            Object[] wrapper = transaction;
             try {
                 ((AbstractQueue) wrapper[0]).commit(wrapper[1], xid);
                 ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), toString() + "commit xid=" + signature);
@@ -134,12 +134,12 @@ public class XARecoveryContextImpl extends XAContextImpl {
         return 0;
     }
 
-    public synchronized void rollback() throws XAContextException {
+    public void rollback() throws XAContextException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback...");
-        if (closed)
+        if (closed.get())
             throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in closed state");
-        for (int i = 0; i < transactions.size(); i++) {
-            Object[] wrapper = (Object[]) transactions.get(i);
+        for (Object[] transaction : transactions) {
+            Object[] wrapper = (Object[]) transaction;
             try {
                 ((AbstractQueue) wrapper[0]).rollback(wrapper[1], xid, true);
                 ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), toString() + "rollback xid=" + signature);
@@ -155,13 +155,13 @@ public class XARecoveryContextImpl extends XAContextImpl {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback done");
     }
 
-    public synchronized void close() {
+    public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close...");
-        if (closed)
+        if (closed.get())
             return;
         if (liveContext != null)
             liveContext.close();
-        closed = true;
+        closed.set(true);
         transactions.clear();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close done");
     }
