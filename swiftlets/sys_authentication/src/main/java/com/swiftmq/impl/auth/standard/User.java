@@ -21,16 +21,17 @@ import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.auth.ResourceLimitGroup;
 import com.swiftmq.tools.sql.LikeComparator;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class User {
     String name;
     String password;
     Group group;
     ResourceLimitGroup rlgroup;
-    List hostList = new ArrayList();
-    int numberConnections = 0;
+    List<String> hostList = new CopyOnWriteArrayList<>();
+    final AtomicInteger numberConnections = new AtomicInteger();
 
     protected User(String name, String password, Group group, ResourceLimitGroup rlgroup) {
         this.name = name;
@@ -43,58 +44,57 @@ public class User {
         return (name);
     }
 
-    public synchronized String getPassword() {
+    public String getPassword() {
         return (password);
     }
 
-    public synchronized void setPassword(String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
-    public synchronized Group getGroup() {
+    public Group getGroup() {
         return (group);
     }
 
-    public synchronized void setGroup(Group group) {
+    public void setGroup(Group group) {
         this.group = group;
     }
 
-    public synchronized ResourceLimitGroup getResourceLimitGroup() {
+    public ResourceLimitGroup getResourceLimitGroup() {
         return (rlgroup);
     }
 
-    public synchronized void setResourceLimitGroup(ResourceLimitGroup rlgroup) {
+    public void setResourceLimitGroup(ResourceLimitGroup rlgroup) {
         this.rlgroup = rlgroup;
     }
 
-    public synchronized int getNumberConnections() {
-        return numberConnections;
+    public int getNumberConnections() {
+        return numberConnections.get();
     }
 
-    public synchronized void incNumberConnections() throws ResourceLimitException {
-        rlgroup.verifyConnectionLimit(numberConnections);
-        numberConnections++;
+    public void incNumberConnections() throws ResourceLimitException {
+        rlgroup.verifyConnectionLimit(numberConnections.get());
+        numberConnections.getAndIncrement();
     }
 
-    public synchronized void decNumberConnections() {
-        if (numberConnections > 0)
-            numberConnections--;
+    public void decNumberConnections() {
+        if (numberConnections.get() > 0)
+            numberConnections.getAndDecrement();
     }
 
-    public synchronized void addHost(String predicate) {
+    public void addHost(String predicate) {
         hostList.add(predicate);
     }
 
-    public synchronized void removeHost(String predicate) {
+    public void removeHost(String predicate) {
         hostList.remove(predicate);
     }
 
-    public synchronized boolean isHostAllowed(String hostname) {
+    public boolean isHostAllowed(String hostname) {
         if (hostList.size() == 0)
             return true;
-        for (int i = 0; i < hostList.size(); i++) {
-            String predicate = (String) hostList.get(i);
-            if (LikeComparator.compare(hostname, predicate, '\\'))
+        for (String s : hostList) {
+            if (LikeComparator.compare(hostname, s, '\\'))
                 return true;
         }
         return false;
@@ -111,7 +111,7 @@ public class User {
         s.append(", rlgroup=");
         s.append(rlgroup);
         s.append(", numberConnections=");
-        s.append(numberConnections);
+        s.append(numberConnections.get());
         s.append(", hostList=");
         s.append(hostList);
         s.append("]");

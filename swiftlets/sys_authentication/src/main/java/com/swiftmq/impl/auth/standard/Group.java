@@ -17,13 +17,13 @@
 
 package com.swiftmq.impl.auth.standard;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Group {
     String name;
-    Map queueGrants = new HashMap();
-    Map topicGrants = new HashMap();
+    Map<String, QueueResourceGrant> queueGrants = new ConcurrentHashMap<>();
+    Map<String, TopicResourceGrant> topicGrants = new ConcurrentHashMap<>();
 
     protected Group(String name) {
         this.name = name;
@@ -33,24 +33,24 @@ public class Group {
         return (name);
     }
 
-    synchronized void addQueueResourceGrant(QueueResourceGrant queueResourceGrant) {
+    void addQueueResourceGrant(QueueResourceGrant queueResourceGrant) {
         queueGrants.put(queueResourceGrant.getResourceName(), queueResourceGrant);
     }
 
-    synchronized QueueResourceGrant getQueueResourceGrant(String queueName) {
-        return (QueueResourceGrant) queueGrants.get(queueName);
+    QueueResourceGrant getQueueResourceGrant(String queueName) {
+        return queueGrants.get(queueName);
     }
 
-    synchronized void removeQueueResourceGrant(String queueName) {
+    void removeQueueResourceGrant(String queueName) {
         queueGrants.remove(queueName);
     }
 
-    synchronized void addTopicResourceGrant(TopicResourceGrant topicResourceGrant) {
+    void addTopicResourceGrant(TopicResourceGrant topicResourceGrant) {
         topicGrants.put(topicResourceGrant.getResourceName(), topicResourceGrant);
     }
 
-    synchronized TopicResourceGrant getTopicResourceGrant(String topicName) {
-        return (TopicResourceGrant) topicGrants.get(topicName);
+    TopicResourceGrant getTopicResourceGrant(String topicName) {
+        return topicGrants.get(topicName);
     }
 
     synchronized void removeTopicResourceGrant(String topicName) {
