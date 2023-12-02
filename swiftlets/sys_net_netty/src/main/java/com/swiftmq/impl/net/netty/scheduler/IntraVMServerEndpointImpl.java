@@ -21,11 +21,9 @@ import com.swiftmq.impl.net.netty.CountableBufferedInputStream;
 import com.swiftmq.impl.net.netty.CountableWrappedOutputStream;
 import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.net.client.IntraVMConnection;
-import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.log.LogSwiftlet;
-import com.swiftmq.swiftlet.net.*;
-import com.swiftmq.swiftlet.trace.TraceSpace;
-import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.swiftlet.net.Connection;
+import com.swiftmq.swiftlet.net.InboundHandler;
+import com.swiftmq.swiftlet.net.IntraVMServerEndpoint;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
@@ -105,7 +103,7 @@ public class IntraVMServerEndpointImpl extends Connection
         return out;
     }
 
-    public synchronized void close() {
+    public void close() {
         if (isClosed())
             return;
         super.close();

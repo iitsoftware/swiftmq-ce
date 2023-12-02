@@ -30,6 +30,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter implements ChunkListener, TimerListener {
     SwiftletContext ctx;
     Connection connection;
@@ -37,9 +39,9 @@ public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter 
     InboundHandler inboundHandler = null;
     DataByteArrayInputStream bais = null;
     Countable countableInput;
-    boolean closed = false;
-    volatile boolean zombi = true;
- 
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean zombi = new AtomicBoolean(true);
+
     public NettyInboundConnectionHandler(SwiftletContext ctx, Connection connection) {
         this.ctx = ctx;
         this.connection = connection;
@@ -48,21 +50,21 @@ public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter 
         inputHandler.setChunkListener(this);
         inputHandler.createInputBuffer(connection.getMetaData().getInputBufferSize(), connection.getMetaData().getInputExtendSize());
         inboundHandler = connection.getInboundHandler();
-        countableInput = (Countable)connection.getInputStream();
+        countableInput = (Countable) connection.getInputStream();
         long zombiConnectionTimeout = ctx.networkSwiftlet.getZombiConnectionTimeout();
         if (zombiConnectionTimeout > 0)
             ctx.timerSwiftlet.addInstantTimerListener(zombiConnectionTimeout, this);
     }
 
     public boolean isClosed() {
-        return closed;
+        return closed.get();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext context) throws Exception {
         ctx.logSwiftlet.logInformation("sys$net", toString()+"/connection inactive, closing");
         ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
-        closed = true;
+        closed.set(true);
 
     }
 
@@ -97,11 +99,12 @@ public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter 
     public void performTimeAction() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$net", toString() + "/perform time action: checking for zombi connections...");
-        if (zombi) {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/zombi connection detected, close!");
+        if (zombi.get()) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$net", toString() + "/zombi connection detected, close!");
             ctx.logSwiftlet.logWarning("sys$net", toString() + "/zombi connection detected, close! Please check for possible denial-of-service attack!");
             ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
-            closed = true;
+            closed.set(true);
         }
     }
 
@@ -113,7 +116,7 @@ public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter 
             if (maxChunkSize != -1 && len > maxChunkSize)
                 throw new Exception("Input message size (" + len + ") exceeds max-chunk-size (" + ctx.maxChunkSize.get() + ")");
             if (bais == null) {
-                zombi = false;
+                zombi.set(false);
                 bais = new DataByteArrayInputStream();
             }
             bais.setBuffer(b, offset, len);
@@ -121,9 +124,9 @@ public class NettyInboundConnectionHandler extends ChannelInboundHandlerAdapter 
         } catch (Exception e) {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/Exception, EXITING: " + e);
             ctx.logSwiftlet.logInformation(toString(), "Exception, EXITING: " + e);
-            if (!closed) {
+            if (!closed.get()) {
                 ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
-                closed = true;
+                closed.set(true);
             }
         }
         

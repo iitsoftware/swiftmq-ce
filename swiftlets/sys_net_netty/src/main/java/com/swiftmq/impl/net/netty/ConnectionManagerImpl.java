@@ -27,15 +27,20 @@ import com.swiftmq.swiftlet.threadpool.AsyncTask;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ConnectionManagerImpl implements ConnectionManager {
     private static DecimalFormat formatter = new DecimalFormat("###,##0.00", new DecimalFormatSymbols(Locale.US));
 
     SwiftletContext ctx;
-    Set<Connection> connections = new HashSet<>();
+    Set<Connection> connections = ConcurrentHashMap.newKeySet();
 
-    long lastCollectTime = -1;
+    final AtomicLong lastCollectTime = new AtomicLong(-1);
 
     protected ConnectionManagerImpl(SwiftletContext ctx) {
         this.ctx = ctx;
@@ -50,11 +55,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/created");
     }
 
-    public synchronized int getNumberConnections() {
+    public int getNumberConnections() {
         return connections.size();
     }
 
-    public synchronized void addConnection(Connection connection) {
+    public void addConnection(Connection connection) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/addConnection: " + connection);
         Entity ce = ctx.usageList.createEntity();
         ce.setName(connection.toString());
@@ -71,22 +76,22 @@ public class ConnectionManagerImpl implements ConnectionManager {
         connections.add(connection);
     }
 
-    public synchronized void removeConnection(Connection connection) {
+    public void removeConnection(Connection connection) {
         // possible during shutdown/reboot
         if (connection == null)
             return;
         if (!(connection.isMarkedForClose() || connection.isClosed())) {
             connection.setMarkedForClose();
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/removeConnection: " + connection);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$net", toString() + "/removeConnection: " + connection);
             ctx.threadpoolSwiftlet.dispatchTask(new Disconnector(connection));
         }
     }
 
-    public synchronized void removeAllConnections() {
+    public void removeAllConnections() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/removeAllConnections");
-        Set cloned = (Set)((HashSet) connections).clone();
-        for (Object aCloned : cloned) {
-            deleteConnection((Connection) aCloned);
+        for (Connection c : connections) {
+            deleteConnection(c);
         }
         connections.clear();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/removeAllConnections, done.");
@@ -94,9 +99,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     private void deleteConnection(Connection connection) {
         ctx.usageList.removeDynamicEntity(connection);
-        synchronized (this) {
             connections.remove(connection);
-        }
         if (!connection.isClosed()) {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/deleteConnection: " + connection);
             connection.close();
@@ -106,12 +109,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     public void clearLastCollectTime() {
-        lastCollectTime = -1;
+        lastCollectTime.set(-1);
     }
 
-    public synchronized void collectByteCounts() {
+    public void collectByteCounts() {
         long actTime = System.currentTimeMillis();
-        double deltas = (actTime - lastCollectTime) / 1000.0;
+        long lastTime = lastCollectTime.getAndSet(actTime);
+        double deltas = (actTime - lastTime) / 1000.0;
         for (Object o : ctx.usageList.getEntities().entrySet()) {
             Entity entity = (Entity) ((Map.Entry) o).getValue();
             Property input = entity.getProperty("throughput-input");
@@ -120,10 +124,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
             if (connection != null) {
                 Countable in = (Countable) connection.getInputStream();
                 Countable out = (Countable) connection.getOutputStream();
-                if (lastCollectTime != -1) {
+                if (lastTime != -1) {
                     try {
-                        input.setValue(formatter.format(new Double(((double) in.getByteCount() / 1024.0) / deltas)));
-                        output.setValue(formatter.format(new Double(((double) out.getByteCount() / 1024.0) / deltas)));
+                        input.setValue(formatter.format(((double) in.getByteCount() / 1024.0) / deltas));
+                        output.setValue(formatter.format(((double) out.getByteCount() / 1024.0) / deltas));
                     } catch (Exception ignored) {
                     }
                 } else {
@@ -137,7 +141,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
                 out.resetByteCount();
             }
         }
-        lastCollectTime = actTime;
     }
 
     public String toString() {
