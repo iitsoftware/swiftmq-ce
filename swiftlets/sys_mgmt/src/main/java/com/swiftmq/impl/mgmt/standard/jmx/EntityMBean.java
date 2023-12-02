@@ -23,14 +23,15 @@ import com.swiftmq.util.SwiftUtilities;
 
 import javax.management.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EntityMBean implements DynamicMBean, EntityWatchListener {
     SwiftletContext ctx = null;
     Entity entity = null;
     MBeanInfo info = null;
     ObjectName objectName = null;
-    Map delegatedCmds = new HashMap();
-    Map children = new HashMap();
+    Map<String, Command> delegatedCmds = new HashMap<>();
+    Map<com.swiftmq.tools.dump.Dumpable, EntityMBean> children = new ConcurrentHashMap<>();
 
     public EntityMBean(SwiftletContext ctx, Entity entity) {
         this.ctx = ctx;
@@ -47,11 +48,9 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
     private void createChildren() {
         Map entities = entity.getEntities();
         if (entities != null && entities.size() > 0) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
-                synchronized (children) {
-                    children.put(e, new EntityMBean(ctx, e));
-                }
+            for (Object o : entities.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
+                children.put(e, new EntityMBean(ctx, e));
             }
         }
     }
@@ -62,8 +61,8 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
         List list = cr.getCommands();
         if (list == null)
             return null;
-        for (int i = 0; i < list.size(); i++) {
-            Command c = (Command) list.get(i);
+        for (Object o : list) {
+            Command c = (Command) o;
             if (c.getName().equals(name))
                 return c;
         }
@@ -71,26 +70,26 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
     }
 
     private MBeanAttributeInfo[] createAttributeInfo() {
-        List list = new ArrayList();
+        List<MBeanAttributeInfo> list = new ArrayList<MBeanAttributeInfo>();
         Map props = entity.getProperties();
         if (props != null && props.size() > 0) {
-            for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
-                Property property = (Property) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry o : (Iterable<Map.Entry>) props.entrySet()) {
+                Property property = (Property) ((Map.Entry<?, ?>) o).getValue();
                 list.add(new MBeanAttributeInfo(property.getName(), property.getType().getName(), property.getDisplayName(), true, !property.isReadOnly(), false));
             }
         }
 
-        return (MBeanAttributeInfo[]) list.toArray(new MBeanAttributeInfo[list.size()]);
+        return list.toArray(new MBeanAttributeInfo[list.size()]);
     }
 
     private MBeanOperationInfo[] createEntityOperationInfo() {
-        ArrayList list = new ArrayList();
+        List<MBeanOperationInfo> list = new ArrayList<MBeanOperationInfo>();
         CommandRegistry cmdReg = entity.getCommandRegistry();
         if (cmdReg != null) {
             List cmdList = cmdReg.getCommands();
             if (cmdList != null) {
-                for (int i = 0; i < cmdList.size(); i++) {
-                    Command cmd = (Command) cmdList.get(i);
+                for (Object o : cmdList) {
+                    Command cmd = (Command) o;
                     if (cmd.isEnabled() && cmd.isGuiEnabled() && !cmd.isGuiForChild() && !cmd.getName().equals("new") && !cmd.getName().equals("view")) {
                         list.add(new MBeanOperationInfo(cmd.getName(), cmd.getDescription(), null, "java.lang.String[]", MBeanOperationInfo.ACTION));
                     }
@@ -102,8 +101,8 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
             if (cr != null) {
                 List al = cr.getCommands();
                 if (al != null) {
-                    for (int i = 0; i < al.size(); i++) {
-                        Command c = (Command) al.get(i);
+                    for (Object o : al) {
+                        Command c = (Command) o;
                         if (c.isEnabled() && (c.isGuiForChild() && !c.getName().equals("new")) || c.getName().equals("remove")) {
                             delegatedCmds.put(c.getName(), c);
                             if (c.getName().equals("view")) {
@@ -123,7 +122,7 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
                 }
             }
         }
-        return (MBeanOperationInfo[]) list.toArray(new MBeanOperationInfo[list.size()]);
+        return list.toArray(new MBeanOperationInfo[0]);
     }
 
     private MBeanOperationInfo[] createEntityListOperationInfo() {
@@ -136,8 +135,8 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
                 parInfos = new MBeanParameterInfo[props.size() + 1];
                 parInfos[0] = new MBeanParameterInfo("name", "java.lang.String", "Name of this new Entity");
                 int i = 1;
-                for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
-                    Property prop = (Property) ((Map.Entry) iter.next()).getValue();
+                for (Map.Entry o : (Iterable<Map.Entry>) props.entrySet()) {
+                    Property prop = (Property) ((Map.Entry<?, ?>) o).getValue();
                     parInfos[i++] = new MBeanParameterInfo(prop.getName(), prop.getType().getName(), prop.getDescription());
                 }
             } else {
@@ -149,12 +148,10 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
         } else
             infos = new MBeanOperationInfo[0];
         MBeanOperationInfo[] info2 = createEntityOperationInfo();
-        if (info2 != null) {
-            MBeanOperationInfo[] info3 = new MBeanOperationInfo[infos.length + info2.length];
-            System.arraycopy(infos, 0, info3, 0, infos.length);
-            System.arraycopy(info2, 0, info3, infos.length, info2.length);
-            infos = info3;
-        }
+        MBeanOperationInfo[] info3 = new MBeanOperationInfo[infos.length + info2.length];
+        System.arraycopy(infos, 0, info3, 0, infos.length);
+        System.arraycopy(info2, 0, info3, infos.length, info2.length);
+        infos = info3;
         return infos;
     }
 
@@ -194,8 +191,8 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
 
     public AttributeList getAttributes(String[] attributes) {
         AttributeList list = new AttributeList();
-        for (int i = 0; i < attributes.length; i++) {
-            Property property = entity.getProperty(attributes[i]);
+        for (String attribute : attributes) {
+            Property property = entity.getProperty(attribute);
             if (property != null)
                 list.add(new Attribute(property.getName(), property.getValue()));
         }
@@ -204,8 +201,8 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
 
     public AttributeList setAttributes(AttributeList attributes) {
         AttributeList list = new AttributeList();
-        for (int i = 0; i < attributes.size(); i++) {
-            Attribute a = (Attribute) attributes.get(i);
+        for (Object attribute : attributes) {
+            Attribute a = (Attribute) attribute;
             Property property = entity.getProperty(a.getName());
             if (property != null) {
                 list.add(a);
@@ -220,89 +217,92 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
     }
 
     public Object invoke(String actionName, Object params[], String signature[]) throws MBeanException, ReflectionException {
-        if (actionName.equals("remove")) {
-            String[] cmd = new String[3];
-            cmd[0] = "remove";
-            cmd[1] = entity.getName();
-            cmd[2] = "0";
-            if (params[0] != null)
-                cmd[2] = params[0].toString();
-            String[] res = entity.getParent().getCommandRegistry().executeCommand(null, cmd);
-            if (res == null)
-                return new String[]{"Operation successful."};
-            if (res[0].equals(TreeCommands.ERROR))
-                throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
-            return SwiftUtilities.cutFirst(res);
-        } else if (actionName.equals("purge")) {
-            String[] cmd = new String[3];
-            cmd[0] = "remove";
-            cmd[1] = entity.getName();
-            cmd[2] = "*";
-            String[] res = entity.getParent().getCommandRegistry().executeCommand(null, cmd);
-            if (res == null)
-                return new String[]{"Operation successful."};
-            if (res[0].equals(TreeCommands.ERROR))
-                throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
-            return SwiftUtilities.cutFirst(res);
-        } else if (actionName.equals("view")) {
-            String[] cmd = new String[4];
-            cmd[0] = "view";
-            cmd[1] = entity.getName();
-            cmd[2] = "0";
-            cmd[3] = "*";
-            if (params[0] != null)
-                cmd[2] = params[0].toString();
-            if (params[1] != null)
-                cmd[3] = params[1].toString();
-            String[] res = entity.getParent().getCommandRegistry().executeCommand(null, cmd);
-            if (res == null)
-                return new String[]{"Queue is empty."};
-            if (res[0].equals(TreeCommands.ERROR))
-                throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
-            return SwiftUtilities.cutFirst(res);
-        } else if (actionName.equals("new")) {
-            try {
-                Entity newEntity = ((EntityList) entity).createEntity();
-                newEntity.setName((String) params[0]);
-                newEntity.createCommands();
-                Map props = newEntity.getProperties();
-                if (props != null) {
-                    int i = 1;
-                    for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
-                        Property prop = (Property) ((Map.Entry) iter.next()).getValue();
-                        Object value = params[i] == null ? prop.getDefaultValue() : params[i];
-                        if (value != null)
-                            prop.setValue(Property.convertToType(prop.getType(), value.toString()));
-                        i++;
-                    }
-                }
-                entity.addEntity(newEntity);
-                return new String[]{"Entity created."};
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new MBeanException(new Exception(e.toString()));
+        switch (actionName) {
+            case "remove": {
+                String[] cmd = new String[3];
+                cmd[0] = "remove";
+                cmd[1] = entity.getName();
+                cmd[2] = "0";
+                if (params[0] != null)
+                    cmd[2] = params[0].toString();
+                String[] res = entity.getParent().getCommandRegistry().executeCommand(null, cmd);
+                if (res == null)
+                    return new String[]{"Operation successful."};
+                if (res[0].equals(TreeCommands.ERROR))
+                    throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
+                return SwiftUtilities.cutFirst(res);
             }
-        } else {
-            String[] res = null;
-            if (delegatedCmds.get(actionName) != null)
-                res = entity.getParent().getCommandRegistry().executeCommand(null, new String[]{actionName, entity.getName()});
-            else
-                res = entity.getCommandRegistry().executeCommand(null, new String[]{actionName});
-            if (res == null)
-                return new String[]{"Operation successful."};
-            ;
-            if (res[0].equals(TreeCommands.ERROR))
-                throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
-            return SwiftUtilities.cutFirst(res);
+            case "purge": {
+                String[] cmd = new String[3];
+                cmd[0] = "remove";
+                cmd[1] = entity.getName();
+                cmd[2] = "*";
+                String[] res = entity.getParent().getCommandRegistry().executeCommand(null, cmd);
+                if (res == null)
+                    return new String[]{"Operation successful."};
+                if (res[0].equals(TreeCommands.ERROR))
+                    throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
+                return SwiftUtilities.cutFirst(res);
+            }
+            case "view": {
+                String[] cmd = new String[4];
+                cmd[0] = "view";
+                cmd[1] = entity.getName();
+                cmd[2] = "0";
+                cmd[3] = "*";
+                if (params[0] != null)
+                    cmd[2] = params[0].toString();
+                if (params[1] != null)
+                    cmd[3] = params[1].toString();
+                String[] res = entity.getParent().getCommandRegistry().executeCommand(null, cmd);
+                if (res == null)
+                    return new String[]{"Queue is empty."};
+                if (res[0].equals(TreeCommands.ERROR))
+                    throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
+                return SwiftUtilities.cutFirst(res);
+            }
+            case "new":
+                try {
+                    Entity newEntity = ((EntityList) entity).createEntity();
+                    newEntity.setName((String) params[0]);
+                    newEntity.createCommands();
+                    Map props = newEntity.getProperties();
+                    if (props != null) {
+                        int i = 1;
+                        for (Iterator<Map.Entry> iter = props.entrySet().iterator(); iter.hasNext(); ) {
+                            Property prop = (Property) ((Map.Entry) iter.next()).getValue();
+                            Object value = params[i] == null ? prop.getDefaultValue() : params[i];
+                            if (value != null)
+                                prop.setValue(Property.convertToType(prop.getType(), value.toString()));
+                            i++;
+                        }
+                    }
+                    entity.addEntity(newEntity);
+                    return new String[]{"Entity created."};
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new MBeanException(new Exception(e.toString()));
+                }
+            default: {
+                String[] res = null;
+                if (delegatedCmds.get(actionName) != null)
+                    res = entity.getParent().getCommandRegistry().executeCommand(null, new String[]{actionName, entity.getName()});
+                else
+                    res = entity.getCommandRegistry().executeCommand(null, new String[]{actionName});
+                if (res == null)
+                    return new String[]{"Operation successful."};
+                ;
+                if (res[0].equals(TreeCommands.ERROR))
+                    throw new MBeanException(new Exception(SwiftUtilities.concat(SwiftUtilities.cutFirst(res), " ")));
+                return SwiftUtilities.cutFirst(res);
+            }
         }
     }
 
     public void entityAdded(Entity parent, Entity newEntity) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/entityAdded, newEntity=" + newEntity.getName() + " ...");
-        synchronized (children) {
-            children.put(newEntity, new EntityMBean(ctx, newEntity));
-        }
+        children.put(newEntity, new EntityMBean(ctx, newEntity));
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/entityAdded, newEntity=" + newEntity.getName() + " done");
     }
@@ -310,11 +310,9 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
     public void entityRemoved(Entity parent, Entity oldEntity) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/entityRemoved, oldEntity=" + oldEntity.getName() + " ...");
-        synchronized (children) {
-            EntityMBean mbean = (EntityMBean) children.remove(oldEntity);
-            if (mbean != null)
-                mbean.close();
-        }
+        EntityMBean mbean = (EntityMBean) children.remove(oldEntity);
+        if (mbean != null)
+            mbean.close();
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/entityRemoved, oldEntity=" + oldEntity.getName() + " done");
     }
@@ -322,12 +320,10 @@ public class EntityMBean implements DynamicMBean, EntityWatchListener {
     public void close() {
         ctx.jmxUtil.unregisterMBean(this);
         entity.removeEntityWatchListener(this);
-        synchronized (children) {
-            for (Iterator iter = children.entrySet().iterator(); iter.hasNext(); ) {
-                ((EntityMBean) ((Map.Entry) iter.next()).getValue()).close();
-            }
-            children.clear();
+        for (Map.Entry<com.swiftmq.tools.dump.Dumpable, EntityMBean> dumpableEntityMBeanEntry : children.entrySet()) {
+            ((EntityMBean) ((Map.Entry<?, ?>) dumpableEntityMBeanEntry).getValue()).close();
         }
+        children.clear();
     }
 
     public String toString() {

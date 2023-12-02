@@ -25,10 +25,12 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 import com.swiftmq.tools.util.IdGenerator;
 import com.swiftmq.util.SwiftUtilities;
 
 import javax.jms.JMSException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MessageInterfaceListener extends MessageProcessor {
     static final String PROP_REPLY_QUEUE = "JMS_SWIFTMQ_MGMT_REPLY_QUEUE";
@@ -40,16 +42,15 @@ public class MessageInterfaceListener extends MessageProcessor {
     String queueName = null;
     QueueReceiver receiver = null;
     QueuePullTransaction pullTransaction = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     MessageEntry entry = null;
     String idPrefix = null;
-    int cnt = 0;
+    AtomicWrappingCounterInteger cnt = new AtomicWrappingCounterInteger(1);
     String routerName = null;
 
     public MessageInterfaceListener(SwiftletContext ctx) throws Exception {
         this.ctx = ctx;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/creating ...");
-        /*${evaltimer5}*/
         myTP = ctx.threadpoolSwiftlet.getPool(TP_LISTENER);
         idPrefix = newId();
         routerName = SwiftletManager.getInstance().getRouterName();
@@ -63,7 +64,7 @@ public class MessageInterfaceListener extends MessageProcessor {
     }
 
     public boolean isValid() {
-        return !closed;
+        return !closed.get();
     }
 
     public void processMessage(MessageEntry entry) {
@@ -92,9 +93,7 @@ public class MessageInterfaceListener extends MessageProcessor {
     }
 
     private String nextId() {
-        if (cnt == Integer.MAX_VALUE)
-            cnt = 0;
-        return idPrefix + (++cnt);
+        return idPrefix + cnt.getAndIncrement();
     }
 
     private QueueImpl getReplyQueue(MessageImpl msg)
@@ -203,7 +202,7 @@ public class MessageInterfaceListener extends MessageProcessor {
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/run, exception during processing: " + e);
             ctx.logSwiftlet.logError(ctx.mgmtSwiftlet.getName(), toString() + "/run, exception during processing: " + e);
         }
-        if (closed)
+        if (closed.get())
             return;
         try {
             pullTransaction = receiver.createTransaction(false);
@@ -216,7 +215,7 @@ public class MessageInterfaceListener extends MessageProcessor {
     }
 
     public void close() {
-        closed = true;
+        closed.set(true);
         try {
             receiver.close();
             ctx.queueManager.deleteQueue(queueName, true);

@@ -23,18 +23,18 @@ import com.swiftmq.mgmt.PropertyChangeException;
 
 public class MessageInterfaceController {
     SwiftletContext ctx = null;
-    boolean enabled = false;
+    volatile boolean enabled = false;
     MessageInterfaceListener listener = null;
 
     public MessageInterfaceController(SwiftletContext ctx) throws Exception {
         this.ctx = ctx;
         Property prop = ctx.root.getEntity("message-interface").getProperty("enabled");
-        enabled = ((Boolean) prop.getValue()).booleanValue();
+        enabled = (Boolean) prop.getValue();
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 try {
-                    enabled = ((Boolean) newValue).booleanValue();
+                    enabled = (Boolean) newValue;
                     if (enabled)
                         createListener();
                     else
