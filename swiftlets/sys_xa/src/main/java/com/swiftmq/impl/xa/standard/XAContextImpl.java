@@ -21,14 +21,13 @@ import com.swiftmq.jms.XidImpl;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityRemoveException;
 import com.swiftmq.swiftlet.xa.XAContext;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class XAContextImpl implements XAContext {
-    static final AtomicInteger cnt = new AtomicInteger(1);
+    static final AtomicWrappingCounterInteger cnt = new AtomicWrappingCounterInteger(1);
     SwiftletContext ctx = null;
     XidImpl xid = null;
     String signature = null;
@@ -41,19 +40,13 @@ public abstract class XAContextImpl implements XAContext {
     }
 
     protected static int incCount() {
-        while (true) {
-            int current = cnt.get();
-            int next = (current == Integer.MAX_VALUE) ? 1 : current + 1;
-            if (cnt.compareAndSet(current, next)) {
-                return current;
-            }
-        }
+        return cnt.getAndIncrement();
     }
 
     private Entity lookupEntity(String signature) {
         Map entities = ctx.preparedUsageList.getEntities();
-        for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-            Entity xidEntity = (Entity) ((Map.Entry) iter.next()).getValue();
+        for (Object o : entities.entrySet()) {
+            Entity xidEntity = (Entity) ((Map.Entry<?, ?>) o).getValue();
             if ((xidEntity.getProperty("xid").getValue()).equals(signature))
                 return xidEntity;
         }

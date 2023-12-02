@@ -26,26 +26,30 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class JNDIReplication implements TimerListener {
     SwiftletContext sctx = null;
     String name;
-    boolean enabled;
-    long keepaliveInterval;
+    final AtomicBoolean enabled = new AtomicBoolean(false);
+    final AtomicLong keepaliveInterval = new AtomicLong();
     String keepaliveName = null;
     Hashtable env = new Hashtable();
     EntityList propList = null;
     String destinationContext = null;
     String namePrefix = null;
-    boolean connected = false;
+    final AtomicBoolean connected = new AtomicBoolean(false);
     Context ctx = null;
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public JNDIReplication(SwiftletContext sctx, String name, boolean enabled, long keepaliveInterval,
                            String keepaliveName, String destinationContext, String namePrefix, EntityList propList) {
         this.sctx = sctx;
         this.name = name;
-        this.enabled = enabled;
-        this.keepaliveInterval = keepaliveInterval;
+        this.enabled.set(enabled);
+        this.keepaliveInterval.set(keepaliveInterval);
         this.keepaliveName = keepaliveName;
         this.propList = propList;
         this.destinationContext = destinationContext;
@@ -71,8 +75,8 @@ public class JNDIReplication implements TimerListener {
                 String name = newEntity.getName();
                 Property p = newEntity.getProperty("value");
                 env.put(name, p.getValue());
-                if (enabled) {
-                    if (connected)
+                if (enabled.get()) {
+                    if (connected.get())
                         disconnect();
                     connect();
                 }
@@ -85,8 +89,8 @@ public class JNDIReplication implements TimerListener {
                     throws EntityRemoveException {
                 String name = delEntity.getName();
                 env.remove(name);
-                if (enabled) {
-                    if (connected)
+                if (enabled.get()) {
+                    if (connected.get())
                         disconnect();
                     connect();
                 }
@@ -96,24 +100,24 @@ public class JNDIReplication implements TimerListener {
         });
     }
 
-    public synchronized boolean isConnected() {
-        return connected;
+    public boolean isConnected() {
+        return connected.get();
     }
 
     public boolean isEnabled() {
-        return enabled;
+        return enabled.get();
     }
 
     public void setEnabled(boolean enabled) {
         if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/setEnabled " + enabled);
         if (enabled) {
             connect();
-            sctx.timerSwiftlet.addTimerListener(keepaliveInterval, this);
+            sctx.timerSwiftlet.addTimerListener(keepaliveInterval.get(), this);
         } else {
             sctx.timerSwiftlet.removeTimerListener(this);
             disconnect();
         }
-        this.enabled = enabled;
+        this.enabled.set(enabled);
     }
 
     public String getName() {
@@ -125,17 +129,17 @@ public class JNDIReplication implements TimerListener {
     }
 
     public long getReconnectInterval() {
-        return keepaliveInterval;
+        return keepaliveInterval.get();
     }
 
     public void setKeepaliveInterval(long keepaliveInterval) {
-        if (enabled) {
-            if (this.keepaliveInterval > 0)
+        if (enabled.get()) {
+            if (this.keepaliveInterval.get() > 0)
                 sctx.timerSwiftlet.removeTimerListener(this);
             if (keepaliveInterval > 0)
                 sctx.timerSwiftlet.addTimerListener(keepaliveInterval, this);
         }
-        this.keepaliveInterval = keepaliveInterval;
+        this.keepaliveInterval.set(keepaliveInterval);
     }
 
     public void setKeepaliveName(String keepaliveName) {
@@ -150,11 +154,11 @@ public class JNDIReplication implements TimerListener {
         this.namePrefix = namePrefix;
     }
 
-    public synchronized void performTimeAction() {
+    public void performTimeAction() {
         if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/performTimeAction...");
-        if (connected)
+        if (connected.get())
             keepalive();
-        if (!connected)
+        if (!connected.get())
             connect();
         if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/performTimeAction...done");
     }
@@ -173,59 +177,78 @@ public class JNDIReplication implements TimerListener {
         return last;
     }
 
-    public synchronized void connect() {
-        if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/connect...");
+    public void connect() {
+        lock.writeLock().lock();
         try {
-            InitialContext initCtx = new InitialContext(env);
-            if (destinationContext == null || destinationContext.length() == 0)
-                ctx = initCtx;
-            else {
-                Context subCtx = null;
-                try {
-                    subCtx = createSubcontext(initCtx, destinationContext);
-                } catch (Exception e) {
-                    throw new Exception("Subcontext '" + destinationContext + "' not found.");
-                }
-                ctx = subCtx;
-            }
-            connected = true;
-            sctx.jndiSwiftlet.replicate(this);
-        } catch (Exception e) {
-            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/connect, exception=" + e);
-            sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/connect, exception=" + e);
-            ctx = null;
-            connected = false;
-        }
-        if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/connect...done");
-    }
-
-    public synchronized void keepalive() {
-        if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/keepalive...");
-        try {
-            ctx.lookup(keepaliveName);
-        } catch (NameNotFoundException e) {
-            if (sctx.traceSpace.enabled)
-                sctx.traceSpace.trace("sys$jndi", toString() + "/keepalive, NameNotFoundException, ok!");
-        } catch (Exception e1) {
-            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/connect, exception=" + e1);
-            sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/connect, exception=" + e1);
-            ctx = null;
-            connected = false;
-        }
-        if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/keepalive...done");
-    }
-
-    public synchronized void disconnect() {
-        if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/disconnect...");
-        if (connected && ctx != null) {
+            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/connect...");
             try {
-                ctx.close();
-            } catch (NamingException e) {
+                InitialContext initCtx = new InitialContext(env);
+                if (destinationContext == null || destinationContext.length() == 0)
+                    ctx = initCtx;
+                else {
+                    Context subCtx = null;
+                    try {
+                        subCtx = createSubcontext(initCtx, destinationContext);
+                    } catch (Exception e) {
+                        throw new Exception("Subcontext '" + destinationContext + "' not found.");
+                    }
+                    ctx = subCtx;
+                }
+                connected.set(true);
+                sctx.jndiSwiftlet.replicate(this);
+            } catch (Exception e) {
+                if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/connect, exception=" + e);
+                sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/connect, exception=" + e);
+                ctx = null;
+                connected.set(false);
             }
-            ctx = null;
-            connected = false;
+            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/connect...done");
+
+        } finally {
+            lock.writeLock().unlock();
         }
-        if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/disconnect...done");
+    }
+
+    public void keepalive() {
+        lock.writeLock().lock();
+        try {
+            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/keepalive...");
+            try {
+                ctx.lookup(keepaliveName);
+            } catch (NameNotFoundException e) {
+                if (sctx.traceSpace.enabled)
+                    sctx.traceSpace.trace("sys$jndi", toString() + "/keepalive, NameNotFoundException, ok!");
+            } catch (Exception e1) {
+                if (sctx.traceSpace.enabled)
+                    sctx.traceSpace.trace("sys$jndi", toString() + "/connect, exception=" + e1);
+                sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/connect, exception=" + e1);
+                ctx = null;
+                connected.set(false);
+            }
+            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/keepalive...done");
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public void disconnect() {
+        lock.writeLock().lock();
+        try {
+            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/disconnect...");
+            if (connected.get() && ctx != null) {
+                try {
+                    ctx.close();
+                } catch (NamingException e) {
+                }
+                ctx = null;
+                connected.set(false);
+            }
+            if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/disconnect...done");
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     private String addPrefix(String name) {
@@ -234,43 +257,57 @@ public class JNDIReplication implements TimerListener {
         return namePrefix + name;
     }
 
-    public synchronized void bind(String name, Object value) {
-        if (sctx.traceSpace.enabled)
-            sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + "...");
-        if (!connected)
-            return;
+    public void bind(String name, Object value) {
+        lock.readLock().lock();
         try {
-            unbind(name);
-        } catch (Exception ignored) {
-        }
-        try {
-            if (value instanceof Versionable)
-                value = ((Versionable) value).createCurrentVersionObject();
             if (sctx.traceSpace.enabled)
-                sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", actual object=" + value + "...");
-            ctx.bind(addPrefix(name), value);
-        } catch (Exception e) {
+                sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + "...");
+            if (!connected.get())
+                return;
+            try {
+                unbind(name);
+            } catch (Exception ignored) {
+            }
+            try {
+                if (value instanceof Versionable)
+                    value = ((Versionable) value).createCurrentVersionObject();
+                if (sctx.traceSpace.enabled)
+                    sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", actual object=" + value + "...");
+                ctx.bind(addPrefix(name), value);
+            } catch (Exception e) {
+                if (sctx.traceSpace.enabled)
+                    sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + ", exception=" + e);
+                sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + ", exception=" + e);
+            }
             if (sctx.traceSpace.enabled)
-                sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + ", exception=" + e);
-            sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + ", exception=" + e);
+                sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + "...done");
+        } finally {
+            lock.readLock().unlock();
         }
-        if (sctx.traceSpace.enabled)
-            sctx.traceSpace.trace("sys$jndi", toString() + "/bind, name=" + name + ", value=" + value + "...done");
+
     }
 
-    public synchronized void unbind(String name) {
-        if (sctx.traceSpace.enabled) sctx.traceSpace.trace("sys$jndi", toString() + "/unbind, name=" + name + "...");
-        if (!connected)
-            return;
+
+    public void unbind(String name) {
+        lock.readLock().lock();
         try {
-            ctx.unbind(addPrefix(name));
-        } catch (NamingException e) {
             if (sctx.traceSpace.enabled)
-                sctx.traceSpace.trace("sys$jndi", toString() + "/unbind, name=" + name + ", exception=" + e);
-            sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/unbind, name=" + name + ", exception=" + e);
+                sctx.traceSpace.trace("sys$jndi", toString() + "/unbind, name=" + name + "...");
+            if (!connected.get())
+                return;
+            try {
+                ctx.unbind(addPrefix(name));
+            } catch (NamingException e) {
+                if (sctx.traceSpace.enabled)
+                    sctx.traceSpace.trace("sys$jndi", toString() + "/unbind, name=" + name + ", exception=" + e);
+                sctx.logSwiftlet.logWarning("sys$jndi", toString() + "/unbind, name=" + name + ", exception=" + e);
+            }
+            if (sctx.traceSpace.enabled)
+                sctx.traceSpace.trace("sys$jndi", toString() + "/unbind, name=" + name + "...done");
+        } finally {
+            lock.readLock().unlock();
         }
-        if (sctx.traceSpace.enabled)
-            sctx.traceSpace.trace("sys$jndi", toString() + "/unbind, name=" + name + "...done");
+
     }
 
     public void close() {

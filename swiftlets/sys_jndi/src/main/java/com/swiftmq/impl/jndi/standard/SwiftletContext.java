@@ -30,10 +30,6 @@ import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
 public class SwiftletContext {
-    public SwiftletContext() {
-        /*${evaltimer1}*/
-    }
-
     public Configuration config = null;
     public Entity root = null;
     public EntityList usageList = null;
