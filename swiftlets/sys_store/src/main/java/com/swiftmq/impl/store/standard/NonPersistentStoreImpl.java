@@ -34,7 +34,7 @@ public class NonPersistentStoreImpl implements NonPersistentStore {
     protected String queueName = null;
     String path = null;
     long maxLength = 0;
-    List swapFiles = null;
+    List<SwapFile> swapFiles = null;
     SwapFile actSwapFile = null;
     int swapFileCount = 0;
 
@@ -45,13 +45,13 @@ public class NonPersistentStoreImpl implements NonPersistentStore {
         new File(this.path).mkdirs();
         this.maxLength = maxLength;
         if (swapFiles == null)
-            swapFiles = new ArrayList();
+            swapFiles = new ArrayList<>();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/created");
     }
 
     private void checkSwapFile() throws Exception {
         if (actSwapFile == null || !actSwapFile.hasSpace()) {
-            actSwapFile = ctx.swapFileFactory.createSwapFile(path, format.format(new Object[]{queueName, Long.valueOf(swapFileCount++)}), maxLength);
+            actSwapFile = ctx.swapFileFactory.createSwapFile(path, format.format(new Object[]{queueName, (long) swapFileCount++}), maxLength);
             swapFiles.add(actSwapFile);
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$store", toString() + "/checkSwapFile, new swapFile=" + actSwapFile);
@@ -132,8 +132,8 @@ public class NonPersistentStoreImpl implements NonPersistentStore {
         try {
             if (swapFiles != null) {
                 if (deleteSwapFilesOnClose()) {
-                    for (int i = 0; i < swapFiles.size(); i++) {
-                        ((SwapFile) swapFiles.get(i)).close();
+                    for (SwapFile swapFile : swapFiles) {
+                        swapFile.close();
                     }
                 }
                 swapFiles.clear();

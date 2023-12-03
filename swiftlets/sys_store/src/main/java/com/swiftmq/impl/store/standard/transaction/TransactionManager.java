@@ -26,6 +26,9 @@ import com.swiftmq.swiftlet.SwiftletManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -34,43 +37,42 @@ public class TransactionManager implements CheckPointHandler {
     static final InitiateSyncOperation init = new InitiateSyncOperation();
     static final SyncLogOperation sync = new SyncLogOperation();
     StoreContext ctx;
-    long txidCount = 0;
-    int activeTransactions = 0;
-    boolean checkPointInProgress = false;
-    List finishedListeners = null;
+    final AtomicLong txidCount = new AtomicLong();
+    final AtomicInteger activeTransactions = new AtomicInteger();
+    final AtomicBoolean checkPointInProgress = new AtomicBoolean(false);
+    List<CheckPointFinishedListener> finishedListeners = null;
     Lock lock = new ReentrantLock();
     Condition checkpointFinished = null;
 
     public TransactionManager(StoreContext ctx) {
         this.ctx = ctx;
         checkpointFinished = lock.newCondition();
-        /*{evaltimer2}*/
     }
 
     public long getTxidCount() {
-        return txidCount;
+        return txidCount.get();
     }
 
     public int getActiveTransactions() {
-        return activeTransactions;
+        return activeTransactions.get();
     }
 
     public boolean isCheckPointInProgress() {
-        return checkPointInProgress;
+        return checkPointInProgress.get();
     }
 
     private void waitForCheckPoint() {
         do {
             checkpointFinished.awaitUninterruptibly();
-        } while (checkPointInProgress);
+        } while (checkPointInProgress.get());
     }
 
-    public synchronized void lockForCheckPoint() {
+    public void lockForCheckPoint() {
         lock.lock();
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/lockForCheckPoint...");
-            checkPointInProgress = true;
-            if (activeTransactions == 0)
+            checkPointInProgress.set(true);
+            if (activeTransactions.get() == 0)
                 ctx.logManager.enqueue(sync);
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/lockForCheckPoint...done.");
         } finally {
@@ -105,7 +107,7 @@ public class TransactionManager implements CheckPointHandler {
         lock.lock();
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/checkPointDone...");
-            checkPointInProgress = false;
+            checkPointInProgress.set(false);
             checkpointFinished.signalAll();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/checkPointDone...done.");
         } finally {
@@ -118,10 +120,10 @@ public class TransactionManager implements CheckPointHandler {
         try {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$store", toString() + "/initiateCheckPoint, finishedListener=" + finishedListener + "...");
-            if (checkPointInProgress)
+            if (checkPointInProgress.get())
                 waitForCheckPoint();
             if (finishedListeners == null) {
-                finishedListeners = new ArrayList();
+                finishedListeners = new ArrayList<>();
                 ctx.logManager.enqueue(init);
             }
             finishedListeners.add(finishedListener);
@@ -140,17 +142,17 @@ public class TransactionManager implements CheckPointHandler {
         lock.lock();
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createTxId, doWait=" + doWait);
-            if (checkPointInProgress) {
-                if (doWait || activeTransactions == 0) {
+            if (checkPointInProgress.get()) {
+                if (doWait || activeTransactions.get() == 0) {
                     do {
                         checkpointFinished.awaitUninterruptibly();
-                    } while (checkPointInProgress && (doWait || activeTransactions == 0));
+                    } while (checkPointInProgress.get() && (doWait || activeTransactions.get() == 0));
                 }
             }
-            activeTransactions++;
-            long txId = txidCount++;
+            activeTransactions.getAndIncrement();
+            long txId = txidCount.getAndIncrement();
             if (txId == Long.MAX_VALUE)
-                txidCount = 0;
+                txidCount.set(0);
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createTxId, txId=" + txId);
             return txId;
         } finally {
@@ -162,8 +164,8 @@ public class TransactionManager implements CheckPointHandler {
         lock.lock();
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/removeTxId, txId=" + txId);
-            activeTransactions--;
-            if (checkPointInProgress && activeTransactions == 0)
+            activeTransactions.getAndDecrement();
+            if (checkPointInProgress.get() && activeTransactions.get() == 0)
                 ctx.logManager.enqueue(sync);
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$store", toString() + "/removeTxId, txId=" + txId + ", done.");

@@ -18,30 +18,47 @@
 package com.swiftmq.impl.store.standard.cache;
 
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class Slot implements Comparable {
     int pinCount = 0;
     boolean latched = false;
     Page page = null;
     long accessCount = 0;
+    ReentrantLock lock = new ReentrantLock();
+    Condition isLatched = lock.newCondition();
 
     public synchronized void latch() {
-        if (latched) {
-            try {
-                wait();
-            } catch (Exception ignored) {
+        lock.lock();
+        try {
+            if (latched) {
+                try {
+                    isLatched.await();
+                } catch (Exception ignored) {
+                }
             }
+            latched = true;
+        } finally {
+            lock.unlock();
         }
-        latched = true;
+
     }
 
-    public synchronized void unlatch() {
-        latched = false;
-        notify();
+    public void unlatch() {
+        lock.lock();
+        try {
+            latched = false;
+            isLatched.signal();
+        } finally {
+            lock.unlock();
+        }
+
     }
 
     public int compareTo(Object that) {
         Slot thatSlot = (Slot) that;
-        return accessCount == thatSlot.accessCount ? 0 : accessCount > thatSlot.accessCount ? 1 : -1;
+        return Long.compare(accessCount, thatSlot.accessCount);
     }
 
     public String toString() {

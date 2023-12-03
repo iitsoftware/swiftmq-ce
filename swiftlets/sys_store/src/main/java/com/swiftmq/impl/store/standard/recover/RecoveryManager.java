@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RecoveryManager {
     static final String PROP_ANALYZE = "swiftmq.store.analyze";
@@ -39,6 +41,7 @@ public class RecoveryManager {
     int prepares = 0;
     long magic = -1;
     byte[] emptyData = null;
+    Lock lock = new ReentrantLock();
 
     public RecoveryManager(StoreContext ctx) {
         this.ctx = ctx;
@@ -284,9 +287,13 @@ public class RecoveryManager {
 
     public void abort(AbortLogRecord logRecord) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abort...");
-        synchronized (this) {
+        lock.lock();
+        try {
             processAbort(logRecord.getJournal());
+        } finally {
+            lock.unlock();
         }
+
         ctx.logManager.enqueue(logRecord);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abort...done.");
     }

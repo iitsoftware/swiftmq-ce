@@ -20,7 +20,7 @@ package com.swiftmq.impl.store.standard.pagedb.shrink.po;
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface EventVisitor extends POVisitor {
-    public void visit(StartShrink po);
+    void visit(StartShrink po);
 
-    public void visit(Close po);
+    void visit(Close po);
 }

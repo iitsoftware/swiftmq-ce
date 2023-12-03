@@ -20,7 +20,7 @@ package com.swiftmq.impl.store.standard.pagedb.scan.po;
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface EventVisitor extends POVisitor {
-    public void visit(StartScan po);
+    void visit(StartScan po);
 
-    public void visit(Close po);
+    void visit(Close po);
 }

@@ -24,14 +24,15 @@ import com.swiftmq.swiftlet.store.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PersistentStoreImpl implements PersistentStore {
     StoreContext ctx = null;
     String queueName = null;
     RootIndex rootIndex = null;
     QueueIndex queueIndex = null;
-    boolean closed = false;
-    boolean deleted = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean deleted = new AtomicBoolean(false);
 
     PersistentStoreImpl(StoreContext ctx, QueueIndex queueIndex, RootIndex rootIndex, String queueName) {
         this.ctx = ctx;
@@ -45,12 +46,12 @@ public class PersistentStoreImpl implements PersistentStore {
         return queueIndex;
     }
 
-    public List getStoreEntries()
+    public List<StoreEntry> getStoreEntries()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/getStoreEntries...");
-        if (closed)
+        if (closed.get())
             throw new StoreException("Store is closed");
-        List entries = null;
+        List<StoreEntry> entries = null;
         try {
             List qiEntries = queueIndex.getEntries();
             queueIndex.unloadPages();
@@ -73,15 +74,10 @@ public class PersistentStoreImpl implements PersistentStore {
         return entries;
     }
 
-    /**
-     * @param key
-     * @return
-     * @throws com.swiftmq.swiftlet.store.StoreException
-     */
     public StoreEntry get(Object key)
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/get, key=" + key);
-        if (closed)
+        if (closed.get())
             throw new StoreException("Store is closed");
         StoreEntry entry = null;
         try {
@@ -94,11 +90,6 @@ public class PersistentStoreImpl implements PersistentStore {
         return entry;
     }
 
-    /**
-     * @param markRedelivered
-     * @return
-     * @throws com.swiftmq.swiftlet.store.StoreException
-     */
     public StoreReadTransaction createReadTransaction(boolean markRedelivered)
             throws StoreException {
         if (ctx.traceSpace.enabled)
@@ -106,40 +97,30 @@ public class PersistentStoreImpl implements PersistentStore {
         return new StoreReadTransactionImpl(ctx, queueName, queueIndex, markRedelivered);
     }
 
-    /**
-     * @return
-     * @throws com.swiftmq.swiftlet.store.StoreException
-     */
     public StoreWriteTransaction createWriteTransaction()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createWriteTransaction");
         return new StoreWriteTransactionImpl(ctx, queueName, queueIndex);
     }
 
-    /**
-     * @throws com.swiftmq.swiftlet.store.StoreException
-     */
     public void delete()
             throws StoreException {
-        if (deleted)
+        if (deleted.get())
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/delete...");
         try {
             rootIndex.deleteQueueIndex(queueName, queueIndex);
-            deleted = true;
+            deleted.set(true);
         } catch (Exception e) {
             throw new StoreException(e.toString());
         }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/delete...done");
     }
 
-    /**
-     * @throws com.swiftmq.swiftlet.store.StoreException
-     */
     public void close()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/close");
-        closed = true;
+        closed.set(true);
     }
 
     public String toString() {

@@ -41,14 +41,10 @@ public class StoreWriteTransactionImpl extends StoreTransactionImpl
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/create...");
     }
 
-    /**
-     * @param storeEntry
-     * @throws com.swiftmq.swiftlet.store.StoreException
-     */
     public void insert(StoreEntry storeEntry)
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/insert, storeEntry=" + storeEntry);
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
         try {
             keys.add(queueIndex.add(storeEntry));
@@ -97,8 +93,8 @@ public class StoreWriteTransactionImpl extends StoreTransactionImpl
         journal = new ArrayList();
         queueIndex.setJournal(journal);
         try {
-            for (int i = 0; i < keys.size(); i++) {
-                addMessagePageReference(queueIndex.remove((QueueIndexEntry) keys.get(i)));
+            for (Object key : keys) {
+                addMessagePageReference(queueIndex.remove((QueueIndexEntry) key));
             }
             ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, messagePageRefs));
             sem.waitHere();

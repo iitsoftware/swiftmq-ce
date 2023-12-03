@@ -62,7 +62,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
     long swapMaxLength = 0;
     JobRegistrar jobRegistrar = null;
 
-    public synchronized PersistentStore getPersistentStore(String queueName)
+    public PersistentStore getPersistentStore(String queueName)
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getPersistentStore, queueName=" + queueName);
         QueueIndex queueIndex = null;
@@ -77,7 +77,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return ps;
     }
 
-    public synchronized NonPersistentStore getNonPersistentStore(String queueName)
+    public NonPersistentStore getNonPersistentStore(String queueName)
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getNonPersistentStore, queueName=" + queueName);
         NonPersistentStore nps = createNonPersistentStore(ctx, queueName, ctx.swapPath, swapMaxLength);
@@ -86,7 +86,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return nps;
     }
 
-    public synchronized DurableSubscriberStore getDurableSubscriberStore()
+    public DurableSubscriberStore getDurableSubscriberStore()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getDurableSubscriberStore...");
         DurableSubscriberStore ds = ctx.durableStore;
@@ -94,7 +94,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return (ds);
     }
 
-    public synchronized List getPrepareLogRecords() throws StoreException {
+    public List getPrepareLogRecords() throws StoreException {
         List list = null;
         try {
             list = ctx.preparedLog.getAll();
@@ -104,7 +104,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return list;
     }
 
-    public synchronized void removePrepareLogRecord(PrepareLogRecord record) throws StoreException {
+    public void removePrepareLogRecord(PrepareLogRecord record) throws StoreException {
         try {
             ctx.preparedLog.remove((PrepareLogRecordImpl) record);
         } catch (IOException e) {

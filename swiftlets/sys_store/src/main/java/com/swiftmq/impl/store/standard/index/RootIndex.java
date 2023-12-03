@@ -28,15 +28,17 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class RootIndex extends Index {
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     public RootIndex(StoreContext ctx, int rootPageNo) throws Exception {
         super(ctx, rootPageNo);
         RootIndexPage indexPage = new RootIndexPage(ctx, rootPageNo);
         indexPage.load();
         if (indexPage.getPrevPage() == 0) {
             Semaphore sem = new Semaphore();
-            List journal = new ArrayList();
+            List<InsertLogAction> journal = new ArrayList<>();
             journal.add(new InsertLogAction(indexPage.getPage().pageNo));
             indexPage.setJournal(journal);
             indexPage.setPrevPage(-1);
@@ -59,7 +61,7 @@ public class RootIndex extends Index {
             ctx.traceSpace.trace("sys$store", toString() + "/shrinkPage..., current=" + current);
         byte[] beforeImage = new byte[current.getFirstFreePosition()];
         System.arraycopy(current.getPage().data, 0, beforeImage, 0, beforeImage.length);
-        List list = new ArrayList();
+        List<IndexEntry> list = new ArrayList<>();
         for (Iterator iter = current.iterator(); iter.hasNext(); ) {
             IndexEntry entry = (IndexEntry) iter.next();
             if (entry.isValid()) {
@@ -67,8 +69,7 @@ public class RootIndex extends Index {
                 iter.remove();
             }
         }
-        for (int i = 0; i < list.size(); i++) {
-            IndexEntry entry = (IndexEntry) list.get(i);
+        for (IndexEntry entry : list) {
             entry.setValid(true);
             current.addEntry(entry);
         }
@@ -109,9 +110,6 @@ public class RootIndex extends Index {
         return current.getMaxKey().compareTo(key) > 0 ? current : newPage;
     }
 
-    /**
-     * @param entry
-     */
     protected void add(IndexEntry entry) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/add, entry=" + entry + "...");
         if (journal == null)
@@ -147,65 +145,77 @@ public class RootIndex extends Index {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/add, entry=" + entry + "...done.");
     }
 
-    public synchronized QueueIndex getQueueIndex(String queueName) throws Exception {
-        IndexEntry entry = find(queueName);
-        if (entry == null) {
+    public QueueIndex getQueueIndex(String queueName) throws Exception {
+        lock.writeLock().lock();
+        try {
+            IndexEntry entry = find(queueName);
+            if (entry == null) {
+                Semaphore sem = new Semaphore();
+                List<InsertLogAction> journal = new ArrayList<InsertLogAction>();
+                setJournal(journal);
+                QueueIndexPage indexPage = new QueueIndexPage(ctx, -1);
+                journal.add(new InsertLogAction(indexPage.getPage().pageNo));
+                indexPage.setJournal(journal);
+                indexPage.setPrevPage(-1);
+                indexPage.setNextPage(-1);
+                entry = new RootIndexEntry();
+                entry.setKey(queueName);
+                entry.setRootPageNo(indexPage.getPage().pageNo);
+                add(entry);
+                long txId = ctx.transactionManager.createTxId();
+                CommitLogRecord logRecord = new CommitLogRecord(txId, sem, journal, new IndexPageRelease(this, indexPage), null);
+                ctx.recoveryManager.commit(logRecord);
+                sem.waitHere();
+                ctx.transactionManager.removeTxId(txId);
+            } else
+                unloadPages();
+            return new QueueIndex(ctx, entry.getRootPageNo());
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public void deleteQueueIndex(String queueName, QueueIndex queueIndex) throws Exception {
+        lock.writeLock().lock();
+        try {
+            List entries = queueIndex.getEntries();
             Semaphore sem = new Semaphore();
-            List journal = new ArrayList();
+            List<DeleteLogAction> journal = new ArrayList<DeleteLogAction>();
+            queueIndex.setJournal(journal);
+            List<MessagePageReference> refs = new ArrayList<>();
+            for (Iterator iter = entries.iterator(); iter.hasNext(); ) {
+                MessagePageReference ref = queueIndex.remove((QueueIndexEntry) iter.next());
+                if (ref != null)
+                    refs.add(ref);
+                if (journal.size() > 10000) {
+                    long txId = ctx.transactionManager.createTxId();
+                    CommitLogRecord logRecord = new CommitLogRecord(txId, sem, journal, new QueueIndexRelease(queueIndex), refs);
+                    ctx.recoveryManager.commit(logRecord);
+                    sem.waitHere();
+                    sem.reset();
+                    journal.clear();
+                    refs = new ArrayList<MessagePageReference>();
+                    ctx.transactionManager.removeTxId(txId);
+                }
+            }
+            IndexPage root = queueIndex.getIndexPage(queueIndex.getRootPageNo());
+            byte[] bi = new byte[root.getFirstFreePosition()];
+            System.arraycopy(root.getPage().data, 0, bi, 0, bi.length);
+            journal.add(new DeleteLogAction(root.getPage().pageNo, bi));
+            root.getPage().dirty = true;
+            root.getPage().empty = true;
             setJournal(journal);
-            QueueIndexPage indexPage = new QueueIndexPage(ctx, -1);
-            journal.add(new InsertLogAction(indexPage.getPage().pageNo));
-            indexPage.setJournal(journal);
-            indexPage.setPrevPage(-1);
-            indexPage.setNextPage(-1);
-            entry = new RootIndexEntry();
-            entry.setKey(queueName);
-            entry.setRootPageNo(indexPage.getPage().pageNo);
-            add(entry);
+            remove(queueName);
             long txId = ctx.transactionManager.createTxId();
-            CommitLogRecord logRecord = new CommitLogRecord(txId, sem, journal, new IndexPageRelease(this, indexPage), null);
+            CommitLogRecord logRecord = new CommitLogRecord(txId, sem, journal, new QueueRootIndexRelease(this, queueIndex), refs);
             ctx.recoveryManager.commit(logRecord);
             sem.waitHere();
             ctx.transactionManager.removeTxId(txId);
-        } else
-            unloadPages();
-        return new QueueIndex(ctx, entry.getRootPageNo());
-    }
-
-    public synchronized void deleteQueueIndex(String queueName, QueueIndex queueIndex) throws Exception {
-        List entries = queueIndex.getEntries();
-        Semaphore sem = new Semaphore();
-        List journal = new ArrayList();
-        queueIndex.setJournal(journal);
-        List refs = new ArrayList();
-        for (Iterator iter = entries.iterator(); iter.hasNext(); ) {
-            MessagePageReference ref = queueIndex.remove((QueueIndexEntry) iter.next());
-            if (ref != null)
-                refs.add(ref);
-            if (journal.size() > 10000) {
-                long txId = ctx.transactionManager.createTxId();
-                CommitLogRecord logRecord = new CommitLogRecord(txId, sem, journal, new QueueIndexRelease(queueIndex), refs);
-                ctx.recoveryManager.commit(logRecord);
-                sem.waitHere();
-                sem.reset();
-                journal.clear();
-                refs = new ArrayList();
-                ctx.transactionManager.removeTxId(txId);
-            }
+        } finally {
+            lock.writeLock().unlock();
         }
-        IndexPage root = queueIndex.getIndexPage(queueIndex.getRootPageNo());
-        byte[] bi = new byte[root.getFirstFreePosition()];
-        System.arraycopy(root.getPage().data, 0, bi, 0, bi.length);
-        journal.add(new DeleteLogAction(root.getPage().pageNo, bi));
-        root.getPage().dirty = true;
-        root.getPage().empty = true;
-        setJournal(journal);
-        remove(queueName);
-        long txId = ctx.transactionManager.createTxId();
-        CommitLogRecord logRecord = new CommitLogRecord(txId, sem, journal, new QueueRootIndexRelease(this, queueIndex), refs);
-        ctx.recoveryManager.commit(logRecord);
-        sem.waitHere();
-        ctx.transactionManager.removeTxId(txId);
+
     }
 
     public String toString() {
@@ -215,54 +225,75 @@ public class RootIndex extends Index {
     private class IndexPageRelease implements CacheReleaseListener {
         RootIndex rootIndex = null;
         IndexPage indexPage = null;
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
         public IndexPageRelease(RootIndex rootIndex, IndexPage indexPage) {
             this.rootIndex = rootIndex;
             this.indexPage = indexPage;
         }
 
-        public synchronized void releaseCache() {
+        public void releaseCache() {
+            lock.writeLock().lock();
             try {
-                indexPage.unload();
-                rootIndex.unloadPages();
-            } catch (Exception e) {
-                e.printStackTrace();
+                try {
+                    indexPage.unload();
+                    rootIndex.unloadPages();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                lock.writeLock().unlock();
             }
+
         }
     }
 
     private class QueueIndexRelease implements CacheReleaseListener {
         QueueIndex queueIndex = null;
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
         public QueueIndexRelease(QueueIndex queueIndex) {
             this.queueIndex = queueIndex;
         }
 
-        public synchronized void releaseCache() {
+        public void releaseCache() {
+            lock.writeLock().lock();
             try {
-                queueIndex.unloadPages();
-            } catch (Exception e) {
-                e.printStackTrace();
+                try {
+                    queueIndex.unloadPages();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                lock.writeLock().unlock();
             }
+
         }
     }
 
     private class QueueRootIndexRelease implements CacheReleaseListener {
         RootIndex rootIndex = null;
         QueueIndex queueIndex = null;
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
         public QueueRootIndexRelease(RootIndex rootIndex, QueueIndex queueIndex) {
             this.rootIndex = rootIndex;
             this.queueIndex = queueIndex;
         }
 
-        public synchronized void releaseCache() {
+        public void releaseCache() {
+            lock.writeLock().lock();
             try {
-                queueIndex.unloadPages();
-                rootIndex.unloadPages();
-            } catch (Exception e) {
-                e.printStackTrace();
+                try {
+                    queueIndex.unloadPages();
+                    rootIndex.unloadPages();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } finally {
+                lock.writeLock().unlock();
             }
+
         }
     }
 }
