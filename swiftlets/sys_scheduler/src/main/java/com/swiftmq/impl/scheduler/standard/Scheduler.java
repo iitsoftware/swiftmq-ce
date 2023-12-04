@@ -31,6 +31,7 @@ import com.swiftmq.tools.pipeline.PipelineQueue;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Scheduler
         implements EventVisitor {
@@ -51,9 +52,9 @@ public class Scheduler
     SwiftletContext ctx = null;
     PipelineQueue pipelineQueue = null;
     ThreadPool runnerPool = null;
-    Map calendars = new HashMap();
-    Map schedules = new HashMap();
-    Map jobGroups = new HashMap();
+    Map<String, SchedulerCalendar> calendars = new ConcurrentHashMap<>();
+    Map<String, Entry> schedules = new HashMap<>();
+    Map<String, Map<String, JobFactory>> jobGroups = new ConcurrentHashMap<>();
 
     public Scheduler(SwiftletContext ctx) {
         this.ctx = ctx;
@@ -66,10 +67,10 @@ public class Scheduler
         pipelineQueue.enqueue(po);
     }
 
-    private List getSchedules(String calendarName) {
-        List list = new ArrayList();
-        for (Iterator iter = schedules.entrySet().iterator(); iter.hasNext(); ) {
-            Entry s = (Entry) ((Map.Entry) iter.next()).getValue();
+    private List<Entry> getSchedules(String calendarName) {
+        List<Entry> list = new ArrayList<Entry>();
+        for (Map.Entry<String, Entry> constableEntryEntry : schedules.entrySet()) {
+            Entry s = constableEntryEntry.getValue();
             if (s.schedule.hasCalendarRef(calendarName, calendars))
                 list.add(s);
         }
@@ -77,17 +78,17 @@ public class Scheduler
     }
 
     private boolean hasJobFactory(Entry scheduleEntry) {
-        Map factories = (Map) jobGroups.get(scheduleEntry.schedule.getJobGroup());
+        Map<String, JobFactory> factories = jobGroups.get(scheduleEntry.schedule.getJobGroup());
         if (factories == null)
             return false;
         return factories.get(scheduleEntry.schedule.getJobName()) != null;
     }
 
     private JobFactory getJobFactory(Entry scheduleEntry) {
-        Map factories = (Map) jobGroups.get(scheduleEntry.schedule.getJobGroup());
+        Map<String, JobFactory> factories = jobGroups.get(scheduleEntry.schedule.getJobGroup());
         if (factories == null)
             return null;
-        return (JobFactory) factories.get(scheduleEntry.schedule.getJobName());
+        return factories.get(scheduleEntry.schedule.getJobName());
     }
 
     private void calcSchedule(Entry scheduleEntry) {
@@ -150,8 +151,8 @@ public class Scheduler
     private void calcSchedules(String groupName, String jobName) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/calcSchedules, group: " + groupName + ", job: " + jobName + " ...");
-        for (Iterator iter = schedules.entrySet().iterator(); iter.hasNext(); ) {
-            Entry scheduleEntry = (Entry) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, Entry> stringEntryEntry : schedules.entrySet()) {
+            Entry scheduleEntry = stringEntryEntry.getValue();
             if (scheduleEntry.schedule.getJobGroup().equals(groupName) && scheduleEntry.schedule.getJobName().equals(jobName)) {
                 scheduleEntry.lastStartTime = -1;
                 calcSchedule(scheduleEntry);
@@ -213,8 +214,8 @@ public class Scheduler
     private void stopSchedules(String groupName, String jobName) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/stopSchedules, group: " + groupName + ", job: " + jobName + " ...");
-        for (Iterator iter = schedules.entrySet().iterator(); iter.hasNext(); ) {
-            Entry scheduleEntry = (Entry) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, Entry> stringEntryEntry : schedules.entrySet()) {
+            Entry scheduleEntry = stringEntryEntry.getValue();
             if (scheduleEntry.schedule.getJobGroup().equals(groupName) && scheduleEntry.schedule.getJobName().equals(jobName))
                 stopSchedule(scheduleEntry);
         }
@@ -225,8 +226,8 @@ public class Scheduler
     private void stopSchedules() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/stopSchedules ...");
-        for (Iterator iter = schedules.entrySet().iterator(); iter.hasNext(); ) {
-            Entry scheduleEntry = (Entry) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, Entry> stringEntryEntry : schedules.entrySet()) {
+            Entry scheduleEntry = stringEntryEntry.getValue();
             stopSchedule(scheduleEntry);
         }
         if (ctx.traceSpace.enabled)
@@ -238,8 +239,8 @@ public class Scheduler
         Map jobParms = jobFactory.getJobParameters();
         Map actParms = entry.schedule.getParameters();
         if (jobParms != null) {
-            for (Iterator iter = jobParms.entrySet().iterator(); iter.hasNext(); ) {
-                JobParameter jp = (JobParameter) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry o : (Iterable<Map.Entry>) jobParms.entrySet()) {
+                JobParameter jp = (JobParameter) ((Map.Entry) o).getValue();
                 String value = (String) actParms.get(jp.getName());
                 if (value != null) {
                     JobParameterVerifier verifier = jp.getVerifier();
@@ -260,17 +261,17 @@ public class Scheduler
                 entry.histNo = 0;
                 Map map = histList.getEntities();
                 if (map != null) {
-                    for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-                        histList.removeEntity((Entity) ((Map.Entry) iter.next()).getValue());
+                    for (Map.Entry o : (Iterable<Map.Entry>) map.entrySet()) {
+                        histList.removeEntity((Entity) ((Map.Entry<?, ?>) o).getValue());
                     }
                 }
             }
             String[] names = histList.getEntityNames();
             if (names != null && names.length == 20) {
                 String min = null;
-                for (int i = 0; i < names.length; i++) {
-                    if (min == null || min.compareTo(names[i]) > 0)
-                        min = names[i];
+                for (String name : names) {
+                    if (min == null || min.compareTo(name) > 0)
+                        min = name;
                 }
                 histList.removeEntity(histList.getEntity(min));
             }
@@ -291,13 +292,10 @@ public class Scheduler
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
         calendars.put(po.getCalendar().getName(), po.getCalendar());
-        List list = getSchedules(po.getCalendar().getName());
-        if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                Entry entry = (Entry) list.get(i);
-                entry.lastStartTime = -1;
-                calcSchedule(entry);
-            }
+        List<Entry> list = getSchedules(po.getCalendar().getName());
+        for (Entry entry : list) {
+            entry.lastStartTime = -1;
+            calcSchedule(entry);
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " done");
@@ -306,15 +304,12 @@ public class Scheduler
     public void visit(CalendarRemoved po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
-        SchedulerCalendar cal = (SchedulerCalendar) calendars.remove(po.getName());
+        SchedulerCalendar cal = calendars.remove(po.getName());
         if (cal != null) {
-            List list = getSchedules(cal.getName());
-            if (list != null) {
-                for (int i = 0; i < list.size(); i++) {
-                    Entry entry = (Entry) list.get(i);
-                    entry.lastStartTime = -1;
-                    calcSchedule(entry);
-                }
+            List<Entry> list = getSchedules(cal.getName());
+            for (Entry entry : list) {
+                entry.lastStartTime = -1;
+                calcSchedule(entry);
             }
         }
         if (ctx.traceSpace.enabled)
@@ -326,13 +321,10 @@ public class Scheduler
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
         SchedulerCalendar cal = po.getCalendar();
         calendars.put(cal.getName(), cal);
-        List list = getSchedules(cal.getName());
-        if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                Entry entry = (Entry) list.get(i);
-                entry.lastStartTime = -1;
-                calcSchedule(entry);
-            }
+        List<Entry> list = getSchedules(cal.getName());
+        for (Entry entry : list) {
+            entry.lastStartTime = -1;
+            calcSchedule(entry);
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " done");
@@ -353,7 +345,7 @@ public class Scheduler
                 entity.getProperty("schedule-date-from").setValue(schedule.getDateFrom() == null ? ScheduleFactory.NOW : schedule.getDateFrom());
                 entity.getProperty("schedule-date-to").setValue(schedule.getDateTo() == null ? ScheduleFactory.FOREVER : schedule.getDateTo());
                 entity.getProperty("schedule-calendar").setValue(schedule.getCalendar());
-                entity.getProperty("schedule-logging-enabled").setValue(new Boolean(schedule.isLoggingEnabled()));
+                entity.getProperty("schedule-logging-enabled").setValue(schedule.isLoggingEnabled());
                 entity.getProperty("schedule-time-expression").setValue(schedule.getTimeExpression());
                 ctx.activeMessageScheduleList.addEntity(entity);
             } catch (Exception e) {
@@ -383,7 +375,7 @@ public class Scheduler
     public void visit(ScheduleRemoved po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
-        Entry scheduleEntry = (Entry) schedules.remove(po.getName());
+        Entry scheduleEntry = schedules.remove(po.getName());
         if (scheduleEntry != null) {
             po.setSuccess(true);
             stopSchedule(scheduleEntry);
@@ -408,7 +400,7 @@ public class Scheduler
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
         Schedule schedule = po.getSchedule();
-        Entry scheduleEntry = (Entry) schedules.get(schedule.getName());
+        Entry scheduleEntry = schedules.get(schedule.getName());
         scheduleEntry.schedule = schedule;
         scheduleEntry.lastStartTime = -1;
         schedules.put(schedule.getName(), scheduleEntry);
@@ -420,11 +412,7 @@ public class Scheduler
     public void visit(JobFactoryAdded po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
-        Map factories = (Map) jobGroups.get(po.getGroupName());
-        if (factories == null) {
-            factories = new HashMap();
-            jobGroups.put(po.getGroupName(), factories);
-        }
+        Map<String, JobFactory> factories = jobGroups.computeIfAbsent(po.getGroupName(), k -> new HashMap<String, JobFactory>());
         factories.put(po.getName(), po.getFactory());
         calcSchedules(po.getGroupName(), po.getName());
         if (ctx.traceSpace.enabled)
@@ -435,7 +423,7 @@ public class Scheduler
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
         stopSchedules(po.getGroupName(), po.getName());
-        Map factories = (Map) jobGroups.get(po.getGroupName());
+        Map<String, JobFactory> factories = jobGroups.get(po.getGroupName());
         if (factories != null) {
             factories.remove(po.getName());
             if (factories.size() == 0)
@@ -448,7 +436,7 @@ public class Scheduler
     public void visit(JobStart po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
-        Entry entry = (Entry) schedules.get(po.getName());
+        Entry entry = schedules.get(po.getName());
         if (entry != null) {
             if (entry.jobStart == po) {
                 entry.jobStart = null;
@@ -501,7 +489,7 @@ public class Scheduler
     public void visit(JobStop po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
-        Entry entry = (Entry) schedules.get(po.getName());
+        Entry entry = schedules.get(po.getName());
         if (entry != null) {
             if (entry.jobStop == po) {
                 if (ctx.traceSpace.enabled)
@@ -533,7 +521,7 @@ public class Scheduler
     public void visit(JobTerminated po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " ...");
-        Entry entry = (Entry) schedules.get(po.getName());
+        Entry entry = schedules.get(po.getName());
         if (entry != null) {
             try {
                 entry.entity.getProperty("state").setValue(STATE_STOPPED);

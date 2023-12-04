@@ -82,14 +82,14 @@ public class ScheduleFactory {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             int time = cal.get(Calendar.HOUR_OF_DAY) * 3600 + cal.get(Calendar.MINUTE) * 60 + cal.get(Calendar.SECOND);
-            list.add(new Integer(time));
+            list.add(time);
         }
         if (list.size() == 0)
             throw new Exception("Missing time!");
         Collections.sort(list);
         int[] ret = new int[list.size()];
         for (int i = 0; i < list.size(); i++)
-            ret[i] = ((Integer) list.get(i)).intValue();
+            ret[i] = (Integer) list.get(i);
         return ret;
     }
 
@@ -208,7 +208,7 @@ public class ScheduleFactory {
                 Schedule mySchedule = (Schedule) ((Object[]) configObject)[1];
                 String s = (String) newValue;
                 try {
-                    if (s.toLowerCase().equals(FOREVER))
+                    if (s.equalsIgnoreCase(FOREVER))
                         s = null;
                     else
                         fmt.parse(s);
@@ -301,12 +301,12 @@ public class ScheduleFactory {
         String jobGroup = (String) entity.getProperty("job-group").getValue();
         String jobName = (String) entity.getProperty("job-name").getValue();
         String dateFrom = (String) entity.getProperty("date-from").getValue();
-        if (dateFrom.toLowerCase().equals(NOW))
+        if (dateFrom.equalsIgnoreCase(NOW))
             dateFrom = null;
         else
             fmt.parse(dateFrom);
         String dateTo = (String) entity.getProperty("date-to").getValue();
-        if (dateTo.toLowerCase().equals(FOREVER))
+        if (dateTo.equalsIgnoreCase(FOREVER))
             dateTo = null;
         else
             fmt.parse(dateTo);
@@ -328,8 +328,8 @@ public class ScheduleFactory {
         Map entities = parmList.getEntities();
         if (entities != null) {
             Map parameters = schedule.getParameters();
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry o : (Iterable<Map.Entry>) entities.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 parameters.put(e.getName(), e.getProperty("value").getValue());
             }
         }
@@ -350,11 +350,11 @@ public class ScheduleFactory {
         String timeExpr = message.getStringProperty(SwiftletContext.PROP_SCHED_TIME);
         if (timeExpr == null)
             throw new Exception("Missing Property: " + SwiftletContext.PROP_SCHED_TIME);
-        if (dateFrom.toLowerCase().equals(NOW))
+        if (dateFrom.equalsIgnoreCase(NOW))
             dateFrom = null;
         else
             fmt.parse(dateFrom);
-        if (dateTo.toLowerCase().equals(FOREVER))
+        if (dateTo.equalsIgnoreCase(FOREVER))
             dateTo = null;
         else
             fmt.parse(dateTo);
@@ -379,7 +379,7 @@ public class ScheduleFactory {
         Schedule schedule = null;
         if (timeExpr == null)
             throw new InvalidScheduleException("Missing time expression!");
-        if (dateFrom != null && dateFrom.toLowerCase().equals(NOW))
+        if (dateFrom != null && dateFrom.equalsIgnoreCase(NOW))
             dateFrom = null;
         if (dateFrom != null) {
             try {
@@ -388,7 +388,7 @@ public class ScheduleFactory {
                 throw new InvalidScheduleException(e.getMessage());
             }
         }
-        if (dateTo != null && dateTo.toLowerCase().equals(FOREVER))
+        if (dateTo != null && dateTo.equalsIgnoreCase(FOREVER))
             dateTo = null;
         if (dateTo != null) {
             try {
