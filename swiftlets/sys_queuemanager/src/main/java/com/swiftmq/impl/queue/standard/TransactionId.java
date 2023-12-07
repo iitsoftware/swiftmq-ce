@@ -21,9 +21,8 @@ import com.swiftmq.jms.XidImpl;
 import com.swiftmq.swiftlet.store.PrepareLogRecord;
 import com.swiftmq.swiftlet.store.StoreTransaction;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * TransactionId covers type of transaction and internal id
@@ -38,12 +37,12 @@ public class TransactionId {
     XidImpl globalTxId = null;
     List preparedList = null;
     PrepareLogRecord logRecord = null;
-    List txList = null;
+    List txList;
     int txId = -1;
 
     public TransactionId(int transactionType) {
         this.transactionType = transactionType;
-        this.txList = Collections.synchronizedList(new ArrayList());
+        this.txList = new CopyOnWriteArrayList();
     }
 
     public TransactionId() {

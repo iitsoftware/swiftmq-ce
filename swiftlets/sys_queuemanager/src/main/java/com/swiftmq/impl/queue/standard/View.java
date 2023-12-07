@@ -28,7 +28,7 @@ public class View {
     String queueName = null;
     int viewId = -1;
     Selector selector = null;
-    SortedSet viewContent = new TreeSet();
+    SortedSet<StoreId> viewContent = new TreeSet<StoreId>();
     boolean dirty = false;
 
     public View(SwiftletContext ctx, String queueName, int viewId, Selector selector) {
@@ -72,7 +72,7 @@ public class View {
         if (ctx.queueSpace.enabled) ctx.queueSpace.trace(queueName, toString() + "/remove, storeId=" + storeId);
     }
 
-    public SortedSet getViewContent() {
+    public SortedSet<StoreId> getViewContent() {
         return viewContent;
     }
 

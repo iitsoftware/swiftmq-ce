@@ -156,17 +156,6 @@ public class RegularQueueFactory implements QueueFactory {
                 }
             });
         }
-        prop = queueEntity.getProperty(QueueManagerImpl.PROP_MONITOR_ALERT_THRESHOLD);
-        if (prop != null) {
-            mq.setMonitorAlertThreshold(((Integer) prop.getValue()).intValue());
-            prop.setPropertyChangeListener(new PropertyChangeAdapter(mq) {
-                public void propertyChanged(Property property, Object oldValue, Object newValue)
-                        throws PropertyChangeException {
-                    MessageQueue myMq = (MessageQueue) configObject;
-                    myMq.setMonitorAlertThreshold(((Integer) newValue).intValue());
-                }
-            });
-        }
 
         return mq;
     }

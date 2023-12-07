@@ -70,7 +70,7 @@ public class Viewer
         StringBuffer out = new StringBuffer();
         char c;
 
-        if (in == null || ("".equals(in)))
+        if (in == null || "".equals(in))
             return "";
 
         for (int i = 0; i < in.length(); i++) {
@@ -107,7 +107,7 @@ public class Viewer
             b.append("}");
             element.addAttribute("value", b.toString());
         } else if (value instanceof Byte)
-            element.addAttribute("value", String.valueOf(((Byte) value).byteValue() & 0xff));
+            element.addAttribute("value", String.valueOf((Byte) value & 0xff));
         else
             element.addAttribute("value", value.toString());
         return element;
@@ -212,7 +212,7 @@ public class Viewer
             b.append("}");
             element.addAttribute("value", b.toString());
         } else if (obj instanceof Byte)
-            element.addAttribute("value", String.valueOf(((Byte) obj).byteValue() & 0xff));
+            element.addAttribute("value", String.valueOf((Byte) obj & 0xff));
         else
             element.addAttribute("value", obj.toString());
         return element;
@@ -332,12 +332,12 @@ public class Viewer
         writer.write(doc);
         writer.flush();
         writer.close();
-        List list = new ArrayList();
+        List<String> list = new ArrayList<>();
         list.add(TreeCommands.RESULT);
         StringTokenizer t = new StringTokenizer(sw.toString(), "\n");
         while (t.hasMoreTokens())
             list.add(t.nextToken());
-        return (String[]) list.toArray(new String[list.size()]);
+        return list.toArray(new String[0]);
     }
 
     private String[] createResult(ViewCollector collector, int from, int truncSize) throws Exception {
