@@ -29,7 +29,6 @@ import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
-import java.util.Iterator;
 import java.util.SortedSet;
 
 public class Copier
@@ -186,8 +185,8 @@ public class Copier
                         return new String[]{TreeCommands.ERROR, "Invalid command, please try '" + _getCommand() + " <source> -queue|-topic <target> -index <start> <stop>'"};
                 }
                 int i = 0, cnt = 0;
-                for (Iterator iter = content.iterator(); iter.hasNext(); ) {
-                    MessageIndex mi = (MessageIndex) iter.next();
+                for (Object o : content) {
+                    MessageIndex mi = (MessageIndex) o;
                     if (i >= start && i <= stop) {
                         try {
                             MessageImpl msg = copyMessage(sourceQueue.getMessageByIndex(mi).getMessage());

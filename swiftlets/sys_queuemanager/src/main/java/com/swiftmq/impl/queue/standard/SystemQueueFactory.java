@@ -34,7 +34,6 @@ public class SystemQueueFactory implements QueueFactory {
     SystemQueueFactory(SwiftletContext ctx) {
         this.ctx = ctx;
         myTP = ctx.threadpoolSwiftlet.getPool(QueueManagerImpl.TP_TIMEOUTPROC);
-        /*{evaltimer3}*/
     }
 
     @Override

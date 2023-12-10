@@ -24,6 +24,9 @@ import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Redispatcher extends MessageProcessor {
     SwiftletContext ctx = null;
     volatile String sourceQueueName = null;
@@ -34,9 +37,9 @@ public class Redispatcher extends MessageProcessor {
     volatile QueueImpl targetQueue = null;
     volatile AbstractQueue sourceQueue = null;
     volatile ThreadPool myTP = null;
-    volatile boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     volatile MessageImpl message = null;
-    volatile int cnt = 0;
+    final AtomicInteger cnt = new AtomicInteger();
     volatile DispatchPolicy dispatchPolicy = null;
 
     public Redispatcher(SwiftletContext ctx, String sourceQueueName, String targetQueueName) throws Exception {
@@ -72,7 +75,7 @@ public class Redispatcher extends MessageProcessor {
     }
 
     public void processException(Exception exception) {
-        if (closed)
+        if (closed.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/processException: " + exception + ", EXITING!");
@@ -91,8 +94,8 @@ public class Redispatcher extends MessageProcessor {
             pushTx.putMessage(message);
             pushTx.commit();
             pullTx.commit();
-            cnt++;
-            if (!closed && sourceQueue.getReceiverCount() == 0 && sourceQueue.getNumberQueueMessages() > 0 && dispatchPolicy.isReceiverSomewhere()) {
+            cnt.getAndIncrement();
+            if (!closed.get() && sourceQueue.getReceiverCount() == 0 && sourceQueue.getNumberQueueMessages() > 0 && dispatchPolicy.isReceiverSomewhere()) {
                 pullTx = receiver.createTransaction(false);
                 pullTx.registerMessageProcessor(this);
             } else
@@ -104,7 +107,7 @@ public class Redispatcher extends MessageProcessor {
 
     public void stop() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop, cnt=" + cnt);
-        closed = true;
+        closed.set(true);
         try {
             pullTx.rollback();
         } catch (Exception e) {

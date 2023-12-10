@@ -138,12 +138,12 @@ public class ClusteredQueue extends AbstractQueue {
             ctx.queueSpace.trace(getQueueName(), toString() + "/commit (callback), txId=" + txId);
         final ClusteredTransactionId cTxId = (ClusteredTransactionId) txId;
         cTxId.commit(new AsyncCompletionCallback(callback) {
-            public synchronized void done(boolean success) {
+            public void done(boolean success) {
                 Long fcDelay = (Long) getResult();
                 if (fcDelay != null) {
                     if (ctx.queueSpace.enabled)
                         ctx.queueSpace.trace(getQueueName(), toString() + "/commit (callback), txId=" + txId + ", newDelay=" + fcDelay);
-                    ((ClusteredQueueFlowController) getFlowController()).setLastDelay(fcDelay.longValue());
+                    ((ClusteredQueueFlowController) getFlowController()).setLastDelay(fcDelay);
                 }
             }
         });

@@ -95,8 +95,8 @@ public class ClusterMetricSubscriber extends MessageProcessor {
                         ClusteredQueueMetricCollection cmc = (ClusteredQueueMetricCollection) versionable.createVersionedObject();
                         List list = cmc.getClusteredQueueMetrics();
                         if (list != null) {
-                            for (int i = 0; i < list.size(); i++) {
-                                ClusteredQueueMetric cm = (ClusteredQueueMetric) list.get(i);
+                            for (Object o : list) {
+                                ClusteredQueueMetric cm = (ClusteredQueueMetric) o;
                                 if (ctx.traceSpace.enabled)
                                     ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/run, cm=" + cm);
                                 DispatchPolicy dp = ctx.dispatchPolicyRegistry.get(cm.getClusteredQueueName());

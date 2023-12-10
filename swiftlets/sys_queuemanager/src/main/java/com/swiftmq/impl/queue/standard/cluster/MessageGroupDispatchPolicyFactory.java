@@ -21,5 +21,5 @@ import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.mgmt.Entity;
 
 public interface MessageGroupDispatchPolicyFactory {
-    public MessageGroupDispatchPolicy create(SwiftletContext ctx, Entity myEntity, String clusteredQueueName, DispatchPolicy parent);
+    MessageGroupDispatchPolicy create(SwiftletContext ctx, Entity myEntity, String clusteredQueueName, DispatchPolicy parent);
 }
