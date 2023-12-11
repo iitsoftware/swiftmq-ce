@@ -22,7 +22,6 @@ import com.swiftmq.amqp.v100.generated.messaging.addressing.TerminusExpiryPolicy
 import com.swiftmq.amqp.v100.generated.messaging.delivery_state.*;
 import com.swiftmq.amqp.v100.generated.messaging.message_format.AddressIF;
 import com.swiftmq.amqp.v100.generated.messaging.message_format.AddressString;
-import com.swiftmq.amqp.v100.generated.messaging.message_format.AddressVisitor;
 import com.swiftmq.amqp.v100.generated.transactions.coordination.Declared;
 import com.swiftmq.amqp.v100.generated.transactions.coordination.TransactionalState;
 import com.swiftmq.amqp.v100.generated.transactions.coordination.TxnIdIF;
@@ -70,7 +69,7 @@ public class SourceLink extends ServerLink
     OutboundTransformer transformer = null;
     volatile int numberActiveTx = 0;
     Map unsettled = new HashMap();
-    TransactionRegistry transactionRegistry = null;
+    TransactionRegistry transactionRegistry;
     TxnIdIF currentTx = null;
     Entity usage = null;
     Property propLinkCredit = null;
@@ -110,34 +109,43 @@ public class SourceLink extends ServerLink
     public void fillUsage() {
         if (usage != null) {
             try {
-                long lc = getLinkCredit();
-                if (((Long) propLinkCredit.getValue()).longValue() != lc)
-                    propLinkCredit.setValue(new Long(lc));
-                if (((Long) propDeliveryCountSnd.getValue()).longValue() != deliveryCountSnd)
-                    propDeliveryCountSnd.setValue(new Long(deliveryCountSnd));
-                if (((Long) propDeliveryCountRcv.getValue()).longValue() != deliveryCountRcv)
-                    propDeliveryCountRcv.setValue(new Long(deliveryCountRcv));
-                if (((Long) propMessagesSent.getValue()).longValue() != nmsgs)
-                    propMessagesSent.setValue(new Long(nmsgs));
-                int size = unsettled.size();
-                if (((Integer) propUnsettledTransfers.getValue()).longValue() != size)
-                    propUnsettledTransfers.setValue(new Integer(size));
-                if (((Boolean) propDrain.getValue()).booleanValue() != drain)
-                    propDrain.setValue(new Boolean(drain));
+                setIfNotEqual(propLinkCredit, getLinkCredit());
+                setIfNotEqual(propDeliveryCountSnd, deliveryCountSnd);
+                setIfNotEqual(propDeliveryCountRcv, deliveryCountRcv);
+                setIfNotEqual(propMessagesSent, nmsgs);
+                setIfNotEqual(propUnsettledTransfers, unsettled.size());
+                setIfNotEqual(propDrain, drain);
             } catch (Exception e) {
+                // Handle exception appropriately
             }
+        }
+    }
+
+    private void setIfNotEqual(Property property, long value) throws Exception {
+        if ((Long) property.getValue() != value) {
+            property.setValue(value);
+        }
+    }
+
+    private void setIfNotEqual(Property property, int value) throws Exception {
+        if ((Integer) property.getValue() != value) {
+            property.setValue(value);
+        }
+    }
+
+    private void setIfNotEqual(Property property, boolean value) throws Exception {
+        if ((Boolean) property.getValue() != value) {
+            property.setValue(value);
         }
     }
 
     public void setLocalAddress(AddressIF localAddress) {
         super.setLocalAddress(localAddress);
         if (usage != null && localAddress != null)
-            localAddress.accept(new AddressVisitor() {
-                public void visit(AddressString addressString) {
-                    try {
-                        usage.getProperty("local-address").setValue(addressString.getValue());
-                    } catch (Exception e) {
-                    }
+            localAddress.accept(addressString -> {
+                try {
+                    usage.getProperty("local-address").setValue(addressString.getValue());
+                } catch (Exception e) {
                 }
             });
     }
@@ -145,12 +153,10 @@ public class SourceLink extends ServerLink
     protected void setRemoteAddress(AddressIF remoteAddress) {
         super.setRemoteAddress(remoteAddress);
         if (usage != null && remoteAddress != null)
-            remoteAddress.accept(new AddressVisitor() {
-                public void visit(AddressString addressString) {
-                    try {
-                        usage.getProperty("remote-address").setValue(addressString.getValue());
-                    } catch (Exception e) {
-                    }
+            remoteAddress.accept(addressString -> {
+                try {
+                    usage.getProperty("remote-address").setValue(addressString.getValue());
+                } catch (Exception e) {
                 }
             });
     }
@@ -185,7 +191,7 @@ public class SourceLink extends ServerLink
 
     public long getLinkCredit() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", getLinkCredit, deliveryCountRcv=" + deliveryCountRcv + ", linkCredit=" + linkCredit + ", deliveryCountSnd=" + deliveryCountSnd);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", getLinkCredit, deliveryCountRcv=" + deliveryCountRcv + ", linkCredit=" + linkCredit + ", deliveryCountSnd=" + deliveryCountSnd);
         return deliveryCountRcv + linkCredit - deliveryCountSnd;
     }
 
@@ -217,7 +223,7 @@ public class SourceLink extends ServerLink
         this.noLocal = noLocal;
         try {
             if (usage != null)
-                propNoLocal.setValue(new Boolean(noLocal));
+                propNoLocal.setValue(noLocal);
         } catch (Exception e) {
         }
     }
@@ -237,10 +243,6 @@ public class SourceLink extends ServerLink
 
     public String getQueueName() {
         return queueName;
-    }
-
-    public QueuePullTransaction getReadTransaction() {
-        return readTransaction;
     }
 
     public TxnIdIF getCurrentTx() {
@@ -313,14 +315,6 @@ public class SourceLink extends ServerLink
 
     public long getDeliveryCountSnd() {
         return deliveryCountSnd;
-    }
-
-    public void setDeliveryCountSnd(long deliveryCountSnd) {
-        this.deliveryCountSnd = deliveryCountSnd;
-    }
-
-    public long getDeliveryCountRcv() {
-        return deliveryCountRcv;
     }
 
     public void setDeliveryCountRcv(long deliveryCountRcv) {
@@ -403,12 +397,12 @@ public class SourceLink extends ServerLink
         if (remoteUnsettled != null) {
             final AbstractQueue aq = ctx.queueManager.getQueueForInternalUse(receiver.getQueueName());
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/recovery, abstractQueue=" + aq);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/recovery, abstractQueue=" + aq);
             DataByteArrayInputStream dbis = new DataByteArrayInputStream();
-            for (Iterator iter = remoteUnsettled.entrySet().iterator(); iter.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) iter.next();
+            for (Object o : remoteUnsettled.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
                 AMQPBinary deliveryTag = (AMQPBinary) entry.getKey();
-                DeliveryStateIF deliveryStateIF = null;
+                DeliveryStateIF deliveryStateIF;
                 try {
                     deliveryStateIF = DeliveryStateFactory.create((AMQPList) entry.getValue());
                 } catch (Exception e) {
