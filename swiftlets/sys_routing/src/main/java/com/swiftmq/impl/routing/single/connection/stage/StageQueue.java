@@ -26,12 +26,14 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class StageQueue extends SingleProcessorQueue {
     static final String TP_SERVICE = "sys$routing.connection.service";
 
     SwiftletContext ctx = null;
     ThreadPool myTP = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     QueueProcessor queueProcessor = null;
     Stage stage = null;
 
@@ -84,19 +86,20 @@ public class StageQueue extends SingleProcessorQueue {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/process, done");
     }
 
-    public synchronized void close() {
+    public void close() {
+        if (closed.getAndSet(true))
+            return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/close...");
         super.close();
         if (stage != null)
             stage.close();
-        closed = true;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/close done");
     }
 
     private class QueueProcessor implements AsyncTask {
 
         public boolean isValid() {
-            return !closed;
+            return !closed.get();
         }
 
         public String getDispatchToken() {
@@ -111,7 +114,7 @@ public class StageQueue extends SingleProcessorQueue {
         }
 
         public void run() {
-            if (dequeue() && !closed)
+            if (dequeue() && !closed.get())
                 myTP.dispatchTask(this);
         }
     }

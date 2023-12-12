@@ -27,11 +27,13 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class ThrottleQueue extends SingleProcessorQueue {
     static final String TP_THROTTLE = "sys$routing.connection.throttlequeue";
     SwiftletContext ctx;
     RoutingConnection connection;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     ThreadPool myTP = null;
     QueueProcessor queueProcessor = null;
     SingleProcessorQueue outboundQueue = null;
@@ -60,21 +62,22 @@ public class ThrottleQueue extends SingleProcessorQueue {
             } else {
                 outboundQueue.enqueue(r);
             }
-            if (closed)
+            if (closed.get())
                 return;
         }
     }
 
-    public synchronized void close() {
+    public void close() {
+        if (closed.getAndSet(true))
+            return;
         super.close();
-        closed = true;
         sem.notifySingleWaiter();
     }
 
     private class QueueProcessor implements AsyncTask {
 
         public boolean isValid() {
-            return !closed;
+            return !closed.get();
         }
 
         public String getDispatchToken() {
@@ -89,7 +92,7 @@ public class ThrottleQueue extends SingleProcessorQueue {
         }
 
         public void run() {
-            if (dequeue() && !closed)
+            if (dequeue() && !closed.get())
                 myTP.dispatchTask(this);
         }
     }

@@ -34,6 +34,7 @@ import com.swiftmq.tools.util.DataStreamOutputStream;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
 
 public class OutboundWriter
@@ -47,7 +48,7 @@ public class OutboundWriter
     DataStreamOutputStream outStream;
     OutboundQueue outboundQueue = null;
     OutboundProcessor outboundProcessor = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     TraceSpace traceSpace = null;
     boolean compression = false;
     DataByteArrayOutputStream bos = new DataByteArrayOutputStream();
@@ -74,7 +75,7 @@ public class OutboundWriter
     }
 
     public void writeObject(Dumpable obj) {
-        if (closed)
+        if (closed.get())
             return;
         if (traceSpace.enabled) traceSpace.trace("smqr", toString() + ": write object: " + obj);
         try {
@@ -92,7 +93,7 @@ public class OutboundWriter
             if (traceSpace.enabled) traceSpace.trace("smqr", toString() + ": exception write object, exiting!: " + e);
             ctx.networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
             outboundQueue.close();
-            closed = true;
+            closed.set(true);
         }
     }
 
@@ -106,7 +107,7 @@ public class OutboundWriter
 
     public void close() {
         outboundQueue.close();
-        closed = true;
+        closed.set(true);
     }
 
     public String toString() {
@@ -140,7 +141,7 @@ public class OutboundWriter
     private class OutboundProcessor implements AsyncTask {
 
         public boolean isValid() {
-            return !closed;
+            return !closed.get();
         }
 
         public String getDispatchToken() {
@@ -155,7 +156,7 @@ public class OutboundWriter
         }
 
         public void run() {
-            if (outboundQueue.dequeue() && !closed)
+            if (outboundQueue.dequeue() && !closed.get())
                 myTP.dispatchTask(this);
         }
     }

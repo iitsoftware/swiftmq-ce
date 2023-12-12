@@ -21,7 +21,6 @@ import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.impl.routing.single.connection.stage.Stage;
 import com.swiftmq.impl.routing.single.manager.po.POAddObject;
-import com.swiftmq.impl.routing.single.smqpr.RequestHandler;
 import com.swiftmq.impl.routing.single.smqpr.SMQRVisitor;
 import com.swiftmq.impl.routing.single.smqpr.StartStageRequest;
 import com.swiftmq.impl.routing.single.smqpr.v942.ConnectReplyRequest;
@@ -40,59 +39,53 @@ public class ConnectStage extends Stage {
         routingConnection.getSMQRFactory().setProtocolFactory(new com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory());
         visitor = routingConnection.getVisitor();
         listener = routingConnection.isListener();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/created");
     }
 
     protected void init() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init...");
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, new RequestHandler() {
-            public void visited(Request request) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/init...");
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, request -> {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/visited, request=" + request + "...");
+            ConnectRequest cr = new ConnectRequest(ctx.routerName, routingConnection.isXa());
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/visited, request=" + request + ", sending request= " + cr);
+            routingConnection.getOutboundQueue().enqueue(cr);
+            startValidTimer();
+        });
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REPREQ, request -> {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/visited, request=" + request + "...");
+            ConnectReplyRequest reply = (ConnectReplyRequest) request;
+            if (reply.isOk()) {
+                routingConnection.setRouterName(reply.getRouterName());
+                ctx.connectionManager.enqueue(new POAddObject(new ConnectorCallback(reply), null, routingConnection));
+            } else {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request + "...");
-                ConnectRequest cr = new ConnectRequest(ctx.routerName, routingConnection.isXa());
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request + ", sending request= " + cr);
-                routingConnection.getOutboundQueue().enqueue(cr);
-                startValidTimer();
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/visited, request=" + request + ", disconnect");
+                ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
             }
         });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REPREQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request + "...");
-                ConnectReplyRequest reply = (ConnectReplyRequest) request;
-                if (reply.isOk()) {
-                    routingConnection.setRouterName(reply.getRouterName());
-                    ctx.connectionManager.enqueue(new POAddObject(new ConnectorCallback(reply), null, routingConnection));
-                } else {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request + ", disconnect");
-                    ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
-                }
-            }
-        });
-        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REQ, new RequestHandler() {
-            public void visited(Request request) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/visited, request=" + request);
-                ConnectRequest pr = (ConnectRequest) request;
-                routingConnection.setRouterName(pr.getRouterName());
-                ctx.connectionManager.enqueue(new POAddObject(new ListenerCallback(pr), null, routingConnection));
-            }
+        visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REQ, request -> {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/visited, request=" + request);
+            ConnectRequest pr = (ConnectRequest) request;
+            routingConnection.setRouterName(pr.getRouterName());
+            ctx.connectionManager.enqueue(new POAddObject(new ListenerCallback(pr), null, routingConnection));
         });
         if (!listener)
             getStageQueue().enqueue(new StartStageRequest());
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/init done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/init done");
     }
 
     public void process(Request request) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/process, request=" + request);
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/process, request=" + request);
         request.accept(visitor);
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/close");
         super.close();
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.START_STAGE_REQ, null);
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REQ, null);
@@ -114,18 +107,18 @@ public class ConnectStage extends Stage {
             routingConnection.setKeepaliveInterval(myReply.getKeepAliveInterval());
             if (myReply.isAuthRequired()) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ConnectorCallback.onSuccess, myreply=" + myReply + ", launching auth stage");
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ConnectorCallback.onSuccess, myreply=" + myReply + ", launching auth stage");
                 // Launch auth stage
                 getStageQueue().setStage(new AuthStage(ctx, routingConnection, myReply));
             } else {
                 if (myReply.isRequestXA() || routingConnection.isXa()) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ConnectorCallback.onSuccess, myreply=" + myReply + ", launching recovery stage");
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ConnectorCallback.onSuccess, myreply=" + myReply + ", launching recovery stage");
                     // Launch recovery stage
                     getStageQueue().setStage(new XARecoveryStage(ctx, routingConnection));
                 } else {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ConnectorCallback.onSuccess, myreply=" + myReply + ", launching non-xa delivery stage");
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ConnectorCallback.onSuccess, myreply=" + myReply + ", launching non-xa delivery stage");
                     // Launch non-XA delivery stage
                     getStageQueue().setStage(new NonXADeliveryStage(ctx, routingConnection));
                 }
@@ -135,7 +128,7 @@ public class ConnectStage extends Stage {
 
         public void onException(POObject po) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ConnectorCallback.onException, myreply=" + myReply + ", remove connection");
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ConnectorCallback.onException, myreply=" + myReply + ", remove connection");
             ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), po.getException());
             System.err.println("+++ Routing Swiftlet: " + po.getException());
             ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
@@ -164,18 +157,18 @@ public class ConnectStage extends Stage {
                 reply.setAuthRequired(false);
             if (reply.isAuthRequired()) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ListenerCallback.onSuccess, myRequest=" + myRequest + ", launching auth stage");
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ListenerCallback.onSuccess, myRequest=" + myRequest + ", launching auth stage");
                 // Launch auth stage
                 getStageQueue().setStage(new AuthStage(ctx, routingConnection, reply));
             } else {
                 if (myRequest.isRequestXA() || routingConnection.isXa()) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ListenerCallback.onSuccess, myRequest=" + myRequest + ", launching recovery stage");
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ListenerCallback.onSuccess, myRequest=" + myRequest + ", launching recovery stage");
                     // Launch recovery stage
                     getStageQueue().setStage(new XARecoveryStage(ctx, routingConnection));
                 } else {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ListenerCallback.onSuccess, myRequest=" + myRequest + ", launching non-xa delivery stage");
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ListenerCallback.onSuccess, myRequest=" + myRequest + ", launching non-xa delivery stage");
                     // Launch non-XA delivery stage
                     getStageQueue().setStage(new NonXADeliveryStage(ctx, routingConnection));
                 }
@@ -185,7 +178,7 @@ public class ConnectStage extends Stage {
 
         public void onException(POObject po) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/ListenerCallback.onException, myRequest=" + myRequest + ", remove connection");
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/ListenerCallback.onException, myRequest=" + myRequest + ", remove connection");
             ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), po.getException());
             System.err.println("+++ Routing Swiftlet: " + po.getException());
             ConnectReplyRequest reply = new ConnectReplyRequest();
@@ -196,7 +189,7 @@ public class ConnectStage extends Stage {
             ctx.timerSwiftlet.addInstantTimerListener(((Long) ctx.root.getProperty("reject-disconnect-delay").getValue()).longValue(), new TimerListener() {
                 public void performTimeAction() {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this.toString() + "/disconnect timeout");
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/disconnect timeout");
                     ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
                 }
             });

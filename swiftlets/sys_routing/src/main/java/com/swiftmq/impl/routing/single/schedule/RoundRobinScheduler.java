@@ -20,23 +20,32 @@ package com.swiftmq.impl.routing.single.schedule;
 import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 public class RoundRobinScheduler extends DefaultScheduler {
     int next = 0;
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public RoundRobinScheduler(SwiftletContext ctx, String destinationRouter, String queueName) {
         super(ctx, destinationRouter, queueName);
     }
 
-    protected synchronized RoutingConnection getNextConnection() {
-        if (connections.size() == 0)
-            return null;
-        if (next > connections.size() - 1)
-            next = 0;
-        RoutingConnection rc = connections.size() == 0 ? null : ((ConnectionEntry) connections.get(next)).getRoutingConnection();
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, rc=" + rc);
-        next++;
-        return rc;
+    protected RoutingConnection getNextConnection() {
+        lock.writeLock().lock();
+        try {
+            if (connections.isEmpty())
+                return null;
+            if (next > connections.size() - 1)
+                next = 0;
+            RoutingConnection rc = connections.isEmpty() ? null : connections.get(next).getRoutingConnection();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, rc=" + rc);
+            next++;
+            return rc;
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     public String toString() {

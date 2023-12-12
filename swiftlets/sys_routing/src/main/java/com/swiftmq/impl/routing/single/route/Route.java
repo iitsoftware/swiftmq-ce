@@ -21,32 +21,32 @@ import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.tools.dump.Dumpable;
 
 public interface Route extends Dumpable {
-    public final static int ADD = 0;
-    public final static int REMOVE = 1;
+    int ADD = 0;
+    int REMOVE = 1;
 
-    public int getType();
+    int getType();
 
-    public void setType(int type);
+    void setType(int type);
 
-    public String getVersion();
+    String getVersion();
 
-    public void setVersion(String version);
+    void setVersion(String version);
 
-    public String getDestinationRouter();
+    String getDestinationRouter();
 
-    public void setDestinationRouter(String destinationRouter);
+    void setDestinationRouter(String destinationRouter);
 
-    public String getKey();
+    String getKey();
 
-    public String getLastHop();
+    String getLastHop();
 
-    public void addHop(String routerName);
+    void addHop(String routerName);
 
-    public boolean hasHop(String routerName);
+    boolean hasHop(String routerName);
 
-    public int getHopCount();
+    int getHopCount();
 
-    public RoutingConnection getRoutingConnection();
+    RoutingConnection getRoutingConnection();
 
-    public void setRoutingConnection(RoutingConnection connection);
+    void setRoutingConnection(RoutingConnection connection);
 }

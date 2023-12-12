@@ -21,7 +21,10 @@ import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.connection.event.ActivationListener;
 import com.swiftmq.impl.routing.single.connection.stage.ProtocolSelectStage;
 import com.swiftmq.impl.routing.single.connection.stage.StageQueue;
-import com.swiftmq.impl.routing.single.smqpr.*;
+import com.swiftmq.impl.routing.single.smqpr.CloseStageQueueRequest;
+import com.swiftmq.impl.routing.single.smqpr.SMQRFactory;
+import com.swiftmq.impl.routing.single.smqpr.SMQRVisitor;
+import com.swiftmq.impl.routing.single.smqpr.StartStageRequest;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.net.Connection;
@@ -32,44 +35,48 @@ import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RoutingConnection
         implements RequestService {
     SwiftletContext ctx = null;
-    Connection connection = null;
+    final AtomicReference<Connection> connection = new AtomicReference<>();
     String password = null;
     boolean listener = false;
     InboundReader inboundReader = null;
     OutboundWriter outboundWriter = null;
     SMQRFactory smqrFactory = null;
-    String routerName = null;
-    String protocolVersion = null;
-    long keepaliveInterval = 0;
-    boolean closed = false;
+    final AtomicReference<String> routerName = new AtomicReference<>();
+    final AtomicReference<String> protocolVersion = new AtomicReference<>();
+    final AtomicLong keepaliveInterval = new AtomicLong();
+    final AtomicBoolean closed = new AtomicBoolean(false);
     StageQueue stageQueue = null;
     SMQRVisitor visitor = null;
     String connectionId = null;
-    int transactionSize = 0;
-    int windowSize = 0;
-    boolean xa = true;
-    boolean xaSelected = false;
+    final AtomicInteger transactionSize = new AtomicInteger();
+    final AtomicInteger windowSize = new AtomicInteger();
+    final AtomicBoolean xa = new AtomicBoolean(true);
+    final AtomicBoolean xaSelected = new AtomicBoolean(false);
     Entity entity = null;
-    Entity usageEntity = null;
-    ActivationListener activationListener = null;
+    final AtomicReference<Entity> usageEntity = new AtomicReference<>();
+    final AtomicReference<ActivationListener> activationListener = new AtomicReference<>();
 
     public RoutingConnection(SwiftletContext ctx, Connection connection, Entity entity, String password) throws IOException {
         this.ctx = ctx;
-        this.connection = connection;
+        this.connection.set(connection);
         this.entity = entity;
         this.password = password;
         this.listener = connection.getMetaData() instanceof ListenerMetaData;
         boolean compression = false;
         Property cprop = entity.getProperty("use-compression");
         if (cprop != null)
-            compression = ((Boolean) cprop.getValue()).booleanValue();
+            compression = (Boolean) cprop.getValue();
         Property xprop = entity.getProperty("use-xa");
         if (xprop != null)
-            xa = ((Boolean) xprop.getValue()).booleanValue();
+            xa.set((Boolean) xprop.getValue());
         connectionId = connection.toString();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/create...");
         outboundWriter = new OutboundWriter(ctx, this, compression);
@@ -90,42 +97,40 @@ public class RoutingConnection
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/create done");
     }
 
-    public synchronized void setUsageEntity(Entity usageEntity) {
-        this.usageEntity = usageEntity;
-        setProtocolVersion(protocolVersion);
-        setXaSelected(xaSelected);
+    public void setUsageEntity(Entity usageEntity) {
+        this.usageEntity.set(usageEntity);
+        setProtocolVersion(protocolVersion.get());
+        setXaSelected(xaSelected.get());
     }
 
     public String getProtocolVersion() {
-        return protocolVersion;
+        return protocolVersion.get();
     }
 
-    public synchronized void setProtocolVersion(String protocolVersion) {
-        this.protocolVersion = protocolVersion;
+    public void setProtocolVersion(String protocolVersion) {
+        this.protocolVersion.set(protocolVersion);
         try {
-            if (usageEntity != null)
-                usageEntity.getProperty("protocol-version").setValue(protocolVersion);
+            if (usageEntity.get() != null)
+                usageEntity.get().getProperty("protocol-version").setValue(protocolVersion);
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
-    public synchronized void setXaSelected(boolean xaSelected) {
-        this.xaSelected = xaSelected;
+    public void setXaSelected(boolean xaSelected) {
+        this.xaSelected.set(xaSelected);
         try {
-            if (usageEntity != null)
-                usageEntity.getProperty("uses-xa").setValue(new Boolean(xaSelected));
+            if (usageEntity.get() != null)
+                usageEntity.get().getProperty("uses-xa").setValue(new Boolean(xaSelected));
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
     public ActivationListener getActivationListener() {
-        return activationListener;
+        return activationListener.get();
     }
 
     public void setActivationListener(ActivationListener activationListener) {
-        this.activationListener = activationListener;
+        this.activationListener.set(activationListener);
     }
 
     public Entity getEntity() {
@@ -133,19 +138,19 @@ public class RoutingConnection
     }
 
     public int getTransactionSize() {
-        return transactionSize;
+        return transactionSize.get();
     }
 
     public void setTransactionSize(int transactionSize) {
-        this.transactionSize = transactionSize;
+        this.transactionSize.set(transactionSize);
     }
 
     public int getWindowSize() {
-        return windowSize;
+        return windowSize.get();
     }
 
     public void setWindowSize(int windowSize) {
-        this.windowSize = windowSize;
+        this.windowSize.set(windowSize);
     }
 
     public SMQRFactory getSMQRFactory() {
@@ -161,7 +166,7 @@ public class RoutingConnection
     }
 
     public void setKeepaliveInterval(long keepaliveInterval) {
-        this.keepaliveInterval = keepaliveInterval;
+        this.keepaliveInterval.set(keepaliveInterval);
         if (keepaliveInterval > 0) {
             ctx.timerSwiftlet.addTimerListener(keepaliveInterval, inboundReader);
             ctx.timerSwiftlet.addTimerListener(keepaliveInterval, outboundWriter);
@@ -169,15 +174,15 @@ public class RoutingConnection
     }
 
     public long getKeepaliveInterval() {
-        return keepaliveInterval;
+        return keepaliveInterval.get();
     }
 
     public boolean isXa() {
-        return xa;
+        return xa.get();
     }
 
     public Connection getConnection() {
-        return connection;
+        return connection.get();
     }
 
     public SMQRVisitor getVisitor() {
@@ -189,15 +194,15 @@ public class RoutingConnection
     }
 
     public void setRouterName(String routerName) {
-        this.routerName = routerName;
+        this.routerName.set(routerName);
     }
 
     public String getRouterName() {
-        return routerName;
+        return routerName.get();
     }
 
     public String getRemoteHostName() {
-        return connection.getHostname();
+        return connection.get().getHostname();
     }
 
     public String getConnectionId() {
@@ -210,10 +215,10 @@ public class RoutingConnection
         stageQueue.enqueue(request);
     }
 
-    public synchronized void enqueueRequest(Request request) throws Exception {
+    public void enqueueRequest(Request request) throws Exception {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/enqueueRequest, request=" + request + " ...");
-        if (closed) {
+        if (closed.get()) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/enqueueRequest, request=" + request + ", closed!");
             throw new Exception("RoutingConnection is closed");
@@ -223,15 +228,15 @@ public class RoutingConnection
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/enqueueRequest, request=" + request + " done");
     }
 
-    public synchronized boolean isClosed() {
-        return closed;
+    public boolean isClosed() {
+        return closed.get();
     }
 
-    public synchronized void close() {
-        if (closed)
+    public void close() {
+        if (closed.getAndSet(true))
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close...");
-        if (keepaliveInterval > 0) {
+        if (keepaliveInterval.get() > 0) {
             ctx.timerSwiftlet.removeTimerListener(inboundReader);
             ctx.timerSwiftlet.removeTimerListener(outboundWriter);
         }
@@ -241,7 +246,6 @@ public class RoutingConnection
         stageQueue.enqueue(r);
         sem.waitHere();
         outboundWriter.close();
-        closed = true;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close done");
     }
 

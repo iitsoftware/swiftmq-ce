@@ -54,7 +54,7 @@ public abstract class Stage {
                 ctx.networkSwiftlet.getConnectionManager().removeConnection(routingConnection.getConnection());
             }
         };
-        ctx.timerSwiftlet.addInstantTimerListener(((Long) ctx.root.getProperty("stage-valid-timeout").getValue()).longValue(), validTimer);
+        ctx.timerSwiftlet.addInstantTimerListener((Long) ctx.root.getProperty("stage-valid-timeout").getValue(), validTimer);
     }
 
     public abstract void process(Request request);

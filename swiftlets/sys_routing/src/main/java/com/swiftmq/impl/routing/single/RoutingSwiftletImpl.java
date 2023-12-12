@@ -35,7 +35,9 @@ import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.util.SwiftUtilities;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RoutingSwiftletImpl extends RoutingSwiftlet {
     public static final String UNROUTABLE_QUEUE = "unroutable";
@@ -45,7 +47,7 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
     protected SwiftletContext ctx = null;
     Map passwords = null;
     Map connectionEntities = null;
-    Set connections = null;
+    Set<Connection> connections = null;
     Acceptor acceptor = null;
     Semaphore shutdownSem = null;
     JobRegistrar jobRegistrar = null;
@@ -74,9 +76,9 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
 
     private void createHostAccessList(ListenerMetaData meta, EntityList haEntitiy) {
         Map h = haEntitiy.getEntities();
-        if (h.size() > 0) {
-            for (Iterator hIter = h.keySet().iterator(); hIter.hasNext(); ) {
-                String predicate = (String) hIter.next();
+        if (!h.isEmpty()) {
+            for (Object o : h.keySet()) {
+                String predicate = (String) o;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "Listener '" + meta + "': inbound host restrictions to: " + predicate);
                 meta.addToHostAccessList(predicate);
@@ -108,24 +110,24 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
 
     private ListenerMetaData createListener(Entity listenerEntity) throws SwiftletException {
         String listenerName = listenerEntity.getName();
-        int port = ((Integer) listenerEntity.getProperty("port").getValue()).intValue();
+        int port = (Integer) listenerEntity.getProperty("port").getValue();
         String socketFactoryClass = (String) listenerEntity.getProperty("socketfactory-class").getValue();
-        long keepAliveInterval = ((Long) listenerEntity.getProperty("keepalive-interval").getValue()).longValue();
+        long keepAliveInterval = (Long) listenerEntity.getProperty("keepalive-interval").getValue();
         Property prop = listenerEntity.getProperty("password");
         String password = (String) prop.getValue();
         InetAddress bindAddress = null;
         try {
             String s = (String) listenerEntity.getProperty("bindaddress").getValue();
-            if (s != null && s.trim().length() > 0)
+            if (s != null && !s.trim().isEmpty())
                 bindAddress = InetAddress.getByName(s);
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
-        int inputBufferSize = ((Integer) listenerEntity.getProperty("router-input-buffer-size").getValue()).intValue();
-        int inputExtendSize = ((Integer) listenerEntity.getProperty("router-input-extend-size").getValue()).intValue();
-        int outputBufferSize = ((Integer) listenerEntity.getProperty("router-output-buffer-size").getValue()).intValue();
-        int outputExtendSize = ((Integer) listenerEntity.getProperty("router-output-extend-size").getValue()).intValue();
-        boolean useTCPNoDelay = ((Boolean) listenerEntity.getProperty("use-tcp-no-delay").getValue()).booleanValue();
+        int inputBufferSize = (Integer) listenerEntity.getProperty("router-input-buffer-size").getValue();
+        int inputExtendSize = (Integer) listenerEntity.getProperty("router-input-extend-size").getValue();
+        int outputBufferSize = (Integer) listenerEntity.getProperty("router-output-buffer-size").getValue();
+        int outputExtendSize = (Integer) listenerEntity.getProperty("router-output-extend-size").getValue();
+        boolean useTCPNoDelay = (Boolean) listenerEntity.getProperty("use-tcp-no-delay").getValue();
 
         ListenerMetaData meta = new ListenerMetaData(bindAddress, port, this, keepAliveInterval, socketFactoryClass, acceptor,
                 inputBufferSize, inputExtendSize, outputBufferSize, outputExtendSize, useTCPNoDelay);
@@ -134,7 +136,8 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "starting listener '" + listenerName + "' ...");
         try {
-            passwords.put(meta, password);
+            if (password != null)
+                passwords.put(meta, password);
             connectionEntities.put(meta, listenerEntity);
             ctx.networkSwiftlet.createTCPListener(meta);
         } catch (Exception e) {
@@ -143,7 +146,9 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
         prop.setPropertyChangeListener(new PropertyChangeAdapter(meta) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                passwords.put(configObject, newValue);
+                passwords.remove(configObject);
+                if (newValue != null)
+                    passwords.put(configObject, newValue);
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (listenerPassword): oldValue=" + oldValue + ", newValue=" + newValue);
             }
@@ -155,8 +160,7 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
         String[] inboundNames = listenerList.getEntityNames();
         if (inboundNames != null) {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "creating listeners ...");
-            for (int i = 0; i < inboundNames.length; i++) {
-                String listenerName = inboundNames[i];
+            for (String listenerName : inboundNames) {
                 createListener(listenerList.getEntity(listenerName));
             }
         }
@@ -196,29 +200,32 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
 
         Property prop = connectorEntity.getProperty("password");
         String password = (String) prop.getValue();
-        int inputBufferSize = ((Integer) connectorEntity.getProperty("router-input-buffer-size").getValue()).intValue();
-        int inputExtendSize = ((Integer) connectorEntity.getProperty("router-input-extend-size").getValue()).intValue();
-        int outputBufferSize = ((Integer) connectorEntity.getProperty("router-output-buffer-size").getValue()).intValue();
-        int outputExtendSize = ((Integer) connectorEntity.getProperty("router-output-extend-size").getValue()).intValue();
-        boolean useTCPNoDelay = ((Boolean) connectorEntity.getProperty("use-tcp-no-delay").getValue()).booleanValue();
+        int inputBufferSize = (Integer) connectorEntity.getProperty("router-input-buffer-size").getValue();
+        int inputExtendSize = (Integer) connectorEntity.getProperty("router-input-extend-size").getValue();
+        int outputBufferSize = (Integer) connectorEntity.getProperty("router-output-buffer-size").getValue();
+        int outputExtendSize = (Integer) connectorEntity.getProperty("router-output-extend-size").getValue();
+        boolean useTCPNoDelay = (Boolean) connectorEntity.getProperty("use-tcp-no-delay").getValue();
 
         ConnectorMetaData meta = new ConnectorMetaData(host, port, retry, this, -1, socketFactoryClass, acceptor,
                 inputBufferSize, inputExtendSize, outputBufferSize, outputExtendSize, useTCPNoDelay);
         connectorEntity.setUserObject(meta);
 
-        passwords.put(meta, password);
+        if (password != null)
+            passwords.put(meta, password);
         connectionEntities.put(meta, connectorEntity);
 
         prop.setPropertyChangeListener(new PropertyChangeAdapter(meta) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                passwords.put(configObject, newValue);
+                passwords.remove(configObject);
+                if (newValue != null)
+                    passwords.put(configObject, newValue);
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (connectorPassword): oldValue=" + oldValue + ", newValue=" + newValue);
             }
         });
         prop = connectorEntity.getProperty("enabled");
-        if (((Boolean) prop.getValue()).booleanValue()) {
+        if ((Boolean) prop.getValue()) {
             try {
                 ctx.networkSwiftlet.createTCPConnector(meta);
             } catch (Exception e) {
@@ -229,7 +236,7 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 try {
-                    boolean enabled = ((Boolean) newValue).booleanValue();
+                    boolean enabled = (Boolean) newValue;
                     if (enabled)
                         ctx.networkSwiftlet.createTCPConnector((ConnectorMetaData) configObject);
                     else
@@ -246,10 +253,10 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
 
     private void createConnectors(EntityList connectorList) throws SwiftletException {
         Map m = connectorList.getEntities();
-        if (m.size() > 0) {
+        if (!m.isEmpty()) {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$routing", "starting connectors ...");
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                createConnector((Entity) ((Map.Entry) iter.next()).getValue());
+            for (Object o : m.entrySet()) {
+                createConnector((Entity) ((Map.Entry<?, ?>) o).getValue());
             }
         }
 
@@ -281,12 +288,12 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
     private void createStaticRoutes(EntityList staticRouteList) throws SwiftletException {
         String[] staticRoutes = staticRouteList.getEntityNames();
         if (staticRoutes != null) {
-            for (int i = 0; i < staticRoutes.length; i++) {
+            for (String staticRoute : staticRoutes) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(getName(), "creating static route to: " + staticRoutes[i]);
+                    ctx.traceSpace.trace(getName(), "creating static route to: " + staticRoute);
                 try {
-                    Scheduler scheduler = ctx.schedulerRegistry.getScheduler(staticRoutes[i]);
-                    addRoute(new RouteImpl(staticRoutes[i], scheduler.getQueueName(), true, scheduler));
+                    Scheduler scheduler = ctx.schedulerRegistry.getScheduler(staticRoute);
+                    addRoute(new RouteImpl(staticRoute, scheduler.getQueueName(), true, scheduler));
                 } catch (Exception e) {
                     throw new SwiftletException(e.getMessage());
                 }
@@ -341,9 +348,9 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
     protected void startup(Configuration config) throws SwiftletException {
         this.config = config;
         root = config;
-        passwords = Collections.synchronizedMap(new HashMap());
-        connectionEntities = Collections.synchronizedMap(new HashMap());
-        connections = Collections.synchronizedSet(new HashSet());
+        passwords = new ConcurrentHashMap();
+        connectionEntities = new ConcurrentHashMap();
+        connections = ConcurrentHashMap.newKeySet();
         ctx = createSwiftletContext(this, root);
 
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
@@ -382,8 +389,8 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
         EntityList connectorList = (EntityList) root.getEntity("connectors");
         String[] outboundNames = connectorList.getEntityNames();
         if (outboundNames != null) {
-            for (int i = 0; i < outboundNames.length; i++) {
-                Entity entity = connectorList.getEntity(outboundNames[i]);
+            for (String outboundName : outboundNames) {
+                Entity entity = connectorList.getEntity(outboundName);
                 if (((Boolean) entity.getProperty("enabled").getValue()).booleanValue()) {
                     ConnectorMetaData meta = (ConnectorMetaData) entity.getUserObject();
                     ctx.networkSwiftlet.removeTCPConnector(meta);
@@ -395,8 +402,8 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
         EntityList listenerList = (EntityList) root.getEntity("listeners");
         String[] inboundNames = listenerList.getEntityNames();
         if (inboundNames != null) {
-            for (int i = 0; i < inboundNames.length; i++) {
-                ListenerMetaData meta = (ListenerMetaData) listenerList.getEntity(inboundNames[i]).getUserObject();
+            for (String inboundName : inboundNames) {
+                ListenerMetaData meta = (ListenerMetaData) listenerList.getEntity(inboundName).getUserObject();
                 ctx.networkSwiftlet.removeTCPListener(meta);
             }
         }
@@ -404,8 +411,8 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
         Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
         if (c.length > 0)
             shutdownSem = new Semaphore();
-        for (int i = 0; i < c.length; i++) {
-            ctx.networkSwiftlet.getConnectionManager().removeConnection(c[i]);
+        for (Connection connection : c) {
+            ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
         }
         if (shutdownSem != null) {
             System.out.println("+++ Waiting for Connection Termination ...");
@@ -467,7 +474,7 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
             connections.remove(connection);
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "Acceptor/disconnected: " + connection + ", DONE.");
-            if (connections.size() == 0 && shutdownSem != null)
+            if (connections.isEmpty() && shutdownSem != null)
                 shutdownSem.notifySingleWaiter();
         }
     }
