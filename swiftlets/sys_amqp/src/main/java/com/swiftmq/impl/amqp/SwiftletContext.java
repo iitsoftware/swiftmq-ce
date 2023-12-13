@@ -20,7 +20,10 @@ package com.swiftmq.impl.amqp;
 import com.swiftmq.impl.amqp.amqp.v00_09_01.ExchangeRegistry;
 import com.swiftmq.impl.amqp.amqp.v00_09_01.QueueMapper;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.TransformerFactory;
-import com.swiftmq.mgmt.*;
+import com.swiftmq.mgmt.Configuration;
+import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.EntityList;
+import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.AuthenticationSwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
@@ -33,8 +36,8 @@ import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SwiftletContext {
     public Configuration config = null;
@@ -53,7 +56,7 @@ public class SwiftletContext {
     public TraceSpace protSpace = null;
     public AMQPSwiftlet amqpSwiftlet = null;
     public TransformerFactory transformerFactory = null;
-    private Set connectedIds = new HashSet();
+    private Set<String> connectedIds = ConcurrentHashMap.newKeySet();
     private boolean allowSameContainerId = true;
     public boolean smartTree = true;
     public ExchangeRegistry exchangeRegistry = null;
@@ -78,11 +81,7 @@ public class SwiftletContext {
         transformerFactory = new TransformerFactory(this);
         Property prop = root.getProperty("allow-same-containerid");
         allowSameContainerId = ((Boolean) prop.getValue()).booleanValue();
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                allowSameContainerId = ((Boolean) newValue).booleanValue();
-            }
-        });
+        prop.setPropertyChangeListener((property, oldValue, newValue) -> allowSameContainerId = ((Boolean) newValue).booleanValue());
         smartTree = SwiftletManager.getInstance().isUseSmartTree();
         if (smartTree)
             usageList.getTemplate().removeEntities();
@@ -90,7 +89,7 @@ public class SwiftletContext {
         queueMapper = new QueueMapper(this);
     }
 
-    public synchronized void addConnectId(String id) throws Exception {
+    public void addConnectId(String id) throws Exception {
         if (allowSameContainerId)
             return;
         if (connectedIds.contains(id))
@@ -98,7 +97,7 @@ public class SwiftletContext {
         connectedIds.add(id);
     }
 
-    public synchronized void removeId(String id) {
+    public void removeId(String id) {
         if (allowSameContainerId)
             return;
         connectedIds.remove(id);

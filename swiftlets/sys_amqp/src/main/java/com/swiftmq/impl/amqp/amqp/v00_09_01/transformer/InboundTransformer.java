@@ -21,6 +21,7 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.MessageWrap;
 import com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.NameTranslator;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 import com.swiftmq.tools.util.IdGenerator;
 
 import javax.jms.DeliveryMode;
@@ -42,12 +43,12 @@ public abstract class InboundTransformer {
     int defaultPriority;
     long defaultTtl;
     String uniqueId = IdGenerator.getInstance().nextId('/');
-    long msgId = 0;
+    AtomicWrappingCounterInteger msgId = new AtomicWrappingCounterInteger(0);
     String idPrefix = null;
 
     protected String nextMsgId() {
         StringBuffer b = new StringBuffer(idPrefix);
-        b.append(msgId++);
+        b.append(msgId.getAndIncrement());
         return b.toString();
     }
 
@@ -69,7 +70,7 @@ public abstract class InboundTransformer {
 
         nameTranslator = (NameTranslator) Class.forName(getValue(PROP_NAME_TRANSLATOR, "com.swiftmq.impl.amqp.amqp.v01_00_00.transformer.InvalidToUnderscoreNameTranslator")).newInstance();
         prefixVendor = getValue(PROP_PREFIX_VENDOR, "JMS_AMQP_");
-        defaultDeliveryMode = getValue(PROP_DEFAULT_DELIVERY_MODE, "PERSISTENT").toUpperCase().equals("PERSISTENT") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
+        defaultDeliveryMode = getValue(PROP_DEFAULT_DELIVERY_MODE, "PERSISTENT").equalsIgnoreCase("PERSISTENT") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
         defaultPriority = Integer.parseInt(getValue(PROP_DEFAULT_PRIORITY, String.valueOf(Message.DEFAULT_PRIORITY)));
         defaultTtl = Long.parseLong(getValue(PROP_DEFAULT_TTL, String.valueOf(Message.DEFAULT_TIME_TO_LIVE)));
     }

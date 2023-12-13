@@ -46,8 +46,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SASLVisitor {
     static final String TP_SASLSVC = "sys$amqp.sasl.service";
@@ -55,9 +54,8 @@ public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SAS
     SwiftletContext ctx = null;
     VersionedConnection versionedConnection = null;
     PipelineQueue pipelineQueue = null;
-    boolean closed = false;
-    boolean closeInProgress = false;
-    Lock closeLock = new ReentrantLock();
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean closeInProgress = new AtomicBoolean(false);
     Property authEnabled = null;
     AMQPType[] saslMechanisms = null;
     String hostname = null;
@@ -75,7 +73,6 @@ public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SAS
         } catch (UnknownHostException e) {
         }
         pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SASLSVC), "ConnectionDispatcher", this);
-//    dispatch(new POSendInit());
         new POSendInit().accept(this);  // Must be done this way, otherwise SaslOutcome message may outrun the SASL prot header
     }
 
@@ -137,7 +134,6 @@ public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SAS
                 ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, frame=" + frame);
             if (ctx.protSpace.enabled)
                 ctx.protSpace.trace("amqp-100", toString() + "/RCV[" + ((AMQPFrame) frame).getChannel() + "] (size=" + frame.getPredictedSize() + "): " + frame);
-//      dispatch(new POSaslFrameReceived(frame));
             new POSaslFrameReceived(frame).accept(this);   // Important to do that in the same thread, otherwise the AMQPInputHandler won't work
         } catch (Exception e) {
             e.printStackTrace();
@@ -188,7 +184,7 @@ public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SAS
     public void visit(POClose po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        closed = true;
+        closed.set(true);
         pipelineQueue.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
@@ -258,14 +254,11 @@ public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SAS
 
     public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close ...");
-        closeLock.lock();
-        if (closeInProgress) {
+        if (closed.get() || closeInProgress.getAndSet(true)) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close in progress, return");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", closed or close in progress, return");
             return;
         }
-        closeInProgress = true;
-        closeLock.unlock();
         Semaphore sem = new Semaphore();
         dispatch(new POClose(sem));
         sem.waitHere();
@@ -282,8 +275,7 @@ public class SASLHandler extends SaslFrameVisitorAdapter implements Handler, SAS
                 ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", CallbackHandlerImpl.handle ...");
             PasswordCallback pwc = null;
             AuthorizeCallback azc = null;
-            for (int i = 0; i < callbacks.length; i++) {
-                Callback c = callbacks[i];
+            for (Callback c : callbacks) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", CallbackHandlerImpl.handle, c=" + c);
                 if (c instanceof NameCallback)

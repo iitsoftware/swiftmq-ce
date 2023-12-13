@@ -19,10 +19,11 @@ package com.swiftmq.impl.auth.standard;
 
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.auth.ResourceLimitGroup;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.sql.LikeComparator;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class User {
@@ -30,7 +31,7 @@ public class User {
     String password;
     Group group;
     ResourceLimitGroup rlgroup;
-    List<String> hostList = new CopyOnWriteArrayList<>();
+    List<String> hostList = new ConcurrentList<>(new ArrayList<>());
     final AtomicInteger numberConnections = new AtomicInteger();
 
     protected User(String name, String password, Group group, ResourceLimitGroup rlgroup) {

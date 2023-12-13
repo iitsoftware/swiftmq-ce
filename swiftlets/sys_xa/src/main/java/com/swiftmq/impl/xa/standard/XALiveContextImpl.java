@@ -24,10 +24,11 @@ import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.swiftlet.xa.XAContextException;
 import com.swiftmq.tools.collection.ConcurrentExpandableList;
+import com.swiftmq.tools.collection.ConcurrentList;
 
 import javax.transaction.xa.XAException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -38,8 +39,8 @@ public class XALiveContextImpl extends XAContextImpl {
     final AtomicBoolean rolledBack = new AtomicBoolean(false);
     final AtomicBoolean closed = new AtomicBoolean(false);
     final AtomicBoolean wasTimeout = new AtomicBoolean(false);
-    List<QueueTransaction> transactions = new CopyOnWriteArrayList<>();
-    List<Object[]> recoveryTransactions = new CopyOnWriteArrayList<>();
+    List<QueueTransaction> transactions = new ConcurrentList<>(new ArrayList<>());
+    List<Object[]> recoveryTransactions = new ConcurrentList<>(new ArrayList<>());
     ConcurrentExpandableList<String> registrations = new ConcurrentExpandableList<>();
     final AtomicInteger nReg = new AtomicInteger();
     final AtomicBoolean registeredUsageList = new AtomicBoolean(false);

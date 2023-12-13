@@ -35,9 +35,8 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.SwiftletManager;
-import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.tools.collection.ConcurrentExpandableList;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
@@ -48,8 +47,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPConnectionVisitor {
     static final HeartbeatFrame HEARTBEAT_FRAME = new HeartbeatFrame(0);
@@ -59,9 +58,8 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     SwiftletContext ctx = null;
     VersionedConnection versionedConnection = null;
     PipelineQueue pipelineQueue = null;
-    boolean closed = false;
-    boolean closeInProgress = false;
-    Lock closeLock = new ReentrantLock();
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean closeInProgress = new AtomicBoolean(false);
     String hostname = null;
     DispatchVisitorAdapter dispatchVisitorAdapter = new DispatchVisitorAdapter();
     ConnectionVisitorAdapter connectionVisitorAdapter = new ConnectionVisitorAdapter();
@@ -70,8 +68,8 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     TimerListener heartBeatSender = null;
     TimerListener idleTimeoutChecker = null;
     boolean closeFrameSent = false;
-    ArrayList localChannels = new ArrayList();
-    ArrayList remoteChannels = new ArrayList();
+    ConcurrentExpandableList<SessionHandler> localChannels = new ConcurrentExpandableList<>();
+    List remoteChannels = new ArrayList();
     Entity usage = null;
     EntityList sessionUsageList = null;
     Property receivedSecProp = null;
@@ -80,9 +78,9 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     Property sentTotalProp = null;
     int maxLocalFrameSize = Integer.MAX_VALUE;
     int maxRemoteFrameSize = Integer.MAX_VALUE;
-    boolean connectionDisabled = false;
-    boolean opened = false;
-    boolean apacheSelectors = false;
+    final AtomicBoolean connectionDisabled = new AtomicBoolean(false);
+    final AtomicBoolean opened = new AtomicBoolean(false);
+    final AtomicBoolean apacheSelectors = new AtomicBoolean(false);
 
     public AMQPHandler(SwiftletContext ctx, VersionedConnection versionedConnection) {
         this.ctx = ctx;
@@ -137,7 +135,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     }
 
     public boolean isApacheSelectors() {
-        return apacheSelectors;
+        return apacheSelectors.get();
     }
 
     public void dispatch(POObject po) {
@@ -148,29 +146,29 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
         try {
             lastActivity = System.currentTimeMillis();
             FrameIF frame = FrameReader.createFrame(in);
-            if (connectionDisabled) {
+            if (connectionDisabled.get()) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, connection is disabled");
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", dataAvailable, connection is disabled");
                 return;
             }
             int size = frame.getPredictedSize();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, frame=" + frame);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", dataAvailable, frame=" + frame);
             if (ctx.protSpace.enabled)
-                ctx.protSpace.trace("amqp-100", toString() + "/RCV[" + ((AMQPFrame) frame).getChannel() + "] (size=" + size + "): " + frame);
+                ctx.protSpace.trace("amqp-100", this + "/RCV[" + ((AMQPFrame) frame).getChannel() + "] (size=" + size + "): " + frame);
             if (size > maxLocalFrameSize) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, Frame size (" + size + ") > max frame size (" + maxLocalFrameSize + ")");
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", dataAvailable, Frame size (" + size + ") > max frame size (" + maxLocalFrameSize + ")");
                 ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), "Connection closed. Error: Frame size (" + size + ") > max frame size (" + maxLocalFrameSize + ")");
-                connectionDisabled = true;
+                connectionDisabled.set(true);
                 dispatch(new POSendClose(ConnectionError.FRAMING_ERROR, new AMQPString("Frame size (" + size + ") > max frame size (" + maxLocalFrameSize + ")")));
             } else
                 frame.accept(dispatchVisitorAdapter);
         } catch (Exception e) {
             e.printStackTrace();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, exception=" + e);
-            ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, exception=" + e);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", dataAvailable, exception=" + e);
+            ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), this + ", dataAvailable, exception=" + e);
             ctx.networkSwiftlet.getConnectionManager().removeConnection(versionedConnection.getConnection());
         }
     }
@@ -185,7 +183,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
 
     public void visit(POSendOpen po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         Entity connectionTemplate = versionedConnection.getConnectionTemplate();
         myIdleTimeout = ((Long) connectionTemplate.getProperty("idle-timeout").getValue()).longValue();
         OpenFrame frame = new OpenFrame(0);
@@ -210,43 +208,43 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
         versionedConnection.send(AMQPHandlerFactory.AMQP_INIT);
         versionedConnection.send(frame);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POConnectionFrameReceived po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         po.getFrame().accept(connectionVisitorAdapter);
         Semaphore sem = po.getSemaphore();
         if (sem != null)
             sem.notifySingleWaiter();
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POSendHeartBeat po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         versionedConnection.send(HEARTBEAT_FRAME);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POCheckIdleTimeout po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         long to = lastActivity + myIdleTimeout;
         if (System.currentTimeMillis() > to) {
-            ctx.logSwiftlet.logWarning(ctx.amqpSwiftlet.getName(), toString() + ", idleTimeout reached (" + myIdleTimeout + " ms). Closing connection!");
+            ctx.logSwiftlet.logWarning(ctx.amqpSwiftlet.getName(), this + ", idleTimeout reached (" + myIdleTimeout + " ms). Closing connection!");
             ctx.networkSwiftlet.getConnectionManager().removeConnection(versionedConnection.getConnection());
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POSendClose po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         CloseFrame frame = new CloseFrame(0);
         if (po.getErrorCondition() != null) {
             com.swiftmq.amqp.v100.generated.transport.definitions.Error error = new Error();
@@ -254,7 +252,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
             if (po.getDescription() != null)
                 error.setDescription(po.getDescription());
             frame.setError(error);
-            connectionDisabled = true;
+            connectionDisabled.set(true);
         }
         frame.setCallback(new AsyncCompletionCallback() {
             public void done(boolean b) {
@@ -264,12 +262,12 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
         versionedConnection.send(frame);
         closeFrameSent = true;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POConnectionCollect po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         long received = 0;
         long sent = 0;
         int totalReceived = 0;
@@ -285,26 +283,26 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
             }
         }
         double deltasec = Math.max(1.0, (double) (System.currentTimeMillis() - po.getLastCollect()) / 1000.0);
-        double rsec = ((double) received / (double) deltasec) + 0.5;
-        double ssec = ((double) sent / (double) deltasec) + 0.5;
+        double rsec = ((double) received / deltasec) + 0.5;
+        double ssec = ((double) sent / deltasec) + 0.5;
         try {
             if (((Integer) receivedSecProp.getValue()).intValue() != rsec)
-                receivedSecProp.setValue(new Integer((int) rsec));
+                receivedSecProp.setValue(Integer.valueOf((int) rsec));
             if (((Integer) sentSecProp.getValue()).intValue() != ssec)
-                sentSecProp.setValue(new Integer((int) ssec));
+                sentSecProp.setValue(Integer.valueOf((int) ssec));
             if (((Integer) receivedTotalProp.getValue()).intValue() != totalReceived)
-                receivedTotalProp.setValue(new Integer(totalReceived));
+                receivedTotalProp.setValue(Integer.valueOf(totalReceived));
             if (((Integer) sentTotalProp.getValue()).intValue() != totalSent)
-                sentTotalProp.setValue(new Integer(totalSent));
+                sentTotalProp.setValue(Integer.valueOf(totalSent));
         } catch (Exception e) {
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POClose po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         ctx.removeId(versionedConnection.getActiveLogin().getClientId());
         if (heartBeatSender != null) {
             ctx.timerSwiftlet.removeTimerListener(heartBeatSender);
@@ -324,29 +322,26 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
         }
         localChannels.clear();
         remoteChannels.clear();
-        closed = true;
+        closed.set(true);
         pipelineQueue.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close ...");
-        closeLock.lock();
-        if (closeInProgress) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close ...");
+        if (closed.get() || closeInProgress.get()) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close in progress, return");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close in progress, return");
             return;
         }
-        closeInProgress = true;
-        closeLock.unlock();
         Semaphore sem = new Semaphore();
         dispatch(new POClose(sem));
         sem.waitHere();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close done");
     }
 
     public String toString() {
@@ -411,7 +406,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
         }
 
         public String toString() {
-            return AMQPHandler.this.toString() + "/ConnectionDispatcher";
+            return AMQPHandler.this + "/ConnectionDispatcher";
         }
     }
 
@@ -432,7 +427,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
 
         public void visit(OpenFrame frame) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit OpenFrame ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit OpenFrame ...");
             try {
                 String cid = frame.getContainerId() != null ? frame.getContainerId().getValue() : null;
                 ctx.addConnectId(cid);
@@ -444,7 +439,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
 
                 AMQPArray offeredCapas = frame.getOfferedCapabilities();
                 AMQPArray desiredCapas = frame.getDesiredCapabilities();
-                apacheSelectors = checkCapability(CAPABILITY_SELECTOR, offeredCapas) || checkCapability(CAPABILITY_SELECTOR, desiredCapas);
+                apacheSelectors.set(checkCapability(CAPABILITY_SELECTOR, offeredCapas) || checkCapability(CAPABILITY_SELECTOR, desiredCapas));
                 Milliseconds idleTimeout = frame.getIdleTimeOut();
                 if (idleTimeout != null) {
                     long value = idleTimeout.getValue() / 2;
@@ -457,19 +452,19 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
                         ctx.timerSwiftlet.addTimerListener(value / 2, heartBeatSender);
                     }
                 }
-                opened = true;
+                opened.set(true);
             } catch (Exception e) {
                 dispatch(new POSendClose(AmqpError.ILLEGAL_STATE, new AMQPString(e.getMessage())));
             }
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit OpenFrame done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit OpenFrame done");
         }
 
         public void visit(BeginFrame frame) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit BeginFrame ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit BeginFrame ...");
             SessionHandler sessionHandler = new SessionHandler(ctx, versionedConnection, AMQPHandler.this, frame);
-            sessionHandler.setChannel(ArrayListTool.setFirstFreeOrExpand(localChannels, sessionHandler));
+            sessionHandler.setChannel(localChannels.add(sessionHandler));
             if (sessionUsageList != null) {
                 Entity sessionUsage = sessionUsageList.createEntity();
                 sessionUsage.setName(String.valueOf(sessionHandler.getChannel()));
@@ -477,7 +472,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
                 try {
                     sessionUsage.setDynamicObject(sessionHandler);
                     sessionUsageList.addEntity(sessionUsage);
-                    sessionUsage.getProperty("remote-channel").setValue(new Integer(frame.getChannel()));
+                    sessionUsage.getProperty("remote-channel").setValue(Integer.valueOf(frame.getChannel()));
                 } catch (Exception e) {
                 }
                 sessionHandler.setUsage(sessionUsage);
@@ -485,16 +480,16 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
             sessionHandler.startSession();
             mapSessionHandlerToRemoteChannel(sessionHandler, frame.getChannel());
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit BeginFrame done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit BeginFrame done");
         }
 
         public void visit(EndFrame frame) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit EndFrame ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit EndFrame ...");
 
             SessionHandler sessionHandler = getSessionHandlerForRemoteChannel(frame.getChannel());
             if (sessionHandler != null) {
-                localChannels.set(sessionHandler.getChannel(), null);
+                localChannels.remove(sessionHandler.getChannel());
                 unmapSessionHandlerFromRemoteChannel(frame.getChannel());
                 sessionHandler.stopSession();
                 sessionHandler.close();
@@ -502,36 +497,36 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
                     sessionUsageList.removeDynamicEntity(sessionHandler);
             } else {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit EndFrame: Illegal state: no session handler found for remote channel: " + frame.getChannel() + ". Disconnecting.");
-                ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), toString() + ", visit EndFrame: Illegal state: no session handler found for remote channel: " + frame.getChannel() + ". Disconnecting.");
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit EndFrame: Illegal state: no session handler found for remote channel: " + frame.getChannel() + ". Disconnecting.");
+                ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), this + ", visit EndFrame: Illegal state: no session handler found for remote channel: " + frame.getChannel() + ". Disconnecting.");
                 dispatch(new POSendClose(AmqpError.ILLEGAL_STATE, new AMQPString("Illegal state: no session handler found for remote channel: " + frame.getChannel() + ". Disconnecting.")));
             }
 
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit EndFrame done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit EndFrame done");
         }
 
         public void visit(CloseFrame frame) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit CloseFrame ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit CloseFrame ...");
 
             if (!closeFrameSent)
                 dispatch(new POSendClose(null, null));
 
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit CloseFrame done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit CloseFrame done");
         }
 
         public void visit(HeartbeatFrame frame) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit HeartbeatFrame ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit HeartbeatFrame ...");
             lastActivity = System.currentTimeMillis();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit HeartbeatFrame done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit HeartbeatFrame done");
         }
 
         public String toString() {
-            return AMQPHandler.this.toString() + "/ConnectionVisitorAdapter";
+            return AMQPHandler.this + "/ConnectionVisitorAdapter";
         }
     }
 }

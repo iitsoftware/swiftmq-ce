@@ -26,6 +26,7 @@ import com.swiftmq.net.protocol.amqp.AMQPInputHandler;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.net.Connection;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.util.DataStreamInputStream;
 import com.swiftmq.tools.util.DataStreamOutputStream;
 import com.swiftmq.tools.util.LengthCaptureDataInput;
@@ -34,6 +35,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHandler, com.swiftmq.net.client.InboundHandler, OutboundHandler {
     public static final String TP_CONNECTIONSVC = "sys$amqp.connection.service";
@@ -44,15 +47,15 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
     Entity connectionTemplate = null;
     volatile boolean requiresSasl = false;
     volatile boolean saslFinished = false;
-    List saslHandlerList = new ArrayList();
-    List amqpHandlerList = new ArrayList();
+    List<Pair> saslHandlerList = new ConcurrentList<>(new ArrayList<>());
+    List<Pair> amqpHandlerList = new ConcurrentList<>(new ArrayList<>());
     Connection connection = null;
     OutboundQueue outboundQueue = null;
     DataStreamInputStream dis = new DataStreamInputStream();
-    volatile AMQPInputHandler protHandler = null;
-    volatile Handler delegate = null;
-    volatile ActiveLogin activeLogin = null;
-    boolean closed = false;
+    final AtomicReference<AMQPInputHandler> protHandler = new AtomicReference<>();
+    final AtomicReference<Handler> delegate = new AtomicReference<>();
+    final AtomicReference<ActiveLogin> activeLogin = new AtomicReference<>();
+    final AtomicBoolean closed = new AtomicBoolean(false);
 
     public VersionedConnection(SwiftletContext ctx, Connection connection, Entity usage, boolean requiresSasl, Entity connectionTemplate) {
         this.ctx = ctx;
@@ -77,7 +80,7 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
     }
 
     public ActiveLogin getActiveLogin() {
-        return activeLogin;
+        return activeLogin.get();
     }
 
     public String getRemoteHostname() {
@@ -89,7 +92,7 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
     }
 
     public void collect(long lastCollect) {
-        Handler handler = delegate;
+        Handler handler = delegate.get();
         if (handler != null)
             handler.collect(lastCollect);
     }
@@ -102,9 +105,9 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
         amqpHandlerList.add(new Pair(header, factory));
     }
 
-    private synchronized HandlerFactory getFactory(ProtocolHeader header, List list) {
+    private HandlerFactory getFactory(ProtocolHeader header, List<Pair> list) {
         for (int i = list.size() - 1; i >= 0; i--) {
-            Pair pair = (Pair) list.get(i);
+            Pair pair = list.get(i);
             if (pair.header.equals(header))
                 return pair.factory;
         }
@@ -130,49 +133,44 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/setSaslFinished saslFinished: " + saslFinished + ", activeLogin: " + activeLogin);
         this.saslFinished = saslFinished;
-        this.activeLogin = activeLogin;
+        this.activeLogin.set(activeLogin);
         try {
             usage.getProperty("username").setValue(activeLogin.getUserName());
         } catch (Exception e) {
         }
-        delegate = null;
-        protHandler.setProtHeaderExpected(saslFinished);
+        delegate.set(null);
+        protHandler.get().setProtHeaderExpected(saslFinished);
     }
 
     public void dataAvailable(Connection connection, InputStream inputStream) throws IOException {
-        if (protHandler == null) {
-            protHandler = (AMQPInputHandler) connection.getProtocolInputHandler();
-//      protHandler.setTraceKey(ctx.amqpSwiftlet.getName());
-//      protHandler.setTracePrefix(toString());
-//      protHandler.setTraceSpace(ctx.traceSpace);
+        if (protHandler.get() == null) {
+            protHandler.set((AMQPInputHandler) connection.getProtocolInputHandler());
         }
         dis.setInputStream(inputStream);
         dataAvailable(dis);
     }
 
     public void dataAvailable(LengthCaptureDataInput in) {
-        if (delegate != null)
-            delegate.dataAvailable(in);
+        if (delegate.get() != null)
+            delegate.get().dataAvailable(in);
         else {
             try {
-                boolean valid = true;
                 ProtocolHeader header = new ProtocolHeader();
                 header.readContent(in);
                 if (ctx.protSpace.enabled) ctx.protSpace.trace("amqp", toString() + "/RCV: " + header);
                 if (header.equals(AMQPHandlerFactory.AMQP_INIT)) {
-                    protHandler.setProtHeaderExpected(false);
-                    protHandler.setMode091(true);
+                    protHandler.get().setProtHeaderExpected(false);
+                    protHandler.get().setMode091(true);
                     HandlerFactory factory = getFactory(header, amqpHandlerList);
                     if (factory != null) {
-                        delegate = factory.createHandler(this);
+                        delegate.set(factory.createHandler(this));
                         try {
-                            usage.getProperty("amqp-version").setValue(delegate.getVersion());
+                            usage.getProperty("amqp-version").setValue(delegate.get().getVersion());
                         } catch (Exception e) {
                         }
 
                     } else {
                         sendAndClose(connection, header, ((Pair) amqpHandlerList.get(amqpHandlerList.size() - 1)).header);
-                        valid = false;
                     }
                 } else {
                     if (requiresSasl) {
@@ -180,41 +178,38 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
                             HandlerFactory factory = getFactory(header, amqpHandlerList);
                             if (factory != null) {
                                 // start AMQP
-                                protHandler.setProtHeaderExpected(false);
-                                delegate = factory.createHandler(this);
+                                protHandler.get().setProtHeaderExpected(false);
+                                delegate.set(factory.createHandler(this));
                                 try {
-                                    usage.getProperty("amqp-version").setValue(delegate.getVersion());
+                                    usage.getProperty("amqp-version").setValue(delegate.get().getVersion());
                                 } catch (Exception e) {
                                 }
                             } else {
                                 // send AMQP_INIT, close
                                 sendAndClose(connection, header, ((Pair) amqpHandlerList.get(amqpHandlerList.size() - 1)).header);
-                                valid = false;
                             }
                         } else {
                             HandlerFactory factory = getFactory(header, saslHandlerList);
                             if (factory != null) {
                                 // start SASL
-                                protHandler.setProtHeaderExpected(false);
-                                delegate = factory.createHandler(this);
+                                protHandler.get().setProtHeaderExpected(false);
+                                delegate.set(factory.createHandler(this));
                             } else {
                                 // send SASL_INIT, close
                                 sendAndClose(connection, header, ((Pair) saslHandlerList.get(saslHandlerList.size() - 1)).header);
-                                valid = false;
                             }
                         }
                     } else {
-                        if (activeLogin == null)
-                            activeLogin = ctx.authSwiftlet.createActiveLogin("anonymous", "AMQP");
+                        if (activeLogin.get() == null)
+                            activeLogin.set(ctx.authSwiftlet.createActiveLogin("anonymous", "AMQP"));
                         HandlerFactory factory = getFactory(header, amqpHandlerList);
                         if (factory != null) {
                             // start AMQP
-                            protHandler.setProtHeaderExpected(false);
-                            delegate = factory.createHandler(this);
+                            protHandler.get().setProtHeaderExpected(false);
+                            delegate.set(factory.createHandler(this));
                         } else {
                             // send AMQP_INIT, close
                             sendAndClose(connection, header, ((Pair) amqpHandlerList.get(amqpHandlerList.size() - 1)).header);
-                            valid = false;
                         }
                     }
                 }
@@ -228,22 +223,21 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
         outboundQueue.enqueue(writable);
     }
 
-    public synchronized void close() {
-        if (closed)
+    public void close() {
+        if (closed.getAndSet(true))
             return;
-        if (delegate != null) {
-            delegate.close();
-            delegate = null;
+        Handler handler = delegate.getAndSet(null);
+        if (handler != null) {
+            handler.close();
         }
         outboundQueue.stopQueue();
-        closed = true;
     }
 
     public String toString() {
         return "VersionedConnection, connection=" + connection;
     }
 
-    private class Pair {
+    private static class Pair {
         ProtocolHeader header = null;
         HandlerFactory factory = null;
 

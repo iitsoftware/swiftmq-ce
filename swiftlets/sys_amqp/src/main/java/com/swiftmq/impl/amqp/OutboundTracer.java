@@ -18,7 +18,7 @@
 package com.swiftmq.impl.amqp;
 
 public interface OutboundTracer {
-    public String getTraceKey();
+    String getTraceKey();
 
-    public String getTraceString(Object obj);
+    String getTraceString(Object obj);
 }

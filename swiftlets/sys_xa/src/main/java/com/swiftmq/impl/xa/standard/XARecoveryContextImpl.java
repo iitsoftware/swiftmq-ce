@@ -24,16 +24,17 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.swiftlet.xa.XAContextException;
+import com.swiftmq.tools.collection.ConcurrentList;
 
 import javax.transaction.xa.XAException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class XARecoveryContextImpl extends XAContextImpl {
-    List<Object[]> transactions = new CopyOnWriteArrayList<>();
+    List<Object[]> transactions = new ConcurrentList<>(new ArrayList<>());
     final AtomicBoolean closed = new AtomicBoolean(false);
     // This context is necessary for HA recovery
     XALiveContextImpl liveContext = null;

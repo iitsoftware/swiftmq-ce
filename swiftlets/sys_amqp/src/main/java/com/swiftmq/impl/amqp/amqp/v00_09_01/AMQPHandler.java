@@ -36,6 +36,7 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
@@ -50,9 +51,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     static final Frame HEARTBEATFRAME = new Frame(Frame.TYPE_HEARTBEAT, 0, 0, null);
@@ -61,12 +63,11 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     VersionedConnection versionedConnection = null;
     Entity connectionTemplate = null;
     PipelineQueue pipelineQueue = null;
-    boolean closed = false;
-    boolean closeInProgress = false;
-    boolean closeFrameSent = false;
-    Lock closeLock = new ReentrantLock();
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean closeInProgress = new AtomicBoolean(false);
+    final AtomicBoolean closeFrameSent = new AtomicBoolean(false);
     String hostname = null;
-    boolean connectionDisabled = false;
+    final AtomicBoolean connectionDisabled = new AtomicBoolean(false);
     Entity usage = null;
     Property receivedSecProp = null;
     Property sentSecProp = null;
@@ -82,13 +83,13 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     ActiveLogin activeLogin = null;
     ConnectionVisitor connectionVisitor = new ConnectionVisitor();
     ChannelDispatchVisitor channelDispatchVisitor = new ChannelDispatchVisitor();
-    List channels = new ArrayList();
-    long myIdleTimeout = 0;
-    long theirHeartbeatInterval = 0;
-    long lastActivity = 0;
+    List<ChannelHandler> channels = new ConcurrentList<>(new ArrayList<>());
+    final AtomicLong myIdleTimeout = new AtomicLong();
+    final AtomicLong theirHeartbeatInterval = new AtomicLong();
+    final AtomicLong lastActivity = new AtomicLong();
     TimerListener heartBeatSender = null;
     TimerListener idleTimeoutChecker = null;
-    List<String> tempQueues = new ArrayList<String>();
+    List<String> tempQueues = new ConcurrentList<>(new ArrayList<>());
 
     public AMQPHandler(SwiftletContext ctx, VersionedConnection versionedConnection) {
         this.ctx = ctx;
@@ -123,10 +124,10 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
         receivedTotalProp = usage.getProperty("total-received");
         sentTotalProp = usage.getProperty("total-sent");
         authEnabled = SwiftletManager.getInstance().getConfiguration("sys$authentication").getProperty("authentication-enabled");
-        myIdleTimeout = ((Long) connectionTemplate.getProperty("idle-timeout").getValue()).longValue();
+        myIdleTimeout.set((Long) connectionTemplate.getProperty("idle-timeout").getValue());
         dispatch(new POSendStart());
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", created");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", created");
     }
 
     public void toPayload(Frame frame, Method method) {
@@ -156,11 +157,11 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
         return Math.max(512, Math.min(maxLocalFrameSize, maxRemoteFrameSize));
     }
 
-    public synchronized void addTempQueue(String name) {
+    public void addTempQueue(String name) {
         tempQueues.add(name);
     }
 
-    public synchronized void removeTempQueue(String name) {
+    public void removeTempQueue(String name) {
         tempQueues.remove(name);
     }
 
@@ -174,18 +175,18 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             SaslServerFactory sf = (SaslServerFactory) _enum.nextElement();
             String[] mnames = sf.getMechanismNames(null);
             if (mnames != null) {
-                for (int i = 0; i < mnames.length; i++) {
-                    if (!mnames[i].toUpperCase().equals("GSSAPI")) {
-                        if (mnames[i].endsWith(AnonServer.MECHNAME)) {
-                            if (!((Boolean) authEnabled.getValue()).booleanValue()) {
+                for (String mname : mnames) {
+                    if (!mname.equalsIgnoreCase("GSSAPI")) {
+                        if (mname.endsWith(AnonServer.MECHNAME)) {
+                            if (!(Boolean) authEnabled.getValue()) {
                                 if (b.length() > 0)
                                     b.append(" ");
-                                b.append(mnames[i]);
+                                b.append(mname);
                             }
                         } else {
                             if (b.length() > 0)
                                 b.append(" ");
-                            b.append(mnames[i]);
+                            b.append(mname);
                         }
                     }
                 }
@@ -206,12 +207,12 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
         byte[] challenge = saslServer.evaluateResponse(response);
         if (saslServer.isComplete()) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", processResponse, complete, userName: " + userName + ", realm: " + realm);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", processResponse, complete, userName: " + userName + ", realm: " + realm);
             activeLogin = ctx.authSwiftlet.createActiveLogin(userName, "AMQP");
             dispatch(new POSendTune());
         } else {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", processResponse, not complete");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", processResponse, not complete");
             Secure secure = new Secure();
             secure.setChallenge(challenge);
             Frame frame = new Frame(Frame.TYPE_METHOD, 0, 0, null);
@@ -237,88 +238,80 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
 
     public void visit(POSendStart po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         Start start = new Start();
         start.setVersionMajor((byte) 0);
         start.setVersionMinor((byte) 9);
-        try {
-            saslMechanisms = createSaslMechanisms();
-            start.setMechanisms(saslMechanisms.getBytes("utf-8"));
-            start.setLocales("en_US".getBytes("utf-8"));
-            Map serverProps = new HashMap();
-            serverProps.put("product", new Field('S', "SwiftMQ".getBytes("utf-8")));
-            serverProps.put("release", new Field('S', Version.getKernelVendor().getBytes("utf-8")));
-            serverProps.put("vendor", new Field('S', Version.getKernelVendor().getBytes("utf-8")));
-            Map capas = new HashMap();
-            capas.put("exchange_exchange_bindings", new Field('t', new Boolean(false)));
-            capas.put("consumer_cancel_notify", new Field('t', new Boolean(false)));
-            capas.put("basic.nack", new Field('t', new Boolean(false)));
-            capas.put("publisher_confirms", new Field('t', new Boolean(false)));
-            serverProps.put("capabilities", new Field('F', capas));
-            start.setServerProperties(serverProps);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        saslMechanisms = createSaslMechanisms();
+        start.setMechanisms(saslMechanisms.getBytes(StandardCharsets.UTF_8));
+        start.setLocales("en_US".getBytes(StandardCharsets.UTF_8));
+        Map<String, Object> serverProps = new HashMap<>();
+        serverProps.put("product", new Field('S', "SwiftMQ".getBytes(StandardCharsets.UTF_8)));
+        serverProps.put("release", new Field('S', Version.getKernelVendor().getBytes(StandardCharsets.UTF_8)));
+        serverProps.put("vendor", new Field('S', Version.getKernelVendor().getBytes(StandardCharsets.UTF_8)));
+        Map<String, Object> capas = new HashMap<>();
+        capas.put("exchange_exchange_bindings", new Field('t', false));
+        capas.put("consumer_cancel_notify", new Field('t', false));
+        capas.put("basic.nack", new Field('t', false));
+        capas.put("publisher_confirms", new Field('t', false));
+        serverProps.put("capabilities", new Field('F', capas));
+        start.setServerProperties(serverProps);
         Frame frame = new Frame(Frame.TYPE_METHOD, 0, 0, null);
         toPayload(frame, start);
         versionedConnection.send(frame);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POSendTune po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        lastActivity = System.currentTimeMillis();
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
+        lastActivity.set(System.currentTimeMillis());
         Tune tune = new Tune();
-        int channelMax = ((Integer) connectionTemplate.getProperty("max-channel-number").getValue()).intValue();
+        int channelMax = (Integer) connectionTemplate.getProperty("max-channel-number").getValue();
         tune.setChannelMax(channelMax > Short.MAX_VALUE ? 0 : channelMax);
         tune.setFrameMax(maxLocalFrameSize);
-        tune.setHeartbeat((int) (myIdleTimeout / 1000));
+        tune.setHeartbeat((int) (myIdleTimeout.get() / 1000));
         Frame frame = new Frame(Frame.TYPE_METHOD, 0, 0, null);
         toPayload(frame, tune);
         versionedConnection.send(frame);
-        if (myIdleTimeout > 0) {
-            idleTimeoutChecker = new TimerListener() {
-                public void performTimeAction() {
-                    dispatch(new POCheckIdleTimeout(null));
-                }
-            };
-            ctx.timerSwiftlet.addTimerListener(myIdleTimeout + 5000, idleTimeoutChecker);
+        if (myIdleTimeout.get() > 0) {
+            idleTimeoutChecker = () -> dispatch(new POCheckIdleTimeout(null));
+            ctx.timerSwiftlet.addTimerListener(myIdleTimeout.get() + 5000, idleTimeoutChecker);
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POSendHeartBeat po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         versionedConnection.send(HEARTBEATFRAME);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POCheckIdleTimeout po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        long to = lastActivity + myIdleTimeout;
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
+        long to = lastActivity.get() + myIdleTimeout.get();
         if (System.currentTimeMillis() > to) {
-            ctx.logSwiftlet.logWarning(ctx.amqpSwiftlet.getName(), toString() + ", idleTimeout reached (" + myIdleTimeout + " ms). Closing connection!");
+            ctx.logSwiftlet.logWarning(ctx.amqpSwiftlet.getName(), this + ", idleTimeout reached (" + myIdleTimeout + " ms). Closing connection!");
             dispatch(new POSendClose(Constants.CONNECTION_FORCED, "IdleTimeout reached (" + myIdleTimeout + " ms)"));
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POSendChannelClose po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         if (channels.size() >= po.getChannelNo()) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " channel seems to be closed already");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " channel seems to be closed already");
             return;
         }
-        ChannelHandler channelHandler = (ChannelHandler) channels.remove(po.getChannelNo());
+        ChannelHandler channelHandler = channels.remove(po.getChannelNo());
         if (channelHandler != null)
             channelHandler.close();
         com.swiftmq.amqp.v091.generated.channel.Close close = new com.swiftmq.amqp.v091.generated.channel.Close();
@@ -340,17 +333,17 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
         toPayload(frame, close);
         versionedConnection.send(frame);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POSendClose po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         Close close = new Close();
         if (po.getErrorCondition() != -1) {
             close.setReplyCode(po.getErrorCondition());
             close.setReplyText(po.getDescription());
-            connectionDisabled = true;
+            connectionDisabled.set(true);
         } else {
             close.setReplyCode(Constants.REPLY_SUCCESS);
             close.setReplyText("OK");
@@ -363,14 +356,14 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             }
         });
         versionedConnection.send(frame);
-        closeFrameSent = true;
+        closeFrameSent.set(true);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POClose po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         if (heartBeatSender != null) {
             ctx.timerSwiftlet.removeTimerListener(heartBeatSender);
             heartBeatSender = null;
@@ -380,7 +373,7 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             idleTimeoutChecker = null;
         }
         for (int i = 0; i < channels.size(); i++) {
-            ChannelHandler channelHandler = (ChannelHandler) channels.get(i);
+            ChannelHandler channelHandler = channels.get(i);
             if (channelHandler != null)
                 channelHandler.close();
         }
@@ -396,34 +389,31 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
         tempQueues.clear();
         if (activeLogin != null)
             ctx.removeId(activeLogin.getClientId());
-        closed = true;
+        closed.set(true);
         pipelineQueue.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close ...");
-        closeLock.lock();
-        if (closeInProgress) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close ...");
+        if (closed.get() || closeInProgress.getAndSet(true)) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close in progress, return");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", closed || close in progress, return");
             return;
         }
-        closeInProgress = true;
-        closeLock.unlock();
         Semaphore sem = new Semaphore();
         dispatch(new POClose(sem));
         sem.waitHere();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close done");
     }
 
     public void dataAvailable(LengthCaptureDataInput lengthCaptureDataInput) {
         try {
-            lastActivity = System.currentTimeMillis();
+            lastActivity.set(System.currentTimeMillis());
             Frame frame = new Frame(maxLocalFrameSize);
             frame.readContent(lengthCaptureDataInput);
             if (ctx.protSpace.enabled)
@@ -446,17 +436,17 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             }
         } catch (FrameSizeExceededException fxe) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", " + fxe.getMessage());
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", " + fxe.getMessage());
             ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), "Connection closed. " + fxe.getMessage());
             dispatch(new POSendClose(Constants.CONTENT_TOO_LARGE, fxe.getMessage()));
-            connectionDisabled = true;
+            connectionDisabled.set(true);
         } catch (Exception e) {
             e.printStackTrace();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, exception=" + e);
-            ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), toString() + ", dataAvailable, exception=" + e);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", dataAvailable, exception=" + e);
+            ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), this + ", dataAvailable, exception=" + e);
             dispatch(new POSendClose(Constants.FRAME_ERROR, e.toString()));
-            connectionDisabled = true;
+            connectionDisabled.set(true);
         }
     }
 
@@ -467,15 +457,15 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     private class ConnectionVisitor implements ConnectionMethodVisitor {
         public void visit(Start start) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Start ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Start ...");
             dispatch(new POSendClose(Constants.UNEXPECTED_FRAME, "Invalid method received: " + start));
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Start done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Start done");
         }
 
         public void visit(StartOk startOk) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit StartOk ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit StartOk ...");
             String mechanism = startOk.getMechanism();
             if (!hasMechanism(mechanism))
                 dispatch(new POSendClose(Constants.NOT_IMPLEMENTED, "Invalid SASL mechanism: " + mechanism));
@@ -483,75 +473,75 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
                 try {
                     saslServer = Sasl.createSaslServer(mechanism, "AMQP", SwiftletManager.getInstance().getRouterName(), null, new CallbackHandlerImpl());
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit StartOK, saslServer: " + saslServer);
+                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit StartOK, saslServer: " + saslServer);
                     processResponse(startOk.getResponse() != null ? startOk.getResponse() : new byte[0]);
                 } catch (SaslException e) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", StartOK, SASL exception: " + e);
+                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", StartOK, SASL exception: " + e);
                     dispatch(new POSendClose(Constants.ACCESS_REFUSED, "SASL exception: " + e));
                 }
             }
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit StartOk done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit StartOk done");
         }
 
         public void visit(Secure secure) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Secure ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Secure ...");
             dispatch(new POSendClose(Constants.UNEXPECTED_FRAME, "Invalid method received: " + secure));
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Secure done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Secure done");
         }
 
         public void visit(SecureOk secureOk) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit SecureOk ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit SecureOk ...");
             try {
                 processResponse(secureOk.getResponse());
             } catch (SaslException e) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", StartOK, SASL exception: " + e);
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", StartOK, SASL exception: " + e);
                 dispatch(new POSendClose(Constants.ACCESS_REFUSED, "SASL exception: " + e));
             }
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit SecureOk done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit SecureOk done");
         }
 
         public void visit(Tune tune) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Tune ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Tune ...");
             dispatch(new POSendClose(Constants.UNEXPECTED_FRAME, "Invalid method received: " + tune));
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Tune done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Tune done");
         }
 
         public void visit(TuneOk tuneOk) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit TuneOk ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit TuneOk ...");
             if (activeLogin == null) {
                 dispatch(new POSendClose(Constants.ACCESS_REFUSED, "Not authenticated!"));
                 return;
             }
-            theirHeartbeatInterval = tuneOk.getHeartbeat() * 1000;
-            if (theirHeartbeatInterval > 0) {
+            theirHeartbeatInterval.set(tuneOk.getHeartbeat() * 1000L);
+            if (theirHeartbeatInterval.get() > 0) {
                 heartBeatSender = new TimerListener() {
                     public void performTimeAction() {
                         dispatch(new POSendHeartBeat(null));
                     }
                 };
-                ctx.timerSwiftlet.addTimerListener(theirHeartbeatInterval, heartBeatSender);
+                ctx.timerSwiftlet.addTimerListener(theirHeartbeatInterval.get(), heartBeatSender);
             }
             maxRemoteFrameSize = tuneOk.getFrameMax();
             if (maxRemoteFrameSize == 0)
                 maxRemoteFrameSize = Integer.MAX_VALUE;
 
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit TuneOk done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit TuneOk done");
         }
 
         public void visit(Open open) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Open ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Open ...");
             if (activeLogin == null) {
                 dispatch(new POSendClose(Constants.ACCESS_REFUSED, "Not authenticated!"));
                 return;
@@ -562,20 +552,20 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             toPayload(frame, openOk);
             versionedConnection.send(frame);
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Open done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Open done");
         }
 
         public void visit(OpenOk openOk) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit OpenOk ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit OpenOk ...");
             dispatch(new POSendClose(Constants.UNEXPECTED_FRAME, "Invalid method received: " + openOk));
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit OpenOk done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit OpenOk done");
         }
 
         public void visit(Close close) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Close ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Close ...");
             if (activeLogin == null) {
                 dispatch(new POSendClose(Constants.ACCESS_REFUSED, "Not authenticated!"));
                 return;
@@ -584,18 +574,18 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             toPayload(frame, new CloseOk());
             versionedConnection.send(frame);
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit Close done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit Close done");
         }
 
         public void visit(CloseOk closeOk) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit CloseOk ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit CloseOk ...");
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit CloseOk done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit CloseOk done");
         }
 
         public String toString() {
-            return AMQPHandler.this.toString() + "/ConnectionVisitor";
+            return AMQPHandler.this + "/ConnectionVisitor";
         }
     }
 
@@ -614,7 +604,7 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
                 return;
             }
             if (channelNo >= 0 && channelNo < channels.size())
-                channelHandler = (ChannelHandler) channels.get(channelNo);
+                channelHandler = channels.get(channelNo);
             try {
                 if (frame.getType() == Frame.TYPE_METHOD) {
                     Method method = (Method) frame.getPayloadObject();
@@ -636,7 +626,7 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             }
         }
 
-        private List ensureSize(int size, List list) {
+        private List<ChannelHandler> ensureSize(int size, List<ChannelHandler> list) {
             if (size < list.size())
                 return list;
             for (int i = list.size(); i <= size; i++)
@@ -689,13 +679,12 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     private class CallbackHandlerImpl implements CallbackHandler {
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", CallbackHandlerImpl.handle ...");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", CallbackHandlerImpl.handle ...");
             PasswordCallback pwc = null;
             AuthorizeCallback azc = null;
-            for (int i = 0; i < callbacks.length; i++) {
-                Callback c = callbacks[i];
+            for (Callback c : callbacks) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", CallbackHandlerImpl.handle, c=" + c);
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", CallbackHandlerImpl.handle, c=" + c);
                 if (c instanceof NameCallback)
                     userName = ((NameCallback) c).getDefaultName();
                 else if (c instanceof PasswordCallback)
@@ -708,7 +697,7 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
                     throw new UnsupportedEncodingException(c.getClass().getName());
             }
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", CallbackHandlerImpl.handle, userName=" + userName);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", CallbackHandlerImpl.handle, userName=" + userName);
             if (userName != null) {
                 try {
                     String password = ctx.authSwiftlet.getPassword(userName);
@@ -720,13 +709,13 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
                     }
                 } catch (com.swiftmq.swiftlet.auth.AuthenticationException e) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", CallbackHandlerImpl.handle, exception=" + e);
+                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", CallbackHandlerImpl.handle, exception=" + e);
                     if (azc != null)
                         azc.setAuthorized(false);
                 }
             }
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", CallbackHandlerImpl.handle done");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", CallbackHandlerImpl.handle done");
         }
     }
 }

@@ -20,9 +20,10 @@ package com.swiftmq.impl.queue.standard;
 import com.swiftmq.jms.XidImpl;
 import com.swiftmq.swiftlet.store.PrepareLogRecord;
 import com.swiftmq.swiftlet.store.StoreTransaction;
+import com.swiftmq.tools.collection.ConcurrentList;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * TransactionId covers type of transaction and internal id
@@ -42,7 +43,7 @@ public class TransactionId {
 
     public TransactionId(int transactionType) {
         this.transactionType = transactionType;
-        this.txList = new CopyOnWriteArrayList();
+        this.txList = new ConcurrentList<>(new ArrayList<>());
     }
 
     public TransactionId() {

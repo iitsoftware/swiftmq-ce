@@ -31,9 +31,10 @@ import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.mgmt.event.MgmtListener;
 import com.swiftmq.swiftlet.net.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.collection.ConcurrentList;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,8 +48,8 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
     boolean dnsResolve = true;
     long zombiConnectionTimeout = 0;
     final AtomicBoolean delayed = new AtomicBoolean(true);
-    List<Integer> listenersToStart = new CopyOnWriteArrayList<>();
-    List<Integer> connectorsToStart = new CopyOnWriteArrayList<>();
+    List<Integer> listenersToStart = new ConcurrentList<>(new ArrayList<>());
+    List<Integer> connectorsToStart = new ConcurrentList<>(new ArrayList<>());
 
     private void collectChanged(long oldInterval, long newInterval) {
         if (!collectOn.get())

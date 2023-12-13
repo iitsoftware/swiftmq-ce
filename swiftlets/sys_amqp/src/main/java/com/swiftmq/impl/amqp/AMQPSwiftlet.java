@@ -35,19 +35,25 @@ import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.net.InetAddress;
 import java.security.Security;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListener {
     SwiftletContext ctx = null;
     EntityListEventAdapter listenerAdapter = null;
-    Set connections = Collections.synchronizedSet(new HashSet());
+    Set<Connection> connections = ConcurrentHashMap.newKeySet();
     Semaphore shutdownSem = null;
-    boolean collectOn = false;
-    long collectInterval = -1;
-    long lastCollect = System.currentTimeMillis();
+    final AtomicBoolean collectOn = new AtomicBoolean(false);
+    final AtomicLong collectInterval = new AtomicLong(-1);
+    final AtomicLong lastCollect = new AtomicLong(System.currentTimeMillis());
 
     private void collectChanged(long oldInterval, long newInterval) {
-        if (!collectOn)
+        if (!collectOn.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "collectChanged: old interval: " + oldInterval + " new interval: " + newInterval);
@@ -65,14 +71,13 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
 
     public void performTimeAction() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction ...");
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionedConnection vc = (VersionedConnection) c[i].getUserObject();
+        connections.forEach(c -> {
+            VersionedConnection vc = (VersionedConnection) c.getUserObject();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "performTimeAction, collect on: " + vc + ", lastCollect: " + lastCollect);
-            vc.collect(lastCollect);
-        }
-        lastCollect = System.currentTimeMillis();
+            vc.collect(lastCollect.get());
+        });
+        lastCollect.set(System.currentTimeMillis());
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction done");
     }
 
@@ -118,17 +123,17 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         InetAddress bindAddress = null;
         try {
             String s = (String) listenerEntity.getProperty("bindaddress").getValue();
-            if (s != null && s.trim().length() > 0)
+            if (s != null && !s.trim().isEmpty())
                 bindAddress = InetAddress.getByName(s);
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
 
-        int inputBufferSize = ((Integer) connectionTemplate.getProperty("router-input-buffer-size").getValue()).intValue();
-        int inputExtendSize = ((Integer) connectionTemplate.getProperty("router-input-extend-size").getValue()).intValue();
-        int outputBufferSize = ((Integer) connectionTemplate.getProperty("router-output-buffer-size").getValue()).intValue();
-        int outputExtendSize = ((Integer) connectionTemplate.getProperty("router-output-extend-size").getValue()).intValue();
-        boolean useTCPNoDelay = ((Boolean) connectionTemplate.getProperty("use-tcp-no-delay").getValue()).booleanValue();
+        int inputBufferSize = (Integer) connectionTemplate.getProperty("router-input-buffer-size").getValue();
+        int inputExtendSize = (Integer) connectionTemplate.getProperty("router-input-extend-size").getValue();
+        int outputBufferSize = (Integer) connectionTemplate.getProperty("router-output-buffer-size").getValue();
+        int outputExtendSize = (Integer) connectionTemplate.getProperty("router-output-extend-size").getValue();
+        boolean useTCPNoDelay = (Boolean) connectionTemplate.getProperty("use-tcp-no-delay").getValue();
         AMQPInputHandler protHandler = new AMQPInputHandler();
         ListenerMetaData meta = new ListenerMetaData(bindAddress, port, this, -1, (String) connectionTemplate.getProperty("socketfactory-class").getValue(), new Acceptor(listenerName, listenerEntity.getProperty("max-connections"), listenerEntity.getProperty("sasl-enabled"), listenerEntity.getProperty("connection-template")),
                 inputBufferSize, inputExtendSize, outputBufferSize, outputExtendSize, useTCPNoDelay, protHandler, new RawOutputHandler());
@@ -144,9 +149,9 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
 
     private void createHostAccessList(ListenerMetaData meta, EntityList haEntitiy) {
         Map h = haEntitiy.getEntities();
-        if (h.size() > 0) {
-            for (Iterator hIter = h.keySet().iterator(); hIter.hasNext(); ) {
-                String predicate = (String) hIter.next();
+        if (!h.isEmpty()) {
+            for (Object o : h.keySet()) {
+                String predicate = (String) o;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "Listener '" + meta + "': inbound host restrictions to: " + predicate);
                 meta.addToHostAccessList(predicate);
@@ -185,7 +190,7 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
 
     protected synchronized Semaphore getShutdownSemaphore() {
         shutdownSem = null;
-        if (connections.size() > 0)
+        if (!connections.isEmpty())
             shutdownSem = new Semaphore();
         return shutdownSem;
     }
@@ -220,7 +225,7 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
             myCtx.usageList.removeDynamicEntity(connection);
             versionedConnection.close();
             connections.remove(connection);
-            if (shutdownSem != null && connections.size() == 0)
+            if (shutdownSem != null && connections.isEmpty())
                 shutdownSem.notifySingleWaiter();
         }
         if (myCtx.traceSpace.enabled) myCtx.traceSpace.trace(getName(), "doDisconnect: " + connection + ", DONE.");
@@ -229,15 +234,15 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
     public void adminToolActivated() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "adminToolActivated");
-        collectOn = true;
-        collectChanged(-1, collectInterval);
+        collectOn.set(true);
+        collectChanged(-1, collectInterval.get());
     }
 
     public void adminToolDeactivated() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "adminToolDeactivated");
-        collectChanged(collectInterval, -1);
-        collectOn = false;
+        collectChanged(collectInterval.get(), -1);
+        collectOn.set(false);
     }
 
     protected void startup(Configuration configuration) throws SwiftletException {
@@ -252,16 +257,16 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                collectInterval = ((Long) newValue).longValue();
-                collectChanged(((Long) oldValue).longValue(), collectInterval);
+                collectInterval.set((Long) newValue);
+                collectChanged((Long) oldValue, collectInterval.get());
             }
         });
-        collectInterval = ((Long) prop.getValue()).longValue();
-        if (collectOn) {
-            if (collectInterval > 0) {
+        collectInterval.set((Long) prop.getValue());
+        if (collectOn.get()) {
+            if (collectInterval.get() > 0) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "startup: registering msg/s count collector");
-                ctx.timerSwiftlet.addTimerListener(collectInterval, this);
+                ctx.timerSwiftlet.addTimerListener(collectInterval.get(), this);
             } else if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "startup: collect interval <= 0; no msg/s count collector");
         }
@@ -293,11 +298,8 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: shutdown all AMQP connections");
             Semaphore sem = getShutdownSemaphore();
             ConnectionManager connectionManager = ctx.networkSwiftlet.getConnectionManager();
-            Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
+            connections.forEach(connectionManager::removeConnection);
             connections.clear();
-            for (int i = 0; i < c.length; i++) {
-                connectionManager.removeConnection(c[i]);
-            }
             if (sem != null) {
                 System.out.println("+++ waiting for connection shutdown ...");
                 sem.waitHere();
@@ -319,43 +321,34 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         String name = null;
         Property saslProp = null;
         Entity connectionTemplate = null;
-        int localMax = -1;
-        int currentCount = 0;
+        final AtomicInteger localMax = new AtomicInteger(-1);
+        final AtomicInteger currentCount = new AtomicInteger();
 
         Acceptor(String name, Property maxConnProp, Property saslProp, Property connectionTemplateProp) {
             this.name = name;
             this.saslProp = saslProp;
             this.connectionTemplate = getConnectionTemplate((String) connectionTemplateProp.getValue());
-            connectionTemplateProp.setPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                    connectionTemplate = getConnectionTemplate((String) newValue);
-                }
-            });
+            connectionTemplateProp.setPropertyChangeListener((property, oldValue, newValue) -> connectionTemplate = getConnectionTemplate((String) newValue));
             if (maxConnProp != null) {
-                localMax = ((Integer) maxConnProp.getValue()).intValue();
-                maxConnProp.setPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                        synchronized (Acceptor.this) {
-                            localMax = ((Integer) newValue).intValue();
-                        }
-                    }
+                localMax.set((Integer) maxConnProp.getValue());
+                maxConnProp.setPropertyChangeListener((property, oldValue, newValue) -> {
+                    localMax.set((Integer) newValue);
                 });
             }
         }
 
-        public synchronized void connected(Connection connection) throws ConnectionVetoException {
-            if (localMax != -1) {
-                currentCount++;
-                if (currentCount > localMax)
-                    throw new ConnectionVetoException("Maximum connections (" + localMax + ") for this listener '" + name + "' reached!");
+        public void connected(Connection connection) throws ConnectionVetoException {
+            if (localMax.get() != -1) {
+                if (currentCount.getAndIncrement() > localMax.get())
+                    throw new ConnectionVetoException("Maximum connections (" + localMax.get() + ") for this listener '" + name + "' reached!");
             }
-            doConnect(connection, ((Boolean) saslProp.getValue()).booleanValue(), connectionTemplate);
+            doConnect(connection, (Boolean) saslProp.getValue(), connectionTemplate);
         }
 
-        public synchronized void disconnected(Connection connection) {
+        public void disconnected(Connection connection) {
             doDisconnect(connection);
-            if (localMax != -1) {
-                currentCount--;
+            if (localMax.get() != -1) {
+                currentCount.getAndDecrement();
             }
         }
     }

@@ -22,14 +22,14 @@ import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.impl.routing.single.route.Route;
 import com.swiftmq.impl.routing.single.schedule.po.POCloseObject;
 import com.swiftmq.swiftlet.routing.event.RoutingEvent;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class DefaultScheduler extends Scheduler {
-    List<ConnectionEntry> connections = new CopyOnWriteArrayList<>();
+    List<ConnectionEntry> connections = new ConcurrentList<>(new ArrayList<>());
 
     ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     public DefaultScheduler(SwiftletContext ctx, String destinationRouter, String queueName) {
@@ -58,16 +58,19 @@ public class DefaultScheduler extends Scheduler {
             } else {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == " + connections.size() + " ...");
-                for (Iterator<ConnectionEntry> iter = connections.iterator(); iter.hasNext(); ) {
-                    rc = iter.next().getRoutingConnection();
+                List<ConnectionEntry> toRemove = new ArrayList<>();
+                for (ConnectionEntry entry : connections) {
+                    rc = entry.getRoutingConnection();
                     if (rc.isClosed()) {
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == " + connections.size() + ", rc is closed");
-                        iter.remove();
+                        toRemove.add(entry);
                         rc = null;
-                    } else
+                    } else {
                         break;
+                    }
                 }
+                connections.removeAll(toRemove);
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == " + connections.size() + ", rc=" + rc);
             }

@@ -28,11 +28,11 @@ import com.swiftmq.impl.routing.single.manager.po.PORemoveObject;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.PipelineQueue;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionManager
@@ -42,7 +42,7 @@ public class ConnectionManager
     PipelineQueue queue = null;
     SwiftletContext ctx = null;
     protected Map<String, RoutingConnection> connections = new HashMap<>();
-    List<ConnectionListener> listeners = new CopyOnWriteArrayList<>();
+    List<ConnectionListener> listeners = new ConcurrentList<>(new ArrayList<>());
     EntityList connectionEntity = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
 

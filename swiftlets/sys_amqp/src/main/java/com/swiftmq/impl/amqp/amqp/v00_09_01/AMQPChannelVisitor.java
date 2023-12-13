@@ -24,11 +24,11 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.po.POSendMessages;
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface AMQPChannelVisitor extends POVisitor {
-    public void visit(POChannelFrameReceived po);
+    void visit(POChannelFrameReceived po);
 
-    public void visit(POSendMessages po);
+    void visit(POSendMessages po);
 
-    public void visit(POActivateFlow po);
+    void visit(POActivateFlow po);
 
-    public void visit(POCloseChannel po);
+    void visit(POCloseChannel po);
 }

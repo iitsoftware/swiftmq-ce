@@ -19,12 +19,13 @@ package com.swiftmq.impl.amqp.amqp.v00_09_01;
 
 import com.swiftmq.impl.amqp.SwiftletContext;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ExchangeRegistry {
     SwiftletContext ctx = null;
-    Map exchanges = new HashMap<String, Exchange>();
+    Map<String, Exchange> exchanges = new ConcurrentHashMap<>();
     Exchange defaultDirect = null;
 
     public ExchangeRegistry(SwiftletContext ctx) {
@@ -38,33 +39,50 @@ public class ExchangeRegistry {
         exchanges.put("amq.direct", defaultDirect);
     }
 
-    public synchronized Exchange get(String name) {
-        return (Exchange) exchanges.get(name);
+    public Exchange get(String name) {
+        return exchanges.get(name);
     }
 
-    public synchronized Exchange declare(String name, ExchangeFactory exchangeFactory) throws Exception {
-        Exchange exchange = (Exchange) exchanges.get(name);
-        if (exchange == null && exchangeFactory != null) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/create exchange: " + name);
-            exchange = exchangeFactory.create();
-            exchanges.put(name, exchange);
+    public Exchange declare(String name, ExchangeFactory exchangeFactory) throws Exception {
+        if (exchangeFactory == null) {
+            throw new IllegalArgumentException("Exchange factory must not be null");
         }
+
+        AtomicReference<Exception> exceptionRef = new AtomicReference<>();
+
+        Exchange exchange = exchanges.computeIfAbsent(name, key -> {
+            try {
+                if (ctx.traceSpace.enabled) {
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/create exchange: " + key);
+                }
+                return exchangeFactory.create();
+            } catch (Exception e) {
+                exceptionRef.set(e);
+                return null;
+            }
+        });
+
+        Exception exception = exceptionRef.get();
+        if (exception != null) {
+            throw exception; // Rethrow the exception caught during exchange creation
+        }
+
         return exchange;
     }
 
-    public synchronized void delete(String name, boolean ifUnused) throws Exception {
-        Exchange exchange = (Exchange) exchanges.get(name);
-        if (exchange != null && exchange != defaultDirect) {
-            exchanges.remove(name);
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/delete exchange: " + name);
-        }
+    public void delete(String name, boolean ifUnused) throws Exception {
+        exchanges.computeIfPresent(name, (key, exchange) -> {
+            if (exchange != defaultDirect) {
+                if (ctx.traceSpace.enabled) {
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/delete exchange: " + key);
+                }
+                return null; // Return null to indicate removal
+            }
+            return exchange; // Return exchange to leave it in the map
+        });
     }
 
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append("ExchangeRegistry");
-        return sb.toString();
+        return "ExchangeRegistry";
     }
 }

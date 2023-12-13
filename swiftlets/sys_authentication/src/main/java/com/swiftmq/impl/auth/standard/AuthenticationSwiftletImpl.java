@@ -25,6 +25,7 @@ import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.queue.QueueManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.util.SwiftUtilities;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
@@ -33,7 +34,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -58,7 +58,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
     final AtomicBoolean passwordCheckOnly = new AtomicBoolean(false);
     String masterPassword = null;
     boolean useEncryption = false;
-    List<AuthenticationDelegate> delegates = new CopyOnWriteArrayList<>();
+    List<AuthenticationDelegate> delegates = new ConcurrentList<>(new ArrayList<>());
 
     private void logMessage(String message) {
         if (traceSpace.enabled) traceSpace.trace(getName(), message);
