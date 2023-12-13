@@ -37,6 +37,7 @@ import com.swiftmq.tools.util.DataStreamInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class InboundReader extends RequestServiceRegistry
         implements InboundHandler, TimerListener {
@@ -51,7 +52,7 @@ public class InboundReader extends RequestServiceRegistry
     Connection connection = null;
     DataStreamInputStream dis = new DataStreamInputStream();
     volatile boolean closed = false;
-    volatile int keepaliveCount = INITIAL_KEEPALIVE_COUNT;
+    final AtomicInteger keepaliveCount = new AtomicInteger(INITIAL_KEEPALIVE_COUNT);
     AtomicBoolean inputActiveIndicator = null;
 
     InboundReader(String tracePrefix, Connection connection) {
@@ -71,10 +72,10 @@ public class InboundReader extends RequestServiceRegistry
                 traceSpace.trace("smqp", tracePrefix + ": performTimeAction, input was active");
             resetKeepaliveCount();
         } else {
-            keepaliveCount--;
+            keepaliveCount.getAndDecrement();
             if (traceSpace.enabled)
                 traceSpace.trace("smqp", tracePrefix + ": decrementing keepaliveCount to: " + keepaliveCount);
-            if (keepaliveCount == 0) {
+            if (keepaliveCount.get() == 0) {
                 if (traceSpace.enabled)
                     traceSpace.trace("smqp", tracePrefix + ": keepalive counter reaching 0, exiting!");
                 logSwiftlet.logWarning("smqp", tracePrefix + ": keepalive counter reaching 0, exiting!");
@@ -92,7 +93,7 @@ public class InboundReader extends RequestServiceRegistry
     }
 
     private void resetKeepaliveCount() {
-        keepaliveCount = INITIAL_KEEPALIVE_COUNT;
+        keepaliveCount.set(INITIAL_KEEPALIVE_COUNT);
         if (traceSpace.enabled)
             traceSpace.trace("smqp", tracePrefix + ": setting keepaliveCount to: " + keepaliveCount);
     }

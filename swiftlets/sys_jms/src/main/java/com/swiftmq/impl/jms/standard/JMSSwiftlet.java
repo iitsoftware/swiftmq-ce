@@ -35,7 +35,14 @@ import javax.jms.DeliveryMode;
 import javax.jms.InvalidClientIDException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener {
     public static final String TP_CONNSVC = "sys$jms.connection.service";
@@ -43,19 +50,19 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
 
     protected SwiftletContext ctx = null;
     ChallengeResponseFactory challengeResponseFactory = null;
-    Set clientSet = Collections.synchronizedSet(new TreeSet());
-    int maxConnections = -1;
-    Set connections = Collections.synchronizedSet(new HashSet());
-    Map connectAddresses = Collections.synchronizedMap(new HashMap());
+    Set<String> clientSet = ConcurrentHashMap.newKeySet();
+    final AtomicInteger maxConnections = new AtomicInteger(-1);
+    Set<Connection> connections = ConcurrentHashMap.newKeySet();
+    Map<String, String> connectAddresses = new ConcurrentHashMap<>();
     IntraVMListenerMetaData intraVMMetaData = null;
-    boolean collectOn = false;
-    long collectInterval = -1;
-    long lastCollect = System.currentTimeMillis();
-    Semaphore shutdownSem = null;
-    boolean allowSameClientId = false;
+    final AtomicBoolean collectOn = new AtomicBoolean(false);
+    final AtomicLong collectInterval = new AtomicLong(-1);
+    final AtomicLong lastCollect = new AtomicLong(System.currentTimeMillis());
+    final AtomicReference<Semaphore> shutdownSem = new AtomicReference<>();
+    final AtomicBoolean allowSameClientId = new AtomicBoolean(false);
 
     private void collectChanged(long oldInterval, long newInterval) {
-        if (!collectOn)
+        if (!collectOn.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "collectChanged: old interval: " + oldInterval + " new interval: " + newInterval);
@@ -73,39 +80,37 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
 
     public void performTimeAction() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction ...");
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            VersionSelector vs = (VersionSelector) c[i].getUserObject();
+        Connection[] c = connections.toArray(new Connection[0]);
+        for (Connection connection : c) {
+            VersionSelector vs = (VersionSelector) connection.getUserObject();
             if (vs != null) {
                 VersionedJMSConnection jmsc = vs.getJmsConnection();
                 if (jmsc != null) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace(getName(), "performTimeAction, collect on: " + jmsc + ", lastCollect: " + lastCollect);
-                    jmsc.collect(lastCollect);
+                    jmsc.collect(lastCollect.get());
                 }
             }
         }
-        lastCollect = System.currentTimeMillis();
+        lastCollect.set(System.currentTimeMillis());
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "performTimeAction done");
     }
-
-
 
     public ChallengeResponseFactory getChallengeResponseFactory() {
         return challengeResponseFactory;
     }
 
-    public synchronized void addClientId(String clientId) throws InvalidClientIDException {
-        if (!allowSameClientId) {
-            if (!clientSet.contains(clientId))
-                clientSet.add(clientId);
-            else
+    public void addClientId(String clientId) throws InvalidClientIDException {
+        if (!allowSameClientId.get()) {
+            boolean added = clientSet.add(clientId);
+            if (!added) {
                 throw new InvalidClientIDException("clientId '" + clientId + "' is already in use");
+            }
         }
     }
 
-    public synchronized void removeClientId(String clientId) {
-        if (!allowSameClientId)
+    public void removeClientId(String clientId) {
+        if (!allowSameClientId.get())
             clientSet.remove(clientId);
     }
 
@@ -115,48 +120,48 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
             hostname = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()).getHostName();
         } catch (UnknownHostException e) {
         }
-        int port = ((Integer) listener.getProperty("port").getValue()).intValue();
+        int port = (Integer) listener.getProperty("port").getValue();
         String socketFactoryClass = (String) listener.getProperty("socketfactory-class").getValue();
-        long keepAliveInterval = ((Long) listener.getProperty("keepalive-interval").getValue()).longValue();
+        long keepAliveInterval = (Long) listener.getProperty("keepalive-interval").getValue();
         String bindAddress = (String) listener.getProperty("bindaddress").getValue();
-        if (bindAddress != null && bindAddress.trim().length() == 0)
+        if (bindAddress != null && bindAddress.trim().isEmpty())
             bindAddress = null;
         String connectIP = (String) listener.getProperty("connectaddress").getValue();
-        if (connectIP != null && connectIP.trim().length() == 0)
+        if (connectIP != null && connectIP.trim().isEmpty())
             connectIP = null;
         int connectPort = (Integer) listener.getProperty("connectport").getValue();
         int connectPort2 = (Integer) listener.getProperty("connectport2").getValue();
         String clientId = (String) cfEntity.getProperty("jms-client-id").getValue();
-        if (clientId != null && clientId.trim().length() == 0)
+        if (clientId != null && clientId.trim().isEmpty())
             clientId = null;
-        int smqpProducerReplyInterval = ((Integer) cfEntity.getProperty("smqp-producer-reply-interval").getValue()).intValue();
-        int smqpConsumerCacheSize = ((Integer) cfEntity.getProperty("smqp-consumer-cache-size").getValue()).intValue();
-        int smqpConsumerCacheSizeKB = ((Integer) cfEntity.getProperty("smqp-consumer-cache-size-kb").getValue()).intValue();
+        int smqpProducerReplyInterval = (Integer) cfEntity.getProperty("smqp-producer-reply-interval").getValue();
+        int smqpConsumerCacheSize = (Integer) cfEntity.getProperty("smqp-consumer-cache-size").getValue();
+        int smqpConsumerCacheSizeKB = (Integer) cfEntity.getProperty("smqp-consumer-cache-size-kb").getValue();
         String s = ((String) cfEntity.getProperty("jms-default-delivery-mode").getValue()).toLowerCase();
         int jmsDeliveryMode = s.equals("persistent") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
-        int jmsPriority = ((Integer) cfEntity.getProperty("jms-default-message-priority").getValue()).intValue();
-        long jmsTTL = ((Long) cfEntity.getProperty("jms-default-message-ttl").getValue()).longValue();
-        boolean jmsMessageIdEnabled = ((Boolean) cfEntity.getProperty("jms-default-message-id-enabled").getValue()).booleanValue();
-        boolean jmsMessageTimestampEnabled = ((Boolean) cfEntity.getProperty("jms-default-message-timestamp-enabled").getValue()).booleanValue();
-        boolean useThreadContextCL = ((Boolean) cfEntity.getProperty("thread-context-classloader-for-getobject").getValue()).booleanValue();
-        int inputBufferSize = ((Integer) cfEntity.getProperty("client-input-buffer-size").getValue()).intValue();
-        int inputExtendSize = ((Integer) cfEntity.getProperty("client-input-extend-size").getValue()).intValue();
-        int outputBufferSize = ((Integer) cfEntity.getProperty("client-output-buffer-size").getValue()).intValue();
-        int outputExtendSize = ((Integer) cfEntity.getProperty("client-output-extend-size").getValue()).intValue();
+        int jmsPriority = (Integer) cfEntity.getProperty("jms-default-message-priority").getValue();
+        long jmsTTL = (Long) cfEntity.getProperty("jms-default-message-ttl").getValue();
+        boolean jmsMessageIdEnabled = (Boolean) cfEntity.getProperty("jms-default-message-id-enabled").getValue();
+        boolean jmsMessageTimestampEnabled = (Boolean) cfEntity.getProperty("jms-default-message-timestamp-enabled").getValue();
+        boolean useThreadContextCL = (Boolean) cfEntity.getProperty("thread-context-classloader-for-getobject").getValue();
+        int inputBufferSize = (Integer) cfEntity.getProperty("client-input-buffer-size").getValue();
+        int inputExtendSize = (Integer) cfEntity.getProperty("client-input-extend-size").getValue();
+        int outputBufferSize = (Integer) cfEntity.getProperty("client-output-buffer-size").getValue();
+        int outputExtendSize = (Integer) cfEntity.getProperty("client-output-extend-size").getValue();
 
         String hostname2 = (String) listener.getProperty("hostname2").getValue();
-        int port2 = ((Integer) listener.getProperty("port2").getValue()).intValue();
+        int port2 = (Integer) listener.getProperty("port2").getValue();
         String bindAddress2 = (String) listener.getProperty("bindaddress2").getValue();
-        if (bindAddress2 != null && bindAddress2.trim().length() == 0)
+        if (bindAddress2 != null && bindAddress2.trim().isEmpty())
             bindAddress2 = null;
         String connectIP2 = (String) listener.getProperty("connectaddress2").getValue();
-        if (connectIP2 != null && connectIP2.trim().length() == 0)
+        if (connectIP2 != null && connectIP2.trim().isEmpty())
             connectIP2 = null;
-        boolean reconnectEnabled = ((Boolean) cfEntity.getProperty("reconnect-enabled").getValue()).booleanValue();
-        int maxRetries = ((Integer) cfEntity.getProperty("reconnect-max-retries").getValue()).intValue();
-        long retryDelay = ((Long) cfEntity.getProperty("reconnect-delay").getValue()).longValue();
-        boolean duplicateMessageDetection = ((Boolean) cfEntity.getProperty("duplicate-message-detection").getValue()).booleanValue();
-        int duplicateBacklogSize = ((Integer) cfEntity.getProperty("duplicate-backlog-size").getValue()).intValue();
+        boolean reconnectEnabled = (Boolean) cfEntity.getProperty("reconnect-enabled").getValue();
+        int maxRetries = (Integer) cfEntity.getProperty("reconnect-max-retries").getValue();
+        long retryDelay = (Long) cfEntity.getProperty("reconnect-delay").getValue();
+        boolean duplicateMessageDetection = (Boolean) cfEntity.getProperty("duplicate-message-detection").getValue();
+        int duplicateBacklogSize = (Integer) cfEntity.getProperty("duplicate-backlog-size").getValue();
 
         com.swiftmq.jms.v750.ConnectionFactoryImpl cf7 = new com.swiftmq.jms.v750.ConnectionFactoryImpl(listener.getName(),
                 socketFactoryClass,
@@ -227,18 +232,18 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
 
     private void createIVMConnectionFactory(Entity cfEntity) throws Exception {
         String clientId = (String) cfEntity.getProperty("jms-client-id").getValue();
-        if (clientId != null && clientId.trim().length() == 0)
+        if (clientId != null && clientId.trim().isEmpty())
             clientId = null;
-        int smqpProducerReplyInterval = ((Integer) cfEntity.getProperty("smqp-producer-reply-interval").getValue()).intValue();
-        int smqpConsumerCacheSize = ((Integer) cfEntity.getProperty("smqp-consumer-cache-size").getValue()).intValue();
-        int smqpConsumerCacheSizeKB = ((Integer) cfEntity.getProperty("smqp-consumer-cache-size-kb").getValue()).intValue();
+        int smqpProducerReplyInterval = (Integer) cfEntity.getProperty("smqp-producer-reply-interval").getValue();
+        int smqpConsumerCacheSize = (Integer) cfEntity.getProperty("smqp-consumer-cache-size").getValue();
+        int smqpConsumerCacheSizeKB = (Integer) cfEntity.getProperty("smqp-consumer-cache-size-kb").getValue();
         String s = ((String) cfEntity.getProperty("jms-default-delivery-mode").getValue()).toLowerCase();
         int jmsDeliveryMode = s.equals("persistent") ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT;
-        int jmsPriority = ((Integer) cfEntity.getProperty("jms-default-message-priority").getValue()).intValue();
-        long jmsTTL = ((Long) cfEntity.getProperty("jms-default-message-ttl").getValue()).longValue();
-        boolean jmsMessageIdEnabled = ((Boolean) cfEntity.getProperty("jms-default-message-id-enabled").getValue()).booleanValue();
-        boolean jmsMessageTimestampEnabled = ((Boolean) cfEntity.getProperty("jms-default-message-timestamp-enabled").getValue()).booleanValue();
-        boolean useThreadContextCL = ((Boolean) cfEntity.getProperty("thread-context-classloader-for-getobject").getValue()).booleanValue();
+        int jmsPriority = (Integer) cfEntity.getProperty("jms-default-message-priority").getValue();
+        long jmsTTL = (Long) cfEntity.getProperty("jms-default-message-ttl").getValue();
+        boolean jmsMessageIdEnabled = (Boolean) cfEntity.getProperty("jms-default-message-id-enabled").getValue();
+        boolean jmsMessageTimestampEnabled = (Boolean) cfEntity.getProperty("jms-default-message-timestamp-enabled").getValue();
+        boolean useThreadContextCL = (Boolean) cfEntity.getProperty("thread-context-classloader-for-getobject").getValue();
 
 
         com.swiftmq.jms.v750.ConnectionFactoryImpl cf7 = new com.swiftmq.jms.v750.ConnectionFactoryImpl(INTRAVM_LISTENER,
@@ -299,7 +304,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         });
     }
 
-    private class CFComparable implements Comparable {
+    private static class CFComparable implements Comparable {
         String listenerName = null;
 
         CFComparable(String listenerName) {
@@ -321,7 +326,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
 
     private void createHostAccessList(ListenerMetaData meta, EntityList haEntitiy) {
         Map h = haEntitiy.getEntities();
-        if (h.size() > 0) {
+        if (!h.isEmpty()) {
             for (Iterator hIter = h.keySet().iterator(); hIter.hasNext(); ) {
                 String predicate = (String) hIter.next();
                 if (ctx.traceSpace.enabled)
@@ -357,18 +362,18 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         String listenerName = listenerEntity.getName();
         int port = ((Integer) listenerEntity.getProperty("port").getValue()).intValue();
         String socketFactoryClass = (String) listenerEntity.getProperty("socketfactory-class").getValue();
-        long keepAliveInterval = ((Long) listenerEntity.getProperty("keepalive-interval").getValue()).longValue();
+        long keepAliveInterval = (Long) listenerEntity.getProperty("keepalive-interval").getValue();
         InetAddress bindAddress = null;
         try {
             String s = (String) listenerEntity.getProperty("bindaddress").getValue();
-            if (s != null && s.trim().length() > 0)
+            if (s != null && !s.trim().isEmpty())
                 bindAddress = InetAddress.getByName(s);
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
 
         String connectIP = (String) listenerEntity.getProperty("connectaddress").getValue();
-        if (connectIP != null && connectIP.trim().length() > 0)
+        if (connectIP != null && !connectIP.trim().isEmpty())
             connectAddresses.put(listenerName, connectIP);
         int inputBufferSize = ((Integer) listenerEntity.getProperty("router-input-buffer-size").getValue()).intValue();
         int inputExtendSize = ((Integer) listenerEntity.getProperty("router-input-extend-size").getValue()).intValue();
@@ -398,7 +403,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         return meta;
     }
 
-    private class CFTimer implements TimerListener {
+    private static class CFTimer implements TimerListener {
         String listenerName = null;
         EntityList cfList = null;
 
@@ -423,8 +428,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         String[] inboundNames = listenerList.getEntityNames();
         if (inboundNames != null) {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "creating listeners ...");
-            for (int i = 0; i < inboundNames.length; i++) {
-                String listenerName = inboundNames[i];
+            for (String listenerName : inboundNames) {
                 createListener(listenerList.getEntity(listenerName));
             }
         }
@@ -480,8 +484,8 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         });
 
         prop = root.getProperty("max-connections");
-        maxConnections = ((Integer) prop.getValue()).intValue();
-        if (maxConnections < -1 || maxConnections == 0)
+        maxConnections.set((Integer) prop.getValue());
+        if (maxConnections.get() < -1 || maxConnections.get() == 0)
             throw new SwiftletException("Invalid Value, must be -1 (unlimited) or > 0");
 
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
@@ -492,7 +496,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
                     throw new PropertyChangeException("Invalid Value, must be -1 (unlimited) or > 0");
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (maxconnections): oldValue=" + oldValue + ", newValue=" + newValue);
-                maxConnections = n;
+                maxConnections.set(n);
             }
         });
     }
@@ -507,22 +511,34 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         return vc;
     }
 
-    protected synchronized Semaphore getShutdownSemaphore() {
-        shutdownSem = null;
-        if (connections.size() > 0)
-            shutdownSem = new Semaphore();
-        return shutdownSem;
+    protected Semaphore getShutdownSemaphore() {
+        if (!connections.isEmpty()) {
+            shutdownSem.set(new Semaphore());
+        } else {
+            shutdownSem.set(null);
+        }
+        return shutdownSem.get();
     }
 
-    protected synchronized void doConnect(Connection connection) throws ConnectionVetoException {
+    protected void doConnect(Connection connection) throws ConnectionVetoException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "doConnect: " + connection);
-        if (maxConnections != -1 && connections.size() == maxConnections)
-            throw new ConnectionVetoException("Maximum connections (" + maxConnections + ") already reached!");
+        int currentMaxConnections = maxConnections.get();
+        if (currentMaxConnections != -1) {
+            // Additional check to reduce the window of race condition
+            if (connections.size() >= currentMaxConnections) {
+                throw new ConnectionVetoException("Maximum connections (" + currentMaxConnections + ") already reached!");
+            }
+            connections.add(connection);
+            // Recheck the condition after adding the connection
+            if (connections.size() > currentMaxConnections) {
+                connections.remove(connection); // Revert the addition
+                throw new ConnectionVetoException("Maximum connections (" + currentMaxConnections + ") exceeded after adding the connection!");
+            }
+        }
         Entity ce = ctx.usageList.createEntity();
         VersionSelector versionSelector = new VersionSelector(ctx, ce);
         connection.setInboundHandler(versionSelector);
         connection.setUserObject(versionSelector);
-        connections.add(connection);
         ce.setName(connection.toString());
         ce.setDynamicObject(connection);
         ce.createCommands();
@@ -533,7 +549,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "doConnect: " + connection + ", DONE.");
     }
 
-    protected synchronized void doDisconnect(Connection connection) {
+    protected void doDisconnect(Connection connection) {
         // It may happen during shutdown that the Network Swiftlet calls this method and ctx becomes null
         SwiftletContext myCtx = ctx;
         if (myCtx == null)
@@ -544,29 +560,22 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
             myCtx.usageList.removeDynamicEntity(connection);
             versionSelector.close();
             connections.remove(connection);
-            if (shutdownSem != null && connections.size() == 0)
-                shutdownSem.notifySingleWaiter();
+            if (shutdownSem.get() != null && connections.size() == 0)
+                shutdownSem.get().notifySingleWaiter();
         }
         if (myCtx.traceSpace.enabled) myCtx.traceSpace.trace(getName(), "doDisconnect: " + connection + ", DONE.");
     }
 
     public void adminToolActivated() {
-        collectOn = true;
-        collectChanged(-1, collectInterval);
+        collectOn.set(true);
+        collectChanged(-1, collectInterval.get());
     }
 
     public void adminToolDeactivated() {
-        collectChanged(collectInterval, -1);
-        collectOn = false;
+        collectChanged(collectInterval.get(), -1);
+        collectOn.set(false);
     }
 
-    /**
-     * Startup the swiftlet. Check if all required properties are defined and all other
-     * startup conditions are met. Do startup work (i. e. start working thread, get/open resources).
-     * If any condition prevends from startup fire a SwiftletException.
-     *
-     * @throws SwiftletException
-     */
     protected void startup(Configuration config)
             throws SwiftletException {
         ctx = new SwiftletContext(config, this);
@@ -574,10 +583,10 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
         Property prop = ctx.root.getProperty("allow-same-clientid");
         if (prop != null) {
-            allowSameClientId = ((Boolean) prop.getValue()).booleanValue();
+            allowSameClientId.set((Boolean) prop.getValue());
             prop.setPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                    allowSameClientId = ((Boolean) newValue).booleanValue();
+                    allowSameClientId.set((Boolean) newValue);
                 }
             });
         }
@@ -600,16 +609,16 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                collectInterval = ((Long) newValue).longValue();
-                collectChanged(((Long) oldValue).longValue(), collectInterval);
+                collectInterval.set((Long) newValue);
+                collectChanged((Long) oldValue, collectInterval.get());
             }
         });
-        collectInterval = ((Long) prop.getValue()).longValue();
-        if (collectOn) {
-            if (collectInterval > 0) {
+        collectInterval.set((Long) prop.getValue());
+        if (collectOn.get()) {
+            if (collectInterval.get() > 0) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "startup: registering thread count collector");
-                ctx.timerSwiftlet.addTimerListener(collectInterval, this);
+                ctx.timerSwiftlet.addTimerListener(collectInterval.get(), this);
             } else if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "startup: collect interval <= 0; no msg/s count collector");
         }
@@ -631,12 +640,6 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup: done");
     }
 
-    /**
-     * Shutdown the swiftlet. Check if all shutdown conditions are met. Do shutdown work (i. e. stop working thread, close resources).
-     * If any condition prevends from shutdown fire a SwiftletException.
-     *
-     * @throws SwiftletException
-     */
     protected void shutdown()
             throws SwiftletException {
         // true when shutdown while standby
@@ -650,18 +653,18 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
         EntityList listenerList = (EntityList) ctx.root.getEntity("listeners");
         String[] inboundNames = listenerList.getEntityNames();
         if (inboundNames != null) {
-            for (int i = 0; i < inboundNames.length; i++) {
-                ListenerMetaData meta = (ListenerMetaData) listenerList.getEntity(inboundNames[i]).getUserObject();
+            for (String inboundName : inboundNames) {
+                ListenerMetaData meta = (ListenerMetaData) listenerList.getEntity(inboundName).getUserObject();
                 ctx.networkSwiftlet.removeTCPListener(meta);
             }
         }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: shutdown all jms connections");
         Semaphore sem = getShutdownSemaphore();
         ConnectionManager connectionManager = ctx.networkSwiftlet.getConnectionManager();
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
+        Connection[] c = connections.toArray(new Connection[0]);
         connections.clear();
-        for (int i = 0; i < c.length; i++) {
-            connectionManager.removeConnection(c[i]);
+        for (Connection connection : c) {
+            connectionManager.removeConnection(connection);
         }
         if (sem != null) {
             System.out.println("+++ waiting for connection shutdown ...");
@@ -679,36 +682,33 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
 
     private class Acceptor implements ConnectionListener {
         String name = null;
-        int localMax = -1;
-        int currentCount = 0;
+        final AtomicInteger localMax = new AtomicInteger(-1);
+        final AtomicInteger currentCount = new AtomicInteger();
 
         Acceptor(String name, Property prop) {
             this.name = name;
             if (prop != null) {
-                localMax = ((Integer) prop.getValue()).intValue();
+                localMax.set((Integer) prop.getValue());
                 prop.setPropertyChangeListener(new PropertyChangeListener() {
                     public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                        synchronized (Acceptor.this) {
-                            localMax = ((Integer) newValue).intValue();
-                        }
+                        localMax.set((Integer) newValue);
                     }
                 });
             }
         }
 
-        public synchronized void connected(Connection connection) throws ConnectionVetoException {
-            if (localMax != -1) {
-                currentCount++;
-                if (currentCount > localMax)
-                    throw new ConnectionVetoException("Maximum connections (" + localMax + ") for this listener '" + name + "' reached!");
+        public void connected(Connection connection) throws ConnectionVetoException {
+            if (localMax.get() != -1 && currentCount.incrementAndGet() > localMax.get()) {
+                currentCount.decrementAndGet();
+                throw new ConnectionVetoException("Maximum connections (" + localMax.get() + ") for this listener '" + name + "' reached!");
             }
             doConnect(connection);
         }
 
-        public synchronized void disconnected(Connection connection) {
+        public void disconnected(Connection connection) {
             doDisconnect(connection);
-            if (localMax != -1) {
-                currentCount--;
+            if (localMax.get() != -1) {
+                currentCount.decrementAndGet();
             }
         }
     }

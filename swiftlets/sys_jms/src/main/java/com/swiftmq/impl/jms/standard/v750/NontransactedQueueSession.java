@@ -26,7 +26,6 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
-import com.swiftmq.tools.collection.ArrayListTool;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 
@@ -107,7 +106,7 @@ public class NontransactedQueueSession extends NontransactedSession {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitProduceMessageRequest, ProduceMessageCallback.done, delay=" + delay);
                     if (delay != null)
-                        reply.setDelay(delay.longValue());
+                        reply.setDelay(delay);
                     reply.setOk(true);
                 } else {
                     if (ctx.traceSpace.enabled)
@@ -136,10 +135,8 @@ public class NontransactedQueueSession extends NontransactedSession {
             if (!ctx.queueManager.isQueueRunning(queue.getQueueName()))
                 throw new InvalidDestinationException("Invalid destination: " + queue.getQueueName());
             int producerId;
-            QueueProducer producer;
-            producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
-            producer = new QueueProducer(ctx, queue.getQueueName());
-            producerList.set(producerId, producer);
+            QueueProducer producer = new QueueProducer(ctx, queue.getQueueName());
+            producerId = producerList.add(producer);
             reply.setQueueProducerId(producerId);
             reply.setOk(true);
             if (senderEntityList != null) {
@@ -168,7 +165,7 @@ public class NontransactedQueueSession extends NontransactedSession {
         ctx.activeLogin.getResourceLimitGroup().decProducers();
         if (req.getQueueProducerId() < producerList.size()) {
             QueueProducer producer = (QueueProducer) producerList.get(req.getQueueProducerId());
-            producerList.set(req.getQueueProducerId(), null);
+            producerList.remove(req.getQueueProducerId());
             if (producer != null) {
                 try {
                     producer.close();
@@ -205,9 +202,8 @@ public class NontransactedQueueSession extends NontransactedSession {
             queueName = validateDestination(queueName);
             int consumerId = 0;
             QueueConsumer consumer = null;
-            consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
             consumer = new QueueConsumer(ctx, queueName, messageSelector);
-            consumerList.set(consumerId, consumer);
+            consumerId = consumerList.add(consumer);
             consumer.createReadTransaction();
             consumer.createTransaction();
             reply.setOk(true);
@@ -249,9 +245,8 @@ public class NontransactedQueueSession extends NontransactedSession {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseConsumerRequest");
         CloseConsumerReply reply = (CloseConsumerReply) req.createReply();
         int qcId = req.getQueueConsumerId();
-        QueueConsumer consumer = null;
-        consumer = (QueueConsumer) consumerList.get(qcId);
-        consumerList.set(qcId, null);
+        QueueConsumer consumer = (QueueConsumer) consumerList.get(qcId);
+        consumerList.remove(qcId);
         try {
             consumer.close();
         } catch (Exception ignored) {

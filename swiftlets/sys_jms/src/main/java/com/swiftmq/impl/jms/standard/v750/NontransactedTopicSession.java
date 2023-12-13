@@ -28,7 +28,6 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
-import com.swiftmq.tools.collection.ArrayListTool;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 
@@ -68,7 +67,7 @@ public class NontransactedTopicSession extends NontransactedSession {
                     ctx.authSwiftlet.verifyTopicSenderSubscription(topic.getTopicName(), ctx.activeLogin.getLoginId());
                 producer = new TopicProducer(ctx, topic);
             } else {
-                producer = (Producer) producerList.get(producerId);
+                producer = producerList.get(producerId);
             }
             QueuePushTransaction transaction = (QueuePushTransaction) producer.createTransaction();
             transaction.putMessage(msg);
@@ -108,7 +107,7 @@ public class NontransactedTopicSession extends NontransactedSession {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitProduceMessageRequest, ProduceMessageCallback.done, delay=" + delay);
                     if (delay != null)
-                        reply.setDelay(delay.longValue());
+                        reply.setDelay(delay);
                     reply.setOk(true);
                 } else {
                     if (ctx.traceSpace.enabled)
@@ -137,10 +136,8 @@ public class NontransactedTopicSession extends NontransactedSession {
             if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
                 ctx.authSwiftlet.verifyTopicSenderSubscription(topic.getTopicName(), ctx.activeLogin.getLoginId());
             int producerId;
-            TopicProducer producer;
-            producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
-            producer = new TopicProducer(ctx, topic);
-            producerList.set(producerId, producer);
+            TopicProducer producer = new TopicProducer(ctx, topic);
+            producerId = producerList.add(producer);
             reply.setTopicPublisherId(producerId);
             reply.setOk(true);
             if (publisherEntityList != null) {
@@ -168,9 +165,8 @@ public class NontransactedTopicSession extends NontransactedSession {
     public void visit(CloseProducerRequest req) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseProducerRequest");
         ctx.activeLogin.getResourceLimitGroup().decProducers();
-        TopicProducer producer = null;
-        producer = (TopicProducer) producerList.get(req.getQueueProducerId());
-        producerList.set(req.getQueueProducerId(), null);
+        TopicProducer producer = (TopicProducer) producerList.get(req.getQueueProducerId());
+        producerList.remove(req.getQueueProducerId());
         try {
             producer.close();
         } catch (Exception ignored) {
@@ -204,9 +200,8 @@ public class NontransactedTopicSession extends NontransactedSession {
             int consumerId = 0;
             TopicConsumer consumer = null;
             if (topic.getType() == DestinationFactory.TYPE_TOPIC) {
-                consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
                 consumer = new TopicConsumer(ctx, topic, messageSelector, noLocal);
-                consumerList.set(consumerId, consumer);
+                consumerId = consumerList.add(consumer);
                 if (subEntity != null) {
                     Property prop = subEntity.getProperty("topic");
                     prop.setReadOnly(false);
@@ -221,16 +216,15 @@ public class NontransactedTopicSession extends NontransactedSession {
                 if (subEntity != null)
                     subEntity.setName(topic.getTopicName() + "-" + consumerId);
             } else {
-                consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
                 consumer = new TopicConsumer(ctx, topic, messageSelector, noLocal);
-                consumerList.set(consumerId, consumer);
+                consumerId = consumerList.add(consumer);
                 if (subEntity != null)
                     subEntity.setDynamicObject(consumer);
                 if (subEntity != null) {
                     subEntity.setName(topic.getQueueName() + "-" + consumerId);
                     Property prop = subEntity.getProperty("temptopic");
                     prop.setReadOnly(false);
-                    prop.setValue(new Boolean(true));
+                    prop.setValue(true);
                     prop.setReadOnly(true);
                     prop = subEntity.getProperty("boundto");
                     prop.setReadOnly(false);
@@ -248,7 +242,7 @@ public class NontransactedTopicSession extends NontransactedSession {
             if (subEntity != null) {
                 Property prop = subEntity.getProperty("nolocal");
                 prop.setReadOnly(false);
-                prop.setValue(new Boolean(noLocal));
+                prop.setValue(noLocal);
                 prop.setReadOnly(true);
                 subEntity.createCommands();
                 prop = subEntity.getProperty("selector");
@@ -280,9 +274,8 @@ public class NontransactedTopicSession extends NontransactedSession {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseConsumerRequest");
         CloseConsumerReply reply = (CloseConsumerReply) req.createReply();
         int qcId = req.getQueueConsumerId();
-        Consumer consumer = null;
-        consumer = (Consumer) consumerList.get(qcId);
-        consumerList.set(qcId, null);
+        Consumer consumer = consumerList.get(qcId);
+        consumerList.remove(qcId);
         try {
             consumer.close();
         } catch (Exception ignored) {
@@ -316,10 +309,8 @@ public class NontransactedTopicSession extends NontransactedSession {
         String durableName = req.getDurableName();
         try {
             int consumerId = 0;
-            TopicDurableConsumer consumer = null;
-            consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
-            consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
-            consumerList.set(consumerId, consumer);
+            TopicDurableConsumer consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
+            consumerId = consumerList.add(consumer);
             consumer.createReadTransaction();
             consumer.createTransaction();
             reply.setOk(true);
@@ -343,7 +334,7 @@ public class NontransactedTopicSession extends NontransactedSession {
                 prop.setValue(consumer.getQueueName());
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("nolocal");
-                prop.setValue(new Boolean(noLocal));
+                prop.setValue(noLocal);
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("selector");
                 if (messageSelector != null) {

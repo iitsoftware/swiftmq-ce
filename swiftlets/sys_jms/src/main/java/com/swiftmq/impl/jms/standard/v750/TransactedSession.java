@@ -38,26 +38,26 @@ public abstract class TransactedSession extends Session {
 
     protected void purgeMarkedProducers() throws Exception {
         for (int i = 0; i < producerList.size(); i++) {
-            Producer producer = (Producer) producerList.get(i);
+            Producer producer = producerList.get(i);
             if (producer != null && producer.isMarkedForClose()) {
                 try {
                     producer.close();
                 } catch (QueueHandlerClosedException ignored) {
                 }
-                producerList.set(i, null);
+                producerList.remove(i);
             }
         }
     }
 
     protected void purgeMarkedConsumers() throws Exception {
         for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
+            Consumer consumer = consumerList.get(i);
             if (consumer != null && consumer.isMarkedForClose()) {
                 try {
                     consumer.close();
                 } catch (QueueHandlerClosedException ignored) {
                 }
-                consumerList.set(i, null);
+                consumerList.remove(i);
             }
         }
     }
@@ -105,7 +105,7 @@ public abstract class TransactedSession extends Session {
         reply.setRecoveryEpoche(req.getRecoveryEpoche());
         reply.setOk(true);
         for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
+            Consumer consumer = consumerList.get(i);
             if (consumer != null) {
                 try {
                     MessageProcessor mp = consumer.getMessageProcessor();

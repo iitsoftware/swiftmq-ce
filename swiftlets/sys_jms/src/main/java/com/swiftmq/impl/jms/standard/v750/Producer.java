@@ -37,7 +37,7 @@ public class Producer implements TransactionFactory {
 
     public QueueTransaction createTransaction() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/createTransaction");
         transaction = sender.createTransaction();
         return transaction;
     }
@@ -48,7 +48,7 @@ public class Producer implements TransactionFactory {
 
     public void markForClose() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/markForClose");
         markedForClose = true;
     }
 
@@ -57,7 +57,7 @@ public class Producer implements TransactionFactory {
     }
 
     public void close() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/close");
         transaction = null;
         sender.close();
     }

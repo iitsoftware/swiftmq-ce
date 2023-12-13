@@ -25,7 +25,6 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
-import com.swiftmq.tools.collection.ArrayListTool;
 import com.swiftmq.tools.collection.RingBuffer;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
@@ -100,7 +99,7 @@ public class TransactedUnifiedSession extends TransactedSession {
                     tempProducers.add(producer);
                     transactionManager.addTransactionFactory(producer);
                 } else {
-                    producer = (Producer) producerList.get(producerId);
+                    producer = producerList.get(producerId);
                 }
                 QueuePushTransaction transaction = producer.getTransaction();
                 transaction.putMessage(msg);
@@ -144,10 +143,8 @@ public class TransactedUnifiedSession extends TransactedSession {
             if (!ctx.queueManager.isQueueRunning(queue.getQueueName()))
                 throw new InvalidDestinationException("Invalid destination: " + queue.getQueueName());
             int producerId;
-            QueueProducer producer;
-            producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
-            producer = new QueueProducer(ctx, queue.getQueueName());
-            producerList.set(producerId, producer);
+            QueueProducer producer = new QueueProducer(ctx, queue.getQueueName());
+            producerId = producerList.add(producer);
             reply.setQueueProducerId(producerId);
             reply.setOk(true);
             if (senderEntityList != null) {
@@ -191,10 +188,8 @@ public class TransactedUnifiedSession extends TransactedSession {
             if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
                 ctx.authSwiftlet.verifyTopicSenderSubscription(topic.getTopicName(), ctx.activeLogin.getLoginId());
             int producerId;
-            TopicProducer producer;
-            producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
-            producer = new TopicProducer(ctx, topic);
-            producerList.set(producerId, producer);
+            TopicProducer producer = new TopicProducer(ctx, topic);
+            producerId = producerList.add(producer);
             reply.setTopicPublisherId(producerId);
             reply.setOk(true);
             if (publisherEntityList != null) {
@@ -226,19 +221,17 @@ public class TransactedUnifiedSession extends TransactedSession {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitCloseProducerRequest");
         ctx.activeLogin.getResourceLimitGroup().decProducers();
         if (req.getQueueProducerId() < producerList.size()) {
-            Producer producer = (Producer) producerList.get(req.getQueueProducerId());
+            Producer producer = producerList.get(req.getQueueProducerId());
 
             // mark for close and close it later after commit/rollback
             producer.markForClose();
 
-            if (producer != null) {
-                if (producer instanceof QueueProducer) {
-                    if (ctx.sessionEntity != null)
-                        senderEntityList.removeDynamicEntity(producer);
-                } else {
-                    if (ctx.sessionEntity != null)
-                        publisherEntityList.removeDynamicEntity(producer);
-                }
+            if (producer instanceof QueueProducer) {
+                if (ctx.sessionEntity != null)
+                    senderEntityList.removeDynamicEntity(producer);
+            } else {
+                if (ctx.sessionEntity != null)
+                    publisherEntityList.removeDynamicEntity(producer);
             }
         }
         CloseProducerReply reply = (CloseProducerReply) req.createReply();
@@ -267,10 +260,8 @@ public class TransactedUnifiedSession extends TransactedSession {
         try {
             queueName = validateDestination(queueName);
             int consumerId = 0;
-            QueueConsumer consumer = null;
-            consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
-            consumer = new QueueConsumer(ctx, queueName, messageSelector);
-            consumerList.set(consumerId, consumer);
+            QueueConsumer consumer = new QueueConsumer(ctx, queueName, messageSelector);
+            consumerId = consumerList.add(consumer);
             reply.setOk(true);
             reply.setQueueConsumerId(consumerId);
             if (receiverEntityList != null) {
@@ -332,9 +323,8 @@ public class TransactedUnifiedSession extends TransactedSession {
             int consumerId = 0;
             TopicConsumer consumer = null;
             if (topic.getType() == DestinationFactory.TYPE_TOPIC) {
-                consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
                 consumer = new TopicConsumer(ctx, topic, messageSelector, noLocal);
-                consumerList.set(consumerId, consumer);
+                consumerId = consumerList.add(consumer);
                 if (subEntity != null) {
                     Property prop = subEntity.getProperty("topic");
                     prop.setReadOnly(false);
@@ -349,16 +339,15 @@ public class TransactedUnifiedSession extends TransactedSession {
                 if (subEntity != null)
                     subEntity.setName(topic.getTopicName() + "-" + consumerId);
             } else {
-                consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
                 consumer = new TopicConsumer(ctx, topic, messageSelector, noLocal);
-                consumerList.set(consumerId, consumer);
+                consumerId = consumerList.add(consumer);
                 if (subEntity != null)
                     subEntity.setDynamicObject(consumer);
                 if (subEntity != null) {
                     subEntity.setName(topic.getQueueName() + "-" + consumerId);
                     Property prop = subEntity.getProperty("temptopic");
                     prop.setReadOnly(false);
-                    prop.setValue(new Boolean(true));
+                    prop.setValue(true);
                     prop.setReadOnly(true);
                     prop = subEntity.getProperty("boundto");
                     prop.setReadOnly(false);
@@ -372,7 +361,7 @@ public class TransactedUnifiedSession extends TransactedSession {
             if (subEntity != null) {
                 Property prop = subEntity.getProperty("nolocal");
                 prop.setReadOnly(false);
-                prop.setValue(new Boolean(noLocal));
+                prop.setValue(noLocal);
                 prop.setReadOnly(true);
                 subEntity.createCommands();
                 prop = subEntity.getProperty("selector");
@@ -443,9 +432,8 @@ public class TransactedUnifiedSession extends TransactedSession {
         try {
             int consumerId = 0;
             TopicDurableConsumer consumer = null;
-            consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
             consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
-            consumerList.set(consumerId, consumer);
+            consumerId = consumerList.add(consumer);
             reply.setOk(true);
             reply.setTopicSubscriberId(consumerId);
 
@@ -466,7 +454,7 @@ public class TransactedUnifiedSession extends TransactedSession {
                 prop.setValue(consumer.getQueueName());
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("nolocal");
-                prop.setValue(new Boolean(noLocal));
+                prop.setValue(noLocal);
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("selector");
                 if (messageSelector != null) {

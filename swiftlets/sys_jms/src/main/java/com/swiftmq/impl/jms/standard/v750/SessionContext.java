@@ -29,6 +29,8 @@ import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class SessionContext {
     public QueueManager queueManager = null;
     public TopicManager topicManager = null;
@@ -45,47 +47,43 @@ public class SessionContext {
     public Entity sessionEntity = null;
     public SingleProcessorQueue sessionQueue = null;
     public SingleProcessorQueue connectionOutboundQueue = null;
-    public volatile int msgsReceived = 0;
-    public volatile int msgsSent = 0;
-    public volatile int totalMsgsReceived = 0;
-    public volatile int totalMsgsSent = 0;
+    final AtomicInteger msgsReceived = new AtomicInteger();
+    final AtomicInteger msgsSent = new AtomicInteger();
+    final AtomicInteger totalMsgsReceived = new AtomicInteger();
+    final AtomicInteger totalMsgsSent = new AtomicInteger();
 
     public int getMsgsReceived() {
-        int n = msgsReceived;
-        msgsReceived = 0;
-        return n;
+        return msgsReceived.getAndSet(0);
     }
 
     public int getMsgsSent() {
-        int n = msgsSent;
-        msgsSent = 0;
-        return n;
+        return msgsSent.getAndSet(0);
     }
 
     public int getTotalMsgsReceived() {
-        return totalMsgsReceived;
+        return totalMsgsReceived.get();
     }
 
     public int getTotalMsgsSent() {
-        return totalMsgsSent;
+        return totalMsgsSent.get();
     }
 
     public void incMsgsSent(int n) {
-        if (msgsSent == Integer.MAX_VALUE)
-            msgsSent = 0;
-        msgsSent += n;
-        if (totalMsgsSent == Integer.MAX_VALUE)
-            totalMsgsSent = 0;
-        totalMsgsSent += n;
+        if (msgsSent.get() == Integer.MAX_VALUE)
+            msgsSent.set(0);
+        msgsSent.addAndGet(n);
+        if (totalMsgsSent.get() == Integer.MAX_VALUE)
+            totalMsgsSent.set(0);
+        totalMsgsSent.addAndGet(n);
     }
 
     public void incMsgsReceived(int n) {
-        if (msgsReceived == Integer.MAX_VALUE)
-            msgsReceived = 0;
-        msgsReceived += n;
-        if (totalMsgsReceived == Integer.MAX_VALUE)
-            totalMsgsReceived = 0;
-        totalMsgsReceived += n;
+        if (msgsReceived.get() == Integer.MAX_VALUE)
+            msgsReceived.set(0);
+        msgsReceived.addAndGet(n);
+        if (totalMsgsReceived.get() == Integer.MAX_VALUE)
+            totalMsgsReceived.set(0);
+        totalMsgsReceived.addAndGet(n);
     }
 }
 

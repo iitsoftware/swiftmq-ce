@@ -42,6 +42,7 @@ import com.swiftmq.util.SwiftUtilities;
 import javax.jms.JMSException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class JMSConnection
         implements RequestService, VersionedJMSConnection {
@@ -54,7 +55,7 @@ public class JMSConnection
     protected ActiveLogin activeLogin;
     protected String tracePrefix;
     String tpPrefix;
-    ArrayList tmpQueues = new ArrayList();
+    List<String> tmpQueues = new ArrayList<>();
     ConnectionVisitor visitor = null;
     String clientId = null;
     String remoteHostname = null;
@@ -232,7 +233,7 @@ public class JMSConnection
                     sessionEntity.setDynamicObject(session);
                     sessionEntity.createCommands();
                     Property prop = sessionEntity.getProperty("transacted");
-                    prop.setValue(new Boolean(req.isTransacted()));
+                    prop.setValue(req.isTransacted());
                     prop.setReadOnly(true);
                     prop = sessionEntity.getProperty("acknowledgemode");
                     prop.setValue(SwiftUtilities.ackModeToString(req.getAcknowledgeMode()));
@@ -469,11 +470,10 @@ public class JMSConnection
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/closing connection");
 
             // delete all temp queues
-            for (int i = 0; i < tmpQueues.size(); i++) {
+            for (String tmpQueue : tmpQueues) {
                 try {
-                    String tmpQueueName = (String) tmpQueues.get(i);
-                    ctx.queueManager.deleteTemporaryQueue(tmpQueueName);
-                    ctx.jndiSwiftlet.deregisterJNDIQueueObject(tmpQueueName);
+                    ctx.queueManager.deleteTemporaryQueue(tmpQueue);
+                    ctx.jndiSwiftlet.deregisterJNDIQueueObject(tmpQueue);
                 } catch (Exception e) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$jms", tracePrefix + "/delete tmp queue, got exception: " + e);
@@ -517,17 +517,17 @@ public class JMSConnection
                 }
             }
             double deltasec = Math.max(1.0, (double) (System.currentTimeMillis() - collectRequest.getLastCollect()) / 1000.0);
-            double rsec = ((double) received / (double) deltasec) + 0.5;
-            double ssec = ((double) sent / (double) deltasec) + 0.5;
+            double rsec = ((double) received / deltasec) + 0.5;
+            double ssec = ((double) sent / deltasec) + 0.5;
             try {
-                if (((Integer) receivedSecProp.getValue()).intValue() != rsec)
-                    receivedSecProp.setValue(new Integer((int) rsec));
-                if (((Integer) sentSecProp.getValue()).intValue() != ssec)
-                    sentSecProp.setValue(new Integer((int) ssec));
-                if (((Integer) receivedTotalProp.getValue()).intValue() != totalReceived)
-                    receivedTotalProp.setValue(new Integer(totalReceived));
-                if (((Integer) sentTotalProp.getValue()).intValue() != totalSent)
-                    sentTotalProp.setValue(new Integer(totalSent));
+                if ((Integer) receivedSecProp.getValue() != rsec)
+                    receivedSecProp.setValue(rsec);
+                if ((Integer) sentSecProp.getValue() != ssec)
+                    sentSecProp.setValue(ssec);
+                if ((Integer) receivedTotalProp.getValue() != totalReceived)
+                    receivedTotalProp.setValue(totalReceived);
+                if ((Integer) sentTotalProp.getValue() != totalSent)
+                    sentTotalProp.setValue(totalSent);
             } catch (Exception e) {
             }
         }

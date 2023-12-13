@@ -24,15 +24,15 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.queue.MessageEntry;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.tools.collection.ConcurrentExpandableList;
 
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
-import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 public class BrowserManager {
-    ArrayList queueBrowsers = new ArrayList();
+    ConcurrentExpandableList<com.swiftmq.swiftlet.queue.QueueBrowser> queueBrowsers = new ConcurrentExpandableList<>();
     EntityList browserEntityList = null;
     SessionContext ctx = null;
 
@@ -67,7 +67,7 @@ public class BrowserManager {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + ": Creating browser with selector: " + msel);
                 com.swiftmq.swiftlet.queue.QueueBrowser queueBrowser = ctx.queueManager.createQueueBrowser(queueName, ctx.activeLogin, msel);
-                int idx = ArrayListTool.setFirstFreeOrExpand(queueBrowsers, queueBrowser);
+                int idx = queueBrowsers.add(queueBrowser);
                 reply.setOk(true);
                 reply.setQueueBrowserId(idx);
                 if (browserEntityList != null) {
@@ -106,11 +106,11 @@ public class BrowserManager {
         FetchBrowserMessageReply reply = (FetchBrowserMessageReply) request.createReply();
         int browserId = request.getQueueBrowserId();
         try {
-            com.swiftmq.swiftlet.queue.QueueBrowser browser = (com.swiftmq.swiftlet.queue.QueueBrowser) queueBrowsers.get(browserId);
+            com.swiftmq.swiftlet.queue.QueueBrowser browser = queueBrowsers.get(browserId);
             if (request.isResetRequired())
                 browser.resetBrowser();
             browser.setLastMessageIndex(request.getLastMessageIndex());
-            MessageEntry me = (MessageEntry) browser.getNextMessage();
+            MessageEntry me = browser.getNextMessage();
             reply.setOk(true);
             reply.setMessageEntry(me);
         } catch (Exception e) {
@@ -129,7 +129,7 @@ public class BrowserManager {
             com.swiftmq.swiftlet.queue.QueueBrowser browser = (com.swiftmq.swiftlet.queue.QueueBrowser) queueBrowsers.get(browserId);
             if (!browser.isClosed())
                 browser.close();
-            queueBrowsers.set(browserId, null);
+            queueBrowsers.remove(browserId);
             reply.setOk(true);
             if (browserEntityList != null)
                 browserEntityList.removeDynamicEntity(browser);
@@ -145,15 +145,12 @@ public class BrowserManager {
     public void close() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + ": closing browsers");
-        for (int i = 0; i < queueBrowsers.size(); i++) {
-            com.swiftmq.swiftlet.queue.QueueBrowser b = (com.swiftmq.swiftlet.queue.QueueBrowser) queueBrowsers.get(i);
-            if (b != null && !b.isClosed()) {
-                try {
-                    b.close();
-                } catch (Exception ignored) {
-                }
+        IntStream.range(0, queueBrowsers.size()).mapToObj(i -> queueBrowsers.get(i)).filter(b -> b != null && !b.isClosed()).forEach(b -> {
+            try {
+                b.close();
+            } catch (Exception ignored) {
             }
-        }
+        });
         queueBrowsers.clear();
     }
 

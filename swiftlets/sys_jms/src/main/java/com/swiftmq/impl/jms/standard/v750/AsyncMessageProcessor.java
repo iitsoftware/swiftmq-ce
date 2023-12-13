@@ -20,6 +20,8 @@ package com.swiftmq.impl.jms.standard.v750;
 import com.swiftmq.jms.smqp.v750.AsyncMessageDeliveryRequest;
 import com.swiftmq.swiftlet.queue.*;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class AsyncMessageProcessor extends MessageProcessor {
     RegisterMessageProcessor registerRequest = null;
     RunMessageProcessor runRequest = null;
@@ -33,7 +35,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
     int numberMessages = 0;
     int lowWaterMark = 0;
     long maxBulkSize = -1;
-    volatile boolean started = false;
+    final AtomicBoolean started = new AtomicBoolean(false);
 
     public AsyncMessageProcessor(Session session, SessionContext ctx, Consumer consumer, int consumerCacheSize, int recoveryEpoche) {
         super(consumer.getSelector());
@@ -97,7 +99,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
     }
 
     public boolean isStarted() {
-        return started;
+        return started.get();
     }
 
     public void register() {
@@ -107,7 +109,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
             QueuePullTransaction t = consumer.getReadTransaction();
             if (t != null && !t.isClosed()) {
                 try {
-                    started = true;
+                    started.set(true);
                     //         t.unregisterMessageProcessor(this);
                     t.registerMessageProcessor(this);
                 } catch (QueueTransactionClosedException e) {
@@ -150,7 +152,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
         } else {
             deliveryCount = 0;
             maxBulkSize = -1;
-            started = false;
+            started.set(false);
         }
     }
 

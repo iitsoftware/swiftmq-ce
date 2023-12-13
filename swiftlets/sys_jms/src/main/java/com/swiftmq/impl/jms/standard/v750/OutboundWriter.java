@@ -38,6 +38,8 @@ import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.ReplyHandler;
 import com.swiftmq.tools.util.DataStreamOutputStream;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class OutboundWriter
         implements ReplyHandler, TimerListener {
     static KeepAliveRequest keepAliveRequest = new KeepAliveRequest();
@@ -52,7 +54,7 @@ public class OutboundWriter
     DataStreamOutputStream outStream;
     OutboundQueue outboundQueue = null;
     OutboundProcessor outboundProcessor = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
 
     OutboundWriter(Connection connection, JMSConnection jmsConnection) {
         this.connection = connection;
@@ -70,7 +72,7 @@ public class OutboundWriter
     }
 
     public void writeObject(Dumpable obj) {
-        if (closed)
+        if (closed.get())
             return;
         if (traceSpace.enabled) traceSpace.trace("smqp", "write object: " + obj);
         try {
@@ -81,7 +83,7 @@ public class OutboundWriter
                     public void performTimeAction() {
                         networkSwiftlet.getConnectionManager().removeConnection(connection);
                         outboundQueue.close();
-                        closed = true;
+                        closed.set(true);
                     }
                 });
             }
@@ -89,7 +91,7 @@ public class OutboundWriter
             if (traceSpace.enabled) traceSpace.trace("smqp", "exception write object, exiting!: " + e);
             networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
             outboundQueue.close();
-            closed = true;
+            closed.set(true);
         }
     }
 
@@ -132,7 +134,7 @@ public class OutboundWriter
     private class OutboundProcessor implements AsyncTask {
 
         public boolean isValid() {
-            return !closed;
+            return !closed.get();
         }
 
         public String getDispatchToken() {
@@ -147,7 +149,7 @@ public class OutboundWriter
         }
 
         public void run() {
-            if (outboundQueue.dequeue() && !closed)
+            if (outboundQueue.dequeue() && !closed.get())
                 myTP.dispatchTask(this);
         }
     }

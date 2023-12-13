@@ -29,15 +29,18 @@ import com.swiftmq.tools.concurrent.CallbackJoin;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.GenericRequest;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NontransactedSession extends Session {
-    protected List deliveredList = null;
+    protected List<MessageDeliveredRequest> deliveredList = null;
 
     public NontransactedSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
         super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin, ackMode);
         ctx.transacted = false;
-        deliveredList = new ArrayList();
+        deliveredList = new ArrayList<>();
     }
 
     public void visit(MessageDeliveredRequest req) {
@@ -60,10 +63,9 @@ public class NontransactedSession extends Session {
         }
 
         if (ctx.ackMode == javax.jms.Session.CLIENT_ACKNOWLEDGE) {
-            Map ackConsumers = new HashMap();
-            for (Iterator iter = deliveredList.iterator(); iter.hasNext(); ) {
-                MessageDeliveredRequest request = (MessageDeliveredRequest) iter.next();
-                Consumer consumer = (Consumer) consumerList.get(request.getQueueConsumerId());
+            Map<Consumer, ConsumerAckEntry> ackConsumers = new HashMap<>();
+            for (MessageDeliveredRequest request : deliveredList) {
+                Consumer consumer = consumerList.get(request.getQueueConsumerId());
                 MessageIndex actIndex = request.getMessageIndex();
                 QueuePullTransaction t = consumer.getTransaction();
                 ConsumerAckEntry ackEntry = (ConsumerAckEntry) ackConsumers.get(consumer);
@@ -76,10 +78,9 @@ public class NontransactedSession extends Session {
             deliveredList.clear();
             boolean callbackRegistered = false;
             MultiAckJoin join = new MultiAckJoin(reply);
-            for (Iterator iter = ackConsumers.entrySet().iterator(); iter.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) iter.next();
-                Consumer consumer = (Consumer) entry.getKey();
-                ConsumerAckEntry ackEntry = (ConsumerAckEntry) entry.getValue();
+            for (Map.Entry<Consumer, ConsumerAckEntry> ackEntryEntry : ackConsumers.entrySet()) {
+                Consumer consumer = (Consumer) ((Map.Entry<?, ?>) ackEntryEntry).getKey();
+                ConsumerAckEntry ackEntry = (ConsumerAckEntry) ((Map.Entry<?, ?>) ackEntryEntry).getValue();
                 try {
                     join.incNumberCallbacks();
                     ackEntry.transaction.acknowledgeMessages(ackEntry.ackList, new MultiAckCallback(join, consumer, ackEntry.ackList.size()));
@@ -97,9 +98,9 @@ public class NontransactedSession extends Session {
         }
     }
 
-    private class ConsumerAckEntry {
+    private static class ConsumerAckEntry {
         QueuePullTransaction transaction = null;
-        List ackList = new ArrayList();
+        List<MessageIndex> ackList = new ArrayList<>();
 
         private ConsumerAckEntry(QueuePullTransaction transaction) {
             this.transaction = transaction;
@@ -200,7 +201,7 @@ public class NontransactedSession extends Session {
         recoveryEpoche = reply.getRecoveryEpoche();
         try {
             for (int i = 0; i < consumerList.size(); i++) {
-                Consumer consumer = (Consumer) consumerList.get(i);
+                Consumer consumer = consumerList.get(i);
                 if (consumer != null) {
                     consumer.createReadTransaction();
                     consumer.createTransaction();
@@ -233,7 +234,7 @@ public class NontransactedSession extends Session {
         reply.setRecoveryEpoche(req.getRecoveryEpoche());
         reply.setOk(true);
         for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
+            Consumer consumer = consumerList.get(i);
             if (consumer != null) {
                 try {
                     MessageProcessor mp = consumer.getMessageProcessor();

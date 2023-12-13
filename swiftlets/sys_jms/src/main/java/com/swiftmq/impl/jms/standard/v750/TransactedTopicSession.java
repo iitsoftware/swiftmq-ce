@@ -27,7 +27,6 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
-import com.swiftmq.tools.collection.ArrayListTool;
 import com.swiftmq.tools.collection.RingBuffer;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
@@ -126,10 +125,8 @@ public class TransactedTopicSession extends TransactedSession {
             if (topic.getType() != DestinationFactory.TYPE_TEMPTOPIC)
                 ctx.authSwiftlet.verifyTopicSenderSubscription(topic.getTopicName(), ctx.activeLogin.getLoginId());
             int producerId;
-            TopicProducer producer;
-            producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
-            producer = new TopicProducer(ctx, topic);
-            producerList.set(producerId, producer);
+            TopicProducer producer = new TopicProducer(ctx, topic);
+            producerId = producerList.add(producer);
             reply.setTopicPublisherId(producerId);
             reply.setOk(true);
             if (publisherEntityList != null) {
@@ -195,9 +192,8 @@ public class TransactedTopicSession extends TransactedSession {
             int consumerId = 0;
             TopicConsumer consumer = null;
             if (topic.getType() == DestinationFactory.TYPE_TOPIC) {
-                consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
                 consumer = new TopicConsumer(ctx, topic, messageSelector, noLocal);
-                consumerList.set(consumerId, consumer);
+                consumerId = consumerList.add(consumer);
                 if (subEntity != null) {
                     Property prop = subEntity.getProperty("topic");
                     prop.setReadOnly(false);
@@ -212,16 +208,15 @@ public class TransactedTopicSession extends TransactedSession {
                 if (subEntity != null)
                     subEntity.setName(topic.getTopicName() + "-" + consumerId);
             } else {
-                consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
                 consumer = new TopicConsumer(ctx, topic, messageSelector, noLocal);
-                consumerList.set(consumerId, consumer);
+                consumerId = consumerList.add(consumer);
                 if (subEntity != null)
                     subEntity.setDynamicObject(consumer);
                 if (subEntity != null) {
                     subEntity.setName(topic.getQueueName() + "-" + consumerId);
                     Property prop = subEntity.getProperty("temptopic");
                     prop.setReadOnly(false);
-                    prop.setValue(new Boolean(true));
+                    prop.setValue(true);
                     prop.setReadOnly(true);
                     prop = subEntity.getProperty("boundto");
                     prop.setReadOnly(false);
@@ -235,7 +230,7 @@ public class TransactedTopicSession extends TransactedSession {
             if (subEntity != null) {
                 Property prop = subEntity.getProperty("nolocal");
                 prop.setReadOnly(false);
-                prop.setValue(new Boolean(noLocal));
+                prop.setValue(noLocal);
                 prop.setReadOnly(true);
                 subEntity.createCommands();
                 prop = subEntity.getProperty("selector");
@@ -300,10 +295,8 @@ public class TransactedTopicSession extends TransactedSession {
         String durableName = req.getDurableName();
         try {
             int consumerId = 0;
-            TopicDurableConsumer consumer = null;
-            consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
-            consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
-            consumerList.set(consumerId, consumer);
+            TopicDurableConsumer consumer = new TopicDurableConsumer(ctx, durableName, topic, messageSelector, noLocal);
+            consumerId = consumerList.add(consumer);
             reply.setOk(true);
             reply.setTopicSubscriberId(consumerId);
 
@@ -324,7 +317,7 @@ public class TransactedTopicSession extends TransactedSession {
                 prop.setValue(consumer.getQueueName());
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("nolocal");
-                prop.setValue(new Boolean(noLocal));
+                prop.setValue(noLocal);
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("selector");
                 if (messageSelector != null) {
