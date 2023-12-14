@@ -20,11 +20,13 @@ package com.swiftmq.impl.threadpool.standard;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.threadpool.AsyncTask;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class PoolThread extends Thread {
     PoolDispatcher poolDispatcher;
     long idleTimeout;
     AsyncTask activeTask;
-    volatile boolean shouldDie = false;
+    final AtomicBoolean shouldDie = new AtomicBoolean(false);
 
     PoolThread(String name, ThreadGroup threadGroup, PoolDispatcher poolDispatcher, long idleTimeout) {
         super(threadGroup, name);
@@ -37,14 +39,14 @@ public class PoolThread extends Thread {
     }
 
     void die() {
-        shouldDie = true;
+        shouldDie.set(true);
         if (activeTask != null)
             activeTask.stop();
     }
 
     public void run() {
         activeTask = poolDispatcher.getNextTask(this, idleTimeout, activeTask);
-        while (activeTask != null && !shouldDie) {
+        while (activeTask != null && !shouldDie.get()) {
             if (activeTask.isValid()) {
                 try {
                     activeTask.run();
@@ -68,7 +70,7 @@ public class PoolThread extends Thread {
                 }
             }
             activeTask = null; // to enable GC of the task objects
-            if (!shouldDie)
+            if (!shouldDie.get())
                 activeTask = poolDispatcher.getNextTask(this, idleTimeout, activeTask);
         }
     }

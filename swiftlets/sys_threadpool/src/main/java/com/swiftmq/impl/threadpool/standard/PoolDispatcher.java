@@ -25,10 +25,12 @@ import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.tools.collection.RingBuffer;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -42,22 +44,22 @@ public class PoolDispatcher implements ThreadPool {
 
     String poolName;
     ThreadGroup threadGroup;
-    boolean kernelPool = false;
-    int minThreads;
-    int maxThreads;
-    int threshold;
-    int addThreads;
-    int priority;
-    long idleTimeout;
-    Set threadSet = new HashSet();
-    int runningCount = 0;
-    int idleCount = 0;
-    boolean stopped = false;
-    boolean closed = false;
+    final AtomicBoolean kernelPool = new AtomicBoolean(false);
+    final AtomicInteger minThreads = new AtomicInteger();
+    final AtomicInteger maxThreads = new AtomicInteger();
+    final AtomicInteger threshold = new AtomicInteger();
+    final AtomicInteger addThreads = new AtomicInteger();
+    final AtomicInteger priority = new AtomicInteger();
+    final AtomicLong idleTimeout = new AtomicLong();
+    Set<PoolThread> threadSet = ConcurrentHashMap.newKeySet();
+    final AtomicInteger runningCount = new AtomicInteger();
+    final AtomicInteger idleCount = new AtomicInteger();
+    final AtomicBoolean stopped = new AtomicBoolean(false);
+    final AtomicBoolean closed = new AtomicBoolean(false);
     RingBuffer taskList = null;
     FreezeCompletionListener freezeCompletionListener = null;
-    boolean freezed = false;
-    int tcount = 0;
+    final AtomicBoolean freezed = new AtomicBoolean(false);
+    final AtomicInteger tcount = new AtomicInteger();
     String tname = null;
     Lock lock = new ReentrantLock();
     Condition taskAvail = null;
@@ -69,14 +71,14 @@ public class PoolDispatcher implements ThreadPool {
         if (traceSpace.enabled) traceSpace.trace(this.tracePrefix, "initializing");
         taskAvail = lock.newCondition();
 
-        this.kernelPool = kernelPool;
+        this.kernelPool.set(kernelPool);
         this.poolName = poolName;
-        this.minThreads = minThreads;
-        this.maxThreads = maxThreads;
-        this.threshold = threshold;
-        this.addThreads = addThreads;
-        this.priority = priority;
-        this.idleTimeout = idleTimeout;
+        this.minThreads.set(minThreads);
+        this.maxThreads.set(maxThreads);
+        this.threshold.set(threshold);
+        this.addThreads.set(addThreads);
+        this.priority.set(priority);
+        this.idleTimeout.set(idleTimeout);
         tname = "SwiftMQ-" + poolName + "-";
         threadGroup = new ThreadGroup(poolName);
         threadGroup.setMaxPriority(priority);
@@ -87,8 +89,8 @@ public class PoolDispatcher implements ThreadPool {
 
     private void createNewThread(long threadTimeout) {
         if (traceSpace.enabled) traceSpace.trace(tracePrefix, "createNewThread, threadTimeout=" + threadTimeout);
-        PoolThread pt = new PoolThread(tname + (++tcount), threadGroup, this, threadTimeout);
-        runningCount++;
+        PoolThread pt = new PoolThread(tname + tcount.incrementAndGet(), threadGroup, this, threadTimeout);
+        runningCount.getAndIncrement();
         threadSet.add(pt);
         pt.start();
     }
@@ -98,138 +100,65 @@ public class PoolDispatcher implements ThreadPool {
     }
 
     public void setKernelPool(boolean b) {
-        lock.lock();
-        try {
-            kernelPool = b;
-        } finally {
-            lock.unlock();
-        }
+        kernelPool.set(b);
     }
 
     public boolean isKernelPool() {
-        lock.lock();
-        try {
-            return kernelPool;
-        } finally {
-            lock.unlock();
-        }
+        return kernelPool.get();
     }
 
     public int getMinThreads() {
-        lock.lock();
-        try {
-            return minThreads;
-        } finally {
-            lock.unlock();
-        }
+        return minThreads.get();
     }
 
     public void setMinThreads(int minThreads) {
-        lock.lock();
-        try {
-            this.minThreads = minThreads;
-        } finally {
-            lock.unlock();
-        }
+        this.minThreads.set(minThreads);
     }
 
     public int getMaxThreads() {
-        lock.lock();
-        try {
-            return maxThreads;
-        } finally {
-            lock.unlock();
-        }
+        return maxThreads.get();
     }
 
     public void setMaxThreads(int maxThreads) {
-        lock.lock();
-        try {
-            this.maxThreads = maxThreads;
-        } finally {
-            lock.unlock();
-        }
+        this.maxThreads.set(maxThreads);
     }
 
     public int getThreshold() {
-        lock.lock();
-        try {
-            return threshold;
-        } finally {
-            lock.unlock();
-        }
+        return threshold.get();
     }
 
     public void setThreshold(int threshold) {
-        lock.lock();
-        try {
-            this.threshold = threshold;
-        } finally {
-            lock.unlock();
-        }
+        this.threshold.set(threshold);
     }
 
     public int getAddThreads() {
-        lock.lock();
-        try {
-            return addThreads;
-        } finally {
-            lock.unlock();
-        }
+        return addThreads.get();
     }
 
     public void setAddThreads(int addThreads) {
-        lock.lock();
-        try {
-            this.addThreads = addThreads;
-        } finally {
-            lock.unlock();
-        }
+        this.addThreads.set(addThreads);
     }
 
     public long getIdleTimeout() {
-        lock.lock();
-        try {
-            return idleTimeout;
-        } finally {
-            lock.unlock();
-        }
+        return idleTimeout.get();
     }
 
     public void setIdleTimeout(long idleTimeout) {
-        lock.lock();
-        try {
-            this.idleTimeout = idleTimeout;
-        } finally {
-            lock.unlock();
-        }
+        this.idleTimeout.set(idleTimeout);
     }
 
     public int getNumberRunningThreads() {
-        lock.lock();
-        try {
-            return runningCount;
-        } finally {
-            lock.unlock();
-        }
+        return runningCount.get();
     }
 
     public int getNumberIdlingThreads() {
-        lock.lock();
-        try {
-            return idleCount;
-        } finally {
-            lock.unlock();
-        }
+        return idleCount.get();
     }
 
-    /**
-     * @param task
-     */
     public void dispatchTask(AsyncTask task) {
         lock.lock();
         try {
-            if (closed || stopped)
+            if (closed.get() || stopped.get())
                 return;
             if (traceSpace.enabled)
                 traceSpace.trace(tracePrefix, "dispatchTask, dispatchToken=" + task.getDispatchToken() +
@@ -237,22 +166,22 @@ public class PoolDispatcher implements ThreadPool {
             taskList.add(task);
             if (traceSpace.enabled)
                 traceSpace.trace(tracePrefix, "dispatchTask, maxThreads=" + maxThreads + ", size=" + taskList.getSize() + ", idle=" + idleCount + ", running=" + runningCount);
-            if (!freezed) {
-                int running = runningCount;
-                int act = idleCount + running;
-                if (act < maxThreads || maxThreads == -1) {
-                    if (idleCount == 0 && taskList.getSize() - idleCount >= threshold) {
+            if (!freezed.get()) {
+                int running = runningCount.get();
+                int act = idleCount.get() + running;
+                if (act < maxThreads.get() || maxThreads.get() == -1) {
+                    if (idleCount.get() == 0 && taskList.getSize() - idleCount.get() >= threshold.get()) {
                         if (traceSpace.enabled)
                             traceSpace.trace(tracePrefix, "dispatchTask, threshold of " + threshold + " reached, starting " + addThreads + " additional threads...");
-                        for (int i = 0; i < addThreads; i++)
-                            createNewThread(idleTimeout);
+                        for (int i = 0; i < addThreads.get(); i++)
+                            createNewThread(idleTimeout.get());
                     } else if (act == 0) {
                         if (traceSpace.enabled)
                             traceSpace.trace(tracePrefix, "dispatchTask, no threads running, start up 1 thread...");
-                        createNewThread(idleTimeout);
+                        createNewThread(idleTimeout.get());
                     }
                 }
-                if (idleCount > 0) {
+                if (idleCount.get() > 0) {
                     if (traceSpace.enabled)
                         traceSpace.trace(tracePrefix, "dispatchTask, idle=" + idleCount + ", notify...");
                     taskAvail.signal();
@@ -268,22 +197,22 @@ public class PoolDispatcher implements ThreadPool {
         try {
             if (traceSpace.enabled)
                 traceSpace.trace(tracePrefix, "getNextTask, idle=" + idleCount + ", timeout=" + timeout + ", entering...");
-            runningCount--;
-            if (stopped)
+            runningCount.getAndDecrement();
+            if (stopped.get())
                 return null;
-            if (maxThreads > 0 && maxThreads <= idleCount + runningCount) {
+            if (maxThreads.get() > 0 && maxThreads.get() <= idleCount.get() + runningCount.get()) {
                 if (traceSpace.enabled)
                     traceSpace.trace(tracePrefix, "getNextTask, maxThreads=" + maxThreads + ", idleCount=" + idleCount + ", runningCount=" + runningCount + ", too much threads, this one dies...");
-                if (idleCount > 0) {
+                if (idleCount.get() > 0) {
                     if (traceSpace.enabled)
                         traceSpace.trace(tracePrefix, "getNextTask, idle=" + idleCount + ", notify...");
                     taskAvail.signal();
                 }
                 return null;
             }
-            if (freezed) {
+            if (freezed.get()) {
                 threadSet.remove(pt);
-                if (threadSet.size() == 0 && freezeCompletionListener != null) {
+                if (threadSet.isEmpty() && freezeCompletionListener != null) {
                     if (traceSpace.enabled)
                         traceSpace.trace(tracePrefix, "getNextTask, freezed, calling freezeCompletionListener");
                     freezeCompletionListener.freezed(this);
@@ -293,8 +222,8 @@ public class PoolDispatcher implements ThreadPool {
                 return null;
             }
             AsyncTask task = null;
-            if (taskList.getSize() == 0 && !closed) {
-                idleCount++;
+            if (taskList.getSize() == 0 && !closed.get()) {
+                idleCount.getAndIncrement();
                 try {
                     if (timeout > 0) {
                         if (traceSpace.enabled)
@@ -303,7 +232,7 @@ public class PoolDispatcher implements ThreadPool {
                         do {
                             taskAvail.await(timeout, TimeUnit.MILLISECONDS);
                         }
-                        while (!freezed && taskList.getSize() == 0 && !closed && System.currentTimeMillis() - waitStart < timeout);
+                        while (!freezed.get() && taskList.getSize() == 0 && !closed.get() && System.currentTimeMillis() - waitStart < timeout);
                         if (traceSpace.enabled)
                             traceSpace.trace(tracePrefix, "getNextTask, idle=" + idleCount + ", timeout=" + timeout + ", wake up, size=" + taskList.getSize());
                     } else {
@@ -313,15 +242,15 @@ public class PoolDispatcher implements ThreadPool {
                             taskAvail.awaitUninterruptibly();
                             if (traceSpace.enabled)
                                 traceSpace.trace(tracePrefix, "getNextTask, idle=" + idleCount + ", timeout=" + timeout + ", wake up, size=" + taskList.getSize());
-                        } while (!freezed && taskList.getSize() == 0 && !closed);
+                        } while (!freezed.get() && taskList.getSize() == 0 && !closed.get());
                     }
                 } catch (InterruptedException ignored) {
                 }
-                idleCount--;
+                idleCount.getAndDecrement();
             }
-            if (freezed) {
+            if (freezed.get()) {
                 threadSet.remove(pt);
-                if (threadSet.size() == 0 && freezeCompletionListener != null) {
+                if (threadSet.isEmpty() && freezeCompletionListener != null) {
                     if (traceSpace.enabled)
                         traceSpace.trace(tracePrefix, "getNextTask, freezed, calling freezeCompletionListener");
                     freezeCompletionListener.freezed(this);
@@ -330,7 +259,7 @@ public class PoolDispatcher implements ThreadPool {
                 if (traceSpace.enabled) traceSpace.trace(tracePrefix, "getNextTask, freezed, returning null");
                 return null;
             }
-            if (closed || taskList.getSize() == 0) {
+            if (closed.get() || taskList.getSize() == 0) {
                 if (traceSpace.enabled)
                     traceSpace.trace(tracePrefix, "getNextTask, idle=" + idleCount + ", timeout=" + timeout + ", returns null (closed=" + closed + ", size=" + taskList.getSize() + ")");
                 threadSet.remove(pt);
@@ -340,7 +269,7 @@ public class PoolDispatcher implements ThreadPool {
             if (traceSpace.enabled)
                 traceSpace.trace(tracePrefix, "getNextTask, size=" + taskList.getSize() + ", idle=" + idleCount + ", timeout=" + timeout + ", returns: dispatchToken=" + task.getDispatchToken() +
                         ", description=" + task.getDescription());
-            runningCount++;
+            runningCount.getAndIncrement();
             return task;
         } finally {
             lock.unlock();
@@ -353,9 +282,9 @@ public class PoolDispatcher implements ThreadPool {
             if (traceSpace.enabled)
                 traceSpace.trace(tracePrefix, "freeze, freezeCompletionListener=" + freezeCompletionListener);
             this.freezeCompletionListener = freezeCompletionListener;
-            freezed = true;
-            if (threadSet.size() == 0)
-                createNewThread(idleTimeout);
+            freezed.set(true);
+            if (threadSet.isEmpty())
+                createNewThread(idleTimeout.get());
             else
                 taskAvail.signalAll();
         } finally {
@@ -367,28 +296,27 @@ public class PoolDispatcher implements ThreadPool {
         lock.lock();
         try {
             if (traceSpace.enabled) traceSpace.trace(tracePrefix, "unfreeze");
-            freezed = false;
-            if (minThreads > 0) {
-                for (int i = 0; i < minThreads; i++)
+            freezed.set(false);
+            if (minThreads.get() > 0) {
+                for (int i = 0; i < minThreads.get(); i++)
                     createNewThread(-1);
             } else if (taskList.getSize() > 0)
-                createNewThread(idleTimeout);
+                createNewThread(idleTimeout.get());
         } finally {
             lock.unlock();
         }
     }
 
     public void stop() {
-        stopped = true;
+        stopped.set(true);
     }
 
     public void close() {
         lock.lock();
         try {
             if (traceSpace.enabled) traceSpace.trace(tracePrefix, "close, idle=" + idleCount);
-            closed = true;
-            for (Iterator iter = threadSet.iterator(); iter.hasNext(); ) {
-                PoolThread t = (PoolThread) iter.next();
+            closed.set(true);
+            for (PoolThread t : threadSet) {
                 t.die();
             }
             threadSet.clear();
