@@ -32,6 +32,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SessionStore {
     static final String STORE_QUEUE = "sys$mqtt_sessionstore";
@@ -40,6 +41,7 @@ public class SessionStore {
 
     SwiftletContext ctx;
     XStream xStream;
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public SessionStore(SwiftletContext ctx) throws Exception {
         this.ctx = ctx;
@@ -50,64 +52,82 @@ public class SessionStore {
         xStream.allowTypesByWildcard(new String[]{"com.swiftmq.**"});
         xStream.setClassLoader(getClass().getClassLoader());
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", created");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", created");
     }
 
-    public synchronized Map<String, MQTTSession> load() throws Exception {
-        Map<String, MQTTSession> result = new HashMap<String, MQTTSession>();
-        QueueReceiver receiver = ctx.queueManager.createQueueReceiver(STORE_QUEUE, null, null);
-        QueuePullTransaction t = receiver.createTransaction(false);
-        MessageEntry entry = null;
-        while ((entry = t.getMessage(0)) != null) {
-            TextMessageImpl msg = (TextMessageImpl) entry.getMessage();
-            String clientId = msg.getStringProperty(PROP_CLIENTID);
-            result.put(clientId, new MQTTSession(ctx, clientId, (SessionStoreEntry) xStream.fromXML(msg.getText())));
-        }
-        t.rollback();
-        receiver.close();
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", load, result.size=" + result.size());
-
-        return result;
-    }
-
-    public synchronized void add(String clientid, MQTTSession session) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", add, clientid=" + clientid);
-        QueueSender sender = ctx.queueManager.createQueueSender(STORE_QUEUE, null);
-        QueuePushTransaction t = sender.createTransaction();
-        TextMessageImpl message = new TextMessageImpl();
-        message.setJMSDestination(new QueueImpl(STORE_QUEUE));
-        message.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
-        message.setJMSPriority(Message.DEFAULT_PRIORITY);
-        message.setJMSExpiration(Message.DEFAULT_TIME_TO_LIVE);
-        message.setJMSMessageID(MSGID + IdGenerator.getInstance().nextId('/'));
-        message.setStringProperty(PROP_CLIENTID, clientid);
-        message.setText(xStream.toXML(session.getSessionStoreEntry()));
-        t.putMessage(message);
-        t.commit();
-        sender.close();
-    }
-
-    public synchronized void remove(String clientid) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", remove, clientid=" + clientid);
-        QueueReceiver receiver = ctx.queueManager.createQueueReceiver(STORE_QUEUE, null, null);
-        QueuePullTransaction t = receiver.createTransaction(false);
-        MessageEntry entry = null;
-        while ((entry = t.getMessage(0)) != null) {
-            MessageImpl msg = entry.getMessage();
-            String cid = msg.getStringProperty(PROP_CLIENTID);
-            if (cid.equals(clientid)) {
-                QueuePullTransaction t2 = receiver.createTransaction(false);
-                t2.moveToTransaction(entry.getMessageIndex(), t);
-                t2.commit();
-                break;
+    public Map<String, MQTTSession> load() throws Exception {
+        lock.writeLock().lock();
+        try {
+            Map<String, MQTTSession> result = new HashMap<String, MQTTSession>();
+            QueueReceiver receiver = ctx.queueManager.createQueueReceiver(STORE_QUEUE, null, null);
+            QueuePullTransaction t = receiver.createTransaction(false);
+            MessageEntry entry = null;
+            while ((entry = t.getMessage(0)) != null) {
+                TextMessageImpl msg = (TextMessageImpl) entry.getMessage();
+                String clientId = msg.getStringProperty(PROP_CLIENTID);
+                result.put(clientId, new MQTTSession(ctx, clientId, (SessionStoreEntry) xStream.fromXML(msg.getText())));
             }
+            t.rollback();
+            receiver.close();
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", load, result.size=" + result.size());
 
+            return result;
+        } finally {
+            lock.writeLock().unlock();
         }
-        t.rollback();
-        receiver.close();
+
+    }
+
+    public void add(String clientid, MQTTSession session) throws Exception {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", add, clientid=" + clientid);
+            QueueSender sender = ctx.queueManager.createQueueSender(STORE_QUEUE, null);
+            QueuePushTransaction t = sender.createTransaction();
+            TextMessageImpl message = new TextMessageImpl();
+            message.setJMSDestination(new QueueImpl(STORE_QUEUE));
+            message.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
+            message.setJMSPriority(Message.DEFAULT_PRIORITY);
+            message.setJMSExpiration(Message.DEFAULT_TIME_TO_LIVE);
+            message.setJMSMessageID(MSGID + IdGenerator.getInstance().nextId('/'));
+            message.setStringProperty(PROP_CLIENTID, clientid);
+            message.setText(xStream.toXML(session.getSessionStoreEntry()));
+            t.putMessage(message);
+            t.commit();
+            sender.close();
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public void remove(String clientid) throws Exception {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", remove, clientid=" + clientid);
+            QueueReceiver receiver = ctx.queueManager.createQueueReceiver(STORE_QUEUE, null, null);
+            QueuePullTransaction t = receiver.createTransaction(false);
+            MessageEntry entry = null;
+            while ((entry = t.getMessage(0)) != null) {
+                MessageImpl msg = entry.getMessage();
+                String cid = msg.getStringProperty(PROP_CLIENTID);
+                if (cid.equals(clientid)) {
+                    QueuePullTransaction t2 = receiver.createTransaction(false);
+                    t2.moveToTransaction(entry.getMessageIndex(), t);
+                    t2.commit();
+                    break;
+                }
+
+            }
+            t.rollback();
+            receiver.close();
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     @Override

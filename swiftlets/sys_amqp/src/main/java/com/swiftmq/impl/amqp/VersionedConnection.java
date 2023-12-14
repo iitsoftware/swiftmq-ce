@@ -97,11 +97,11 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
             handler.collect(lastCollect);
     }
 
-    public synchronized void registerSaslHandlerFactory(ProtocolHeader header, HandlerFactory factory) {
+    public void registerSaslHandlerFactory(ProtocolHeader header, HandlerFactory factory) {
         saslHandlerList.add(new Pair(header, factory));
     }
 
-    public synchronized void registerAMQPHandlerFactory(ProtocolHeader header, HandlerFactory factory) {
+    public void registerAMQPHandlerFactory(ProtocolHeader header, HandlerFactory factory) {
         amqpHandlerList.add(new Pair(header, factory));
     }
 

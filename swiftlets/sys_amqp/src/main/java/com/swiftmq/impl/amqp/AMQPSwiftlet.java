@@ -42,12 +42,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListener {
     SwiftletContext ctx = null;
     EntityListEventAdapter listenerAdapter = null;
     Set<Connection> connections = ConcurrentHashMap.newKeySet();
-    Semaphore shutdownSem = null;
+    final AtomicReference<Semaphore> shutdownSem = new AtomicReference<>();
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
     final AtomicLong lastCollect = new AtomicLong(System.currentTimeMillis());
@@ -188,11 +189,13 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         return entity;
     }
 
-    protected synchronized Semaphore getShutdownSemaphore() {
-        shutdownSem = null;
-        if (!connections.isEmpty())
-            shutdownSem = new Semaphore();
-        return shutdownSem;
+    protected Semaphore getShutdownSemaphore() {
+        if (!connections.isEmpty()) {
+            shutdownSem.set(new Semaphore());
+        } else {
+            shutdownSem.set(null);
+        }
+        return shutdownSem.get();
     }
 
     private void doConnect(Connection connection, boolean requiresSasl, Entity connectionTemplate) {
@@ -225,8 +228,8 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
             myCtx.usageList.removeDynamicEntity(connection);
             versionedConnection.close();
             connections.remove(connection);
-            if (shutdownSem != null && connections.isEmpty())
-                shutdownSem.notifySingleWaiter();
+            if (shutdownSem.get() != null && connections.isEmpty())
+                shutdownSem.get().notifySingleWaiter();
         }
         if (myCtx.traceSpace.enabled) myCtx.traceSpace.trace(getName(), "doDisconnect: " + connection + ", DONE.");
     }
@@ -338,9 +341,8 @@ public class AMQPSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         }
 
         public void connected(Connection connection) throws ConnectionVetoException {
-            if (localMax.get() != -1) {
-                if (currentCount.getAndIncrement() > localMax.get())
-                    throw new ConnectionVetoException("Maximum connections (" + localMax.get() + ") for this listener '" + name + "' reached!");
+            if (localMax.get() != -1 && currentCount.incrementAndGet() > localMax.get()) {
+                throw new ConnectionVetoException("Maximum connections (" + localMax.get() + ") for this listener '" + name + "' reached!");
             }
             doConnect(connection, (Boolean) saslProp.getValue(), connectionTemplate);
         }

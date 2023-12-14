@@ -29,7 +29,7 @@ public class Slot implements Comparable {
     ReentrantLock lock = new ReentrantLock();
     Condition isLatched = lock.newCondition();
 
-    public synchronized void latch() {
+    public void latch() {
         lock.lock();
         try {
             if (latched) {

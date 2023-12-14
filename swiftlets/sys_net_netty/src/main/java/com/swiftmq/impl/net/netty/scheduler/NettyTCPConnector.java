@@ -45,7 +45,7 @@ public class NettyTCPConnector extends TCPConnector {
     }
 
     @Override
-    public synchronized void connect() {
+    public void connect() {
         NettyOutboundConnectionHandler handler = connectionHandler.get();
         if (handler != null && handler.isActive())
             return;

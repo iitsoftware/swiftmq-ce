@@ -18,17 +18,19 @@
 package com.swiftmq.impl.mqtt.session;
 
 import com.swiftmq.impl.mqtt.SwiftletContext;
-import com.swiftmq.impl.mqtt.connection.MQTTConnection;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionRegistry implements TimerListener {
     SwiftletContext ctx;
-    Map<String, MQTTSession> sessions = new HashMap<String, MQTTSession>();
-    Map<String, AssociateSessionCallback> callbacks = new HashMap<String, AssociateSessionCallback>();
+    Map<String, MQTTSession> sessions;
+    Map<String, AssociateSessionCallback> callbacks = new ConcurrentHashMap<>();
     ActiveLogin dummyLogin = null;
     Property sessionTimeout = null;
 
@@ -36,8 +38,7 @@ public class SessionRegistry implements TimerListener {
         this.ctx = ctx;
         this.dummyLogin = ctx.authSwiftlet.createActiveLogin("SessionRegistry", "MQTT");
         this.sessions = ctx.sessionStore.load();
-        for (Iterator<Map.Entry<String, MQTTSession>> iter = sessions.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry<String, MQTTSession> entry = iter.next();
+        for (Map.Entry<String, MQTTSession> entry : sessions.entrySet()) {
             createUsage(entry.getKey(), entry.getValue());
         }
         ctx.usageListSessions.setEntityRemoveListener(new EntityChangeAdapter(null) {
@@ -67,14 +68,13 @@ public class SessionRegistry implements TimerListener {
     }
 
     @Override
-    public synchronized void performTimeAction() {
+    public void performTimeAction() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", performTimeAction ...");
         List<MQTTSession> toRemove = new ArrayList<MQTTSession>();
         long currentTime = System.currentTimeMillis();
         long timeout = (Long) sessionTimeout.getValue();
-        for (Iterator<Map.Entry<String, MQTTSession>> iter = sessions.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry<String, MQTTSession> entry = iter.next();
+        for (Map.Entry<String, MQTTSession> entry : sessions.entrySet()) {
             MQTTSession mySession = entry.getValue();
             if (!mySession.isAssociated()) {
                 long delta = (mySession.getLastUse() + timeout * 1000 * 60 * 60) - currentTime;
@@ -84,45 +84,60 @@ public class SessionRegistry implements TimerListener {
                     toRemove.add(mySession);
             }
         }
-        for (int i = 0; i < toRemove.size(); i++) {
-            MQTTSession mySession = toRemove.get(i);
+        for (MQTTSession mySession : toRemove) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", performTimeAction, session timeout for session: " + mySession.getClientId());
             ctx.logSwiftlet.logWarning(ctx.mqttSwiftlet.getName(), toString() + ", session timeout for session: " + mySession.getClientId());
-            removeSession(toRemove.get(i).getClientId());
+            removeSession(mySession.getClientId());
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", performTimeAction done");
     }
 
-    public synchronized void associateSession(String clientId, AssociateSessionCallback callback) {
+    public void associateSession(String clientId, AssociateSessionCallback callback) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", associateSession, clientId=" + clientId + " ...");
-        MQTTConnection connection = callback.getMqttConnection();
-        MQTTSession session = sessions.get(clientId);
-        if (session == null) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", associateSession, clientId=" + clientId + " no session found, create a new one");
-            session = new MQTTSession(ctx, clientId, true);
-            sessions.put(clientId, session);
-            createUsage(clientId, session);
-            session.associate(connection);
-            callback.associated(session);
-        } else if (session.getMqttConnection() != null) {
+
+        sessions.compute(clientId, (key, session) -> {
+            if (session == null) {
+                // Session does not exist, create a new one
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", associateSession, clientId=" + clientId + " no session found, create a new one");
+
+                MQTTSession newSession = new MQTTSession(ctx, clientId, true);
+                createUsage(clientId, newSession);
+                newSession.associate(callback.getMqttConnection());
+                callback.associated(newSession);
+                return newSession;
+            } else {
+                // Session exists
+                handleExistingSession(session, clientId, callback);
+                return session;
+            }
+        });
+
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", associateSession, clientId=" + clientId + " done");
+    }
+
+    private void handleExistingSession(MQTTSession session, String clientId, AssociateSessionCallback callback) {
+        if (session.getMqttConnection() != null) {
+            // Session is associated with another connection
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", associateSession, clientId=" + clientId + " session found, associated with another connection, initiate close");
+
             session.setWasPresent(true);
             callbacks.put(clientId, callback);
             ctx.networkSwiftlet.getConnectionManager().removeConnection(session.getMqttConnection().getConnection());
         } else {
+            // Session is not associated with another connection
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", associateSession, clientId=" + clientId + " session found, not associated with another connection, invoke callback");
+
             session.setWasPresent(true);
-            session.associate(connection);
+            session.associate(callback.getMqttConnection());
             callback.associated(session);
         }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", associateSession, clientId=" + clientId + " done");
     }
 
     private void createUsage(String clientId, final MQTTSession session) {
@@ -136,20 +151,24 @@ public class SessionRegistry implements TimerListener {
         }
     }
 
-    public synchronized void disassociateSession(String clientid, MQTTSession session) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", disassociateSession, clientId=" + clientid + " ...");
-        session.associate(null);
-        AssociateSessionCallback callback = callbacks.remove(clientid);
+    public void disassociateSession(String clientId, MQTTSession session) {
+        if (ctx.traceSpace.enabled) {
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", disassociateSession, clientId=" + clientId + " ...");
+        }
+
+        session.associate(null); // Ensure this is thread-safe
+
+        AssociateSessionCallback callback = callbacks.remove(clientId);
         if (callback != null) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", disassociateSession, clientId=" + clientid + " callback found, invoke");
+            if (ctx.traceSpace.enabled) {
+                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", disassociateSession, clientId=" + clientId + " callback found, invoke");
+            }
             session.associate(callback.getMqttConnection());
             callback.associated(session);
         }
     }
 
-    public synchronized void removeSession(String clientid) {
+    public void removeSession(String clientid) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", removeSession, clientId=" + clientid);
         MQTTSession session = sessions.remove(clientid);
@@ -164,7 +183,7 @@ public class SessionRegistry implements TimerListener {
 
     }
 
-    public synchronized void close() {
+    public void close() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", close");
         sessions.clear();

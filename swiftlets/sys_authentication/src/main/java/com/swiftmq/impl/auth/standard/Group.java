@@ -53,7 +53,7 @@ public class Group {
         return topicGrants.get(topicName);
     }
 
-    synchronized void removeTopicResourceGrant(String topicName) {
+    void removeTopicResourceGrant(String topicName) {
         topicGrants.remove(topicName);
     }
 

@@ -42,7 +42,7 @@ public class OutboundQueue extends SingleProcessorQueue {
     }
 
     protected void startProcessor() {
-        if (!connection.closed)
+        if (!connection.closed.get())
             pool.dispatchTask(queueProcessor);
     }
 
@@ -61,7 +61,7 @@ public class OutboundQueue extends SingleProcessorQueue {
 
     private class QueueProcessor implements AsyncTask {
         public boolean isValid() {
-            return !connection.closed;
+            return !connection.closed.get();
         }
 
         public String getDispatchToken() {
@@ -76,7 +76,7 @@ public class OutboundQueue extends SingleProcessorQueue {
         }
 
         public void run() {
-            if (!connection.closed && dequeue())
+            if (!connection.closed.get() && dequeue())
                 pool.dispatchTask(this);
         }
     }
