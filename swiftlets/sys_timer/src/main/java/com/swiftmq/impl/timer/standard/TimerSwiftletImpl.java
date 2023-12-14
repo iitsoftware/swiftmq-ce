@@ -32,50 +32,44 @@ import com.swiftmq.swiftlet.timer.event.SystemTimeChangeListener;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.tools.collection.ConcurrentList;
 import org.magicwerk.brownies.collections.GapList;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TimerSwiftletImpl extends TimerSwiftlet {
     static final String TP_DISPATCHER = "sys$timer.dispatcher";
     static final String TP_TASK = "sys$timer.task";
-    static final long MAX_DELAY_TIME_CHANGE_ADDITION = 1000;
+    static final long MAX_DELAY_TIME_CHANGE = 1000;
 
     LogSwiftlet logSwiftlet = null;
     TraceSwiftlet traceSwiftlet = null;
     TraceSpace traceSpace = null;
     ThreadpoolSwiftlet threadpoolSwiftlet = null;
-    List taskQueue = null;
-    Map timerListeners = null;
-    List sysTimeChangeListeners = null;
+    List<TimeTask> taskQueue = new GapList<>();
+    Map<TimerListener, TimeTask> timerListeners = new ConcurrentHashMap<>();
+    List<SystemTimeChangeListener> sysTimeChangeListeners = new ConcurrentList<>(new ArrayList<>());
     ThreadPool taskPool = null;
     Dispatcher dispatcher = null;
     long minDelay = 0;
     long maxDelay = 0;
-    volatile long timeChangeThreshold = 0;
+    final AtomicLong timeChangeThreshold = new AtomicLong();
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition notEmpty = lock.newCondition();
 
     private void enqueue(TimeTask task) {
-        if (traceSpace.enabled) traceSpace.trace(getName(), "enqueue: " + task);
-        synchronized (taskQueue) {
-//      int i = 0;
-//      boolean found = false;
-//      for (i = 0; i < taskQueue.size(); i++)
-//      {
-//        TimeTask t = (TimeTask) taskQueue.get(i);
-//        if (task.time <= t.time)
-//        {
-//          taskQueue.add(i, task);
-//          found = true;
-//          break;
-//        }
-//      }
-//      if (!found)
-//        taskQueue.add(task);
-//      if (i == 0)
-//        taskQueue.notify();
-            if (taskQueue.size() == 0) {
+        lock.lock();
+        try {
+            if (traceSpace.enabled) traceSpace.trace(getName(), "enqueue: " + task);
+            if (taskQueue.isEmpty()) {
                 taskQueue.add(task);
-                taskQueue.notify();
+                notEmpty.signal();
             } else {
                 int pos = Collections.binarySearch(taskQueue, task);
                 if (pos < 0)
@@ -86,18 +80,21 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
                 // If the task is added as the first one, the wait time has changed and
                 // the dispatch needs to wake up for processing
                 if (pos == 0)
-                    taskQueue.notify();
+                    notEmpty.signal();
             }
+        } finally {
+            lock.unlock();
         }
+
     }
 
     private void reorder(long delta) {
         if (traceSpace.enabled) traceSpace.trace(getName(), "reorder, delta=" + delta + " ...");
         logSwiftlet.logInformation(getName(), "System time has changed (delta=" + delta + "), reordering timer task queue");
-        List backup = (List) ((GapList) taskQueue).clone();
+        List<TimeTask> backup = new GapList<>();
+        backup.addAll(taskQueue);
         taskQueue.clear();
-        for (Iterator iter = backup.iterator(); iter.hasNext(); ) {
-            TimeTask t = (TimeTask) iter.next();
+        for (TimeTask t : backup) {
             if (!t.doNotApplySystemTimeChanges) {
                 if (traceSpace.enabled) traceSpace.trace(getName(), "reorder, before, t=" + t);
                 t.recalc(delta);
@@ -105,21 +102,16 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
             }
             enqueue(t);
         }
-        for (int i = 0; i < sysTimeChangeListeners.size(); i++) {
-            SystemTimeChangeListener l = null;
+        for (SystemTimeChangeListener sysTimeChangeListener : sysTimeChangeListeners) {
             try {
-                l = (SystemTimeChangeListener) sysTimeChangeListeners.get(i);
-                l.systemTimeChangeDetected(delta);
-            } catch (Exception e) {
-                logSwiftlet.logInformation(getName(), "Exception calling SystemTimeChangeListener '" + l + "': " + e);
-                if (traceSpace.enabled)
-                    traceSpace.trace(getName(), "Exception calling SystemTimeChangeListener '" + l + "': " + e);
+                sysTimeChangeListener.systemTimeChangeDetected(delta);
+            } catch (Exception ignored) {
             }
         }
         if (traceSpace.enabled) traceSpace.trace(getName(), "reorder, delta=" + delta + " done");
     }
 
-    private synchronized void _addTimerListener(long delay, ThreadPool threadPool, TimerListener listener, boolean instant, boolean doNotApplySystemTimeChanges) {
+    private void _addTimerListener(long delay, ThreadPool threadPool, TimerListener listener, boolean instant, boolean doNotApplySystemTimeChanges) {
         if (traceSpace.enabled)
             traceSpace.trace(getName(), "addTimerListener, delay=" + delay + ", listener=" + listener + ", instant=" + instant + ", doNotApplySystemTimeChanges=" + doNotApplySystemTimeChanges);
         TimeTask task = new TimeTask(listener, threadPool);
@@ -127,9 +119,9 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
             timerListeners.put(listener, task);
         task.instant = instant;
         task.doNotApplySystemTimeChanges = doNotApplySystemTimeChanges;
-        task.delay = delay;
-        task.base = System.currentTimeMillis();
-        task.time = task.base + delay;
+        task.delay.set(delay);
+        task.base.set(System.currentTimeMillis());
+        task.time.set(task.base.get() + delay);
         enqueue(task);
     }
 
@@ -161,9 +153,8 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
         _addTimerListener(delay, threadPool, listener, false, doNotApplySystemTimeChanges);
     }
 
-    private synchronized TimeTask _removeTimerListener(TimerListener listener) {
-        TimeTask task = (TimeTask) timerListeners.remove(listener);
-        return task;
+    private TimeTask _removeTimerListener(TimerListener listener) {
+        return timerListeners.remove(listener);
     }
 
     public void removeTimerListener(TimerListener listener) {
@@ -172,34 +163,42 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
         if (task != null) {
             if (traceSpace.enabled)
                 traceSpace.trace(getName(), "removeTimerListener, listener=" + listener + ", found, task=" + task);
-            task.valid = false;
+            task.valid.set(false);
             task.listener = null;
         } else {
             if (traceSpace.enabled)
                 traceSpace.trace(getName(), "removeTimerListener, listener=" + listener + ", not found, checking task queue ...");
-            synchronized (taskQueue) {
-                for (Iterator iter = taskQueue.iterator(); iter.hasNext(); ) {
-                    TimeTask t = (TimeTask) iter.next();
-                    if (t.listener == listener) {
-                        if (traceSpace.enabled)
-                            traceSpace.trace(getName(), "removeTimerListener, listener=" + listener + ", found in task queue, t=" + t);
-                        t.valid = false;
-                        t.listener = null;
-                        iter.remove();
-                        break;
-                    }
-                }
-            }
+            removeListenerTasks(listener);
         }
     }
 
-    public synchronized void addSystemTimeChangeListener(SystemTimeChangeListener systemTimeChangeListener) {
+    private void removeListenerTasks(TimerListener listener) {
+        lock.lock();
+        try {
+            for (Iterator<TimeTask> iter = taskQueue.iterator(); iter.hasNext(); ) {
+                TimeTask t = iter.next();
+                if (t.listener == listener) {
+                    if (traceSpace.enabled)
+                        traceSpace.trace(getName(), "removeTimerListener, listener=" + listener + ", found in task queue, t=" + t);
+                    t.valid.set(false);
+                    t.listener = null;
+                    iter.remove();
+                    break;
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    public void addSystemTimeChangeListener(SystemTimeChangeListener systemTimeChangeListener) {
         if (traceSpace.enabled)
             traceSpace.trace(getName(), "addSystemTimeChangeListener, systemTimeChangeListener=" + systemTimeChangeListener);
         sysTimeChangeListeners.add(systemTimeChangeListener);
     }
 
-    public synchronized void removeSystemTimeChangeListener(SystemTimeChangeListener systemTimeChangeListener) {
+    public void removeSystemTimeChangeListener(SystemTimeChangeListener systemTimeChangeListener) {
         if (traceSpace.enabled)
             traceSpace.trace(getName(), "removeSystemTimeChangeListener, systemTimeChangeListener=" + systemTimeChangeListener);
         sysTimeChangeListeners.remove(systemTimeChangeListener);
@@ -213,47 +212,48 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
         if (traceSpace.enabled) traceSpace.trace(getName(), "startup, ...");
         Property prop = config.getProperty("min-delay");
-        minDelay = ((Long) prop.getValue()).longValue();
+        minDelay = (Long) prop.getValue();
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                minDelay = ((Long) newValue).longValue();
+                minDelay = (Long) newValue;
             }
         });
         prop = config.getProperty("max-delay");
-        maxDelay = ((Long) prop.getValue()).longValue();
-        timeChangeThreshold = maxDelay + MAX_DELAY_TIME_CHANGE_ADDITION;
+        maxDelay = (Long) prop.getValue();
+        timeChangeThreshold.set(maxDelay + MAX_DELAY_TIME_CHANGE);
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                maxDelay = ((Long) newValue).longValue();
-                timeChangeThreshold = maxDelay + MAX_DELAY_TIME_CHANGE_ADDITION;
+                maxDelay = (Long) newValue;
+                timeChangeThreshold.set(maxDelay + MAX_DELAY_TIME_CHANGE);
             }
         });
         taskPool = threadpoolSwiftlet.getPool(TP_TASK);
-        taskQueue = new GapList();
-        timerListeners = new HashMap();
-        sysTimeChangeListeners = new GapList();
         dispatcher = new Dispatcher();
         threadpoolSwiftlet.dispatchTask(dispatcher);
         if (traceSpace.enabled) traceSpace.trace(getName(), "startup, DONE");
     }
 
-    protected synchronized void shutdown()
+    protected void shutdown()
             throws SwiftletException {
         if (traceSpace.enabled) traceSpace.trace(getName(), "shutdown, ...");
-        dispatcher.valid = false;
-        synchronized (taskQueue) {
-            taskQueue.notify();
+        dispatcher.valid.set(false);
+        lock.lock();
+        try {
+            notEmpty.signal();
+        } finally {
+            lock.unlock();
         }
+
         if (traceSpace.enabled) traceSpace.trace(getName(), "shutdown, DONE");
     }
 
     private class Dispatcher implements AsyncTask {
-        boolean valid = true;
+        final AtomicBoolean valid = new AtomicBoolean(true);
 
         public boolean isValid() {
-            return valid;
+            return valid.get();
         }
 
         public String getDispatchToken() {
@@ -265,26 +265,27 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
         }
 
         public void stop() {
-            valid = false;
+            valid.set(false);
         }
 
         public void run() {
             if (traceSpace.enabled) traceSpace.trace(getName(), "Dispatcher, started.");
             long prevTime = System.currentTimeMillis();
             long waitTime = -1;
-            synchronized (taskQueue) {
-                for (; ; ) {
-                    if (taskQueue.size() == 0) {
+            while (true) {
+                lock.lock();
+                try {
+                    if (taskQueue.isEmpty()) {
                         if (traceSpace.enabled)
                             traceSpace.trace(getName(), "Dispatcher, taskQueue.size() == 0, waiting...");
                         waitTime = -1;
                         try {
-                            taskQueue.wait();
+                            notEmpty.await();
                         } catch (Exception ignored) {
                         }
                         if (traceSpace.enabled)
                             traceSpace.trace(getName(), "Dispatcher, taskQueue.size() == 0, wake up...");
-                        if (!valid) {
+                        if (!valid.get()) {
                             if (traceSpace.enabled) traceSpace.trace(getName(), "Dispatcher, stop");
                             return;
                         }
@@ -293,35 +294,35 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
                             if (traceSpace.enabled)
                                 traceSpace.trace(getName(), "Dispatcher, waitTime=" + waitTime + ", waiting...");
                             try {
-                                taskQueue.wait(waitTime);
+                                notEmpty.await(waitTime, TimeUnit.MILLISECONDS);
                             } catch (Exception ignored) {
                             }
                             if (traceSpace.enabled)
                                 traceSpace.trace(getName(), "Dispatcher, waitTime=" + waitTime + ", wake up...");
                         }
-                        if (!valid) {
+                        if (!valid.get()) {
                             if (traceSpace.enabled) traceSpace.trace(getName(), "Dispatcher, stop");
                             return;
                         }
                         waitTime = -1;
                         long actTime = System.currentTimeMillis();
                         long delta = actTime - prevTime;
-                        if (delta < 0 || delta > timeChangeThreshold) {
+                        if (delta < 0 || delta > timeChangeThreshold.get()) {
                             traceSpace.trace(getName(), "Dispatcher, prevTime=" + prevTime + ", actTime=" + actTime + ", delta=" + delta);
                             reorder(delta);
                         }
                         prevTime = actTime;
                         if (traceSpace.enabled)
                             traceSpace.trace(getName(), "Dispatcher, start dispatching, taskQueue.size()=" + taskQueue.size() + ", actTime=" + actTime);
-                        for (Iterator iter = taskQueue.iterator(); iter.hasNext(); ) {
-                            TimeTask task = (TimeTask) iter.next();
+                        for (Iterator<TimeTask> iter = taskQueue.iterator(); iter.hasNext(); ) {
+                            TimeTask task = iter.next();
                             if (traceSpace.enabled)
                                 traceSpace.trace(getName(), "Dispatcher, dispatching, nextTask=" + task);
-                            if (!task.valid) {
+                            if (!task.valid.get()) {
                                 if (traceSpace.enabled)
                                     traceSpace.trace(getName(), "Dispatcher, dispatching, nextTask=" + task + ", invalid, removing from queue");
                                 iter.remove();
-                            } else if (task.time <= actTime) {
+                            } else if (task.time.get() <= actTime) {
                                 if (traceSpace.enabled)
                                     traceSpace.trace(getName(), "Dispatcher, dispatching, nextTask=" + task + ", dispatching to thread pool");
                                 if (task.pool != null)
@@ -330,11 +331,11 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
                                     taskPool.dispatchTask(task);
                                 iter.remove();
                             } else {
-                                if (task.base > actTime) {
-                                    task.base = actTime;
-                                    task.time = task.base + task.delay;
+                                if (task.base.get() > actTime) {
+                                    task.base.set(actTime);
+                                    task.time.set(task.base.get() + task.delay.get());
                                 }
-                                waitTime = Math.min(Math.max(task.time - actTime, minDelay), maxDelay);
+                                waitTime = Math.min(Math.max(task.time.get() - actTime, minDelay), maxDelay);
                                 if (traceSpace.enabled)
                                     traceSpace.trace(getName(), "Dispatcher, dispatching, nextTask=" + task + ", task.time > actTime");
                                 break;
@@ -343,46 +344,44 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
                         if (traceSpace.enabled)
                             traceSpace.trace(getName(), "Dispatcher, stop dispatching, actTime=" + actTime + ", new waitTime=" + waitTime);
                     }
+                } finally {
+                    lock.unlock();
                 }
             }
+
         }
     }
 
-    private class TimeTask implements AsyncTask, Comparable {
-        long base = 0;
-        long time = 0;
-        long delay = 0;
+    private class TimeTask implements AsyncTask, Comparable<TimeTask> {
+        final AtomicLong base = new AtomicLong();
+        final AtomicLong time = new AtomicLong();
+        final AtomicLong delay = new AtomicLong();
         TimerListener listener;
         ThreadPool pool = null;
-        boolean valid = true;
+        final AtomicBoolean valid = new AtomicBoolean(true);
         boolean instant = false;
         boolean doNotApplySystemTimeChanges = false;
-
-        TimeTask(TimerListener listener) {
-            this.listener = listener;
-        }
 
         TimeTask(TimerListener listener, ThreadPool pool) {
             this.listener = listener;
             this.pool = pool;
         }
 
-        public synchronized void recalc(long delta) {
-            base += delta;
-            time += delta;
+        public void recalc(long delta) {
+            base.addAndGet(delta);
+            time.addAndGet(delta);
         }
 
-        public int compareTo(Object that) {
-            TimeTask thatTask = (TimeTask) that;
-            if (time < thatTask.time)
+        public int compareTo(TimeTask thatTask) {
+            if (time.get() < thatTask.time.get())
                 return -1;
-            else if (time == thatTask.time)
+            else if (time.get() == thatTask.time.get())
                 return 0;
             return 1;
         }
 
         public boolean isValid() {
-            return valid;
+            return valid.get();
         }
 
         public String getDispatchToken() {
@@ -394,44 +393,43 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
         }
 
         public void stop() {
-            valid = false;
+            valid.set(false);
         }
 
         public void run() {
-            if (traceSpace.enabled) traceSpace.trace(getName() + "/" + toString(), "performTimeAction()");
+            if (traceSpace.enabled) traceSpace.trace(getName() + "/" + this, "performTimeAction()");
             if (listener != null) {
                 try {
                     listener.performTimeAction();
-                    if (valid && !instant) {
-                        base = System.currentTimeMillis();
-                        time = base + delay;
+                    if (valid.get() && !instant) {
+                        base.set(System.currentTimeMillis());
+                        time.set(base.get() + delay.get());
                         if (traceSpace.enabled)
-                            traceSpace.trace(getName() + "/" + toString(), "valid && !instant, enqueue");
+                            traceSpace.trace(getName() + "/" + this, "valid && !instant, enqueue");
                         enqueue(this);
-                    } else if (traceSpace.enabled) traceSpace.trace(getName() + "/" + toString(), "invalid, stop");
+                    } else if (traceSpace.enabled) traceSpace.trace(getName() + "/" + this, "invalid, stop");
                 } catch (Exception e) {
-                    if (traceSpace.enabled) traceSpace.trace(getName() + "/" + toString(), "exception: " + e);
+                    if (traceSpace.enabled) traceSpace.trace(getName() + "/" + this, "exception: " + e);
                 }
             }
         }
 
         public String toString() {
-            StringBuffer b = new StringBuffer("[TimeTask, base=");
-            b.append(base);
-            b.append(", time=");
-            b.append(time);
-            b.append(", valid=");
-            b.append(valid);
-            b.append(", doNotApplySystemTimeChanges=");
-            b.append(doNotApplySystemTimeChanges);
-            b.append(", instant=");
-            b.append(instant);
-            b.append(", delay=");
-            b.append(delay);
-            b.append(", listener=");
-            b.append(listener);
-            b.append("]");
-            return b.toString();
+            String b = "[TimeTask, base=" + base.get() +
+                    ", time=" +
+                    time.get() +
+                    ", valid=" +
+                    valid.get() +
+                    ", doNotApplySystemTimeChanges=" +
+                    doNotApplySystemTimeChanges +
+                    ", instant=" +
+                    instant +
+                    ", delay=" +
+                    delay.get() +
+                    ", listener=" +
+                    listener +
+                    "]";
+            return b;
         }
     }
 }
