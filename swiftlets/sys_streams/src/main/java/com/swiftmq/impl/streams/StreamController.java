@@ -38,6 +38,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class StreamController {
     static final String REGPREFIX = "repository:";
@@ -48,11 +51,11 @@ public class StreamController {
     String packageName;
     Entity entity;
     String fqn;
-    boolean enabled = false;
-    volatile boolean started = false;
-    volatile boolean restarting = false;
-    volatile int nRestarts = 0;
-    boolean initialized = false;
+    final AtomicBoolean enabled = new AtomicBoolean(false);
+    final AtomicBoolean started = new AtomicBoolean(false);
+    final AtomicInteger nRestarts = new AtomicInteger();
+    final AtomicBoolean initialized = new AtomicBoolean(false);
+    final ReentrantLock lock = new ReentrantLock();
 
     public StreamController(SwiftletContext ctx, RepositorySupport repositorySupport, Entity entity, String domainName, String packageName) {
         this.ctx = ctx;
@@ -61,8 +64,7 @@ public class StreamController {
         this.domainName = domainName;
         this.packageName = packageName;
         fqn = domainName + "." + packageName + "." + entity.getName();
-        /*${evaltimer}*/
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/created");
     }
 
     public String fqn() {
@@ -72,12 +74,7 @@ public class StreamController {
     private ClassLoader createClassLoader() {
         File libDir = new File(ctx.streamLibDir + File.separatorChar + fqn);
         if (libDir.exists()) {
-            File[] libs = libDir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jar");
-                }
-            });
+            File[] libs = libDir.listFiles((dir, name) -> name.endsWith(".jar"));
             if (libs != null) {
                 URL[] urls = new URL[libs.length];
                 try {
@@ -111,7 +108,7 @@ public class StreamController {
     }
 
     private void evalScript() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript ...");
         ScriptEngineManager manager = new ScriptEngineManager();
         ClassLoader classLoader = createClassLoader();
         streamContext.classLoader = classLoader;
@@ -138,108 +135,118 @@ public class StreamController {
         Thread.currentThread().setContextClassLoader(null);
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/evalScript done");
+            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript done");
     }
 
-    private synchronized void start() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/start ...");
+    private void start() throws Exception {
+        lock.lock();
         try {
-            ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Starting Stream: " + fqn);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/start ...");
             try {
-                streamContext.usage = ctx.usageList.createEntity();
-                streamContext.usage.setName(domainName + "." + packageName + "." + entity.getName());
-                streamContext.usage.createCommands();
-                ctx.usageList.addEntity(streamContext.usage);
-                streamContext.usage.getProperty("starttime").setValue(new Date().toString());
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Starting Stream: " + fqn);
+                try {
+                    streamContext.usage = ctx.usageList.createEntity();
+                    streamContext.usage.setName(domainName + "." + packageName + "." + entity.getName());
+                    streamContext.usage.createCommands();
+                    ctx.usageList.addEntity(streamContext.usage);
+                    streamContext.usage.getProperty("starttime").setValue(new Date().toString());
+                } catch (Exception e) {
+                }
+                streamContext.stream = new Stream(streamContext, domainName, packageName, entity.getName(), nRestarts.get());
+                streamContext.messageBuilder = new MessageBuilder(streamContext);
+                evalScript();
+                streamContext.streamProcessor = new StreamProcessor(streamContext, this);
+                Semaphore sem = new Semaphore();
+                POStart po = new POStart(sem);
+                streamContext.streamProcessor.dispatch(po);
+                sem.waitHere(5000);
+                if (sem.isNotified() && !po.isSuccess())
+                    throw new Exception(po.getException());
+                started.set(true);
             } catch (Exception e) {
+                ctx.usageList.removeEntity(streamContext.usage);
+                streamContext.logStackTrace(e);
+                throw e;
             }
-            streamContext.stream = new Stream(streamContext, domainName, packageName, entity.getName(), nRestarts);
-            streamContext.messageBuilder = new MessageBuilder(streamContext);
-            evalScript();
-            streamContext.streamProcessor = new StreamProcessor(streamContext, this);
-            Semaphore sem = new Semaphore();
-            POStart po = new POStart(sem);
-            streamContext.streamProcessor.dispatch(po);
-            sem.waitHere(5000);
-            if (sem.isNotified() && !po.isSuccess())
-                throw new Exception(po.getException());
-            started = true;
-        } catch (Exception e) {
-            ctx.usageList.removeEntity(streamContext.usage);
-            streamContext.logStackTrace(e);
-            throw e;
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/start done");
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/start done");
+
     }
 
-    private synchronized void stop() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/stop ...");
-        if (!started)
-            return;
+    private void stop() {
+        lock.lock();
         try {
-            ctx.streamsSwiftlet.stopDependencies(fqn);
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/stop ...");
+            if (!started.get())
+                return;
+            try {
+                ctx.streamsSwiftlet.stopDependencies(fqn);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Stopping Stream: " + fqn);
+            started.set(false);
+            Semaphore sem = new Semaphore();
+            streamContext.streamProcessor.dispatch(new POClose(sem));
+            sem.waitHere(5000);
+            try {
+                ctx.usageList.removeEntity(streamContext.usage);
+            } catch (EntityRemoveException e) {
+            }
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/stop done");
+        } finally {
+            lock.unlock();
         }
-        ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Stopping Stream: " + fqn);
-        started = false;
-        Semaphore sem = new Semaphore();
-        streamContext.streamProcessor.dispatch(new POClose(sem));
-        sem.waitHere(5000);
-        try {
-            ctx.usageList.removeEntity(streamContext.usage);
-        } catch (EntityRemoveException e) {
-        }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/stop done");
+
     }
 
     public void init() throws Exception {
-        if (initialized)
+        if (initialized.get())
             return;
-        initialized = true;
+        initialized.set(true);
         streamContext = new StreamContext(ctx, entity);
         Property prop = entity.getProperty("enabled");
-        enabled = ((Boolean) prop.getValue()).booleanValue();
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property myProp, Object oldValue, Object newValue) throws PropertyChangeException {
-                try {
-                    boolean b = ((Boolean) newValue).booleanValue();
-                    if (b && enabled || !b && !enabled)
-                        return;
-                    enabled = b;
-                    if (b) {
-                        nRestarts = 0;
-                        ctx.streamsSwiftlet.startDependencies(fqn);
-                        start();
-                    } else
-                        stop();
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), StreamController.this.toString() + "/propertyChanged (enabled): " + enabled);
-                } catch (Exception e) {
-                    enabled = false;
-                    throw new PropertyChangeException(e.toString());
-                }
+        enabled.set((Boolean) prop.getValue());
+        prop.setPropertyChangeListener((myProp, oldValue, newValue) -> {
+            try {
+                boolean b = ((Boolean) newValue).booleanValue();
+                if (b && enabled.get() || !b && !enabled.get())
+                    return;
+                enabled.set(b);
+                if (b) {
+                    nRestarts.set(0);
+                    ctx.streamsSwiftlet.startDependencies(fqn);
+                    start();
+                } else
+                    stop();
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), StreamController.this + "/propertyChanged (enabled): " + enabled);
+            } catch (Exception e) {
+                enabled.set(false);
+                throw new PropertyChangeException(e.toString());
             }
         });
-        if (enabled) {
+        if (enabled.get()) {
             ctx.streamsSwiftlet.startDependencies(fqn);
             start();
         }
     }
 
     public void restart() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/restart ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/restart ...");
         stop();
         long restartDelay = (Long) entity.getProperty("restart-delay").getValue();
         if (restartDelay > 0) {
             long maxRestarts = (Integer) entity.getProperty("restart-max").getValue();
-            nRestarts++;
-            if (maxRestarts > nRestarts) {
+            nRestarts.getAndIncrement();
+            if (maxRestarts > nRestarts.get()) {
                 ctx.timerSwiftlet.addInstantTimerListener(restartDelay, new TimerListener() {
                     @Override
                     public void performTimeAction() {
                         try {
-                            if (enabled)
+                            if (enabled.get())
                                 start();
                         } catch (Exception e) {
                             ctx.logSwiftlet.logError(toString(), "Exception restarting stream: " + e);
@@ -249,24 +256,22 @@ public class StreamController {
                 });
             }
         }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/restart done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/restart done");
     }
 
     public void collect(long interval) {
-        if (started)
+        if (started.get())
             streamContext.streamProcessor.dispatch(new POCollect(interval));
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/close ...");
-        if (enabled)
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/close ...");
+        if (enabled.get())
             stop();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/close done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/close done");
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder("StreamController, name=" + domainName + "." + packageName + ".");
-        sb.append(entity.getName());
-        return sb.toString();
+        return "StreamController, name=" + domainName + "." + packageName + "." + entity.getName();
     }
 }

@@ -28,12 +28,14 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.PipelineQueue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class StreamProcessor implements POStreamVisitor {
     static final String TP_DISPATCH = "sys$streams.stream.processor";
     StreamContext ctx;
     StreamController controller;
     PipelineQueue pipelineQueue = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     int msgsProcessed = 0;
     int totalMsg = 0;
     int timeOnMessage = 0;
@@ -44,8 +46,8 @@ public class StreamProcessor implements POStreamVisitor {
         pipelineQueue = new PipelineQueue(ctx.ctx.threadpoolSwiftlet.getPool(TP_DISPATCH), TP_DISPATCH, this);
     }
 
-    public synchronized void dispatch(POObject po) {
-        if (closed) {
+    public void dispatch(POObject po) {
+        if (closed.get()) {
             if (po.getSemaphore() != null)
                 po.getSemaphore().notifySingleWaiter();
         } else
@@ -225,7 +227,7 @@ public class StreamProcessor implements POStreamVisitor {
         try {
             ctx.usage.getProperty("stream-total-processed").setValue(totalMsg);
             ctx.usage.getProperty("stream-processing-rate").setValue((int) (msgsProcessed / ((double) po.getInterval() / 1000.0)));
-            ctx.usage.getProperty("stream-last-onmessage-time").setValue(new Integer(timeOnMessage));
+            ctx.usage.getProperty("stream-last-onmessage-time").setValue(timeOnMessage);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -272,7 +274,7 @@ public class StreamProcessor implements POStreamVisitor {
         ctx.stream.log().info("Stream stopped");
         ctx.stream.close();
 
-        closed = true;
+        closed.set(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
 
