@@ -333,7 +333,6 @@ public class TopicManagerImpl extends TopicManager
             subscriberId = topicSubscriptions.add(subscription);
             subscription.setSubscriberId(subscriberId);
             rootBroker.subscribe(subscription);
-            System.out.println("subscribe: " + subscriberId);
 
             try {
                 Entity subEntity = ctx.activeSubscriberList.createEntity();
@@ -525,7 +524,6 @@ public class TopicManagerImpl extends TopicManager
         try {
             if (subscriberId < topicSubscriptions.size()) {
                 TopicSubscription subscription = topicSubscriptions.get(subscriberId);
-                System.out.println("unsubscribe: " + subscriberId);
                 if (subscription != null) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace(getName(), "unsubscribe: topicSubscription = " + subscription);
