@@ -29,7 +29,7 @@ import java.nio.channels.FileChannel;
 public class ReuseLogFile implements LogFile {
     static final String PROP_VERBOSE = "swiftmq.store.checkpoint.verbose";
     static final int BUFFER_SIZE = 1024 * 1024 * 10;
-    private static boolean DIRECT_BUFFERS = Boolean.valueOf(System.getProperty("swiftmq.store.usedirectbuffers", "true")).booleanValue();
+    private static final boolean DIRECT_BUFFERS = Boolean.parseBoolean(System.getProperty("swiftmq.store.usedirectbuffers", "true"));
     boolean checkPointVerbose = Boolean.getBoolean(PROP_VERBOSE);
     StoreContext ctx;
     RandomAccessFile file = null;
@@ -75,8 +75,7 @@ public class ReuseLogFile implements LogFile {
     public void init(long maxSize) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init...");
         try {
-            boolean direct = DIRECT_BUFFERS;
-            outStream = new DataByteBufferOutputStream(BUFFER_SIZE, BUFFER_SIZE, direct);
+            outStream = new DataByteBufferOutputStream(BUFFER_SIZE, BUFFER_SIZE, DIRECT_BUFFERS);
             outStream.setTrace(ctx.traceSpace, "sys$store");
             if (file.length() < maxSize) {
                 file.setLength(maxSize);

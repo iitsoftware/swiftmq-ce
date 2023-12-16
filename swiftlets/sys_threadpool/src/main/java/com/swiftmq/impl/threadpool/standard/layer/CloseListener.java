@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,10 +15,9 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.log;
+package com.swiftmq.impl.threadpool.standard.layer;
 
-import com.swiftmq.impl.store.standard.StoreContext;
-
-public interface LogManagerFactory {
-    LogManager createLogManager(StoreContext ctx, CheckPointHandler checkPointHandler, String path, long maxLogSize, boolean forceSync) throws Exception;
+@FunctionalInterface
+public interface CloseListener {
+    void onClose(EventLoopImpl eventLoop);
 }

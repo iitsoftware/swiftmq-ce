@@ -36,6 +36,7 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.scheduler.SchedulerSwiftlet;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.trace.TraceSpace;
@@ -47,6 +48,7 @@ public class StoreContext {
     public PreparedLog preparedLog = null;
     public DurableSubscriberStoreImpl durableStore = null;
     public LogManager logManager = null;
+    public EventLoop logManagerEventLoop = null;
     public TransactionManager transactionManager = null;
     public RecoveryManager recoveryManager = null;
     public BackupProcessor backupProcessor = null;

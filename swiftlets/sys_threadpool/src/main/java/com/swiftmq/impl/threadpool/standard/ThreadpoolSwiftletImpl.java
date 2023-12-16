@@ -17,6 +17,9 @@
 
 package com.swiftmq.impl.threadpool.standard;
 
+import com.swiftmq.impl.threadpool.standard.layer.EventLoopImpl;
+import com.swiftmq.impl.threadpool.standard.layer.LayerRegistry;
+import com.swiftmq.impl.threadpool.standard.layer.factories.VirtualThreadFactory;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.SwiftletManager;
@@ -24,9 +27,7 @@ import com.swiftmq.swiftlet.event.SwiftletManagerAdapter;
 import com.swiftmq.swiftlet.event.SwiftletManagerEvent;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.mgmt.event.MgmtListener;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
-import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
+import com.swiftmq.swiftlet.threadpool.*;
 import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.swiftlet.trace.TraceSpace;
@@ -58,6 +59,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
 
     Map<String, ThreadPool> pools = new ConcurrentHashMap<>();
     Map<String, String> threadNameMaps = new ConcurrentHashMap<>();
+    LayerRegistry layerRegistry = null;
 
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
@@ -78,6 +80,13 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
                 traceSpace.trace(getName(), "collectChanged: addTimerListener for interval " + newInterval);
             timerSwiftlet.addTimerListener(newInterval, this);
         }
+    }
+
+    @Override
+    public EventLoop createEventLoop(String layer, EventProcessor eventProcessor, boolean bulkMode) {
+        EventLoopImpl eventLoop = new EventLoopImpl(bulkMode, eventProcessor, new VirtualThreadFactory());
+        layerRegistry.getLayer(layer).addEventLoop(eventLoop);
+        return eventLoop;
     }
 
     private String[] getDefinedPoolnames(EntityList list) {
@@ -264,6 +273,8 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
 
         if (traceSpace.enabled) traceSpace.trace(getName(), "startup ...");
+
+        layerRegistry = new LayerRegistry(traceSpace, getName());
 
         EntityList poolList = (EntityList) root.getEntity("pools");
         createPool(DEFAULT_POOL, null, poolList.getTemplate());

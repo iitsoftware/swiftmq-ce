@@ -56,7 +56,7 @@ import java.util.List;
 
 public class StoreSwiftletImpl extends StoreSwiftlet {
     private static final String PREPARED_LOG_QUEUE = "sys$prepared";
-    private static boolean PRECREATE = Boolean.valueOf(System.getProperty("swiftmq.store.txlog.precreate", "true")).booleanValue();
+    private static final boolean PRECREATE = Boolean.parseBoolean(System.getProperty("swiftmq.store.txlog.precreate", "true"));
     StoreContext ctx = null;
     RootIndex rootIndex = null;
     long swapMaxLength = 0;
@@ -273,10 +273,10 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
     public void stopStore() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");
         Semaphore sem = new Semaphore();
-        ctx.logManager.enqueue(new CloseLogOperation(sem));
+        ctx.logManagerEventLoop.submit(new CloseLogOperation(sem));
         sem.waitHere();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...done");
-        ctx.logManager.stopQueue();
+        ctx.logManagerEventLoop.close();
         ctx.cacheManager.flush();
         ctx.cacheManager.close();
     }

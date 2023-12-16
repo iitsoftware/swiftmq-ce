@@ -20,7 +20,11 @@ package com.swiftmq.impl.store.standard.log;
 import com.swiftmq.impl.store.standard.StoreContext;
 
 public class LogManagerFactoryImpl implements LogManagerFactory {
+    private static final String LAYER = "sys$store.log";
+
     public LogManager createLogManager(StoreContext ctx, CheckPointHandler checkPointHandler, String path, long maxLogSize, boolean forceSync) throws Exception {
-        return new LogManager(ctx, checkPointHandler, path, maxLogSize, forceSync);
+        LogManagerEventProcessor logManager = new LogManagerEventProcessor(ctx, checkPointHandler, path, maxLogSize, forceSync);
+        ctx.logManagerEventLoop = ctx.threadpoolSwiftlet.createEventLoop(LAYER, logManager, true);
+        return logManager;
     }
 }
