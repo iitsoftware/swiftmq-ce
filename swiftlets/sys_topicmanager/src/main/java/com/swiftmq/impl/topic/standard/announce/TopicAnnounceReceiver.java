@@ -30,6 +30,8 @@ import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.versioning.*;
 import com.swiftmq.tools.versioning.event.VersionedListener;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class TopicAnnounceReceiver extends MessageProcessor
         implements VersionVisitor {
     // Thread-Names
@@ -40,7 +42,7 @@ public class TopicAnnounceReceiver extends MessageProcessor
     QueueReceiver topicReceiver = null;
     QueuePullTransaction topicTransaction = null;
     MessageEntry messageEntry = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     TopicInfoFactory factory = new TopicInfoFactory();
     TopicInfoConverter converter = new TopicInfoConverter();
     DataByteArrayInputStream dis = new DataByteArrayInputStream();
@@ -74,7 +76,7 @@ public class TopicAnnounceReceiver extends MessageProcessor
 
     public void setClosed() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/ setClosed ...");
-        closed = true;
+        closed.set(true);
         try {
             topicReceiver.close();
         } catch (Exception ignored) {
@@ -82,11 +84,11 @@ public class TopicAnnounceReceiver extends MessageProcessor
     }
 
     public boolean isValid() {
-        return !closed;
+        return !closed.get();
     }
 
     public void processMessage(MessageEntry messageEntry) {
-        if (!closed) {
+        if (!closed.get()) {
             this.messageEntry = messageEntry;
             myTP.dispatchTask(this);
         }
@@ -109,7 +111,7 @@ public class TopicAnnounceReceiver extends MessageProcessor
     }
 
     public void run() {
-        if (!closed) {
+        if (!closed.get()) {
             try {
                 topicTransaction.commit();
                 BytesMessageImpl msg = (BytesMessageImpl) messageEntry.getMessage();
@@ -132,7 +134,6 @@ public class TopicAnnounceReceiver extends MessageProcessor
                     ctx.queueManager.purgeQueue(topicQueue);
                 } catch (Exception ignored) {
                 }
-                return;
             }
         }
     }

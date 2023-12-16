@@ -25,7 +25,7 @@ import com.swiftmq.impl.store.standard.log.CommitLogRecord;
 import com.swiftmq.impl.store.standard.log.LogAction;
 import com.swiftmq.jms.BytesMessageImpl;
 import com.swiftmq.swiftlet.store.StoreEntry;
-import com.swiftmq.tools.collection.ConcurrentExpandableList;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
@@ -41,7 +41,7 @@ public class PreparedLogQueue extends PreparedLog implements CacheReleaseListene
     DataByteArrayInputStream inStream = null;
     DataByteArrayOutputStream outStream = null;
     volatile QueueIndex queueIndex = null;
-    ConcurrentExpandableList<CacheEntry> cache;
+    ExpandableList<CacheEntry> cache;
     ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public PreparedLogQueue(StoreContext ctx, QueueIndex queueIndex) throws Exception {
@@ -49,7 +49,7 @@ public class PreparedLogQueue extends PreparedLog implements CacheReleaseListene
         this.queueIndex = queueIndex;
         inStream = new DataByteArrayInputStream();
         outStream = new DataByteArrayOutputStream(1024);
-        cache = new ConcurrentExpandableList<>();
+        cache = new ExpandableList<>();
         preload();
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/created, " + cache.size() + " prepared transactions");
     }
@@ -125,7 +125,7 @@ public class PreparedLogQueue extends PreparedLog implements CacheReleaseListene
     public PrepareLogRecordImpl get(long address) throws IOException {
         lock.readLock().lock();
         try {
-            CacheEntry cacheEntry = (CacheEntry) cache.get((int) address);
+            CacheEntry cacheEntry = cache.get((int) address);
             if (cacheEntry == null)
                 throw new EOFException("No CacheEntry found at index: " + address);
             if (ctx.traceSpace.enabled)

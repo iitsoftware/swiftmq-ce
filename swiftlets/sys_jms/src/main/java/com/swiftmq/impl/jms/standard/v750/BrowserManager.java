@@ -24,7 +24,8 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.queue.MessageEntry;
-import com.swiftmq.tools.collection.ConcurrentExpandableList;
+import com.swiftmq.swiftlet.queue.QueueBrowser;
+import com.swiftmq.tools.collection.ExpandableList;
 
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
@@ -32,7 +33,7 @@ import javax.jms.JMSException;
 import java.util.stream.IntStream;
 
 public class BrowserManager {
-    ConcurrentExpandableList<com.swiftmq.swiftlet.queue.QueueBrowser> queueBrowsers = new ConcurrentExpandableList<>();
+    ExpandableList<QueueBrowser> queueBrowsers = new ExpandableList<>();
     EntityList browserEntityList = null;
     SessionContext ctx = null;
 

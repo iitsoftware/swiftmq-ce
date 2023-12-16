@@ -32,7 +32,7 @@ import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
-import com.swiftmq.tools.collection.ConcurrentExpandableList;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
@@ -43,8 +43,8 @@ public abstract class Session extends SessionVisitor
         implements RequestService {
     static final String TP_SESSIONSVC = "sys$jms.session.service";
 
-    protected ConcurrentExpandableList<Consumer> consumerList = new ConcurrentExpandableList<>();
-    protected ConcurrentExpandableList<Producer> producerList = new ConcurrentExpandableList<>();
+    protected ExpandableList<Consumer> consumerList = new ExpandableList<>();
+    protected ExpandableList<Producer> producerList = new ExpandableList<>();
     protected SessionContext ctx = null;
     protected int dispatchId;
     protected ThreadPool sessionTP = null;

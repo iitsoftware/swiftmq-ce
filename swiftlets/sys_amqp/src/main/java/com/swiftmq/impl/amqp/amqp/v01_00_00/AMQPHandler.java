@@ -36,7 +36,7 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.tools.collection.ConcurrentExpandableList;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
@@ -68,7 +68,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     TimerListener heartBeatSender = null;
     TimerListener idleTimeoutChecker = null;
     boolean closeFrameSent = false;
-    ConcurrentExpandableList<SessionHandler> localChannels = new ConcurrentExpandableList<>();
+    ExpandableList<SessionHandler> localChannels = new ExpandableList<>();
     List remoteChannels = new ArrayList();
     Entity usage = null;
     EntityList sessionUsageList = null;

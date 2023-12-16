@@ -23,14 +23,15 @@ import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.QueueManager;
 import com.swiftmq.swiftlet.queue.Selector;
 import com.swiftmq.swiftlet.topic.TopicManager;
+import com.swiftmq.tools.collection.ConcurrentList;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TopicSubscription {
-    int subscriberId;
-    int brokerSubscriberId;
+    final AtomicInteger subscriberId = new AtomicInteger();
+    final AtomicInteger brokerSubscriberId = new AtomicInteger();
     TopicBroker broker;
     String topicName;
     String[] tokenizedName;
@@ -49,10 +50,10 @@ public class TopicSubscription {
     com.swiftmq.swiftlet.queue.QueueSender queueSender = null;
     TopicManager topicManager = null;
     QueueManager queueManager = null;
-    List transactions = Collections.synchronizedList(new ArrayList());
+    List<TopicSubscriberTransaction> transactions = new ConcurrentList<>(new ArrayList<>());
 
     protected TopicSubscription(int subscriberId, String topicName, String[] tokenizedName, boolean noLocal, Selector selector, ActiveLogin activeLogin, String subscriberQueueName) {
-        this.subscriberId = subscriberId;
+        this.subscriberId.set(subscriberId);
         this.tokenizedName = tokenizedName;
         this.topicName = topicName;
         this.selector = selector;
@@ -118,23 +119,27 @@ public class TopicSubscription {
         return remote;
     }
 
-    protected int getSubscriberId() {
-        return (subscriberId);
+    public void setSubscriberId(int subscriberId) {
+        this.subscriberId.set(subscriberId);
     }
 
-    protected void setBrokerSubscriberId(int brokerSubscriberId) {
-        this.brokerSubscriberId = brokerSubscriberId;
+    public int getSubscriberId() {
+        return (subscriberId.get());
     }
 
-    protected int getBrokerSubscriberId() {
-        return (brokerSubscriberId);
+    public void setBrokerSubscriberId(int brokerSubscriberId) {
+        this.brokerSubscriberId.set(brokerSubscriberId);
     }
 
-    protected void setBroker(TopicBroker broker) {
+    public int getBrokerSubscriberId() {
+        return (brokerSubscriberId.get());
+    }
+
+    public void setBroker(TopicBroker broker) {
         this.broker = broker;
     }
 
-    protected TopicBroker getBroker() {
+    public TopicBroker getBroker() {
         return (broker);
     }
 
@@ -195,14 +200,12 @@ public class TopicSubscription {
 
     protected void unsubscribe() {
         broker.unsubscribe(this);
-        synchronized (transactions) {
-            for (int i = 0; i < transactions.size(); i++) {
-                TopicSubscriberTransaction transaction = (TopicSubscriberTransaction) transactions.get(i);
-                if (transaction != null) {
-                    try {
-                        transaction.rollback();
-                    } catch (Exception ignored) {
-                    }
+        for (TopicSubscriberTransaction topicSubscriberTransaction : transactions) {
+            TopicSubscriberTransaction transaction = topicSubscriberTransaction;
+            if (transaction != null) {
+                try {
+                    transaction.rollback();
+                } catch (Exception ignored) {
                 }
             }
         }
@@ -227,9 +230,9 @@ public class TopicSubscription {
     public String toString() {
         StringBuffer s = new StringBuffer();
         s.append("[TopicSubscription, subscriberId=");
-        s.append(subscriberId);
+        s.append(subscriberId.get());
         s.append(", brokerSubscriberId=");
-        s.append(brokerSubscriberId);
+        s.append(brokerSubscriberId.get());
         s.append(", topicName=");
         s.append(topicName);
         s.append(", selector=");

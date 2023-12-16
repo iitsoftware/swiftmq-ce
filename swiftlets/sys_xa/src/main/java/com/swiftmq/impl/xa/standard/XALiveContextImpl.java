@@ -23,8 +23,8 @@ import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.swiftlet.xa.XAContextException;
-import com.swiftmq.tools.collection.ConcurrentExpandableList;
 import com.swiftmq.tools.collection.ConcurrentList;
+import com.swiftmq.tools.collection.ExpandableList;
 
 import javax.transaction.xa.XAException;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class XALiveContextImpl extends XAContextImpl {
     final AtomicBoolean wasTimeout = new AtomicBoolean(false);
     List<QueueTransaction> transactions = new ConcurrentList<>(new ArrayList<>());
     List<Object[]> recoveryTransactions = new ConcurrentList<>(new ArrayList<>());
-    ConcurrentExpandableList<String> registrations = new ConcurrentExpandableList<>();
+    ExpandableList<String> registrations = new ExpandableList<>();
     final AtomicInteger nReg = new AtomicInteger();
     final AtomicBoolean registeredUsageList = new AtomicBoolean(false);
     long creationTime = 0;

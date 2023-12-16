@@ -28,7 +28,7 @@ import com.swiftmq.swiftlet.store.*;
 import com.swiftmq.swiftlet.threadpool.AsyncTask;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.tools.collection.ConcurrentExpandableList;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.collection.OrderedSet;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
@@ -52,10 +52,10 @@ public class MessageQueue extends AbstractQueue {
     protected OrderedSet duplicateBacklog = new OrderedSet(500);
     int activeMsgProcList = 0;
     List[] msgProcessors = null;
-    ConcurrentExpandableList<List<StoreId>> activeTransactions = null;
+    ExpandableList<List<StoreId>> activeTransactions = null;
     boolean running = false;
     ThreadPool myTP = null;
-    ConcurrentExpandableList<View> views = null;
+    ExpandableList<View> views = null;
     AtomicWrappingCounterLong msgId = new AtomicWrappingCounterLong(0);
     boolean alwaysDeliverExpired = false;
     boolean getWaiting = false;
@@ -555,7 +555,7 @@ public class MessageQueue extends AbstractQueue {
             msgProcessors = new List[2];
             msgProcessors[0] = new ArrayList();
             msgProcessors[1] = new ArrayList();
-            activeTransactions = new ConcurrentExpandableList<>();
+            activeTransactions = new ExpandableList<>();
             queueContent = new TreeSet<>();
             try {
                 if (!temporary) {
@@ -636,7 +636,7 @@ public class MessageQueue extends AbstractQueue {
         lockAndWaitAsyncFinished();
         try {
             if (views == null)
-                views = new ConcurrentExpandableList<>();
+                views = new ExpandableList<>();
             View view = new View(ctx, getQueueName(), -1, selector);
             int viewId = views.add(view);
             view.setViewId(viewId);

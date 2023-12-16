@@ -34,7 +34,6 @@ import com.swiftmq.swiftlet.event.SwiftletManagerAdapter;
 import com.swiftmq.swiftlet.event.SwiftletManagerEvent;
 import com.swiftmq.swiftlet.jndi.JNDISwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
-import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.routing.Route;
 import com.swiftmq.swiftlet.routing.RoutingSwiftlet;
@@ -47,7 +46,7 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicException;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.versioning.Versionable;
 import com.swiftmq.tools.versioning.Versioned;
@@ -56,7 +55,12 @@ import com.swiftmq.util.SwiftUtilities;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TopicManagerImpl extends TopicManager
         implements QueueFactory {
@@ -73,16 +77,17 @@ public class TopicManagerImpl extends TopicManager
     Entity root = null;
     TopicManagerContext ctx = null;
 
-    HashMap rootBrokers = new HashMap();
-    ArrayList topicSubscriptions = new ArrayList();
-    HashMap durableSubscriptions = new HashMap();
+    Map<String, TopicBroker> rootBrokers = new HashMap<>();
+    ExpandableList<TopicSubscription> topicSubscriptions = new ExpandableList<>();
+    Map<String, DurableSubscription> durableSubscriptions = new HashMap<>();
     DurableSubscriberStore durableStore = null;
 
     String topicQueue = null;
-    boolean flowControlEnabled = true;
-    boolean programmaticDurableInProgress = false;
+    final AtomicBoolean flowControlEnabled = new AtomicBoolean(true);
+    final AtomicBoolean programmaticDurableInProgress = new AtomicBoolean(false);
     JobRegistrar jobRegistrar = null;
     boolean directSubscriberSelection = true;
+    ReentrantLock lock = new ReentrantLock();
 
     protected String getTopicQueuePrefix() {
         return TOPIC_PREFIX;
@@ -108,8 +113,8 @@ public class TopicManagerImpl extends TopicManager
         String rootTopicName = t.nextToken();
         TopicBroker topicBroker = new TopicBroker(ctx, rootTopicName);
         rootBrokers.put(TOPIC_PREFIX + rootTopicName, topicBroker);
-        if (flowControlEnabled)
-            ((AbstractQueue) topicBroker).setFlowController(new TopicFlowController());
+        if (flowControlEnabled.get())
+            topicBroker.setFlowController(new TopicFlowController());
         return topicBroker;
     }
 
@@ -127,35 +132,39 @@ public class TopicManagerImpl extends TopicManager
 
     private void createTopics(EntityList topicList) throws Exception {
         Property prop = root.getProperty("flowcontrol-enabled");
-        flowControlEnabled = ((Boolean) prop.getValue()).booleanValue();
+        flowControlEnabled.set((Boolean) prop.getValue());
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                flowControlEnabled = ((Boolean) newValue).booleanValue();
-                synchronized (TopicManagerImpl.this) {
-                    for (Iterator iter = rootBrokers.entrySet().iterator(); iter.hasNext(); ) {
-                        TopicBroker broker = (TopicBroker) ((Map.Entry) iter.next()).getValue();
-                        if (flowControlEnabled)
-                            ((AbstractQueue) broker).setFlowController(new TopicFlowController());
+                lock.lock();
+                try {
+                    flowControlEnabled.set((Boolean) newValue);
+                    for (Map.Entry<String, TopicBroker> entry : rootBrokers.entrySet()) {
+                        TopicBroker broker = (TopicBroker) ((Map.Entry<?, ?>) entry).getValue();
+                        if (flowControlEnabled.get())
+                            broker.setFlowController(new TopicFlowController());
                         else
-                            ((AbstractQueue) broker).setFlowController(null);
+                            broker.setFlowController(null);
                     }
+                } finally {
+                    lock.unlock();
                 }
+
             }
         });
         prop = root.getProperty("direct-subscriber-selection");
-        directSubscriberSelection = ((Boolean) prop.getValue()).booleanValue();
+        directSubscriberSelection = (Boolean) prop.getValue();
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                directSubscriberSelection = ((Boolean) newValue).booleanValue();
+                directSubscriberSelection = (Boolean) newValue;
             }
         });
 
         Map m = topicList.getEntities();
-        if (m.size() > 0) {
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                Entity topicEntity = (Entity) ((Map.Entry) iter.next()).getValue();
+        if (!m.isEmpty()) {
+            for (Object o : m.entrySet()) {
+                Entity topicEntity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 SwiftUtilities.verifyTopicName(topicEntity.getName());
                 createTopic(topicEntity.getName());
             }
@@ -193,97 +202,100 @@ public class TopicManagerImpl extends TopicManager
         });
     }
 
-    private synchronized void createTopicAdministratively(String topicName) throws TopicException {
-        if (isTopicDefined(topicName))
-            throw new TopicException("Topic '" + topicName + "' is already defined");
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTopic: creating topic: " + topicName);
-        ctx.logSwiftlet.logInformation(getName(), "create topic: " + topicName);
-        String[] tokenizedName = tokenizeTopicName(topicName, TOPIC_DELIMITER);
-        String rootName = TOPIC_PREFIX + tokenizedName[0];
-        TopicBroker rootBroker = (TopicBroker) rootBrokers.get(rootName);
-        if (rootBroker == null) {
-            try {
-                ctx.queueManager.createQueue(rootName, this);
-            } catch (Exception e) {
-                throw new TopicException(e.getMessage());
+    public void createTopic(String topicName) throws TopicException {
+        lock.lock();
+        try {
+            if (isTopicDefined(topicName))
+                throw new TopicException("Topic '" + topicName + "' is already defined");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTopic: creating topic: " + topicName);
+            ctx.logSwiftlet.logInformation(getName(), "create topic: " + topicName);
+            String[] tokenizedName = tokenizeTopicName(topicName, TOPIC_DELIMITER);
+            String rootName = TOPIC_PREFIX + tokenizedName[0];
+            TopicBroker rootBroker = rootBrokers.get(rootName);
+            if (rootBroker == null) {
+                try {
+                    ctx.queueManager.createQueue(rootName, this);
+                } catch (Exception e) {
+                    throw new TopicException(e.getMessage());
+                }
+                rootBroker = rootBrokers.get(rootName);
             }
-            rootBroker = (TopicBroker) rootBrokers.get(rootName);
+            rootBroker.addTopic(topicName, tokenizedName);
+            if (ctx.jndiSwiftlet != null)
+                registerJNDI(topicName, new TopicImpl(topicName));
+        } finally {
+            lock.unlock();
         }
-        rootBroker.addTopic(topicName, tokenizedName);
-        if (ctx.jndiSwiftlet != null)
-            registerJNDI(topicName, new TopicImpl(topicName));
+
     }
 
-    public synchronized void createTopic(String topicName) throws TopicException {
-        if (isTopicDefined(topicName))
-            throw new TopicException("Topic '" + topicName + "' is already defined");
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTopic: creating topic: " + topicName);
-        ctx.logSwiftlet.logInformation(getName(), "create topic: " + topicName);
-        String[] tokenizedName = tokenizeTopicName(topicName, TOPIC_DELIMITER);
-        String rootName = TOPIC_PREFIX + tokenizedName[0];
-        TopicBroker rootBroker = (TopicBroker) rootBrokers.get(rootName);
-        if (rootBroker == null) {
-            try {
-                ctx.queueManager.createQueue(rootName, this);
-            } catch (Exception e) {
-                throw new TopicException(e.getMessage());
+    public void deleteTopic(String topicName) throws TopicException {
+        lock.lock();
+        try {
+            if (!isTopicDefined(topicName))
+                throw new TopicException("Topic '" + topicName + "' is unknown");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "deleteTopic: deleting topic: " + topicName);
+            ctx.logSwiftlet.logInformation(getName(), "delete topic: " + topicName);
+            String[] tokenizedName = tokenizeTopicName(topicName, TOPIC_DELIMITER);
+            String rootName = TOPIC_PREFIX + tokenizedName[0];
+            TopicBroker rootBroker = rootBrokers.get(rootName);
+            rootBroker.removeTopic(topicName, tokenizedName);
+            if (ctx.jndiSwiftlet != null)
+                ctx.jndiSwiftlet.deregisterJNDIObject(topicName);
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    public boolean isTopicDefined(String topicName) {
+        lock.lock();
+        try {
+            String[] token = tokenizeTopicName(topicName);
+            if (token == null || token.length == 0)
+                return false;
+            TopicBroker rootBroker = rootBrokers.get(TOPIC_PREFIX + token[0]);
+            return rootBroker != null && rootBroker.getTopicName(token) != null;
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    public TopicImpl verifyTopic(TopicImpl topic) throws JMSException, InvalidDestinationException {
+        lock.lock();
+        try {
+            String[] token = tokenizeTopicName(topic.getTopicName());
+            String brokerQueueName = TOPIC_PREFIX + token[0];
+            // check the rootBroker
+            TopicBroker rootBroker = rootBrokers.get(brokerQueueName);
+
+            if (!(rootBroker != null && rootBroker.getTopicName(token) != null)) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "verifyTopic: creating topic: " + topic.getTopicName());
+                try {
+                    createTopic(topic.getTopicName());
+                } catch (Exception ignore) {
+                }
             }
-            rootBroker = (TopicBroker) rootBrokers.get(rootName);
-        }
-        rootBroker.addTopic(topicName, tokenizedName);
-        if (ctx.jndiSwiftlet != null)
-            registerJNDI(topicName, new TopicImpl(topicName));
-    }
 
-    public synchronized void deleteTopic(String topicName) throws TopicException {
-        if (!isTopicDefined(topicName))
-            throw new TopicException("Topic '" + topicName + "' is unknown");
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "deleteTopic: deleting topic: " + topicName);
-        ctx.logSwiftlet.logInformation(getName(), "delete topic: " + topicName);
-        String[] tokenizedName = tokenizeTopicName(topicName, TOPIC_DELIMITER);
-        String rootName = TOPIC_PREFIX + tokenizedName[0];
-        TopicBroker rootBroker = (TopicBroker) rootBrokers.get(rootName);
-        rootBroker.removeTopic(topicName, tokenizedName);
-        if (ctx.jndiSwiftlet != null)
-            ctx.jndiSwiftlet.deregisterJNDIObject(topicName);
-    }
+            // if ok, check if queueName is defined
+            String queueName = topic.getQueueName();
+            if (queueName == null)
+                topic.setQueueName(brokerQueueName);
 
-    public synchronized boolean isTopicDefined(String topicName) {
-        String[] token = tokenizeTopicName(topicName);
-        if (token == null || token.length == 0)
-            return false;
-        TopicBroker rootBroker = (TopicBroker) rootBrokers.get(TOPIC_PREFIX + token[0]);
-        return rootBroker != null && rootBroker.getTopicName(token) != null;
-    }
-
-    public synchronized TopicImpl verifyTopic(TopicImpl topic) throws JMSException, InvalidDestinationException {
-        String[] token = tokenizeTopicName(topic.getTopicName());
-        String brokerQueueName = TOPIC_PREFIX + token[0];
-        // check the rootBroker
-        TopicBroker rootBroker = (TopicBroker) rootBrokers.get(brokerQueueName);
-
-        if (!(rootBroker != null && rootBroker.getTopicName(token) != null)) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "verifyTopic: creating topic: " + topic.getTopicName());
-            try {
-                createTopic(topic.getTopicName());
-            } catch (Exception ignore) {
-            }
+                ctx.traceSpace.trace(getName(), "verifyTopic: '" + topic.getTopicName() + "' ok. Topic queue = " + topic.getQueueName());
+
+            return topic;
+        } finally {
+            lock.unlock();
         }
 
-        // if ok, check if queueName is defined
-        String queueName = topic.getQueueName();
-        if (queueName == null)
-            topic.setQueueName(brokerQueueName);
-
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "verifyTopic: '" + topic.getTopicName() + "' ok. Topic queue = " + topic.getQueueName());
-
-        return topic;
     }
 
     protected static String concatName(String[] tokenizedName) {
-        StringBuffer s = new StringBuffer();
+        StringBuilder s = new StringBuilder();
         for (int i = 0; i < tokenizedName.length; i++) {
             if (i != 0)
                 s.append(TOPIC_DELIMITER);
@@ -292,308 +304,368 @@ public class TopicManagerImpl extends TopicManager
         return s.toString();
     }
 
-    public synchronized int subscribe(TopicImpl topic, Selector selector, boolean noLocal, String queueName, ActiveLogin activeLogin)
+    public int subscribe(TopicImpl topic, Selector selector, boolean noLocal, String queueName, ActiveLogin activeLogin)
             throws AuthenticationException {
         return subscribe(topic, selector, noLocal, queueName, activeLogin, false);
     }
 
-    public synchronized int subscribe(TopicImpl topic, Selector selector, boolean noLocal, String queueName, ActiveLogin activeLogin, boolean forceCopy)
+    public int subscribe(TopicImpl topic, Selector selector, boolean noLocal, String queueName, ActiveLogin activeLogin, boolean forceCopy)
             throws AuthenticationException {
-        int subscriberId = 0;
-        String brokerQueueName = null;
-        String topicName = null;
+        lock.lock();
         try {
-            brokerQueueName = topic.getQueueName();
-            topicName = topic.getTopicName();
-        } catch (JMSException ignored) {
-        }
-        ;
-        if (activeLogin != null && !activeLogin.getType().equals(DURABLE_TYPE))
-            ctx.authSwiftlet.verifyTopicReceiverSubscription(topicName, activeLogin.getLoginId());
-        TopicBroker rootBroker = (TopicBroker) rootBrokers.get(brokerQueueName);
-        subscriberId = ArrayListTool.setFirstFreeOrExpand(topicSubscriptions, null);
-        TopicSubscription subscription = new TopicSubscription(subscriberId, topicName,
-                tokenizeTopicName(topicName, TOPIC_DELIMITER),
-                noLocal, selector, activeLogin, queueName);
-        subscription.setBroker(rootBroker);
-        subscription.setForceCopy(forceCopy);
-        topicSubscriptions.set(subscriberId, subscription);
-        rootBroker.subscribe(subscription);
-
-        try {
-            Entity subEntity = ctx.activeSubscriberList.createEntity();
-            subEntity.setName(topicName + "-" + subscriberId);
-            subEntity.setDynamicObject(subscription);
-            subEntity.createCommands();
-            Property prop = subEntity.getProperty("clientid");
-            prop.setValue(activeLogin != null ? activeLogin.getClientId() : "Internal Swiftlet Usage");
-            prop.setReadOnly(true);
-            prop = subEntity.getProperty("topic");
-            prop.setValue(topicName);
-            prop.setReadOnly(true);
-            prop = subEntity.getProperty("boundto");
-            prop.setValue(queueName);
-            prop.setReadOnly(true);
-            prop = subEntity.getProperty("nolocal");
-            prop.setValue(new Boolean(noLocal));
-            prop.setReadOnly(true);
-            prop = subEntity.getProperty("selector");
-            if (selector != null) {
-                prop.setValue(selector.getConditionString());
+            int subscriberId = 0;
+            String brokerQueueName = null;
+            String topicName = null;
+            try {
+                brokerQueueName = topic.getQueueName();
+                topicName = topic.getTopicName();
+            } catch (JMSException ignored) {
             }
-            prop.setReadOnly(true);
-            ctx.activeSubscriberList.addEntity(subEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
+            ;
+            if (activeLogin != null && !activeLogin.getType().equals(DURABLE_TYPE))
+                ctx.authSwiftlet.verifyTopicReceiverSubscription(topicName, activeLogin.getLoginId());
+            TopicBroker rootBroker = rootBrokers.get(brokerQueueName);
+            TopicSubscription subscription = new TopicSubscription(-1, // Set subscriberId later
+                    topicName, tokenizeTopicName(topicName, TOPIC_DELIMITER),
+                    noLocal, selector, activeLogin, queueName);
+            subscription.setBroker(rootBroker);
+            subscription.setForceCopy(forceCopy);
+            subscriberId = topicSubscriptions.add(subscription);
+            subscription.setSubscriberId(subscriberId);
+            rootBroker.subscribe(subscription);
+            System.out.println("subscribe: " + subscriberId);
+
+            try {
+                Entity subEntity = ctx.activeSubscriberList.createEntity();
+                subEntity.setName(topicName + "-" + subscriberId);
+                subEntity.setDynamicObject(subscription);
+                subEntity.createCommands();
+                Property prop = subEntity.getProperty("clientid");
+                prop.setValue(activeLogin != null ? activeLogin.getClientId() : "Internal Swiftlet Usage");
+                prop.setReadOnly(true);
+                prop = subEntity.getProperty("topic");
+                prop.setValue(topicName);
+                prop.setReadOnly(true);
+                prop = subEntity.getProperty("boundto");
+                prop.setValue(queueName);
+                prop.setReadOnly(true);
+                prop = subEntity.getProperty("nolocal");
+                prop.setValue(noLocal);
+                prop.setReadOnly(true);
+                prop = subEntity.getProperty("selector");
+                if (selector != null) {
+                    prop.setValue(selector.getConditionString());
+                }
+                prop.setReadOnly(true);
+                ctx.activeSubscriberList.addEntity(subEntity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "subscribe: topicSubscription = " + subscription);
+            return subscriberId;
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "subscribe: topicSubscription = " + subscription);
-        return subscriberId;
+
     }
 
     public String subscribeDurable(String durableName, TopicImpl topic, Selector selector, boolean noLocal, ActiveLogin activeLogin)
-            throws AuthenticationException, QueueException, QueueAlreadyDefinedException, UnknownQueueException, TopicException {
+            throws AuthenticationException, QueueException, TopicException {
         return subscribeDurable(durableName, topic, selector, noLocal, activeLogin, null);
     }
 
     public String subscribeDurable(String durableName, TopicImpl topic, Selector selector, boolean noLocal, ActiveLogin activeLogin, Entity newEntity)
-            throws AuthenticationException, QueueException, QueueAlreadyDefinedException, UnknownQueueException, TopicException {
+            throws AuthenticationException, QueueException, TopicException {
         return subscribeDurable(durableName, topic, selector, noLocal, activeLogin, newEntity, true);
     }
 
-    private synchronized String subscribeDurable(String durableName, TopicImpl topic, Selector selector, boolean noLocal, ActiveLogin activeLogin, Entity newEntity, boolean verifyAuth)
-            throws AuthenticationException, QueueException, QueueAlreadyDefinedException, UnknownQueueException, TopicException {
-        String topicName = null;
+    private String subscribeDurable(String durableName, TopicImpl topic, Selector selector, boolean noLocal, ActiveLogin activeLogin, Entity newEntity, boolean verifyAuth)
+            throws AuthenticationException, QueueException, TopicException {
+        lock.lock();
         try {
-            topicName = topic.getTopicName();
-        } catch (JMSException ignored) {
-        }
-        if (verifyAuth)
-            ctx.authSwiftlet.verifyTopicDurableSubscriberCreation(topicName, activeLogin.getLoginId());
-        String durableQueueName = DurableSubscription.createDurableQueueName(activeLogin.getClientId(), durableName);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "subscribeDurable: topic = " + topicName + ", durableQueueName = " + durableQueueName);
-        DurableSubscription durable = (DurableSubscription) durableSubscriptions.get(durableQueueName);
-        if (durable != null && durable.hasChanged(topicName, selector, noLocal)) {
+            String topicName = null;
+            try {
+                topicName = topic.getTopicName();
+            } catch (JMSException ignored) {
+            }
+            if (verifyAuth)
+                ctx.authSwiftlet.verifyTopicDurableSubscriberCreation(topicName, activeLogin.getLoginId());
+            String durableQueueName = DurableSubscription.createDurableQueueName(activeLogin.getClientId(), durableName);
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "subscribeDurable: durable has changed, deleting ...");
+                ctx.traceSpace.trace(getName(), "subscribeDurable: topic = " + topicName + ", durableQueueName = " + durableQueueName);
+            DurableSubscription durable = durableSubscriptions.get(durableQueueName);
+            if (durable != null && durable.hasChanged(topicName, selector, noLocal)) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "subscribeDurable: durable has changed, deleting ...");
+                unsubscribe(durable.getTopicSubscription().getSubscriberId());
+                ctx.queueManager.purgeQueue(durableQueueName);
+                ctx.queueManager.deleteQueue(durableQueueName, false);
+                durableSubscriptions.remove(durableQueueName);
+                try {
+                    durableStore.deleteDurableStoreEntry(durable.getClientId(), durable.getDurableName());
+                } catch (Exception e) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(getName(), "subscribeDurable: error deleting durable subscription: " + e);
+                    throw new TopicException("error deleting durable subscription: " + e);
+                }
+                durable = null;
+                ctx.activeDurableList.removeDynamicEntity(durable);
+            }
+            if (durable == null) {
+                durable = new DurableSubscription(activeLogin.getClientId(), durableName, topicName, selector, noLocal);
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "subscribeDurable: creating new durable = " + durable);
+                durableSubscriptions.put(durableQueueName, durable);
+                try {
+                    durableStore.insertDurableStoreEntry(durable.getDurableStoreEntry());
+                } catch (Exception e) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(getName(), "subscribeDurable: error saving durable subscription: " + e);
+                    throw new TopicException("error saving durable subscription: " + e);
+                }
+                ctx.queueManager.createQueue(durableQueueName, (ActiveLogin) null);
+                int id = subscribe(topic, selector, noLocal, durableQueueName, activeLogin);
+                durable.setTopicSubscription(topicSubscriptions.get(id));
+
+                try {
+                    if (newEntity == null) {
+                        Entity durEntity = ctx.activeDurableList.createEntity();
+                        durEntity.setName(durableQueueName);
+                        durEntity.setDynamicObject(durable);
+                        durEntity.createCommands();
+                        Property prop = durEntity.getProperty("clientid");
+                        prop.setValue(activeLogin.getClientId());
+                        prop.setReadOnly(true);
+                        prop = durEntity.getProperty("durablename");
+                        prop.setValue(durableName);
+                        prop.setReadOnly(true);
+                        prop = durEntity.getProperty("topic");
+                        prop.setValue(topicName);
+                        prop.setReadOnly(true);
+                        prop = durEntity.getProperty("boundto");
+                        prop.setValue(durableQueueName);
+                        prop.setReadOnly(true);
+                        prop = durEntity.getProperty("nolocal");
+                        prop.setValue(noLocal);
+                        prop.setReadOnly(true);
+                        prop = durEntity.getProperty("selector");
+                        if (selector != null) {
+                            prop.setValue(selector.getConditionString());
+                        }
+                        prop.setReadOnly(true);
+                        programmaticDurableInProgress.set(true);
+                        ctx.activeDurableList.addEntity(durEntity);
+                        programmaticDurableInProgress.set(false);
+                    } else {
+                        newEntity.setDynamicObject(durable);
+                        Property prop = newEntity.getProperty("boundto");
+                        prop.setValue(durableQueueName);
+                        prop.setReadOnly(true);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return durableQueueName;
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    public void deleteDurable(String durableName, ActiveLogin activeLogin)
+            throws InvalidDestinationException, QueueException, UnknownQueueException, TopicException {
+        lock.lock();
+        try {
+            String durableQueueName = DurableSubscription.createDurableQueueName(activeLogin.getClientId(), durableName);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "deleteDurable: durableQueueName = " + durableQueueName);
+            DurableSubscription durable = durableSubscriptions.get(durableQueueName);
+            if (durable == null)
+                throw new InvalidDestinationException("no durable subscriber found with clientId '" + activeLogin.getClientId() + "' and name = '" + durableName + "'");
+
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "deleteDurable: durable found, deleting ...");
             unsubscribe(durable.getTopicSubscription().getSubscriberId());
-            ctx.queueManager.purgeQueue(durableQueueName);
             ctx.queueManager.deleteQueue(durableQueueName, false);
             durableSubscriptions.remove(durableQueueName);
+
             try {
                 durableStore.deleteDurableStoreEntry(durable.getClientId(), durable.getDurableName());
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(getName(), "subscribeDurable: error deleting durable subscription: " + e);
+                    ctx.traceSpace.trace(getName(), "deleteDurable: error deleting durable subscription: " + e);
                 throw new TopicException("error deleting durable subscription: " + e);
             }
-            durable = null;
             ctx.activeDurableList.removeDynamicEntity(durable);
-        }
-        if (durable == null) {
-            durable = new DurableSubscription(activeLogin.getClientId(), durableName, topicName, selector, noLocal);
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "subscribeDurable: creating new durable = " + durable);
-            durableSubscriptions.put(durableQueueName, durable);
-            try {
-                durableStore.insertDurableStoreEntry(durable.getDurableStoreEntry());
-            } catch (Exception e) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(getName(), "subscribeDurable: error saving durable subscription: " + e);
-                throw new TopicException("error saving durable subscription: " + e);
-            }
-            ctx.queueManager.createQueue(durableQueueName, (ActiveLogin) null);
-            int id = subscribe(topic, selector, noLocal, durableQueueName, activeLogin);
-            durable.setTopicSubscription((TopicSubscription) topicSubscriptions.get(id));
-
-            try {
-                if (newEntity == null) {
-                    Entity durEntity = ctx.activeDurableList.createEntity();
-                    durEntity.setName(durableQueueName);
-                    durEntity.setDynamicObject(durable);
-                    durEntity.createCommands();
-                    Property prop = durEntity.getProperty("clientid");
-                    prop.setValue(activeLogin.getClientId());
-                    prop.setReadOnly(true);
-                    prop = durEntity.getProperty("durablename");
-                    prop.setValue(durableName);
-                    prop.setReadOnly(true);
-                    prop = durEntity.getProperty("topic");
-                    prop.setValue(topicName);
-                    prop.setReadOnly(true);
-                    prop = durEntity.getProperty("boundto");
-                    prop.setValue(durableQueueName);
-                    prop.setReadOnly(true);
-                    prop = durEntity.getProperty("nolocal");
-                    prop.setValue(new Boolean(noLocal));
-                    prop.setReadOnly(true);
-                    prop = durEntity.getProperty("selector");
-                    if (selector != null) {
-                        prop.setValue(selector.getConditionString());
-                    }
-                    prop.setReadOnly(true);
-                    programmaticDurableInProgress = true;
-                    ctx.activeDurableList.addEntity(durEntity);
-                    programmaticDurableInProgress = false;
-                } else {
-                    newEntity.setDynamicObject(durable);
-                    Property prop = newEntity.getProperty("boundto");
-                    prop.setValue(durableQueueName);
-                    prop.setReadOnly(true);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } finally {
+            lock.unlock();
         }
 
-        return durableQueueName;
     }
 
-    /**
-     * @param durableName
-     * @param activeLogin
-     * @throws InvalidDestinationException
-     */
-    public synchronized void deleteDurable(String durableName, ActiveLogin activeLogin)
-            throws InvalidDestinationException, QueueException, UnknownQueueException, TopicException {
-        String durableQueueName = DurableSubscription.createDurableQueueName(activeLogin.getClientId(), durableName);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "deleteDurable: durableQueueName = " + durableQueueName);
-        DurableSubscription durable = (DurableSubscription) durableSubscriptions.get(durableQueueName);
-        if (durable == null)
-            throw new InvalidDestinationException("no durable subscriber found with clientId '" + activeLogin.getClientId() + "' and name = '" + durableName + "'");
-
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "deleteDurable: durable found, deleting ...");
-        unsubscribe(durable.getTopicSubscription().getSubscriberId());
-        ctx.queueManager.deleteQueue(durableQueueName, false);
-        durableSubscriptions.remove(durableQueueName);
-
+    public String getDurableTopicName(String durableName, ActiveLogin activeLogin) {
+        lock.lock();
         try {
-            durableStore.deleteDurableStoreEntry(durable.getClientId(), durable.getDurableName());
-        } catch (Exception e) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "deleteDurable: error deleting durable subscription: " + e);
-            throw new TopicException("error deleting durable subscription: " + e);
+            String topicName = null;
+            String durableQueueName = DurableSubscription.createDurableQueueName(activeLogin.getClientId(), durableName);
+            DurableSubscription durable = durableSubscriptions.get(durableQueueName);
+            if (durable != null)
+                topicName = durable.getTopicName();
+            return topicName;
+        } finally {
+            lock.unlock();
         }
-        ctx.activeDurableList.removeDynamicEntity(durable);
+
     }
 
-    public synchronized String getDurableTopicName(String durableName, ActiveLogin activeLogin) {
-        String topicName = null;
-        String durableQueueName = DurableSubscription.createDurableQueueName(activeLogin.getClientId(), durableName);
-        DurableSubscription durable = (DurableSubscription) durableSubscriptions.get(durableQueueName);
-        if (durable != null)
-            topicName = durable.getTopicName();
-        return topicName;
-    }
-
-    /**
-     * @param subscriberId
-     */
-    public synchronized void unsubscribe(int subscriberId) {
-        if (subscriberId < topicSubscriptions.size()) {
-            TopicSubscription subscription = (TopicSubscription) topicSubscriptions.get(subscriberId);
-            if (subscription != null) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(getName(), "unsubscribe: topicSubscription = " + subscription);
-                subscription.unsubscribe();
-                topicSubscriptions.set(subscriberId, null);
-                ctx.activeSubscriberList.removeDynamicEntity(subscription);
+    public void unsubscribe(int subscriberId) {
+        lock.lock();
+        try {
+            if (subscriberId < topicSubscriptions.size()) {
+                TopicSubscription subscription = topicSubscriptions.get(subscriberId);
+                System.out.println("unsubscribe: " + subscriberId);
+                if (subscription != null) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(getName(), "unsubscribe: topicSubscription = " + subscription);
+                    subscription.unsubscribe();
+                    topicSubscriptions.remove(subscriberId);
+                    ctx.activeSubscriberList.removeDynamicEntity(subscription);
+                }
             }
+        } finally {
+            lock.unlock();
         }
+
     }
 
     public String[] getTopicNames() {
         return config.getEntity("topics").getEntityNames();
     }
 
-    public synchronized void removeRemoteSubscriptions(String routerName) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "removeRemoteSubscriptions: " + routerName + ", removing subscriptions");
-        Iterator iter = rootBrokers.entrySet().iterator();
-        while (iter.hasNext()) {
-            TopicBroker broker = (TopicBroker) ((Map.Entry) iter.next()).getValue();
+    public void removeRemoteSubscriptions(String routerName) {
+        lock.lock();
+        try {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "removeRemoteSubscriptions: " + routerName + ", removing subscriptions from broker: " + broker);
-            broker.removeRemoteSubscriptions(routerName);
+                ctx.traceSpace.trace(getName(), "removeRemoteSubscriptions: " + routerName + ", removing subscriptions");
+            for (Map.Entry<String, TopicBroker> entry : rootBrokers.entrySet()) {
+                TopicBroker broker = (TopicBroker) ((Map.Entry<?, ?>) entry).getValue();
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "removeRemoteSubscriptions: " + routerName + ", removing subscriptions from broker: " + broker);
+                broker.removeRemoteSubscriptions(routerName);
+            }
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "removeRemoteSubscriptions: " + routerName + ", done");
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "removeRemoteSubscriptions: " + routerName + ", done");
+
     }
 
-    public synchronized void processTopicInfo(TopicInfo topicInfo) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "processTopicInfo: " + topicInfo);
-        String brokerQueue = TOPIC_PREFIX + topicInfo.getTokenizedPredicate()[0];
-        TopicBroker broker = (TopicBroker) rootBrokers.get(brokerQueue);
-        if (broker == null) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), ": creating topic: " + topicInfo.getTopicName());
-            createTopic(topicInfo.getTopicName());
-            broker = (TopicBroker) rootBrokers.get(brokerQueue);
+    public void processTopicInfo(TopicInfo topicInfo) throws Exception {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "processTopicInfo: " + topicInfo);
+            String brokerQueue = TOPIC_PREFIX + topicInfo.getTokenizedPredicate()[0];
+            TopicBroker broker = (TopicBroker) rootBrokers.get(brokerQueue);
+            if (broker == null) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), ": creating topic: " + topicInfo.getTopicName());
+                createTopic(topicInfo.getTopicName());
+                broker = rootBrokers.get(brokerQueue);
+            }
+            broker.processTopicInfo(topicInfo);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "processTopicInfo: " + topicInfo + ", done");
+        } finally {
+            lock.unlock();
         }
-        broker.processTopicInfo(topicInfo);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "processTopicInfo: " + topicInfo + ", done");
+
     }
 
     public void addStaticSubscription(String routerName, String topicName, boolean keepOnUnsubscribe) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "addStaticSubscription, routerName: " + routerName + ", topicName: " + topicName + ", keep: " + keepOnUnsubscribe);
-        String brokerQueue = TOPIC_PREFIX + topicName;
-        TopicBroker broker = (TopicBroker) rootBrokers.get(brokerQueue);
-        if (broker == null) {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), ": creating topic: " + topicName);
-            createTopic(topicName);
-            broker = (TopicBroker) rootBrokers.get(brokerQueue);
-        }
-        broker.addStaticSubscription(routerName, keepOnUnsubscribe);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "addStaticSubscription, routerName: " + routerName + ", topicName: " + topicName + ", done");
-    }
-
-    synchronized void addSlowSubscriberCondition(SlowSubscriberCondition condition) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "addSlowSubscriberCondition, condition: " + condition + " ...");
-        String brokerQueue = TOPIC_PREFIX + condition.getTopicName();
-        TopicBroker broker = (TopicBroker) rootBrokers.get(brokerQueue);
-        if (broker == null) {
+        lock.lock();
+        try {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), ": creating topic: " + condition.getTopicName());
-            createTopic(condition.getTopicName());
-            broker = (TopicBroker) rootBrokers.get(brokerQueue);
+                ctx.traceSpace.trace(getName(), "addStaticSubscription, routerName: " + routerName + ", topicName: " + topicName + ", keep: " + keepOnUnsubscribe);
+            String brokerQueue = TOPIC_PREFIX + topicName;
+            TopicBroker broker = rootBrokers.get(brokerQueue);
+            if (broker == null) {
+                if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), ": creating topic: " + topicName);
+                createTopic(topicName);
+                broker = rootBrokers.get(brokerQueue);
+            }
+            broker.addStaticSubscription(routerName, keepOnUnsubscribe);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "addStaticSubscription, routerName: " + routerName + ", topicName: " + topicName + ", done");
+        } finally {
+            lock.unlock();
         }
-        broker.setSlowSubscriberCondition(condition);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "addSlowSubscriberCondition, condition: " + condition + ", done");
+
     }
 
-    synchronized void removeSlowSubscriberCondition(String topicName) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "removeSlowSubscriberCondition, topicName: " + topicName + " ...");
-        String brokerQueue = TOPIC_PREFIX + topicName;
-        TopicBroker broker = (TopicBroker) rootBrokers.get(brokerQueue);
-        if (broker != null)
-            broker.setSlowSubscriberCondition(null);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "removeSlowSubscriberCondition, topicName: " + topicName + ", done");
-    }
-
-    synchronized void removeStaticSubscription(String routerName, String topicName) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "removeStaticSubscription, routerName: " + routerName + ", topicName: " + topicName);
-        String brokerQueue = TOPIC_PREFIX + topicName;
-        TopicBroker broker = (TopicBroker) rootBrokers.get(brokerQueue);
-        if (broker != null) {
-            broker.removeStaticSubscription(routerName);
+    void addSlowSubscriberCondition(SlowSubscriberCondition condition) throws Exception {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "addSlowSubscriberCondition, condition: " + condition + " ...");
+            String brokerQueue = TOPIC_PREFIX + condition.getTopicName();
+            TopicBroker broker = rootBrokers.get(brokerQueue);
+            if (broker == null) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), ": creating topic: " + condition.getTopicName());
+                createTopic(condition.getTopicName());
+                broker = rootBrokers.get(brokerQueue);
+            }
+            broker.setSlowSubscriberCondition(condition);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "addSlowSubscriberCondition, condition: " + condition + ", done");
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "removeStaticSubscription, routerName: " + routerName + ", topicName: " + topicName + ", done");
+
     }
 
-    private HashMap loadDurables() throws Exception {
-        HashMap map = new HashMap();
+    void removeSlowSubscriberCondition(String topicName) throws Exception {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "removeSlowSubscriberCondition, topicName: " + topicName + " ...");
+            String brokerQueue = TOPIC_PREFIX + topicName;
+            TopicBroker broker = rootBrokers.get(brokerQueue);
+            if (broker != null)
+                broker.setSlowSubscriberCondition(null);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "removeSlowSubscriberCondition, topicName: " + topicName + ", done");
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    void removeStaticSubscription(String routerName, String topicName) throws Exception {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "removeStaticSubscription, routerName: " + routerName + ", topicName: " + topicName);
+            String brokerQueue = TOPIC_PREFIX + topicName;
+            TopicBroker broker = rootBrokers.get(brokerQueue);
+            if (broker != null) {
+                broker.removeStaticSubscription(routerName);
+            }
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "removeStaticSubscription, routerName: " + routerName + ", topicName: " + topicName + ", done");
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    private Map<String, DurableSubscription> loadDurables() throws Exception {
+        Map<String, DurableSubscription> map = new HashMap<>();
         durableStore = ctx.storeSwiftlet.getDurableSubscriberStore();
-        for (Iterator iter = durableStore.iterator(); iter.hasNext(); ) {
-            DurableStoreEntry entry = (DurableStoreEntry) iter.next();
+        for (Iterator<DurableStoreEntry> iter = durableStore.iterator(); iter.hasNext(); ) {
+            DurableStoreEntry entry = iter.next();
             map.put(entry.getClientId() + DURABLE_DELIMITER + entry.getDurableName(), new DurableSubscription(entry));
         }
         return map;
@@ -604,14 +676,14 @@ public class TopicManagerImpl extends TopicManager
             ctx.traceSpace.trace(getName(), "createStaticTopicSub, router: " + routerEntity.getName() + " ...");
         EntityList stsList = (EntityList) routerEntity.getEntity("static-topic-subscriptions");
         Map entities = stsList.getEntities();
-        if (entities != null && entities.size() > 0) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+        if (entities != null && !entities.isEmpty()) {
+            for (Object o : entities.entrySet()) {
+                Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 String[] tt = tokenizeTopicName(entity.getName());
                 if (tt.length != 1)
-                    throw new Exception(entity.getName() + ": Invalid topic name. Please specify the root node of the topic hierarchie only!");
+                    throw new Exception(entity.getName() + ": Invalid topic name. Please specify the root node of the topic hierarchies only!");
                 SwiftUtilities.verifyClientId(entity.getName());
-                addStaticSubscription(routerEntity.getName(), entity.getName(), ((Boolean) entity.getProperty("keep-on-unsubscribe").getValue()).booleanValue());
+                addStaticSubscription(routerEntity.getName(), entity.getName(), (Boolean) entity.getProperty("keep-on-unsubscribe").getValue());
             }
         }
         stsList.setEntityAddListener(new EntityChangeAdapter(routerEntity.getName()) {
@@ -622,7 +694,7 @@ public class TopicManagerImpl extends TopicManager
                     if (tt.length != 1)
                         throw new Exception(newEntity.getName() + ": Invalid topic name. Please specify only the root node of the topic hierarchy!");
                     SwiftUtilities.verifyClientId(newEntity.getName());
-                    addStaticSubscription((String) configObject, newEntity.getName(), ((Boolean) newEntity.getProperty("keep-on-unsubscribe").getValue()).booleanValue());
+                    addStaticSubscription((String) configObject, newEntity.getName(), (Boolean) newEntity.getProperty("keep-on-unsubscribe").getValue());
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace(getName(), "onEntityAdd (static-topic-subscriptions): new topic=" + newEntity.getName());
                 } catch (Exception e) {
@@ -653,8 +725,8 @@ public class TopicManagerImpl extends TopicManager
             return;
         Map entities = srrList.getEntities();
         if (entities != null && entities.size() > 0) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Object o : entities.entrySet()) {
+                Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 Route route = ctx.routingSwiftlet.getRoute(entity.getName());
                 if (route == null)
                     throw new SwiftletException("Unable to create static remote router subscriptions for router '" + entity.getName() +
@@ -688,9 +760,9 @@ public class TopicManagerImpl extends TopicManager
                 try {
                     EntityList stsList = (EntityList) delEntity.getEntity("static-topic-subscriptions");
                     Map entities = stsList.getEntities();
-                    if (entities != null && entities.size() > 0) {
-                        for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                            Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+                    if (entities != null && !entities.isEmpty()) {
+                        for (Object o : entities.entrySet()) {
+                            Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                             removeStaticSubscription(delEntity.getName(), entity.getName());
                         }
                     }
@@ -708,9 +780,9 @@ public class TopicManagerImpl extends TopicManager
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createSlowSubscriberConditions...");
         EntityList sspList = (EntityList) root.getEntity("slow-subscriber-conditions");
         Map entities = sspList.getEntities();
-        if (entities != null && entities.size() > 0) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+        if (entities != null && !entities.isEmpty()) {
+            for (Object o : entities.entrySet()) {
+                Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 String[] tt = tokenizeTopicName(entity.getName());
                 if (tt.length != 1)
                     throw new SwiftletException(entity.getName() + ": Invalid topic name. Please specify only the root node of the topic hierarchy!");
@@ -793,8 +865,8 @@ public class TopicManagerImpl extends TopicManager
                     if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "starting topic announcer ...");
                     Route[] routes = ctx.routingSwiftlet.getRoutes();
                     if (routes != null) {
-                        for (int i = 0; i < routes.length; i++) {
-                            ctx.announceSender.destinationAdded(routes[i]);
+                        for (Route route : routes) {
+                            ctx.announceSender.destinationAdded(route);
                         }
                     }
                     ctx.routingSwiftlet.addRoutingListener(ctx.announceSender);
@@ -819,9 +891,8 @@ public class TopicManagerImpl extends TopicManager
                 try {
                     ctx.jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
                     if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "registering JNDI topics ...");
-                    Iterator iter = rootBrokers.entrySet().iterator();
-                    while (iter.hasNext()) {
-                        TopicBroker broker = (TopicBroker) ((Map.Entry) iter.next()).getValue();
+                    for (Map.Entry<String, TopicBroker> entry : rootBrokers.entrySet()) {
+                        TopicBroker broker = (TopicBroker) ((Map.Entry<?, ?>) entry).getValue();
                         String[] names = broker.getTopicNames();
                         for (int i = 0; i < names.length; i++) {
                             registerJNDI(names[i], new TopicImpl(names[i]));
@@ -856,10 +927,8 @@ public class TopicManagerImpl extends TopicManager
         } catch (Exception e) {
             throw new SwiftletException("error loading durable subscriptions: " + e);
         }
-        Iterator iter = durableSubscriptions.keySet().iterator();
-        while (iter.hasNext()) {
-            String queueName = (String) iter.next();
-            DurableSubscription durable = (DurableSubscription) durableSubscriptions.get(queueName);
+        for (String queueName : durableSubscriptions.keySet()) {
+            DurableSubscription durable = durableSubscriptions.get(queueName);
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "creating durable subscriber: " + durable);
             durableSubscriptions.put(durable.getQueueName(), durable);
             try {
@@ -875,7 +944,7 @@ public class TopicManagerImpl extends TopicManager
                 dlogin.setClientId(durable.getClientId());
                 int id = subscribe(topic, durable.getSelector(),
                         durable.isNoLocal(), durable.getQueueName(), dlogin);
-                durable.setTopicSubscription((TopicSubscription) topicSubscriptions.get(id));
+                durable.setTopicSubscription(topicSubscriptions.get(id));
 
                 Entity durEntity = ctx.activeDurableList.createEntity();
                 durEntity.setName(durable.getQueueName());
@@ -894,7 +963,7 @@ public class TopicManagerImpl extends TopicManager
                 prop.setValue(durable.getQueueName());
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("nolocal");
-                prop.setValue(new Boolean(durable.isNoLocal()));
+                prop.setValue(durable.isNoLocal());
                 prop.setReadOnly(true);
                 prop = durEntity.getProperty("selector");
                 if (durable.getSelector() != null) {
@@ -911,7 +980,7 @@ public class TopicManagerImpl extends TopicManager
             public void onEntityAdd(Entity parent, Entity newEntity)
                     throws EntityAddException {
                 try {
-                    if (programmaticDurableInProgress)
+                    if (programmaticDurableInProgress.get())
                         return; // do nothing
                     String clientId = (String) newEntity.getProperty("clientid").getValue();
                     SwiftUtilities.verifyClientId(clientId);
@@ -933,7 +1002,7 @@ public class TopicManagerImpl extends TopicManager
                     if (!isTopicDefined(topicName))
                         throw new Exception("Unknown topic: " + topicName);
                     TopicImpl topic = verifyTopic(new TopicImpl(topicName));
-                    boolean noLocal = ((Boolean) newEntity.getProperty("nolocal").getValue()).booleanValue();
+                    boolean noLocal = (Boolean) newEntity.getProperty("nolocal").getValue();
                     ActiveLogin dlogin = ctx.authSwiftlet.createActiveLogin(clientId, DURABLE_TYPE);
                     dlogin.setClientId(clientId);
                     subscribeDurable(durableName, topic, selector, noLocal, dlogin, newEntity, false);
@@ -1008,8 +1077,8 @@ public class TopicManagerImpl extends TopicManager
             }
         }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "removing all topic brokers ...");
-        for (Iterator iter = rootBrokers.entrySet().iterator(); iter.hasNext(); ) {
-            TopicBroker b = (TopicBroker) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, TopicBroker> entry : rootBrokers.entrySet()) {
+            TopicBroker b = (TopicBroker) ((Map.Entry<?, ?>) entry).getValue();
             try {
                 ctx.queueManager.deleteQueue(TOPIC_PREFIX + b.getRootTopic(), false);
             } catch (Exception ignored) {

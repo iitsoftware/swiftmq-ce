@@ -19,16 +19,16 @@ package com.swiftmq.impl.topic.standard.announce;
 
 
 public interface TopicInfo {
-    public boolean isCreationInfo();
+    boolean isCreationInfo();
 
-    public String getDestination();
+    String getDestination();
 
-    public String getRouterName();
+    String getRouterName();
 
-    public String getTopicName();
+    String getTopicName();
 
-    public String[] getTokenizedPredicate();
+    String[] getTokenizedPredicate();
 
-    public int getNumberSubscriptions();
+    int getNumberSubscriptions();
 }
 
