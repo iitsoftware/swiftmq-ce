@@ -17,12 +17,17 @@
 
 package com.swiftmq.impl.threadpool.standard.layer;
 
+import com.swiftmq.impl.threadpool.standard.layer.pool.ThreadPool;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
+import com.swiftmq.tools.collection.ConcurrentList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -35,23 +40,25 @@ public class EventLoopImpl implements EventLoop {
     private final AtomicInteger activeRuns = new AtomicInteger(0);
     private final ReentrantLock freezeLock = new ReentrantLock();
     private final Condition freezeCondition = freezeLock.newCondition();
-    private Thread thread;
-    private final ThreadFactory threadFactory;
+    private volatile Thread thread = null;
+    private final ThreadPool threadPool;
     private CloseListener closeListener = null;
     private final boolean bulkMode;
     private final EventProcessor eventProcessor;
     private final List<Object> events = new ArrayList<>();
     private CompletableFuture<Void> freezeFuture = null;
+    private final List<CompletableFuture<?>> taskFutures = new ConcurrentList<>(new ArrayList<>());
 
-    public EventLoopImpl(boolean bulkMode, EventProcessor eventProcessor, ThreadFactory threadFactory) {
+    public EventLoopImpl(boolean bulkMode, EventProcessor eventProcessor, ThreadPool threadPool) {
         this.bulkMode = bulkMode;
         this.eventProcessor = eventProcessor;
-        this.threadFactory = threadFactory;
+        this.threadPool = threadPool;
         initializeThread();
     }
 
     private void initializeThread() {
-        thread = threadFactory.newThread(() -> {
+        threadPool.execute(() -> {
+            thread = Thread.currentThread(); // store it for interruption
             while (!isClosing.get()) {
                 try {
                     Object event = eventQueue.take();
@@ -114,11 +121,21 @@ public class EventLoopImpl implements EventLoop {
         }
     }
 
+    private void waitForAllTasksCompletion() {
+        CompletableFuture<Void> allTasks = CompletableFuture.allOf(taskFutures.toArray(new CompletableFuture[0]));
+        try {
+            allTasks.get();
+        } catch (InterruptedException | ExecutionException e) {
+            // Handle exceptions, possibly log them or rethrow as appropriate
+        }
+        taskFutures.clear();
+    }
+
     public void setCloseListener(CloseListener closeListener) {
         this.closeListener = closeListener;
     }
 
-    public Future<Void> freeze() {
+    public CompletableFuture<Void> freeze() {
         freezeLock.lock();
         try {
             isFrozen.set(true);
@@ -126,9 +143,9 @@ public class EventLoopImpl implements EventLoop {
                 // Complete immediately if no active runs
                 return CompletableFuture.completedFuture(null);
             }
-            freezeFuture = new CompletableFuture<>();
+            freezeFuture = new CompletableFuture<Void>();
             thread.interrupt(); // Interrupt the thread to exit from eventQueue.take()
-            return freezeFuture;
+            return (CompletableFuture<Void>) freezeFuture;
         } finally {
             freezeLock.unlock();
         }
@@ -146,6 +163,15 @@ public class EventLoopImpl implements EventLoop {
     }
 
     @Override
+    public CompletableFuture<?> executeInNewThread(Runnable runnable) {
+        CompletableFuture<?> taskFuture = threadPool.execute(runnable);
+        taskFutures.add(taskFuture);
+        // Remove the future from the list when it completes
+        taskFuture.whenComplete((result, throwable) -> taskFutures.remove(taskFuture));
+        return taskFuture;
+    }
+
+    @Override
     public void submit(Object event) {
         if (!isClosing.get()) {
             eventQueue.add(event);
@@ -155,6 +181,7 @@ public class EventLoopImpl implements EventLoop {
     public void internalClose() {
         isClosing.set(true);
         thread.interrupt();
+        waitForAllTasksCompletion();
     }
 
     @Override

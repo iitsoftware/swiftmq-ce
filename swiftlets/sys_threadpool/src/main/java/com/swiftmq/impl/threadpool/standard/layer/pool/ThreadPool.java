@@ -15,14 +15,15 @@
  *
  */
 
-package com.swiftmq.impl.threadpool.standard.layer.factories;
+package com.swiftmq.impl.threadpool.standard.layer.pool;
 
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
-public class VirtualThreadFactory implements ThreadFactory {
+public interface ThreadPool {
+    CompletableFuture<?> execute(Runnable task);
 
-    @Override
-    public Thread newThread(Runnable r) {
-        return Thread.ofVirtual().start(r);
-    }
+    Executor asExecutor();
+
+    void shutdown();
 }

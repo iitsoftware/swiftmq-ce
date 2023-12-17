@@ -19,7 +19,8 @@ package com.swiftmq.impl.threadpool.standard;
 
 import com.swiftmq.impl.threadpool.standard.layer.EventLoopImpl;
 import com.swiftmq.impl.threadpool.standard.layer.LayerRegistry;
-import com.swiftmq.impl.threadpool.standard.layer.factories.VirtualThreadFactory;
+import com.swiftmq.impl.threadpool.standard.layer.pool.PlatformThreadPool;
+import com.swiftmq.impl.threadpool.standard.layer.pool.VirtualThreadPool;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.SwiftletManager;
@@ -36,6 +37,7 @@ import com.swiftmq.tools.sql.LikeComparator;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,6 +62,8 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     Map<String, ThreadPool> pools = new ConcurrentHashMap<>();
     Map<String, String> threadNameMaps = new ConcurrentHashMap<>();
     LayerRegistry layerRegistry = null;
+    PlatformThreadPool platformThreadPool = new PlatformThreadPool();
+    VirtualThreadPool virtualThreadPool = new VirtualThreadPool();
 
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
@@ -83,8 +87,13 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     }
 
     @Override
+    public CompletableFuture<?> runAsync(Runnable runnable) {
+        return virtualThreadPool.execute(runnable);
+    }
+
+    @Override
     public EventLoop createEventLoop(String layer, EventProcessor eventProcessor, boolean bulkMode) {
-        EventLoopImpl eventLoop = new EventLoopImpl(bulkMode, eventProcessor, new VirtualThreadFactory());
+        EventLoopImpl eventLoop = new EventLoopImpl(bulkMode, eventProcessor, virtualThreadPool);
         layerRegistry.getLayer(layer).addEventLoop(eventLoop);
         return eventLoop;
     }
@@ -372,6 +381,8 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         }
         pools.clear();
         threadNameMaps.clear();
+        platformThreadPool.shutdown();
+        virtualThreadPool.shutdown();
         if (traceSpace.enabled) traceSpace.trace(getName(), "shutdown: done.");
     }
 }
