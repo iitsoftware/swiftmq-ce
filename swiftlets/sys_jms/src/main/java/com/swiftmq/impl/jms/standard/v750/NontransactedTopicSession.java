@@ -28,8 +28,8 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 
 import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
@@ -39,8 +39,8 @@ public class NontransactedTopicSession extends NontransactedSession {
     EntityList subscriberEntityList = null;
     EntityList durableEntityList = null;
 
-    public NontransactedTopicSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
-        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin, ackMode);
+    public NontransactedTopicSession(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        super(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin, ackMode);
         if (ctx.sessionEntity != null) {
             publisherEntityList = (EntityList) sessionEntity.getEntity("publisher");
             subscriberEntityList = (EntityList) sessionEntity.getEntity("subscriber");

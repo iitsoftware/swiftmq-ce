@@ -136,7 +136,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
             MessageEntry[] bulk = new MessageEntry[numberMessages];
             System.arraycopy(buffer, 0, bulk, 0, numberMessages);
             AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), null, bulk, session.dispatchId, restart, recoveryEpoche);
-            ctx.connectionOutboundQueue.enqueue(request);
+            ctx.outboundLoop.submit(request);
         } else {
             for (int i = 0; i < numberMessages; i++) {
                 AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), buffer[i], null, session.dispatchId, i == numberMessages - 1 && restart, recoveryEpoche);

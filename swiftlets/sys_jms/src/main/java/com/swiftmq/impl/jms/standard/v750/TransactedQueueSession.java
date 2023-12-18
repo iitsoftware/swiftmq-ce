@@ -26,8 +26,8 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.collection.RingBuffer;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 
 import javax.jms.InvalidDestinationException;
@@ -40,8 +40,8 @@ public class TransactedQueueSession extends TransactedSession {
     EntityList senderEntityList = null;
     EntityList receiverEntityList = null;
 
-    public TransactedQueueSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
-        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
+    public TransactedQueueSession(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
+        super(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
         browserManager = new BrowserManager(ctx);
         if (ctx.sessionEntity != null) {
             senderEntityList = (EntityList) sessionEntity.getEntity("sender");

@@ -23,6 +23,7 @@ import com.swiftmq.swiftlet.auth.AuthenticationSwiftlet;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.queue.QueueManager;
 import com.swiftmq.swiftlet.store.StoreSwiftlet;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
@@ -46,7 +47,7 @@ public class SessionContext {
     public boolean transacted = false;
     public Entity sessionEntity = null;
     public SingleProcessorQueue sessionQueue = null;
-    public SingleProcessorQueue connectionOutboundQueue = null;
+    public EventLoop outboundLoop = null;
     final AtomicInteger msgsReceived = new AtomicInteger();
     final AtomicInteger msgsSent = new AtomicInteger();
     final AtomicInteger totalMsgsReceived = new AtomicInteger();

@@ -23,15 +23,15 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueueHandlerClosedException;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.requestreply.GenericRequest;
 
 public abstract class TransactedSession extends Session {
     TransactionManager transactionManager;
     DeliveryItem currentItem = null;
 
-    public TransactedSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
-        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
+    public TransactedSession(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
+        super(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
         transactionManager = new TransactionManager(ctx);
         ctx.transacted = true;
     }

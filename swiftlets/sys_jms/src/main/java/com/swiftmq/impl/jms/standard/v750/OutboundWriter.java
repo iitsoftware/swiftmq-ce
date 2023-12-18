@@ -17,15 +17,14 @@
 
 package com.swiftmq.impl.jms.standard.v750;
 
-import com.swiftmq.impl.jms.standard.JMSSwiftlet;
 import com.swiftmq.jms.smqp.v750.KeepAliveRequest;
 import com.swiftmq.jms.smqp.v750.SMQPBulkRequest;
 import com.swiftmq.jms.smqp.v750.SMQPFactory;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.net.Connection;
 import com.swiftmq.swiftlet.net.NetworkSwiftlet;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
@@ -33,11 +32,11 @@ import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.tools.dump.Dumpable;
 import com.swiftmq.tools.dump.Dumpalizer;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Reply;
 import com.swiftmq.tools.requestreply.ReplyHandler;
 import com.swiftmq.tools.util.DataStreamOutputStream;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OutboundWriter
@@ -46,14 +45,12 @@ public class OutboundWriter
     NetworkSwiftlet networkSwiftlet = null;
     TimerSwiftlet timerSwiftlet = null;
     ThreadpoolSwiftlet threadpoolSwiftlet = null;
-    ThreadPool myTP = null;
     TraceSwiftlet traceSwiftlet = null;
     TraceSpace traceSpace = null;
     Connection connection = null;
     JMSConnection jmsConnection = null;
     DataStreamOutputStream outStream;
-    OutboundQueue outboundQueue = null;
-    OutboundProcessor outboundProcessor = null;
+    EventLoop eventLoop = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
 
     OutboundWriter(Connection connection, JMSConnection jmsConnection) {
@@ -63,67 +60,61 @@ public class OutboundWriter
         networkSwiftlet = (NetworkSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$net");
         timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        myTP = threadpoolSwiftlet.getPool(JMSSwiftlet.TP_CONNSVC);
         traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
-        outboundProcessor = new OutboundProcessor();
-        outboundQueue = new OutboundQueue();
-        outboundQueue.startQueue();
+        eventLoop = threadpoolSwiftlet.createEventLoop("sys$jms.connection.outbound", new Processor(), true);
     }
 
-    public void writeObject(Dumpable obj) {
-        if (closed.get())
-            return;
-        if (traceSpace.enabled) traceSpace.trace("smqp", "write object: " + obj);
-        try {
-            Dumpalizer.dump(outStream, obj);
-            outStream.flush();
-            if (obj.getDumpId() == SMQPFactory.DID_DISCONNECT_REP) {
-                timerSwiftlet.addInstantTimerListener(10000, new TimerListener() {
-                    public void performTimeAction() {
-                        networkSwiftlet.getConnectionManager().removeConnection(connection);
-                        outboundQueue.close();
-                        closed.set(true);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            if (traceSpace.enabled) traceSpace.trace("smqp", "exception write object, exiting!: " + e);
-            networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
-            outboundQueue.close();
-            closed.set(true);
-        }
-    }
-
-    public SingleProcessorQueue getOutboundQueue() {
-        return outboundQueue;
+    public EventLoop getEventLoop() {
+        return eventLoop;
     }
 
     public void performReply(Reply reply) {
-        outboundQueue.enqueue(reply);
+        eventLoop.submit(reply);
     }
 
     public void performTimeAction() {
-        outboundQueue.enqueue(keepAliveRequest);
+        eventLoop.submit(keepAliveRequest);
     }
 
-    private class OutboundQueue extends SingleProcessorQueue {
+    public void close() {
+        if (closed.getAndSet(true))
+            return;
+        eventLoop.close();
+    }
+
+    private class Processor implements EventProcessor {
         SMQPBulkRequest bulkRequest = new SMQPBulkRequest();
 
-        OutboundQueue() {
-            super(100);
+        private void writeObject(Dumpable obj) {
+
+            if (closed.get())
+                return;
+            if (traceSpace.enabled) traceSpace.trace("smqp", "write object: " + obj);
+            try {
+                Dumpalizer.dump(outStream, obj);
+                outStream.flush();
+                if (obj.getDumpId() == SMQPFactory.DID_DISCONNECT_REP) {
+                    timerSwiftlet.addInstantTimerListener(10000, new TimerListener() {
+                        public void performTimeAction() {
+                            networkSwiftlet.getConnectionManager().removeConnection(connection);
+                            close();
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                if (traceSpace.enabled) traceSpace.trace("smqp", "exception write object, exiting!: " + e);
+                networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
+                close();
+            }
         }
 
-        protected void startProcessor() {
-            myTP.dispatchTask(outboundProcessor);
-        }
-
-        protected void process(Object[] bulk, int n) {
-            if (n == 1)
-                writeObject((Dumpable) bulk[0]);
+        public void process(List<Object> events) {
+            if (events.size() == 1)
+                writeObject((Dumpable) events.get(0));
             else {
-                bulkRequest.dumpables = bulk;
-                bulkRequest.len = n;
+                bulkRequest.dumpables = events.toArray(new Object[0]);
+                bulkRequest.len = events.size();
                 writeObject(bulkRequest);
                 bulkRequest.dumpables = null;
                 bulkRequest.len = 0;
@@ -131,27 +122,5 @@ public class OutboundWriter
         }
     }
 
-    private class OutboundProcessor implements AsyncTask {
-
-        public boolean isValid() {
-            return !closed.get();
-        }
-
-        public String getDispatchToken() {
-            return JMSSwiftlet.TP_CONNSVC;
-        }
-
-        public String getDescription() {
-            return connection.toString() + "/OutboundProcessor";
-        }
-
-        public void stop() {
-        }
-
-        public void run() {
-            if (outboundQueue.dequeue() && !closed.get())
-                myTP.dispatchTask(this);
-        }
-    }
 }
 

@@ -24,9 +24,9 @@ import com.swiftmq.swiftlet.queue.MessageIndex;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueTransactionClosedException;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.CallbackJoin;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.GenericRequest;
 
 import java.util.ArrayList;
@@ -37,8 +37,8 @@ import java.util.Map;
 public class NontransactedSession extends Session {
     protected List<MessageDeliveredRequest> deliveredList = null;
 
-    public NontransactedSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
-        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin, ackMode);
+    public NontransactedSession(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        super(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin, ackMode);
         ctx.transacted = false;
         deliveredList = new ArrayList<>();
     }

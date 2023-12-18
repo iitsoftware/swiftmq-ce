@@ -26,8 +26,8 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 
 import javax.jms.InvalidDestinationException;
 import javax.jms.InvalidSelectorException;
@@ -38,8 +38,8 @@ public class NontransactedQueueSession extends NontransactedSession {
     EntityList senderEntityList = null;
     EntityList receiverEntityList = null;
 
-    public NontransactedQueueSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
-        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin, ackMode);
+    public NontransactedQueueSession(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        super(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin, ackMode);
         browserManager = new BrowserManager(ctx);
         if (ctx.sessionEntity != null) {
             senderEntityList = (EntityList) sessionEntity.getEntity("sender");

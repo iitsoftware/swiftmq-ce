@@ -28,12 +28,12 @@ import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.queue.QueueManager;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.store.StoreSwiftlet;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.tools.collection.ExpandableList;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
 
@@ -53,7 +53,7 @@ public abstract class Session extends SessionVisitor
     protected boolean closed = false;
     protected JMSConnection myConnection = null;
 
-    public Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
+    public Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
         this.dispatchId = dispatchId;
         ctx = new SessionContext();
         ctx.queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
@@ -69,7 +69,7 @@ public abstract class Session extends SessionVisitor
         ctx.sessionEntity = sessionEntity;
         sessionTP = ctx.threadpoolSwiftlet.getPool(TP_SESSIONSVC);
         ctx.sessionQueue = new SessionQueue(sessionTP, this);
-        ctx.connectionOutboundQueue = connectionOutboundQueue;
+        ctx.outboundLoop = outboundLoop;
         ctx.sessionQueue.startQueue();
     }
 
@@ -93,8 +93,8 @@ public abstract class Session extends SessionVisitor
         this.recoveryEpoche = recoveryEpoche;
     }
 
-    protected Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
-        this(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
+    protected Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        this(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
         ctx.ackMode = ackMode;
     }
 
@@ -133,7 +133,7 @@ public abstract class Session extends SessionVisitor
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitDeliveryItem, item= " + item);
         try {
             item.request.setMessageEntry(item.messageEntry);
-            ctx.connectionOutboundQueue.enqueue(item.request);
+            ctx.outboundLoop.submit(item.request);
         } catch (Exception e) {
             if (!closed) {
                 e.printStackTrace();
