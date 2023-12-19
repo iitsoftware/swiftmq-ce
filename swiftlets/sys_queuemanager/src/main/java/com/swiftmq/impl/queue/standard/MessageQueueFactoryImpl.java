@@ -19,13 +19,12 @@ package com.swiftmq.impl.queue.standard;
 
 import com.swiftmq.swiftlet.store.NonPersistentStore;
 import com.swiftmq.swiftlet.store.PersistentStore;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
 import java.util.HashMap;
 
 public class MessageQueueFactoryImpl implements MessageQueueFactory {
-    public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP) {
+    public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
         cache.setCacheTable(new HashMap(cache.getMaxMessages()));
-        return new MessageQueue(ctx, cache, pStore, nStore, cleanUpDelay, myTP);
+        return new MessageQueue(ctx, cache, pStore, nStore, cleanUpDelay);
     }
 }

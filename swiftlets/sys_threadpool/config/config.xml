@@ -11,6 +11,12 @@
               display="Collect Interval"
               description="Interval for collecting the Thread Counts per Pool"
               default="1000"/>
+    <property name="adhoc-runner-virtual"
+              type="java.lang.Boolean"
+              display="Virtual Ad Hoc Thread Runner"
+              description="Uses Virtual Threads for ad hoc Tasks"
+              default="true"
+              reboot-required="true"/>
     <entitylist name="pools" display="Pools" description="Threadpool Definitions">
       <entitytemplate name="pool" display="Pool" description="Threadpool Definition">
         <property name="kernel-pool"
@@ -65,18 +71,43 @@
         </entitylist>
       </entitytemplate>
     </entitylist>
-    <entitylist name="usage" display="Usage" description="Active Threadpools"
-                dynamic-properties="running-threads idling-threads">
-      <entitytemplate name="usage" display="Thread Pool" description="Active Threadpool">
-        <property name="running-threads"
+    <entitylist name="layers" display="Layers" description="Thread Layers">
+      <entitytemplate name="layer" display="Pool" description="Thread Layer Definition">
+        <property name="priority"
                   type="java.lang.Integer"
-                  display="Running Threads"
-                  description="Running Threads in this Pool"
+                  display="Stop/Start Priority"
+                  description="Stops/Starts this Layer according to this Priority (Stop: Lowest first, Start: Highest first)"
+                  min="1"
+                  default="1"
+                  reboot-required="true"/>
+        <entitylist name="eventloops" display="Event Loops" description="Event Loop Assignments">
+          <entitytemplate name="eventloop" display="Event Loop" description="Name of the Event Loop">
+            <property name="virtual"
+                      type="java.lang.Boolean"
+                      display="Virtual"
+                      description="Uses a Virtual Threads for this Event Loop, otherwise a Platform Thread"
+                      default="false"
+                      read-only="true"/>
+          </entitytemplate>
+        </entitylist>
+      </entitytemplate>
+    </entitylist>
+    <entitylist name="usage" display="Usage" description="Thread Usage">
+      <entitytemplate name="usage" display="Threads" description="Active Threads">
+        <property name="01-platform"
+                  type="java.lang.Integer"
+                  display="Platform Threads"
+                  description="Active Platform Threads"
                   default="0"/>
-        <property name="idling-threads"
+        <property name="02-virtual"
                   type="java.lang.Integer"
-                  display="Idling Threads"
-                  description="Idling Threads in this Pool"
+                  display="Virtual Threads"
+                  description="Active Virtual Threads"
+                  default="0"/>
+        <property name="03-adhoc"
+                  type="java.lang.Integer"
+                  display="Ad Hoc Threads"
+                  description="Active Ad Hoc Threads"
                   default="0"/>
       </entitytemplate>
     </entitylist>

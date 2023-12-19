@@ -26,17 +26,13 @@ import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.queue.QueueFactory;
 import com.swiftmq.swiftlet.store.NonPersistentStore;
 import com.swiftmq.swiftlet.store.PersistentStore;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.util.SwiftUtilities;
 
 public class RegularQueueFactory implements QueueFactory {
     SwiftletContext ctx = null;
-    ThreadPool myTP = null;
 
     RegularQueueFactory(SwiftletContext ctx) {
         this.ctx = ctx;
-        myTP = ctx.threadpoolSwiftlet.getPool(QueueManagerImpl.TP_TIMEOUTPROC);
-        /*{evaltimer3}*/
     }
 
     @Override
@@ -58,9 +54,9 @@ public class RegularQueueFactory implements QueueFactory {
         }
 
         Property prop = queueEntity.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
-        int cacheSize = ((Integer) prop.getValue()).intValue();
+        int cacheSize = (Integer) prop.getValue();
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
-        int cacheSizeBytesKB = ((Integer) prop.getValue()).intValue();
+        int cacheSizeBytesKB = (Integer) prop.getValue();
         Cache cache = new CacheImpl(cacheSize, cacheSizeBytesKB, pStore, nStore);
         cache.setCacheTable(ctx.cacheTableFactory.createCacheTable(queueName, cacheSize));
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
@@ -68,7 +64,7 @@ public class RegularQueueFactory implements QueueFactory {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 Cache myCache = (Cache) configObject;
-                myCache.setMaxMessages(((Integer) newValue).intValue());
+                myCache.setMaxMessages((Integer) newValue);
             }
         });
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
@@ -76,14 +72,14 @@ public class RegularQueueFactory implements QueueFactory {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 Cache myCache = (Cache) configObject;
-                myCache.setMaxBytesKB(((Integer) newValue).intValue());
+                myCache.setMaxBytesKB((Integer) newValue);
             }
         });
 
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_CLEANUP_INTERVAL);
-        long cleanUp = ((Long) prop.getValue()).longValue();
+        long cleanUp = (Long) prop.getValue();
 
-        MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, pStore, nStore, cleanUp, myTP);
+        MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, pStore, nStore, cleanUp);
 
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_MESSAGES_MAXIMUM);
         int maxMessages = ((Integer) prop.getValue()).intValue();
@@ -108,7 +104,7 @@ public class RegularQueueFactory implements QueueFactory {
         });
 
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_FLOWCONTROL_QUEUE_SIZE);
-        int fcQueueSize = ((Integer) prop.getValue()).intValue();
+        int fcQueueSize = (Integer) prop.getValue();
         if (fcQueueSize >= 0)
             mq.setFlowController(new FlowControllerImpl(fcQueueSize, ctx.queueManager.getMaxFlowControlDelay()));
         prop.setPropertyChangeListener(new PropertyChangeAdapter(mq) {
@@ -124,22 +120,22 @@ public class RegularQueueFactory implements QueueFactory {
         });
 
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_ENABLED);
-        mq.setDuplicateDetectionEnabled(((Boolean) prop.getValue()).booleanValue());
+        mq.setDuplicateDetectionEnabled((Boolean) prop.getValue());
         prop.setPropertyChangeListener(new PropertyChangeAdapter(mq) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 MessageQueue myMq = (MessageQueue) configObject;
-                myMq.setDuplicateDetectionEnabled(((Boolean) newValue).booleanValue());
+                myMq.setDuplicateDetectionEnabled((Boolean) newValue);
             }
         });
 
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_BACKLOG_SIZE);
-        mq.setDuplicateDetectionBacklogSize(((Integer) prop.getValue()).intValue());
+        mq.setDuplicateDetectionBacklogSize((Integer) prop.getValue());
         prop.setPropertyChangeListener(new PropertyChangeAdapter(mq) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 MessageQueue myMq = (MessageQueue) configObject;
-                myMq.setDuplicateDetectionBacklogSize(((Integer) newValue).intValue());
+                myMq.setDuplicateDetectionBacklogSize((Integer) newValue);
             }
         });
         prop = queueEntity.getProperty(QueueManagerImpl.PROP_CONSUMER);

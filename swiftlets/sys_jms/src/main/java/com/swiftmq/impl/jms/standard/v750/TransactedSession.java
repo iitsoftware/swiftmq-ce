@@ -123,7 +123,7 @@ public abstract class TransactedSession extends Session {
         }
 
         GenericRequest gr = new GenericRequest(-1, false, reply);
-        ctx.sessionQueue.enqueue(gr);
+        ctx.sessionLoop.submit(gr);
     }
 
     public String toString() {

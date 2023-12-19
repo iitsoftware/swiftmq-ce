@@ -17,12 +17,17 @@
 
 package com.swiftmq.impl.threadpool.standard.layer;
 
+import com.swiftmq.impl.threadpool.standard.layer.pool.PlatformThreadRunner;
+import com.swiftmq.impl.threadpool.standard.layer.pool.ThreadRunner;
+import com.swiftmq.impl.threadpool.standard.layer.pool.VirtualThreadRunner;
+import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 
 import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class LayerRegistry {
     private static final String DEFAULT_LAYER_ID = "default";
@@ -30,28 +35,103 @@ public class LayerRegistry {
     private final TraceSpace traceSpace;
     private final String tracePrefix;
     private final Map<String, Layer> layers;
+    private final EntityList layerList;
+    private EntityListEventAdapter layerAdapter = null;
+    private final ThreadRunner platformThreadRunner = new PlatformThreadRunner();
+    private final ThreadRunner virtualThreadRunner = new VirtualThreadRunner();
+    private final Map<String, LoopData> eventLoopConfig = new ConcurrentHashMap<>();
 
-    public LayerRegistry(TraceSpace traceSpace, String tracePrefix) {
+    public LayerRegistry(EntityList layerList, TraceSpace traceSpace, String tracePrefix) {
+        this.layerList = layerList;
         this.traceSpace = traceSpace;
         this.tracePrefix = tracePrefix + "/" + this;
         this.layers = new ConcurrentHashMap<>();
         registerLayer(new Layer(DEFAULT_LAYER_ID, DEFAULT_LAYER_PRIORITY));
+        createLayers();
+    }
+
+    private void createLayers() {
+        layerAdapter = new EntityListEventAdapter(layerList, true, true) {
+            public void onEntityAdd(Entity parent, Entity newEntity) throws EntityAddException {
+                try {
+                    final String layerName = newEntity.getName();
+                    registerLayer(new Layer(layerName, (Integer) newEntity.getProperty("priority").getValue()));
+                    EntityListEventAdapter loopAdapter = new EntityListEventAdapter((EntityList) newEntity.getEntity("eventloops"), true, true) {
+                        @Override
+                        public void onEntityAdd(Entity parent, Entity newEntity) {
+                            eventLoopConfig.put(newEntity.getName(), new LoopData((Boolean) newEntity.getProperty("virtual").getValue(), layerName));
+                        }
+
+                        @Override
+                        public void onEntityRemove(Entity parent, Entity delEntity) {
+                            eventLoopConfig.remove(delEntity.getName());
+                        }
+                    };
+                    loopAdapter.init();
+                    newEntity.setUserObject(loopAdapter);
+                } catch (Exception e) {
+                    throw new EntityAddException(e.toString());
+                }
+            }
+
+            public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException {
+                deregisterLayer(delEntity.getName());
+                EntityListEventAdapter loopAdapter = (EntityListEventAdapter) delEntity.getUserObject();
+                if (loopAdapter != null) {
+                    try {
+                        loopAdapter.close();
+                    } catch (Exception e) {
+                        throw new EntityRemoveException(e.toString());
+                    }
+                    delEntity.setUserObject(null);
+                }
+            }
+        };
+        try {
+            layerAdapter.init();
+        } catch (Exception e) {
+            throw new RuntimeException(e.toString());
+        }
+    }
+
+    public ThreadRunner threadRunnerForEventLoop(String id) {
+        ThreadRunner runner = platformThreadRunner;
+        boolean virtual = eventLoopConfig.get(id).virtual();
+        if (virtual)
+            runner = virtualThreadRunner;
+        return runner;
     }
 
     public void registerLayer(Layer layer) {
-        if (traceSpace.enabled) traceSpace.trace(tracePrefix, "registerLayer, layer=" + layer);
+        if (traceSpace.enabled) traceSpace.trace(tracePrefix, "registerLayer, layer=" + layer.getIdentifier());
         layers.put(layer.getIdentifier(), layer);
     }
 
     public void deregisterLayer(String identifier) {
         if (traceSpace.enabled) traceSpace.trace(tracePrefix, "deregisterLayer, identifier=" + identifier);
-        layers.remove(identifier);
+        Layer layer = layers.remove(identifier);
+        if (layer != null)
+            layer.close();
     }
 
-    public Layer getLayer(String identifier) {
-        return layers.computeIfAbsent(identifier, id -> {
-            return layers.get(DEFAULT_LAYER_ID);
-        });
+    public Layer getLayer(String loopName) {
+        String layerName;
+        if (eventLoopConfig.get(loopName) != null)
+            layerName = eventLoopConfig.get(loopName).layer();
+        else {
+            layerName = DEFAULT_LAYER_ID;
+        }
+        if (traceSpace.enabled)
+            traceSpace.trace(tracePrefix, "getLayer, loopName=" + loopName + " returns=" + layerName);
+        return layers.get(layerName);
+    }
+
+    public int platformThreads() {
+        return platformThreadRunner.getActiveThreadCount();
+    }
+
+    public int virtualThreads() {
+        return virtualThreadRunner.getActiveThreadCount();
     }
 
     public int size() {
@@ -94,8 +174,23 @@ public class LayerRegistry {
         }
     }
 
+    public void close() {
+        try {
+            layerAdapter.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        virtualThreadRunner.shutdown(10, TimeUnit.SECONDS);
+        platformThreadRunner.shutdown(10, TimeUnit.SECONDS);
+    }
+
     @Override
     public String toString() {
         return "LayerRegistry";
     }
+
+    private record LoopData(boolean virtual, String layer) {
+    }
+
+    ;
 }

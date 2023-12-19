@@ -29,7 +29,7 @@ import com.swiftmq.swiftlet.queue.QueueManager;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.store.StoreSwiftlet;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
@@ -38,19 +38,18 @@ import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
 
 import javax.jms.InvalidDestinationException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Session extends SessionVisitor
-        implements RequestService {
-    static final String TP_SESSIONSVC = "sys$jms.session.service";
-
+        implements RequestService, EventProcessor {
     protected ExpandableList<Consumer> consumerList = new ExpandableList<>();
     protected ExpandableList<Producer> producerList = new ExpandableList<>();
     protected SessionContext ctx = null;
     protected int dispatchId;
-    protected ThreadPool sessionTP = null;
     protected int recoveryEpoche = 0;
     protected boolean recoveryInProgress = false;
-    protected boolean closed = false;
+    protected final AtomicBoolean closed = new AtomicBoolean(false);
     protected JMSConnection myConnection = null;
 
     public Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
@@ -67,10 +66,13 @@ public abstract class Session extends SessionVisitor
         ctx.tracePrefix = connectionTracePrefix + "/" + this;
         ctx.activeLogin = activeLogin;
         ctx.sessionEntity = sessionEntity;
-        sessionTP = ctx.threadpoolSwiftlet.getPool(TP_SESSIONSVC);
-        ctx.sessionQueue = new SessionQueue(sessionTP, this);
+        ctx.sessionLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.session", this, true);
         ctx.outboundLoop = outboundLoop;
-        ctx.sessionQueue.startQueue();
+    }
+
+    protected Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        this(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
+        ctx.ackMode = ackMode;
     }
 
     public JMSConnection getMyConnection() {
@@ -93,13 +95,14 @@ public abstract class Session extends SessionVisitor
         this.recoveryEpoche = recoveryEpoche;
     }
 
-    protected Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin, int ackMode) {
-        this(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
-        ctx.ackMode = ackMode;
+    @Override
+    public void process(List<Object> events) {
+        if (!closed.get())
+            events.forEach(e -> ((Request) e).accept(this));
     }
 
     public void visit(StartConsumerRequest req) {
-        if (closed)
+        if (closed.get())
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitStartConsumerRequest");
         int qcId = req.getQueueConsumerId();
@@ -127,7 +130,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(DeliveryItem item) {
-        if (closed || recoveryInProgress || item.request.getRecoveryEpoche() != recoveryEpoche)
+        if (closed.get() || recoveryInProgress || item.request.getRecoveryEpoche() != recoveryEpoche)
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitDeliveryItem, item= " + item);
@@ -135,7 +138,7 @@ public abstract class Session extends SessionVisitor
             item.request.setMessageEntry(item.messageEntry);
             ctx.outboundLoop.submit(item.request);
         } catch (Exception e) {
-            if (!closed) {
+            if (!closed.get()) {
                 e.printStackTrace();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/handleDelivery, exception= " + e);
@@ -144,7 +147,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(RegisterMessageProcessor request) {
-        if (closed)
+        if (closed.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRegisterMessageProcessor, request= " + request);
@@ -152,7 +155,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(RunMessageProcessor request) {
-        if (closed)
+        if (closed.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRunMessageProcessor, request= " + request);
@@ -164,7 +167,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(MessageDeliveredRequest req) {
-        if (closed || recoveryInProgress)
+        if (closed.get() || recoveryInProgress)
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest ...");
@@ -204,12 +207,13 @@ public abstract class Session extends SessionVisitor
     public void serviceRequest(Request request) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/serviceRequest, request=" + request);
-        ctx.sessionQueue.enqueue(request);
+        ctx.sessionLoop.submit(request);
     }
 
     protected void close() {
-        closed = true;
-        ctx.sessionQueue.stopQueue();
+        if (closed.getAndSet(true))
+            return;
+        ctx.sessionLoop.close();
 
         for (int i = 0; i < consumerList.size(); i++) {
             Consumer consumer = consumerList.get(i);
@@ -234,7 +238,7 @@ public abstract class Session extends SessionVisitor
     }
 
     protected boolean isClosed() {
-        return closed;
+        return closed.get();
     }
 
     public String toString() {

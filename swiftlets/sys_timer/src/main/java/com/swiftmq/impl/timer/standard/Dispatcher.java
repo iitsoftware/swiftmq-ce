@@ -65,10 +65,7 @@ class Dispatcher implements Runnable {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$timer", "Dispatcher, taskQueue.size() == 0, waiting...");
                     waitTime = -1;
-                    try {
-                        notEmpty.await();
-                    } catch (Exception ignored) {
-                    }
+                    notEmpty.await();
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$timer", "Dispatcher, taskQueue.size() == 0, wake up...");
                     if (!valid.get()) {
@@ -80,10 +77,7 @@ class Dispatcher implements Runnable {
                     if (waitTime > 0) {
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace("sys$timer", "Dispatcher, waitTime=" + waitTime + ", waiting...");
-                        try {
-                            notEmpty.await(waitTime, TimeUnit.MILLISECONDS);
-                        } catch (Exception ignored) {
-                        }
+                        notEmpty.await(waitTime, TimeUnit.MILLISECONDS);
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace("sys$timer", "Dispatcher, waitTime=" + waitTime + ", wake up...");
                     }
@@ -129,6 +123,8 @@ class Dispatcher implements Runnable {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$timer", "Dispatcher, stop dispatching, actTime=" + actTime + ", new waitTime=" + waitTime);
                 }
+            } catch (InterruptedException e) {
+                break;  // Leave the loop when interrupted
             } finally {
                 lock.unlock();
             }

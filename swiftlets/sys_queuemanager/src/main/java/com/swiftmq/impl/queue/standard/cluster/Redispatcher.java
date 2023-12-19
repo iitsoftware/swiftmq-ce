@@ -17,12 +17,10 @@
 
 package com.swiftmq.impl.queue.standard.cluster;
 
-import com.swiftmq.impl.queue.standard.QueueManagerImpl;
 import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,7 +34,6 @@ public class Redispatcher extends MessageProcessor {
     volatile QueueSender sender = null;
     volatile QueueImpl targetQueue = null;
     volatile AbstractQueue sourceQueue = null;
-    volatile ThreadPool myTP = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
     volatile MessageImpl message = null;
     final AtomicInteger cnt = new AtomicInteger();
@@ -47,7 +44,6 @@ public class Redispatcher extends MessageProcessor {
         this.sourceQueueName = sourceQueueName;
         this.targetQueueName = targetQueueName;
         dispatchPolicy = ctx.dispatchPolicyRegistry.get(targetQueueName);
-        myTP = ctx.threadpoolSwiftlet.getPool(QueueManagerImpl.TP_REDISPATCHER);
         sourceQueue = ctx.queueManager.getQueueForInternalUse(sourceQueueName);
         receiver = ctx.queueManager.createQueueReceiver(sourceQueueName, null, null);
         sourceQueue.decReceiverCount();
@@ -67,7 +63,7 @@ public class Redispatcher extends MessageProcessor {
     }
 
     public String getDispatchToken() {
-        return QueueManagerImpl.TP_REDISPATCHER;
+        return "none";
     }
 
     public boolean isValid() {
@@ -83,7 +79,7 @@ public class Redispatcher extends MessageProcessor {
 
     public void processMessage(MessageEntry messageEntry) {
         message = messageEntry.getMessage();
-        myTP.dispatchTask(this);
+        ctx.threadpoolSwiftlet.runAsync(this);
     }
 
     public void run() {

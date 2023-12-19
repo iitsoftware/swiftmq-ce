@@ -23,7 +23,6 @@ import com.swiftmq.mgmt.EntityRemoveException;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.net.Connection;
 import com.swiftmq.swiftlet.net.ConnectionManager;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -84,7 +83,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
             connection.setMarkedForClose();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$net", toString() + "/removeConnection: " + connection);
-            ctx.threadpoolSwiftlet.dispatchTask(new Disconnector(connection));
+            ctx.threadpoolSwiftlet.runAsync(() -> {
+                deleteConnection(connection);
+            });
         }
     }
 
@@ -147,31 +148,5 @@ public class ConnectionManagerImpl implements ConnectionManager {
         return "ConnectionManager";
     }
 
-    private class Disconnector implements AsyncTask {
-        Connection connection = null;
-
-        Disconnector(Connection connection) {
-            this.connection = connection;
-        }
-
-        public boolean isValid() {
-            return !connection.isClosed();
-        }
-
-        public String getDispatchToken() {
-            return SwiftletContext.TP_CONNMGR;
-        }
-
-        public String getDescription() {
-            return "sys$net/ConnectionManager/Disconnector for Connection: " + connection;
-        }
-
-        public void stop() {
-        }
-
-        public void run() {
-            deleteConnection(connection);
-        }
-    }
 }
 

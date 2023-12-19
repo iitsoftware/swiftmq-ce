@@ -25,8 +25,6 @@ import com.swiftmq.mgmt.PropertyWatchListener;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.store.*;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.collection.OrderedSet;
@@ -54,7 +52,6 @@ public class MessageQueue extends AbstractQueue {
     List[] msgProcessors = null;
     ExpandableList<List<StoreId>> activeTransactions = null;
     boolean running = false;
-    ThreadPool myTP = null;
     ExpandableList<View> views = null;
     AtomicWrappingCounterLong msgId = new AtomicWrappingCounterLong(0);
     boolean alwaysDeliverExpired = false;
@@ -80,13 +77,12 @@ public class MessageQueue extends AbstractQueue {
     boolean active = true;
     QueueLatency queueLatency = new QueueLatency();
 
-    public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay, ThreadPool myTP) {
+    public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
         this.ctx = ctx;
         this.cache = cache;
         this.pStore = pStore;
         this.nStore = nStore;
         this.cleanUpInterval = cleanUpDelay;
-        this.myTP = myTP;
         msgAvail = queueLock.newCondition();
         asyncFinished = queueLock.newCondition();
     }
@@ -491,7 +487,7 @@ public class MessageQueue extends AbstractQueue {
             if (mp != null) {
                 mp.setRegistrationId(-1);
                 int viewId = mp.getViewId();
-                if (viewId == -1 || ((View) views.get(viewId)).isDirty()) {
+                if (viewId == -1 || views.get(viewId) == null || views.get(viewId).isDirty()) {
                     if (ctx.queueSpace.enabled)
                         ctx.queueSpace.trace(getQueueName(), "notifyWaiters, no view or view is dirty, run message proc");
                     registerMessageProcessor(mp);
@@ -2529,7 +2525,7 @@ public class MessageQueue extends AbstractQueue {
         return compositeTx;
     }
 
-    private class TimeoutProcessor implements AsyncTask, TimerListener {
+    private class TimeoutProcessor implements Runnable, TimerListener {
         long registrationTime = 0;
         long timeout = 0;
         int id = 0;
@@ -2541,26 +2537,11 @@ public class MessageQueue extends AbstractQueue {
         }
 
         public void performTimeAction() {
-            myTP.dispatchTask(this);
-        }
-
-        public boolean isValid() {
-            return true;
-        }
-
-        public String getDispatchToken() {
-            return QueueManagerImpl.TP_TIMEOUTPROC;
-        }
-
-        public String getDescription() {
-            return "TimeoutProcessor, id = " + id;
+            ctx.threadpoolSwiftlet.runAsync(this);
         }
 
         public void run() {
             timeoutMessageProcessor(registrationTime, id);
-        }
-
-        public void stop() {
         }
     }
 

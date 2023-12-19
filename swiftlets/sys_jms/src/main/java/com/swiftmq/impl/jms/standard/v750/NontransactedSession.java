@@ -44,7 +44,7 @@ public class NontransactedSession extends Session {
     }
 
     public void visit(MessageDeliveredRequest req) {
-        if (closed || recoveryInProgress)
+        if (closed.get() || recoveryInProgress)
             return;
         if (!req.isDuplicate())
             deliveredList.add(req);
@@ -52,7 +52,7 @@ public class NontransactedSession extends Session {
     }
 
     public void visit(AcknowledgeMessageRequest req) {
-        if (closed)
+        if (closed.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitAcknowledgeMessageRequest");
@@ -255,7 +255,7 @@ public class NontransactedSession extends Session {
         }
         deliveredList.clear();
         GenericRequest gr = new GenericRequest(-1, false, reply);
-        ctx.sessionQueue.enqueue(gr);
+        ctx.sessionLoop.submit(gr);
     }
 
     protected void close() {

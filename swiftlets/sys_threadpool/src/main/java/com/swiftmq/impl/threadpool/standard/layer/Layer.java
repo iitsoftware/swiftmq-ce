@@ -77,6 +77,12 @@ public class Layer {
         }
     }
 
+    public void close() {
+        for (EventLoopImpl loop : eventLoops) {
+            loop.close();
+        }
+    }
+
     @Override
     public String toString() {
         return "Layer" +

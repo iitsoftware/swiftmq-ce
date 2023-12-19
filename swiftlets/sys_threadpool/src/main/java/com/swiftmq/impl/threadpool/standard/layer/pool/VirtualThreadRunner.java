@@ -17,14 +17,17 @@
 
 package com.swiftmq.impl.threadpool.standard.layer.pool;
 
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class VirtualThreadPool implements ThreadPool {
+public class VirtualThreadRunner implements ThreadRunner {
     private final ExecutorService virtualExecutor;
     private final AtomicInteger activeTaskCount = new AtomicInteger(0);
 
-    public VirtualThreadPool() {
+    public VirtualThreadRunner() {
         this.virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
@@ -41,13 +44,8 @@ public class VirtualThreadPool implements ThreadPool {
         return CompletableFuture.runAsync(wrappedTask, virtualExecutor);
     }
 
-    public int getActiveTaskCount() {
+    public int getActiveThreadCount() {
         return activeTaskCount.get();
-    }
-
-    @Override
-    public Executor asExecutor() {
-        return virtualExecutor;
     }
 
     @Override
@@ -73,7 +71,7 @@ public class VirtualThreadPool implements ThreadPool {
             if (!virtualExecutor.awaitTermination(timeout, unit)) {
                 virtualExecutor.shutdownNow();
                 if (!virtualExecutor.awaitTermination(timeout, unit)) {
-                    System.err.println("VirtualThreadPool did not terminate");
+                    System.err.println("VirtualThreadRunner did not terminate");
                 }
             }
         } catch (InterruptedException ie) {

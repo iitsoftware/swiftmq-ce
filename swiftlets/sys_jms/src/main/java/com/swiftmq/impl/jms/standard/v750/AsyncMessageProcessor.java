@@ -71,7 +71,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
     }
 
     public boolean isValid() {
-        return valid && !session.closed;
+        return valid && !session.closed.get();
     }
 
     public void stop() {
@@ -86,7 +86,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
     public void processMessages(int numberMessages) {
         this.numberMessages = numberMessages;
         if (isValid()) {
-            ctx.sessionQueue.enqueue(runRequest);
+            ctx.sessionLoop.submit(runRequest);
         }
     }
 
@@ -144,11 +144,11 @@ public class AsyncMessageProcessor extends MessageProcessor {
                 item.messageEntry = buffer[i];
                 item.consumer = consumer;
                 item.request = request;
-                ctx.sessionQueue.enqueue(item);
+                ctx.sessionLoop.submit(item);
             }
         }
         if (!restart) {
-            ctx.sessionQueue.enqueue(registerRequest);
+            ctx.sessionLoop.submit(registerRequest);
         } else {
             deliveryCount = 0;
             maxBulkSize = -1;
@@ -161,6 +161,6 @@ public class AsyncMessageProcessor extends MessageProcessor {
     }
 
     public String getDispatchToken() {
-        return Session.TP_SESSIONSVC;
+        return "none";
     }
 }

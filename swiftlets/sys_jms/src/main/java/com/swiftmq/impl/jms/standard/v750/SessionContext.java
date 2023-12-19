@@ -28,7 +28,6 @@ import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,10 +42,10 @@ public class SessionContext {
     public TraceSpace traceSpace = null;
     public String tracePrefix = null;
     public ActiveLogin activeLogin = null;
-    public int ackMode = 0;
-    public boolean transacted = false;
+    public volatile int ackMode = 0;
+    public volatile boolean transacted = false;
     public Entity sessionEntity = null;
-    public SingleProcessorQueue sessionQueue = null;
+    public EventLoop sessionLoop = null;
     public EventLoop outboundLoop = null;
     final AtomicInteger msgsReceived = new AtomicInteger();
     final AtomicInteger msgsSent = new AtomicInteger();

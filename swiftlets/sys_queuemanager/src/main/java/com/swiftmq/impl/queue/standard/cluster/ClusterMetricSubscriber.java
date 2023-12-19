@@ -25,7 +25,6 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.tools.versioning.Versionable;
 
 import java.util.List;
@@ -38,11 +37,9 @@ public class ClusterMetricSubscriber extends MessageProcessor {
     volatile QueuePullTransaction t = null;
     volatile boolean closed = false;
     volatile BytesMessageImpl msg = null;
-    volatile ThreadPool myTP = null;
 
     public ClusterMetricSubscriber(SwiftletContext ctx) throws Exception {
         this.ctx = ctx;
-        myTP = ctx.threadpoolSwiftlet.getPool(QueueManagerImpl.TP_CLUSTER);
         queueName = ctx.queueManager.createTemporaryQueue();
         receiver = ctx.queueManager.createQueueReceiver(queueName, null, null);
         subscriberId = ctx.topicManager.subscribe(QueueManagerImpl.CLUSTER_TOPIC, null, false, queueName);
@@ -76,7 +73,7 @@ public class ClusterMetricSubscriber extends MessageProcessor {
             }
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/received: " + msg);
-            myTP.dispatchTask(this);
+            ctx.threadpoolSwiftlet.runAsync(this);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/exception occurred: " + e + ", EXITING!");

@@ -36,6 +36,12 @@ public class JMSTestCase extends TestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.out.println(getClass().getName());
+    }
+
     public InitialContext createInitialContext(String className, String url) {
         InitialContext ctx = null;
         try {

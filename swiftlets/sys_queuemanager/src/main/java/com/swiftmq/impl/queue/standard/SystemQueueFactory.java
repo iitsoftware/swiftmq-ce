@@ -24,16 +24,13 @@ import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.queue.QueueFactory;
 import com.swiftmq.swiftlet.store.NonPersistentStore;
 import com.swiftmq.swiftlet.store.PersistentStore;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.util.SwiftUtilities;
 
 public class SystemQueueFactory implements QueueFactory {
     SwiftletContext ctx = null;
-    ThreadPool myTP = null;
 
     SystemQueueFactory(SwiftletContext ctx) {
         this.ctx = ctx;
-        myTP = ctx.threadpoolSwiftlet.getPool(QueueManagerImpl.TP_TIMEOUTPROC);
     }
 
     @Override
@@ -56,18 +53,18 @@ public class SystemQueueFactory implements QueueFactory {
         Property prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
         int cacheSize = ((Integer) prop.getValue()).intValue();
         prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
-        int cacheSizeBytesKB = ((Integer) prop.getValue()).intValue();
+        int cacheSizeBytesKB = (Integer) prop.getValue();
 
         Cache cache = new CacheImpl(cacheSize, cacheSizeBytesKB, pStore, nStore);
         cache.setCacheTable(ctx.cacheTableFactory.createCacheTable(queueName, cacheSize));
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_CLEANUP_INTERVAL);
-        long cleanUp = ((Long) prop.getValue()).longValue();
+        long cleanUp = (Long) prop.getValue();
 
-        MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, pStore, nStore, cleanUp, myTP);
+        MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, pStore, nStore, cleanUp);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_MESSAGES_MAXIMUM);
-        int maxMessages = ((Integer) prop.getValue()).intValue();
+        int maxMessages = (Integer) prop.getValue();
         mq.setMaxMessages(maxMessages);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_PERSISTENCE);
@@ -75,15 +72,15 @@ public class SystemQueueFactory implements QueueFactory {
         mq.setPersistenceMode(pm);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_FLOWCONTROL_QUEUE_SIZE);
-        int fcQueueSize = ((Integer) prop.getValue()).intValue();
+        int fcQueueSize = (Integer) prop.getValue();
         if (fcQueueSize >= 0)
             mq.setFlowController(new FlowControllerImpl(fcQueueSize, ctx.queueManager.getMaxFlowControlDelay()));
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_ENABLED);
-        mq.setDuplicateDetectionEnabled(((Boolean) prop.getValue()).booleanValue());
+        mq.setDuplicateDetectionEnabled((Boolean) prop.getValue());
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_BACKLOG_SIZE);
-        mq.setDuplicateDetectionBacklogSize(((Integer) prop.getValue()).intValue());
+        mq.setDuplicateDetectionBacklogSize((Integer) prop.getValue());
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_CONSUMER);
         mq.setConsumerMode(ctx.consumerModeInt((String) prop.getValue()));

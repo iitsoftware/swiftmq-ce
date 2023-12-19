@@ -92,8 +92,8 @@ public class ClusterMetricPublisher implements TimerListener, PropertyChangeList
     }
 
     public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-        intervalChanged(((Long) oldValue).longValue(), ((Long) newValue).longValue());
-        interval = ((Long) newValue).longValue();
+        intervalChanged((Long) oldValue, (Long) newValue);
+        interval = (Long) newValue;
     }
 
     public void performTimeAction() {

@@ -17,39 +17,42 @@
 
 package com.swiftmq.impl.threadpool.standard.layer;
 
-import com.swiftmq.impl.threadpool.standard.layer.pool.ThreadPool;
+import com.swiftmq.impl.threadpool.standard.layer.pool.ThreadRunner;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.collection.ConcurrentList;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class EventLoopImpl implements EventLoop {
-    private final BlockingQueue<Object> eventQueue = new LinkedBlockingQueue<>();
+    private final List<Object> eventQueue = new LinkedList<>();
     private final AtomicBoolean isFrozen = new AtomicBoolean(false);
     private final AtomicBoolean isClosing = new AtomicBoolean(false);
     private final AtomicInteger activeRuns = new AtomicInteger(0);
     private final ReentrantLock freezeLock = new ReentrantLock();
+    private final ReentrantLock queueLock = new ReentrantLock();
+    private final Condition notEmpty = queueLock.newCondition();
     private final Condition freezeCondition = freezeLock.newCondition();
     private volatile Thread thread = null;
-    private final ThreadPool threadPool;
+    private final ThreadRunner threadPool;
     private CloseListener closeListener = null;
+    private String id;
     private final boolean bulkMode;
     private final EventProcessor eventProcessor;
     private final List<Object> events = new ArrayList<>();
     private CompletableFuture<Void> freezeFuture = null;
     private final List<CompletableFuture<?>> taskFutures = new ConcurrentList<>(new ArrayList<>());
 
-    public EventLoopImpl(boolean bulkMode, EventProcessor eventProcessor, ThreadPool threadPool) {
+    public EventLoopImpl(String id, boolean bulkMode, EventProcessor eventProcessor, ThreadRunner threadPool) {
+        this.id = id;
         this.bulkMode = bulkMode;
         this.eventProcessor = eventProcessor;
         this.threadPool = threadPool;
@@ -61,10 +64,17 @@ public class EventLoopImpl implements EventLoop {
             thread = Thread.currentThread(); // store it for interruption
             while (!isClosing.get()) {
                 try {
-                    Object event = eventQueue.take();
-                    events.add(event);
-                    if (bulkMode) {
-                        eventQueue.drainTo(events);
+                    queueLock.lock();
+                    try {
+                        if (eventQueue.isEmpty())
+                            notEmpty.await();
+                        if (bulkMode) {
+                            events.addAll(eventQueue);
+                            eventQueue.clear();
+                        } else
+                            events.add(eventQueue.removeFirst());
+                    } finally {
+                        queueLock.unlock();
                     }
 
                     activeRuns.incrementAndGet();
@@ -173,13 +183,26 @@ public class EventLoopImpl implements EventLoop {
 
     @Override
     public void submit(Object event) {
-        if (!isClosing.get()) {
-            eventQueue.add(event);
+        queueLock.lock();
+        try {
+            if (!isClosing.get()) {
+                eventQueue.add(event);
+                notEmpty.signal();
+            }
+        } finally {
+            queueLock.unlock();
         }
+
     }
 
     public void internalClose() {
         isClosing.set(true);
+        queueLock.lock();
+        try {
+            notEmpty.signal();
+        } finally {
+            queueLock.unlock();
+        }
         thread.interrupt();
         waitForAllTasksCompletion();
     }
@@ -190,5 +213,13 @@ public class EventLoopImpl implements EventLoop {
         if (closeListener != null) {
             closeListener.onClose(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "EventLoopImpl {" +
+                "id='" + id + '\'' +
+                ", bulkMode=" + bulkMode +
+                '}';
     }
 }

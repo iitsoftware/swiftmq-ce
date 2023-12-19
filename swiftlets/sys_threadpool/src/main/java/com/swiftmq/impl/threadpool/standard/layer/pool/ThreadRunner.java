@@ -18,12 +18,14 @@
 package com.swiftmq.impl.threadpool.standard.layer.pool;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
-public interface ThreadPool {
+public interface ThreadRunner {
     CompletableFuture<?> execute(Runnable task);
 
-    Executor asExecutor();
+    int getActiveThreadCount();
 
     void shutdown();
+
+    void shutdown(long timeout, TimeUnit unit);
 }

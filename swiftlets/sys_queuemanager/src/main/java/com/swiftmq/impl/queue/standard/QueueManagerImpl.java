@@ -61,9 +61,6 @@ public class QueueManagerImpl extends QueueManager
     public static final String DLQ = "routerdlq";
     public static final String CLUSTER_TOPIC = "swiftmq.cluster";
 
-    public static final String TP_TIMEOUTPROC = "sys$queuemanager.timeoutprocessor";
-    public static final String TP_CLUSTER = "sys$queuemanager.cluster.subscriber";
-    public static final String TP_REDISPATCHER = "sys$queuemanager.cluster.redispatcher";
     public static final int[] VERSIONS = {700};
 
     public static final String PROP_LOG_EXPIRED = "log-expired-messages";

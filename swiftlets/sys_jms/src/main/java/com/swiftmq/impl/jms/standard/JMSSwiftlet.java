@@ -560,7 +560,7 @@ public class JMSSwiftlet extends Swiftlet implements TimerListener, MgmtListener
             myCtx.usageList.removeDynamicEntity(connection);
             versionSelector.close();
             connections.remove(connection);
-            if (shutdownSem.get() != null && connections.size() == 0)
+            if (shutdownSem.get() != null && connections.isEmpty())
                 shutdownSem.get().notifySingleWaiter();
         }
         if (myCtx.traceSpace.enabled) myCtx.traceSpace.trace(getName(), "doDisconnect: " + connection + ", DONE.");
