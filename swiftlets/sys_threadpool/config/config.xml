@@ -79,13 +79,13 @@
                       type="java.lang.Boolean"
                       display="Virtual"
                       description="Uses a Virtual Threads for this Event Loop, otherwise a Platform Thread"
-                      default="false"
+                      default="true"
                       read-only="true"/>
             <property name="bulk-mode"
                       type="java.lang.Boolean"
                       display="Bulk Mode"
-                      description="Consumes all events in bulk mode, otherwise one per iteration"
-                      default="true"
+                      description="Consumes all available events or a single event in one iteration"
+                      default="false"
                       read-only="true"/>
           </entitytemplate>
         </entitylist>

@@ -93,6 +93,6 @@ public class SwiftletContext {
         logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", running on GraalVM: " + ISGRAAL);
         if (ISGRAAL)
             logSwiftlet.logInformation(streamsSwiftlet.getName(), "GraalVM Version: " + Version.getCurrent());
-        eventLoopMUX = new EventLoopMUX(this, "sys§streams.processor", 4);
+        eventLoopMUX = new EventLoopMUX(this, "sys$streams.processor", (int) config.getProperty("shared-event-loops").getValue());
     }
 }

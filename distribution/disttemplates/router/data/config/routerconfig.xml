@@ -256,14 +256,14 @@
     <groups>
       <group name="network">
         <eventloops>
-          <eventloop name="sys$jms.connection.inbound" virtual="true"/>
-          <eventloop name="sys$jms.connection.outbound" virtual="true"/>
+          <eventloop name="sys$jms.connection.inbound"/>
+          <eventloop name="sys$jms.connection.outbound"/>
         </eventloops>
       </group>
       <group name="processing">
         <eventloops>
-          <eventloop name="sys$jms.session" virtual="true"/>
-          <eventloop name="sys$streams.processor"/>
+          <eventloop name="sys$jms.session"/>
+          <eventloop name="sys$streams.processor" virtual="false"/>
         </eventloops>
       </group>
       <group name="store">

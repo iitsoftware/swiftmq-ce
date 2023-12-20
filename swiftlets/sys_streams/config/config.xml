@@ -22,6 +22,12 @@
               description="Hot deploy directory for external jar files used from a stream"
               default="../data/streamlib"
               reboot-required="true"/>
+    <property name="shared-event-loops"
+              type="java.lang.Integer"
+              display="Number Shared Event Loops"
+              description="Shared from all Streams"
+              min="2"
+              default="4"/>
     <entitylist name="domains"
                 display="Domains"
                 description="Stream Domain Names">
