@@ -263,6 +263,7 @@
       <group name="processing">
         <eventloops>
           <eventloop name="sys$jms.session"/>
+          <eventloop name="sys$mgmt.dispatch"/>
           <eventloop name="sys$streams.processor" virtual="false"/>
         </eventloops>
       </group>
