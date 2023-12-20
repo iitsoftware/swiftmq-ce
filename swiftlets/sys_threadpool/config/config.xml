@@ -17,13 +17,6 @@
               description="The order in which the groups are being shut down"
               default=""
               reboot-required="true"/>
-    <property name="bounded-platform-thread-max"
-              type="java.lang.Integer"
-              display="Bounded Platform Max"
-              description="The maximum threads of the bounded platform thread pool"
-              min="1"
-              default="2"
-              reboot-required="true"/>
     <entitylist name="pools" display="Pools" description="Threadpool Definitions">
       <entitytemplate name="pool" display="Pool" description="Threadpool Definition">
         <property name="kernel-pool"
@@ -102,18 +95,18 @@
       <entitytemplate name="usage" display="Threads" description="Active Threads">
         <property name="01-platform"
                   type="java.lang.Integer"
-                  display="Platform Threads"
-                  description="Active Platform Threads"
+                  display="Platform Event Loops"
+                  description="Active Platform Event Loop Threads"
                   default="0"/>
         <property name="02-virtual"
                   type="java.lang.Integer"
-                  display="Virtual Threads"
-                  description="Active Virtual Threads"
+                  display="Virtual Event Loops"
+                  description="Active Virtual Event Loop Threads"
                   default="0"/>
         <property name="03-adhoc"
                   type="java.lang.Integer"
-                  display="Ad Hoc Threads"
-                  description="Active Ad Hoc Threads"
+                  display="Ad Hoc Virtual"
+                  description="Active Virtual Ad Hoc Threads"
                   default="0"/>
       </entitytemplate>
     </entitylist>

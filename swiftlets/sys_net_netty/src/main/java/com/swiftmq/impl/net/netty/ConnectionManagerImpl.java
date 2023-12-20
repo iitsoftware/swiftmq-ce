@@ -83,7 +83,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
             connection.setMarkedForClose();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$net", toString() + "/removeConnection: " + connection);
-            ctx.threadpoolSwiftlet.runAsyncVirtual(() -> {
+            ctx.threadpoolSwiftlet.runAsync(() -> {
                 deleteConnection(connection);
             });
         }

@@ -73,7 +73,7 @@ public class ClusterMetricSubscriber extends MessageProcessor {
             }
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/received: " + msg);
-            ctx.threadpoolSwiftlet.runAsyncVirtual(this);
+            ctx.threadpoolSwiftlet.runAsync(this);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/exception occurred: " + e + ", EXITING!");

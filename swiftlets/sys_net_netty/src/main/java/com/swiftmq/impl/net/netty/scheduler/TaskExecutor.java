@@ -36,7 +36,7 @@ public class TaskExecutor implements Executor {
 
     @Override
     public void execute(Runnable task) {
-        ctx.threadpoolSwiftlet.runAsyncVirtual(task);
+        ctx.threadpoolSwiftlet.runAsync(task);
     }
 
 }

@@ -30,6 +30,7 @@ import com.swiftmq.tools.pipeline.POObject;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StreamProcessor implements POStreamVisitor {
     StreamContext ctx;
@@ -38,10 +39,12 @@ public class StreamProcessor implements POStreamVisitor {
     int msgsProcessed = 0;
     int totalMsg = 0;
     int timeOnMessage = 0;
+    AtomicInteger muxId = new AtomicInteger();
 
     public StreamProcessor(StreamContext ctx, StreamController controller) {
         this.ctx = ctx;
         this.controller = controller;
+        this.muxId.set(ctx.ctx.eventLoopMUX.register(event -> ((POObject) event).accept(StreamProcessor.this)));
     }
 
     public void dispatch(POObject po) {
@@ -49,7 +52,11 @@ public class StreamProcessor implements POStreamVisitor {
             if (po.getSemaphore() != null)
                 po.getSemaphore().notifySingleWaiter();
         } else
-            ctx.ctx.threadpoolSwiftlet.runAsyncPlatform(() -> po.accept(this));
+            ctx.ctx.eventLoopMUX.submit(this.muxId.get(), po);
+    }
+
+    public void close() {
+        ctx.ctx.eventLoopMUX.unregister(muxId.get());
     }
 
     private void handleException(POObject po, Exception e) {

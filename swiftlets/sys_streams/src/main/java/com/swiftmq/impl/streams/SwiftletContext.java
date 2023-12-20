@@ -17,6 +17,7 @@
 
 package com.swiftmq.impl.streams;
 
+import com.swiftmq.impl.streams.processor.EventLoopMUX;
 import com.swiftmq.mgmt.Configuration;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
@@ -59,6 +60,7 @@ public class SwiftletContext {
     public boolean ISGRAAL = false;
     public boolean HASENGINE = false;
     public int JAVAVERSION = 0;
+    public EventLoopMUX eventLoopMUX;
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
@@ -91,5 +93,6 @@ public class SwiftletContext {
         logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", running on GraalVM: " + ISGRAAL);
         if (ISGRAAL)
             logSwiftlet.logInformation(streamsSwiftlet.getName(), "GraalVM Version: " + Version.getCurrent());
+        eventLoopMUX = new EventLoopMUX(this, "sys§streams.processor", 4);
     }
 }

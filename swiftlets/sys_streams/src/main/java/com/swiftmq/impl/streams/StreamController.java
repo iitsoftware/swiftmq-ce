@@ -191,6 +191,7 @@ public class StreamController {
             Semaphore sem = new Semaphore();
             streamContext.streamProcessor.dispatch(new POClose(sem));
             sem.waitHere(5000);
+            streamContext.streamProcessor.close();
             try {
                 ctx.usageList.removeEntity(streamContext.usage);
             } catch (EntityRemoveException e) {

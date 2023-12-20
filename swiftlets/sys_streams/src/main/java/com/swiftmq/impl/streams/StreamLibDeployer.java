@@ -54,7 +54,7 @@ public class StreamLibDeployer extends MessageProcessor {
 
     public void processMessage(MessageEntry entry) {
         this.entry = entry;
-        ctx.threadpoolSwiftlet.runAsyncVirtual(this);
+        ctx.threadpoolSwiftlet.runAsync(this);
     }
 
     public void processException(Exception e) {

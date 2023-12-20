@@ -79,7 +79,7 @@ public class Redispatcher extends MessageProcessor {
 
     public void processMessage(MessageEntry messageEntry) {
         message = messageEntry.getMessage();
-        ctx.threadpoolSwiftlet.runAsyncVirtual(this);
+        ctx.threadpoolSwiftlet.runAsync(this);
     }
 
     public void run() {
