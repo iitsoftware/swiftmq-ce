@@ -11,17 +11,18 @@
               display="Collect Interval"
               description="Interval for collecting the Thread Counts per Pool"
               default="1000"/>
-    <property name="adhoc-runner-virtual"
-              type="java.lang.Boolean"
-              display="Virtual Ad Hoc Thread Runner"
-              description="Uses Virtual Threads for ad hoc Tasks"
-              default="true"
-              reboot-required="true"/>
     <property name="group-shutdown-order"
               type="java.lang.String"
               display="Shutdown Order"
               description="The order in which the groups are being shut down"
               default=""
+              reboot-required="true"/>
+    <property name="bounded-platform-thread-max"
+              type="java.lang.Integer"
+              display="Bounded Platform Max"
+              description="The maximum threads of the bounded platform thread pool"
+              min="1"
+              default="2"
               reboot-required="true"/>
     <entitylist name="pools" display="Pools" description="Threadpool Definitions">
       <entitytemplate name="pool" display="Pool" description="Threadpool Definition">
@@ -86,6 +87,12 @@
                       display="Virtual"
                       description="Uses a Virtual Threads for this Event Loop, otherwise a Platform Thread"
                       default="false"
+                      read-only="true"/>
+            <property name="bulk-mode"
+                      type="java.lang.Boolean"
+                      display="Bulk Mode"
+                      description="Consumes all events in bulk mode, otherwise one per iteration"
+                      default="true"
                       read-only="true"/>
           </entitytemplate>
         </entitylist>

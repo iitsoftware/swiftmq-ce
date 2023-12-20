@@ -66,7 +66,7 @@ public abstract class Session extends SessionVisitor
         ctx.tracePrefix = connectionTracePrefix + "/" + this;
         ctx.activeLogin = activeLogin;
         ctx.sessionEntity = sessionEntity;
-        ctx.sessionLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.session", this, true);
+        ctx.sessionLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.session", this);
         ctx.outboundLoop = outboundLoop;
     }
 

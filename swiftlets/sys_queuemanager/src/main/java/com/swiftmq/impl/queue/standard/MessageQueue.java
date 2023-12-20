@@ -2537,7 +2537,7 @@ public class MessageQueue extends AbstractQueue {
         }
 
         public void performTimeAction() {
-            ctx.threadpoolSwiftlet.runAsync(this);
+            ctx.threadpoolSwiftlet.runAsyncVirtual(this);
         }
 
         public void run() {

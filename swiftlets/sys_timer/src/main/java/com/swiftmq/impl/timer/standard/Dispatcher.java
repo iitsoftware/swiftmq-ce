@@ -107,7 +107,7 @@ class Dispatcher implements Runnable {
                         } else if (task.time.get() <= actTime) {
                             if (ctx.traceSpace.enabled)
                                 ctx.traceSpace.trace("sys$timer", "Dispatcher, dispatching, nextTask=" + task);
-                            ctx.threadpoolSwiftlet.runAsync(task);
+                            ctx.threadpoolSwiftlet.runAsyncVirtual(task);
                             iter.remove();
                         } else {
                             if (task.base.get() > actTime) {

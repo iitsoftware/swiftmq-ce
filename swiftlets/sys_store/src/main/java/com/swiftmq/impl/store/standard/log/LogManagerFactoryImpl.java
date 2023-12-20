@@ -24,7 +24,7 @@ public class LogManagerFactoryImpl implements LogManagerFactory {
 
     public LogManager createLogManager(StoreContext ctx, CheckPointHandler checkPointHandler, String path, long maxLogSize, boolean forceSync) throws Exception {
         LogManagerEventProcessor logManager = new LogManagerEventProcessor(ctx, checkPointHandler, path, maxLogSize, forceSync);
-        ctx.logManagerEventLoop = ctx.threadpoolSwiftlet.createEventLoop(LAYER, logManager, true);
+        ctx.logManagerEventLoop = ctx.threadpoolSwiftlet.createEventLoop(LAYER, logManager);
         return logManager;
     }
 }

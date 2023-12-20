@@ -28,9 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class GroupRegistry {
     private static final String DEFAULT_LAYER_ID = "default";
@@ -38,7 +36,7 @@ public class GroupRegistry {
     private final Map<String, Group> groups;
     private final EntityList groupList;
     private EntityListEventAdapter groupAdapter = null;
-    private final ThreadRunner platformThreadRunner = new PlatformThreadRunner();
+    private final ThreadRunner platformThreadRunner = new PlatformThreadRunner((ThreadPoolExecutor) Executors.newCachedThreadPool());
     private final ThreadRunner virtualThreadRunner = new VirtualThreadRunner();
     private final Map<String, LoopData> eventLoopConfig = new ConcurrentHashMap<>();
     private final String tracePrefix;
@@ -61,7 +59,7 @@ public class GroupRegistry {
                     EntityListEventAdapter loopAdapter = new EntityListEventAdapter((EntityList) newEntity.getEntity("eventloops"), true, true) {
                         @Override
                         public void onEntityAdd(Entity parent, Entity newEntity) {
-                            eventLoopConfig.put(newEntity.getName(), new LoopData((Boolean) newEntity.getProperty("virtual").getValue(), groupName));
+                            eventLoopConfig.put(newEntity.getName(), new LoopData((Boolean) newEntity.getProperty("virtual").getValue(), (Boolean) newEntity.getProperty("bulk-mode").getValue(), groupName));
                         }
 
                         @Override
@@ -128,6 +126,13 @@ public class GroupRegistry {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(tracePrefix, this + "/getGroup, loopName=" + loopName + " returns=" + groupName);
         return groups.get(groupName);
+    }
+
+    public boolean isBulkMode(String loopName) {
+        boolean bulkMode = true;
+        if (eventLoopConfig.get(loopName) != null)
+            bulkMode = eventLoopConfig.get(loopName).bulkMode();
+        return bulkMode;
     }
 
     public int platformThreads() {
@@ -216,7 +221,7 @@ public class GroupRegistry {
         return "GroupRegistry";
     }
 
-    private record LoopData(boolean virtual, String group) {
+    private record LoopData(boolean virtual, boolean bulkMode, String group) {
     }
 
     ;

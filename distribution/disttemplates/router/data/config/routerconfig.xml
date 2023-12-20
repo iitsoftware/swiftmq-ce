@@ -252,7 +252,25 @@
 
   <!--  Threadpool Swiftlet, Release: ${release}  -->
 
-  <swiftlet name="sys$threadpool">
+  <swiftlet name="sys$threadpool" group-shutdown-order="default network processing store">
+    <groups>
+      <group name="network">
+        <eventloops>
+          <eventloop name="sys$jms.connection.inbound" virtual="true"/>
+          <eventloop name="sys$jms.connection.outbound" virtual="true"/>
+        </eventloops>
+      </group>
+      <group name="processing">
+        <eventloops>
+          <eventloop name="sys$jms.session" virtual="true"/>
+        </eventloops>
+      </group>
+      <group name="store">
+        <eventloops>
+          <eventloop name="sys$store.log"/>
+        </eventloops>
+      </group>
+    </groups>
     <pools>
       <pool name="amqp.connection" kernel-pool="true" max-threads="5" min-threads="1">
         <threads>
@@ -263,26 +281,6 @@
         <threads>
           <thread name="sys$amqp.sasl.service"/>
           <thread name="sys$amqp.session.service"/>
-        </threads>
-      </pool>
-      <pool name="jms.connection" kernel-pool="true" max-threads="5" min-threads="5">
-        <threads>
-          <thread name="sys$jms.connection.service"/>
-        </threads>
-      </pool>
-      <pool name="jms.ivm.client.connection" kernel-pool="true" max-threads="10">
-        <threads>
-          <thread name="sys$jms.client.connection.%"/>
-        </threads>
-      </pool>
-      <pool name="jms.ivm.client.session" kernel-pool="true" max-threads="10">
-        <threads>
-          <thread name="sys$jms.client.session.%"/>
-        </threads>
-      </pool>
-      <pool name="jms.session" kernel-pool="true" max-threads="10" min-threads="1">
-        <threads>
-          <thread name="sys$jms.session.service"/>
         </threads>
       </pool>
       <pool name="jndi" kernel-pool="true" max-threads="1" min-threads="1">
@@ -298,31 +296,6 @@
       <pool name="mqtt.connection" kernel-pool="true" max-threads="10">
         <threads>
           <thread name="sys$mqtt.connection.service"/>
-        </threads>
-      </pool>
-      <pool name="net.connection" kernel-pool="true">
-        <threads>
-          <thread name="sys$net.connection.handler"/>
-        </threads>
-      </pool>
-      <pool name="net.connection.mgr" kernel-pool="true" max-threads="1">
-        <threads>
-          <thread name="sys$net.connection.mgr"/>
-        </threads>
-      </pool>
-      <pool name="queue.cluster" kernel-pool="true" max-threads="1">
-        <threads>
-          <thread name="sys$queuemanager.cluster.subscriber"/>
-        </threads>
-      </pool>
-      <pool name="queue.redispatcher" kernel-pool="true" max-threads="1">
-        <threads>
-          <thread name="sys$queuemanager.cluster.redispatcher"/>
-        </threads>
-      </pool>
-      <pool name="queue.timeout" kernel-pool="true" max-threads="1" min-threads="1">
-        <threads>
-          <thread name="sys$queuemanager.timeoutprocessor"/>
         </threads>
       </pool>
       <pool name="routing.connection.mgr" kernel-pool="true" max-threads="1">
@@ -359,26 +332,6 @@
         <threads>
           <thread name="sys$scheduler.requestprocessor"/>
           <thread name="sys$scheduler.scheduler"/>
-        </threads>
-      </pool>
-      <pool name="store.log" kernel-pool="true" max-threads="1" min-threads="1">
-        <threads>
-          <thread name="sys$store.logmanager"/>
-        </threads>
-      </pool>
-      <pool name="streams.processor"  max-threads="10" kernel-pool="true">
-        <threads>
-          <thread name="sys$streams.stream.processor"/>
-        </threads>
-      </pool>
-      <pool name="timer.dispatcher" kernel-pool="true" max-threads="1" min-threads="1">
-        <threads>
-          <thread name="sys$timer.dispatcher"/>
-        </threads>
-      </pool>
-      <pool name="timer.tasks" kernel-pool="true" max-threads="5" min-threads="3">
-        <threads>
-          <thread name="sys$timer.task"/>
         </threads>
       </pool>
       <pool name="topic" kernel-pool="true" max-threads="2">

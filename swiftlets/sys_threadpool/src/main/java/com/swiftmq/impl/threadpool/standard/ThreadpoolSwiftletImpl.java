@@ -37,9 +37,7 @@ import com.swiftmq.tools.sql.LikeComparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -56,7 +54,8 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     Map<String, ThreadPool> pools = new ConcurrentHashMap<>();
     Map<String, String> threadNameMaps = new ConcurrentHashMap<>();
     GroupRegistry groupRegistry = null;
-    ThreadRunner adHocThreadRunner = null;
+    ThreadRunner adHocVirtualThreadRunner = null;
+    ThreadRunner adHocPlatformThreadRunner = null;
 
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
@@ -80,13 +79,18 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     }
 
     @Override
-    public CompletableFuture<?> runAsync(Runnable runnable) {
-        return adHocThreadRunner.execute(runnable);
+    public CompletableFuture<?> runAsyncVirtual(Runnable runnable) {
+        return adHocVirtualThreadRunner.execute(runnable);
     }
 
     @Override
-    public EventLoop createEventLoop(String id, EventProcessor eventProcessor, boolean bulkMode) {
-        EventLoopImpl eventLoop = new EventLoopImpl(id, bulkMode, eventProcessor, groupRegistry.threadRunnerForEventLoop(id));
+    public CompletableFuture<?> runAsyncPlatform(Runnable runnable) {
+        return adHocPlatformThreadRunner.execute(runnable);
+    }
+
+    @Override
+    public EventLoop createEventLoop(String id, EventProcessor eventProcessor) {
+        EventLoopImpl eventLoop = new EventLoopImpl(id, groupRegistry.isBulkMode(id), eventProcessor, groupRegistry.threadRunnerForEventLoop(id));
         groupRegistry.getGroup(id).addEventLoop(eventLoop);
         return eventLoop;
     }
@@ -111,7 +115,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         try {
             Integer platformRunningCount = groupRegistry.platformThreads();
             Integer virtualRunningCount = groupRegistry.virtualThreads();
-            Integer adHocRunningCount = adHocThreadRunner.getActiveThreadCount();
+            Integer adHocRunningCount = adHocVirtualThreadRunner.getActiveThreadCount();
             Property prop = ctx.usage.getProperty(PROP_PLATFORM_THREADS);
             Integer oldValue = (Integer) prop.getValue();
             if (!Objects.equals(oldValue, platformRunningCount)) {
@@ -266,7 +270,14 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
 
         groupRegistry = new GroupRegistry(ctx);
-        adHocThreadRunner = ((Boolean) ctx.config.getProperty("adhoc-runner-virtual").getValue()) ? new VirtualThreadRunner() : new PlatformThreadRunner();
+        adHocVirtualThreadRunner = new VirtualThreadRunner();
+        adHocPlatformThreadRunner = new PlatformThreadRunner(new ThreadPoolExecutor(
+                0,
+                (Integer) ctx.config.getProperty("bounded-platform-thread-max").getValue(),
+                60,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>()
+        ));
 
         EntityList poolList = (EntityList) ctx.config.getEntity("pools");
         createPool(DEFAULT_POOL, null, poolList.getTemplate());
@@ -367,10 +378,13 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         }
         pools.clear();
         threadNameMaps.clear();
+        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocVirtualThreadRunner shutdown");
+        adHocVirtualThreadRunner.shutdown(10, TimeUnit.SECONDS);
+        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocVirtualThreadRunner shutdown done");
+        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocPlatformThreadRunner shutdown");
+        adHocPlatformThreadRunner.shutdown(10, TimeUnit.SECONDS);
+        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocPlatformThreadRunner shutdown done");
         groupRegistry.close();
-        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocThreadRunner shutdown");
-        adHocThreadRunner.shutdown(10, TimeUnit.SECONDS);
-        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocThreadRunner shutdown done");
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: done.");
     }
 }

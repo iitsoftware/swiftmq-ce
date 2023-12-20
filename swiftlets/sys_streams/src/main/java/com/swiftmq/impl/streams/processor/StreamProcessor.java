@@ -24,17 +24,16 @@ import com.swiftmq.impl.streams.comp.io.ManagementInput;
 import com.swiftmq.impl.streams.comp.io.QueueWireTapInput;
 import com.swiftmq.impl.streams.comp.message.Message;
 import com.swiftmq.impl.streams.processor.po.*;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StreamProcessor implements POStreamVisitor {
-    static final String TP_DISPATCH = "sys$streams.stream.processor";
     StreamContext ctx;
     StreamController controller;
-    PipelineQueue pipelineQueue = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
     int msgsProcessed = 0;
     int totalMsg = 0;
@@ -43,7 +42,6 @@ public class StreamProcessor implements POStreamVisitor {
     public StreamProcessor(StreamContext ctx, StreamController controller) {
         this.ctx = ctx;
         this.controller = controller;
-        pipelineQueue = new PipelineQueue(ctx.ctx.threadpoolSwiftlet.getPool(TP_DISPATCH), TP_DISPATCH, this);
     }
 
     public void dispatch(POObject po) {
@@ -51,7 +49,7 @@ public class StreamProcessor implements POStreamVisitor {
             if (po.getSemaphore() != null)
                 po.getSemaphore().notifySingleWaiter();
         } else
-            pipelineQueue.enqueue(po);
+            ctx.ctx.threadpoolSwiftlet.runAsyncPlatform(() -> po.accept(this));
     }
 
     private void handleException(POObject po, Exception e) {
@@ -287,5 +285,12 @@ public class StreamProcessor implements POStreamVisitor {
         StringBuilder sb = new StringBuilder("StreamProcessor, name=");
         sb.append(ctx.entity.getName());
         return sb.toString();
+    }
+
+    private class Processor implements EventProcessor {
+        @Override
+        public void process(List<Object> events) {
+            events.forEach(e -> ((POObject) e).accept(StreamProcessor.this));
+        }
     }
 }

@@ -105,7 +105,7 @@ public class JMSConnection
 
         myTp = ctx.threadpoolSwiftlet.getPool(JMSSwiftlet.TP_CONNSVC);
 
-        inboundLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.connection.inbound", this, true);
+        inboundLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.connection.inbound", this);
         if (keepAliveInterval > 0) {
             ctx.timerSwiftlet.addTimerListener(keepAliveInterval, inboundReader);
             ctx.timerSwiftlet.addTimerListener(keepAliveInterval, outboundWriter);

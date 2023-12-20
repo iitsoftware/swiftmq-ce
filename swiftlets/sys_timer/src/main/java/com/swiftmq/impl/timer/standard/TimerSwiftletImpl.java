@@ -65,7 +65,7 @@ public class TimerSwiftletImpl extends TimerSwiftlet {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup, ...");
         Property prop = config.getProperty("min-delay");
         ctx.dispatcher.setMinDelay((Long) prop.getValue());
-        ctx.threadpoolSwiftlet.runAsync(ctx.dispatcher);
+        ctx.threadpoolSwiftlet.runAsyncVirtual(ctx.dispatcher);
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue) {
                 ctx.dispatcher.setMinDelay((Long) newValue);

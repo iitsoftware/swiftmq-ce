@@ -18,15 +18,14 @@
 package com.swiftmq.impl.threadpool.standard.group.pool;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class PlatformThreadRunner implements ThreadRunner {
     private final ThreadPoolExecutor executor;
 
-    public PlatformThreadRunner() {
-        this.executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+    public PlatformThreadRunner(ThreadPoolExecutor threadPoolExecutor) {
+        this.executor = threadPoolExecutor;
     }
 
     public CompletableFuture<?> execute(Runnable task) {
@@ -43,7 +42,7 @@ public class PlatformThreadRunner implements ThreadRunner {
             if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                    System.err.println("PlatformThreadPool did not terminate");
+                    System.err.println("PlatformThreadRunner did not terminate");
                 }
             }
         } catch (InterruptedException ie) {

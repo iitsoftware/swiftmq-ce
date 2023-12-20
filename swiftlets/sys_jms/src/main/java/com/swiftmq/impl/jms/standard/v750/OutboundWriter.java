@@ -62,7 +62,7 @@ public class OutboundWriter
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
         traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
         traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
-        eventLoop = threadpoolSwiftlet.createEventLoop("sys$jms.connection.outbound", new Processor(), true);
+        eventLoop = threadpoolSwiftlet.createEventLoop("sys$jms.connection.outbound", new Processor());
     }
 
     public EventLoop getEventLoop() {
