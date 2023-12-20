@@ -15,7 +15,7 @@
  *
  */
 
-package com.swiftmq.impl.threadpool.standard.layer.pool;
+package com.swiftmq.impl.threadpool.standard.group.pool;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;

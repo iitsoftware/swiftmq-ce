@@ -17,6 +17,12 @@
               description="Uses Virtual Threads for ad hoc Tasks"
               default="true"
               reboot-required="true"/>
+    <property name="group-shutdown-order"
+              type="java.lang.String"
+              display="Shutdown Order"
+              description="The order in which the groups are being shut down"
+              default=""
+              reboot-required="true"/>
     <entitylist name="pools" display="Pools" description="Threadpool Definitions">
       <entitytemplate name="pool" display="Pool" description="Threadpool Definition">
         <property name="kernel-pool"
@@ -71,15 +77,8 @@
         </entitylist>
       </entitytemplate>
     </entitylist>
-    <entitylist name="layers" display="Layers" description="Thread Layers">
-      <entitytemplate name="layer" display="Pool" description="Thread Layer Definition">
-        <property name="priority"
-                  type="java.lang.Integer"
-                  display="Stop/Start Priority"
-                  description="Stops/Starts this Layer according to this Priority (Stop: Lowest first, Start: Highest first)"
-                  min="1"
-                  default="1"
-                  reboot-required="true"/>
+    <entitylist name="groups" display="Groups" description="Event Loop Groups">
+      <entitytemplate name="group" display="Group" description="Event Loop Group Definition">
         <entitylist name="eventloops" display="Event Loops" description="Event Loop Assignments">
           <entitytemplate name="eventloop" display="Event Loop" description="Name of the Event Loop">
             <property name="virtual"

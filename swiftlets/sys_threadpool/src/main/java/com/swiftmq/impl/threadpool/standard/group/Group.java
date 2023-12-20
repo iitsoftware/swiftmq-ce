@@ -15,7 +15,7 @@
  *
  */
 
-package com.swiftmq.impl.threadpool.standard.layer;
+package com.swiftmq.impl.threadpool.standard.group;
 
 import com.swiftmq.tools.collection.ConcurrentList;
 
@@ -24,23 +24,17 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-public class Layer {
-    private final String identifier;
-    private final int priority;
+public class Group {
+    private final String name;
     private final List<EventLoopImpl> eventLoops;
 
-    public Layer(String identifier, int priority) {
-        this.identifier = identifier;
-        this.priority = priority;
+    public Group(String name) {
+        this.name = name;
         this.eventLoops = new ConcurrentList<>(new ArrayList<>());
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public int getPriority() {
-        return priority;
+    public String getName() {
+        return name;
     }
 
     public void addEventLoop(EventLoopImpl eventLoop) {
@@ -52,11 +46,7 @@ public class Layer {
         eventLoops.remove(eventLoop);
     }
 
-    public int size() {
-        return eventLoops.size();
-    }
-
-    public CompletableFuture<Void> freezeLayer() {
+    public CompletableFuture<Void> freezeGroup() {
         // Future to indicate completion of freezing all EventLoops in the layer
         CompletableFuture<Void> allFrozen = new CompletableFuture<>();
         List<Future<Void>> freezeFutures = new ArrayList<>();
@@ -71,22 +61,24 @@ public class Layer {
         return allFrozen;
     }
 
-    public void unfreezeLayer() {
+    public void unfreezeGroup() {
         for (EventLoopImpl loop : eventLoops) {
             loop.unfreeze();
         }
     }
 
-    public void close() {
+    private void shutdownLoops() {
         for (EventLoopImpl loop : eventLoops) {
             loop.close();
         }
     }
 
+    public void close() {
+        shutdownLoops();
+    }
+
     @Override
     public String toString() {
-        return "Layer" +
-                " identifier=" + identifier +
-                ", priority=" + priority;
+        return "Group" + " name=" + name;
     }
 }

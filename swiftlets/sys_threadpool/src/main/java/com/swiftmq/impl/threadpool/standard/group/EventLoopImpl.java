@@ -15,9 +15,9 @@
  *
  */
 
-package com.swiftmq.impl.threadpool.standard.layer;
+package com.swiftmq.impl.threadpool.standard.group;
 
-import com.swiftmq.impl.threadpool.standard.layer.pool.ThreadRunner;
+import com.swiftmq.impl.threadpool.standard.group.pool.ThreadRunner;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.collection.ConcurrentList;

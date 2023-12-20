@@ -15,17 +15,9 @@
  *
  */
 
-package com.swiftmq.impl.threadpool.standard.layer.pool;
+package com.swiftmq.impl.threadpool.standard.group;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-public interface ThreadRunner {
-    CompletableFuture<?> execute(Runnable task);
-
-    int getActiveThreadCount();
-
-    void shutdown();
-
-    void shutdown(long timeout, TimeUnit unit);
+@FunctionalInterface
+public interface CloseListener {
+    void onClose(EventLoopImpl eventLoop);
 }
