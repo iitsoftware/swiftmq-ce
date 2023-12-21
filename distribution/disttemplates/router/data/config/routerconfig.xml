@@ -263,14 +263,13 @@
       </group>
       <group name="swiftlet">
         <eventloops>
-          <eventloop name="sys$amqp.sasl.service"/>
-          <eventloop name="sys$amqp.session.service"/>
           <eventloop name="sys$mgmt.dispatch" virtual="false"/>
           <eventloop name="sys$topicmanager.announce"/>
         </eventloops>
       </group>
       <group name="processing">
         <eventloops>
+          <eventloop name="sys$amqp.sasl.service"/>
           <eventloop name="sys$amqp.session.service"/>
           <eventloop name="sys$jms.session"/>
           <eventloop name="sys$streams.processor" virtual="false"/>
@@ -282,7 +281,8 @@
         </eventloops>
       </group>
     </groups>
-    <pool name="mqtt.connection" kernel-pool="true" max-threads="10">
+    <pools>
+      <pool name="mqtt.connection" kernel-pool="true" max-threads="10">
         <threads>
           <thread name="sys$mqtt.connection.service"/>
         </threads>
