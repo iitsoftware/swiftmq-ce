@@ -134,7 +134,9 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
             usage.getProperty("username").setValue(activeLogin.getUserName());
         } catch (Exception e) {
         }
-        delegate.set(null);
+        Handler handler = delegate.getAndSet(null);
+        if (handler != null)
+            handler.close();
         protHandler.get().setProtHeaderExpected(saslFinished);
     }
 

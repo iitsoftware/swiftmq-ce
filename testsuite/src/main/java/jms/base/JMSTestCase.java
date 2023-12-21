@@ -42,6 +42,20 @@ public class JMSTestCase extends TestCase {
         System.out.println(getClass().getName());
     }
 
+    @Override
+    public void runBare() throws Throwable {
+        String fullName = this.getClass().getName() + "." + getName();
+        System.out.println("Starting test: " + fullName);
+        try {
+            super.runBare();
+            System.out.println("Test succeeded: " + fullName);
+        } catch (Throwable t) {
+            System.out.println("Test failed: " + fullName);
+            throw t;  // rethrow to allow the test framework to handle the failure
+        } finally {
+            System.out.println("Finished test: " + fullName);
+        }
+    }
     public InitialContext createInitialContext(String className, String url) {
         InitialContext ctx = null;
         try {

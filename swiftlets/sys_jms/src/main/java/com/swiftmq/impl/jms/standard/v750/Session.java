@@ -33,6 +33,7 @@ import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.tools.collection.ConcurrentExpandableList;
 import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
@@ -43,8 +44,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Session extends SessionVisitor
         implements RequestService, EventProcessor {
-    protected ExpandableList<Consumer> consumerList = new ExpandableList<>();
-    protected ExpandableList<Producer> producerList = new ExpandableList<>();
+    protected ExpandableList<Consumer> consumerList = new ConcurrentExpandableList<>();
+    protected ExpandableList<Producer> producerList = new ConcurrentExpandableList<>();
     protected SessionContext ctx = null;
     protected int dispatchId;
     protected int recoveryEpoche = 0;
