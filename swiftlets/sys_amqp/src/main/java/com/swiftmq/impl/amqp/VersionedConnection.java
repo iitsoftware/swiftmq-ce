@@ -39,9 +39,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHandler, com.swiftmq.net.client.InboundHandler, OutboundHandler {
-    public static final String TP_CONNECTIONSVC = "sys$amqp.connection.service";
-    public static final String TP_SESSIONSVC = "sys$amqp.session.service";
-
     SwiftletContext ctx = null;
     Entity usage = null;
     Entity connectionTemplate = null;
@@ -63,8 +60,7 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
         this.usage = usage;
         this.requiresSasl = requiresSasl;
         this.connectionTemplate = connectionTemplate;
-        outboundQueue = new OutboundQueue(ctx, ctx.threadpoolSwiftlet.getPool(TP_CONNECTIONSVC), this);
-        outboundQueue.startQueue();
+        outboundQueue = new OutboundQueue(ctx, this);
     }
 
     public Entity getUsage() {
@@ -230,7 +226,7 @@ public class VersionedConnection implements com.swiftmq.swiftlet.net.InboundHand
         if (handler != null) {
             handler.close();
         }
-        outboundQueue.stopQueue();
+        outboundQueue.close();
     }
 
     public String toString() {

@@ -32,7 +32,8 @@ import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.swiftlet.routing.Route;
 import com.swiftmq.swiftlet.routing.event.RoutingEvent;
 import com.swiftmq.swiftlet.routing.event.RoutingListener;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.versioning.*;
 import com.swiftmq.tools.versioning.event.VersionedListener;
@@ -44,22 +45,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TopicAnnounceSender
         implements POAnnounceSenderVisitor, RoutingListener, EntityWatchListener {
-    static final String TP_TOPICANNOUNCER = "sys$topicmanager.topic.announcer";
     TopicManagerContext ctx = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
-    PipelineQueue pipelineQueue = null;
     Map<String, RemoteTopicManager> rtmList = new HashMap<>();
     Map<String, AnnounceSubscription> announceSubs = new HashMap<>();
     DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
     TopicInfoFactory factory = new TopicInfoFactory();
     TopicInfoConverter converter = new TopicInfoConverter();
     AnnounceFilters announceFilters = null;
+    EventLoop eventLoop;
 
     public TopicAnnounceSender(TopicManagerContext ctx) {
         this.ctx = ctx;
         this.announceFilters = new AnnounceFilters(ctx);
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_TOPICANNOUNCER), TP_TOPICANNOUNCER, this);
-        pipelineQueue.stopQueue();
+        this.eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$topicmanager.announce", list -> {
+            for (Object event : list)
+                ((POObject) event).accept(TopicAnnounceSender.this);
+        });
         ctx.activeSubscriberList.addEntityWatchListener(this);
         ctx.announceSender = this;
     }
@@ -68,26 +70,26 @@ public class TopicAnnounceSender
     public void destinationAdded(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationAdded: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationAdded(ctx.routingSwiftlet.getRoute(event.getDestination())));
+        eventLoop.submit(new PODestinationAdded(ctx.routingSwiftlet.getRoute(event.getDestination())));
     }
 
     public void destinationActivated(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationActivated: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationActivated(event.getDestination()));
-        pipelineQueue.enqueue(new POVersionNoteToSend(event.getDestination()));
+        eventLoop.submit(new PODestinationActivated(event.getDestination()));
+        eventLoop.submit(new POVersionNoteToSend(event.getDestination()));
     }
 
     public void destinationDeactivated(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationDeactivated: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationDeactivated(event.getDestination()));
+        eventLoop.submit(new PODestinationDeactivated(event.getDestination()));
     }
 
     public void destinationRemoved(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationRemoved: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationRemoved(event.getDestination()));
+        eventLoop.submit(new PODestinationRemoved(event.getDestination()));
     }
     // <-- RoutingListener
 
@@ -97,7 +99,7 @@ public class TopicAnnounceSender
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/entityAdded: " + newEntity);
         Property prop = newEntity.getProperty("topic");
         String[] tokenized = ctx.topicManager.tokenizeTopicName((String) prop.getValue());
-        pipelineQueue.enqueue(new POSubscriptionAdded(tokenized[0]));
+        eventLoop.submit(new POSubscriptionAdded(tokenized[0]));
     }
 
     public void entityRemoved(Entity parent, Entity delEntity) {
@@ -105,55 +107,51 @@ public class TopicAnnounceSender
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/entityRemoved: " + delEntity);
         Property prop = delEntity.getProperty("topic");
         String[] tokenized = ctx.topicManager.tokenizeTopicName((String) prop.getValue());
-        pipelineQueue.enqueue(new POSubscriptionRemoved(tokenized[0]));
+        eventLoop.submit(new POSubscriptionRemoved(tokenized[0]));
     }
     // <-- EntityWatchListener
 
     // --> Exposed Methods
-    public void start() {
-        pipelineQueue.startQueue();
-    }
-
     public void versionNoteReceived(VersionNotification vn) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/versionNoteReceived: " + vn);
-        pipelineQueue.enqueue(new POVersionNoteReceived(vn));
+        eventLoop.submit(new POVersionNoteReceived(vn));
     }
 
     public void destinationAdded(Route route) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationAdded: " + route.getDestination());
-        pipelineQueue.enqueue(new PODestinationAdded(route));
+        eventLoop.submit(new PODestinationAdded(route));
         if (route.isActive()) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationAdded, activate: " + route.getDestination());
-            pipelineQueue.enqueue(new PODestinationActivated(route.getDestination()));
-            pipelineQueue.enqueue(new POVersionNoteToSend(route.getDestination()));
+            eventLoop.submit(new PODestinationActivated(route.getDestination()));
+            eventLoop.submit(new POVersionNoteToSend(route.getDestination()));
         }
     }
 
     public void routerRemoved(String routername) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/topicCreated: " + routername);
-        pipelineQueue.enqueue(new PODestinationRemoved(routername));
+        eventLoop.submit(new PODestinationRemoved(routername));
     }
 
     public void topicCreated(String topicName) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/topicCreated: " + topicName);
-        pipelineQueue.enqueue(new POTopicCreated(topicName));
+        eventLoop.submit(new POTopicCreated(topicName));
     }
 
     public void topicRemoved(String topicName) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/topicRemoved: " + topicName);
-        pipelineQueue.enqueue(new POTopicRemoved(topicName));
+        eventLoop.submit(new POTopicRemoved(topicName));
     }
 
     public void announceSubscriptions(TopicInfo remoteTI) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/announceSubscriptions: " + remoteTI);
-        pipelineQueue.enqueue(new POAnnounceSubscriptions(remoteTI));
+        eventLoop.submit(new POAnnounceSubscriptions(remoteTI));
     }
     // <-- Exposed Methods
 
@@ -483,7 +481,7 @@ public class TopicAnnounceSender
         if (closed.getAndSet(true))
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/close...");
-        pipelineQueue.close();
+        eventLoop.close();
         ctx.activeSubscriberList.removeEntityWatchListener(this);
         for (Map.Entry<String, RemoteTopicManager> entry : rtmList.entrySet()) {
             RemoteTopicManager rtm = entry.getValue();

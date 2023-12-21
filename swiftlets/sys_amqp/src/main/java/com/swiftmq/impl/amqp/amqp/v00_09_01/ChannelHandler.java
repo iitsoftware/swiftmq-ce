@@ -41,10 +41,11 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.AuthenticationException;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 import com.swiftmq.util.SwiftUtilities;
 
 import javax.jms.Destination;
@@ -58,7 +59,6 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     AMQPHandler amqpHandler;
     int channelNo = 0;
     VersionedConnection versionedConnection = null;
-    PipelineQueue pipelineQueue = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
     final AtomicBoolean closeInProgress = new AtomicBoolean(false);
     final AtomicBoolean channelDisabled = new AtomicBoolean(false);
@@ -82,13 +82,20 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     long deliveryCnt = 0;
     List<POSendMessages> waitingSends = new ArrayList<POSendMessages>();
     OutboundTransformer outboundTransformer = new BasicOutboundTransformer();
+    EventLoop eventLoop;
 
     public ChannelHandler(SwiftletContext ctx, AMQPHandler amqpHandler, int channelNo) {
         this.ctx = ctx;
         this.amqpHandler = amqpHandler;
         this.channelNo = channelNo;
         versionedConnection = amqpHandler.getVersionedConnection();
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(VersionedConnection.TP_SESSIONSVC), "ChannelHandler", this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.session.service", new EventProcessor() {
+            @Override
+            public void process(List<Object> list) {
+                for (Object event : list)
+                    ((POObject) event).accept(ChannelHandler.this);
+            }
+        });
     }
 
     public int getChannelNo() {
@@ -100,7 +107,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     }
 
     public void dispatch(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     private void handleMethodFrame(Frame frame) {
@@ -433,7 +440,6 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
             iter.remove();
         }
         closed.set(true);
-        pipelineQueue.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
@@ -452,6 +458,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
         Semaphore sem = new Semaphore();
         dispatch(new POCloseChannel(sem));
         sem.waitHere();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close done");
     }
 

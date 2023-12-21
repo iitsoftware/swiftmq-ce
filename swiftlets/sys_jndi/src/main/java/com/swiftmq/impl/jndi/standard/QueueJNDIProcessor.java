@@ -51,7 +51,7 @@ public class QueueJNDIProcessor extends MessageProcessor {
             msg = (BytesMessageImpl) messageEntry.getMessage();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: receiving request: " + msg);
-            ctx.myTP.dispatchTask(this);
+            ctx.threadpoolSwiftlet.runAsync(this);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "QueueJNDIProcessor: exception occurred: " + e + ", EXITING!");
@@ -66,7 +66,7 @@ public class QueueJNDIProcessor extends MessageProcessor {
     }
 
     public String getDispatchToken() {
-        return JNDISwiftletImpl.TP_LISTENER;
+        return "none";
     }
 
     public String getDescription() {

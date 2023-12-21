@@ -35,12 +35,12 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 import com.swiftmq.tools.util.LengthCaptureDataInput;
 
 import java.io.IOException;
@@ -57,7 +57,6 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     private static final String CAPABILITY_SELECTOR = "APACHE.ORG:SELECTOR";
     SwiftletContext ctx = null;
     VersionedConnection versionedConnection = null;
-    PipelineQueue pipelineQueue = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
     final AtomicBoolean closeInProgress = new AtomicBoolean(false);
     String hostname = null;
@@ -81,6 +80,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     final AtomicBoolean connectionDisabled = new AtomicBoolean(false);
     final AtomicBoolean opened = new AtomicBoolean(false);
     final AtomicBoolean apacheSelectors = new AtomicBoolean(false);
+    EventLoop eventLoop;
 
     public AMQPHandler(SwiftletContext ctx, VersionedConnection versionedConnection) {
         this.ctx = ctx;
@@ -101,7 +101,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
         }
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(VersionedConnection.TP_CONNECTIONSVC), "AMQPHandler", this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.connection.service", list -> list.forEach(e -> ((POObject) e).accept(AMQPHandler.this)));
         usage = versionedConnection.getUsage();
         if (!ctx.smartTree)
             sessionUsageList = (EntityList) usage.getEntity("sessions");
@@ -139,7 +139,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
     }
 
     public void dispatch(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     public void dataAvailable(LengthCaptureDataInput in) {
@@ -323,7 +323,6 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
         localChannels.clear();
         remoteChannels.clear();
         closed.set(true);
-        pipelineQueue.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
@@ -341,6 +340,7 @@ public class AMQPHandler extends FrameVisitorAdapter implements Handler, AMQPCon
         Semaphore sem = new Semaphore();
         dispatch(new POClose(sem));
         sem.waitHere();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close done");
     }
 

@@ -56,7 +56,7 @@ public class TopicJNDIProcessor extends MessageProcessor {
             msg.reset();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: receiving request: " + msg);
-            ctx.myTP.dispatchTask(this);
+            ctx.threadpoolSwiftlet.runAsync(this);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "TopicJNDIProcessor: exception occurred: " + e + ", EXITING!");
@@ -71,7 +71,7 @@ public class TopicJNDIProcessor extends MessageProcessor {
     }
 
     public String getDispatchToken() {
-        return JNDISwiftletImpl.TP_LISTENER;
+        return "none";
     }
 
     public String getDescription() {

@@ -22,7 +22,6 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.queue.QueueManager;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
@@ -34,7 +33,6 @@ public class SwiftletContext {
     public Entity root = null;
     public EntityList usageList = null;
     public ThreadpoolSwiftlet threadpoolSwiftlet = null;
-    public ThreadPool myTP = null;
     public QueueManager queueManager = null;
     public TopicManager topicManager = null;
     public TimerSwiftlet timerSwiftlet = null;

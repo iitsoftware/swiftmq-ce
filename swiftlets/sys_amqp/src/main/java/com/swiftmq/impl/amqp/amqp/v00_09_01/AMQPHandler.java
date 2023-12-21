@@ -35,12 +35,12 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.QueueException;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.util.LengthCaptureDataInput;
 import com.swiftmq.util.Version;
@@ -62,7 +62,6 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     SwiftletContext ctx = null;
     VersionedConnection versionedConnection = null;
     Entity connectionTemplate = null;
-    PipelineQueue pipelineQueue = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
     final AtomicBoolean closeInProgress = new AtomicBoolean(false);
     final AtomicBoolean closeFrameSent = new AtomicBoolean(false);
@@ -90,6 +89,7 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     TimerListener heartBeatSender = null;
     TimerListener idleTimeoutChecker = null;
     List<String> tempQueues = new ConcurrentList<>(new ArrayList<>());
+    EventLoop eventLoop;
 
     public AMQPHandler(SwiftletContext ctx, VersionedConnection versionedConnection) {
         this.ctx = ctx;
@@ -115,7 +115,9 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
         }
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(VersionedConnection.TP_CONNECTIONSVC), "AMQPHandler", this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.connection.service", list -> {
+            list.forEach(event -> ((POObject) event).accept(AMQPHandler.this));
+        });
         connectionTemplate = versionedConnection.getConnectionTemplate();
         maxLocalFrameSize = ((Long) connectionTemplate.getProperty("max-frame-size").getValue()).intValue();
         usage = versionedConnection.getUsage();
@@ -179,12 +181,12 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
                     if (!mname.equalsIgnoreCase("GSSAPI")) {
                         if (mname.endsWith(AnonServer.MECHNAME)) {
                             if (!(Boolean) authEnabled.getValue()) {
-                                if (b.length() > 0)
+                                if (!b.isEmpty())
                                     b.append(" ");
                                 b.append(mname);
                             }
                         } else {
-                            if (b.length() > 0)
+                            if (!b.isEmpty())
                                 b.append(" ");
                             b.append(mname);
                         }
@@ -233,7 +235,7 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
     }
 
     public void dispatch(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     public void visit(POSendStart po) {
@@ -390,7 +392,6 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
         if (activeLogin != null)
             ctx.removeId(activeLogin.getClientId());
         closed.set(true);
-        pipelineQueue.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
@@ -408,6 +409,7 @@ public class AMQPHandler implements Handler, AMQPConnectionVisitor {
         Semaphore sem = new Semaphore();
         dispatch(new POClose(sem));
         sem.waitHere();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close done");
     }
 

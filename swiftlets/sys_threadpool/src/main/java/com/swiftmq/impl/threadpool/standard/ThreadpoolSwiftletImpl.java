@@ -46,9 +46,9 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         implements TimerListener {
     public static final String PROP_KERNEL_POOL = "kernel-pool";
     public static final String PROP_COLLECT_INTERVAL = "collect-interval";
-    public static final String PROP_PLATFORM_THREADS = "01-platform";
-    public static final String PROP_VIRTUAL_THREADS = "02-virtual";
-    public static final String PROP_ADHOC_THREADS = "03-adhoc";
+    public static final String PROP_PLATFORM_THREADS = "01platform";
+    public static final String PROP_VIRTUAL_THREADS = "02virtual";
+    public static final String PROP_ADHOC_THREADS = "03adhoc";
     public static final String DEFAULT_POOL = "default";
 
     SwiftletContext ctx = null;

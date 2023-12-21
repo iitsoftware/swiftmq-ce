@@ -93,17 +93,17 @@
     </entitylist>
     <entitylist name="usage" display="Usage" description="Thread Usage">
       <entitytemplate name="usage" display="Threads" description="Active Threads">
-        <property name="01-platform"
+        <property name="01platform"
                   type="java.lang.Integer"
                   display="Platform Event Loops"
                   description="Active Platform Event Loop Threads"
                   default="0"/>
-        <property name="02-virtual"
+        <property name="02virtual"
                   type="java.lang.Integer"
                   display="Virtual Event Loops"
                   description="Active Virtual Event Loop Threads"
                   default="0"/>
-        <property name="03-adhoc"
+        <property name="03adhoc"
                   type="java.lang.Integer"
                   display="Ad Hoc Virtual"
                   description="Active Virtual Ad Hoc Threads"

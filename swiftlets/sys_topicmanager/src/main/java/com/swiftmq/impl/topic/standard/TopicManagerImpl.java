@@ -871,7 +871,6 @@ public class TopicManagerImpl extends TopicManager
                 } catch (Exception e) {
                     if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "swiftletStartet, exception=" + e);
                 }
-                ctx.announceSender.start();
                 if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "creating static remote subscriptions ...");
                 try {
                     createStaticRemoteRouterSubs();

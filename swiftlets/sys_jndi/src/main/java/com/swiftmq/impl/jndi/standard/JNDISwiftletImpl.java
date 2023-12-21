@@ -44,7 +44,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class JNDISwiftletImpl extends JNDISwiftlet {
-    static final String TP_LISTENER = "sys$jndi.listener";
     static final int[] VERSIONS = {400};
 
     SwiftletContext ctx = null;
@@ -552,7 +551,6 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
 
         ctx.timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
         ctx.threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        ctx.myTP = ctx.threadpoolSwiftlet.getPool(TP_LISTENER);
         ctx.queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
         ctx.topicManager = (TopicManager) SwiftletManager.getInstance().getSwiftlet("sys$topicmanager");
         ctx.jndiSwiftlet = this;
