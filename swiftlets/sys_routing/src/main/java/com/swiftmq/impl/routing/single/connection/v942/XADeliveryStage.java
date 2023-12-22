@@ -181,7 +181,7 @@ public class XADeliveryStage extends Stage {
             AdjustRequest rc = new AdjustRequest(txSize, windowSize);
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), XADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
-            routingConnection.getOutboundQueue().enqueue(rc);
+            routingConnection.getOutboundQueue().submit(rc);
         });
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.SEND_ROUTE_REQ, request -> {
             if (ctx.traceSpace.enabled)
@@ -189,7 +189,7 @@ public class XADeliveryStage extends Stage {
             RouteRequest rc = new RouteRequest(((SendRouteRequest) request).getRoute());
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), XADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
-            routingConnection.getOutboundQueue().enqueue(rc);
+            routingConnection.getOutboundQueue().submit(rc);
         });
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ROUTE_REQ, new RequestHandler() {
             public void visited(Request request) {
@@ -249,7 +249,7 @@ public class XADeliveryStage extends Stage {
                 txNo.getAndIncrement();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), XADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " sending request=" + txr);
-                routingConnection.getOutboundQueue().enqueue(txr);
+                routingConnection.getOutboundQueue().submit(txr);
                 if (outboundTransactions.size() <= routingConnection.getWindowSize())
                     rc.callback.delivered(rc);
                 else
@@ -272,7 +272,7 @@ public class XADeliveryStage extends Stage {
                 t.commit(xid);
                 CommitReplyRequest crr = new CommitReplyRequest(xid);
                 crr.setOk(true);
-                routingConnection.getOutboundQueue().enqueue(crr);
+                routingConnection.getOutboundQueue().submit(crr);
                 DeliveryRequest dr = notificationList.remove(xid);
                 if (dr != null) {
                     dr.callback.delivered(dr);
@@ -295,7 +295,7 @@ public class XADeliveryStage extends Stage {
                 if (throttleQueue != null)
                     throttleQueue.enqueue(cr);
                 else
-                    routingConnection.getOutboundQueue().enqueue(cr);
+                    routingConnection.getOutboundQueue().submit(cr);
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), XADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " exception=" + e);

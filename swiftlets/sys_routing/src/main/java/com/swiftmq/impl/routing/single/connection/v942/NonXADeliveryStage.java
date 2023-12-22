@@ -164,7 +164,7 @@ public class NonXADeliveryStage extends Stage {
             AdjustRequest rc = new AdjustRequest(txSize, windowSize);
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
-            routingConnection.getOutboundQueue().enqueue(rc);
+            routingConnection.getOutboundQueue().submit(rc);
             routingConnection.setXaSelected(false);
         });
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.SMQRFactory.SEND_ROUTE_REQ, request -> {
@@ -173,7 +173,7 @@ public class NonXADeliveryStage extends Stage {
             RouteRequest rc = new RouteRequest(((SendRouteRequest) request).getRoute());
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + ", sending request=" + rc);
-            routingConnection.getOutboundQueue().enqueue(rc);
+            routingConnection.getOutboundQueue().submit(rc);
         });
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.ROUTE_REQ, request -> {
             if (ctx.traceSpace.enabled)
@@ -230,7 +230,7 @@ public class NonXADeliveryStage extends Stage {
                 NonXATransactionRequest txr = new NonXATransactionRequest(txNo.get(), al);
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("OUTBOUND") + "/visited, request=" + request + " sending request=" + txr);
-                routingConnection.getOutboundQueue().enqueue(txr);
+                routingConnection.getOutboundQueue().submit(txr);
                 if (outboundTransactions.size() <= routingConnection.getWindowSize())
                     rc.callback.delivered(rc);
                 else
@@ -278,7 +278,7 @@ public class NonXADeliveryStage extends Stage {
                     }
                     throttleQueue.enqueue(cr);
                 } else
-                    routingConnection.getOutboundQueue().enqueue(cr);
+                    routingConnection.getOutboundQueue().submit(cr);
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), NonXADeliveryStage.this.toString("INBOUND") + "/visited, request=" + request + " exception=" + e);

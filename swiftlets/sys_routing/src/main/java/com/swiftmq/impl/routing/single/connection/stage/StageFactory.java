@@ -46,9 +46,7 @@ public class StageFactory {
 
     public static Stage createFirstStage(SwiftletContext ctx, RoutingConnection routingConnection, String protocol) {
         Stage stage = null;
-        if (protocol.equals(PROT_V400))
-            stage = new com.swiftmq.impl.routing.single.connection.v400.ConnectStage(ctx, routingConnection);
-        else if (protocol.equals(PROT_V942))
+        if (protocol.equals(PROT_V942))
             stage = new com.swiftmq.impl.routing.single.connection.v942.ConnectStage(ctx, routingConnection);
         return stage;
     }

@@ -29,7 +29,8 @@ import com.swiftmq.impl.routing.single.route.po.PORouteObject;
 import com.swiftmq.impl.routing.single.schedule.Scheduler;
 import com.swiftmq.impl.routing.single.smqpr.SendRouteRequest;
 import com.swiftmq.mgmt.*;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.tools.pipeline.POObject;
 
 import java.util.List;
 import java.util.Map;
@@ -44,26 +45,25 @@ public class RouteExchanger implements ConnectionListener, POExchangeVisitor, Ac
     static final String VAL_FILTER_TYPE_EXCLUDE_BY_DEST = "exclude_by_destination";
 
     SwiftletContext ctx = null;
-    PipelineQueue pipelineQueue = null;
     RouteTable routeTable = null;
     RouteConverter routeConverter = null;
     Map<String, RouteFilter> filters = new ConcurrentHashMap<>();
     int hopLimit = -1;
+    EventLoop eventLoop;
 
     public RouteExchanger(SwiftletContext ctx) {
         this.ctx = ctx;
         Property prop = ctx.root.getProperty("route-announce-hop-limit");
         hopLimit = (Integer) prop.getValue();
         prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                hopLimit = ((Integer) newValue).intValue();
+            public void propertyChanged(Property property, Object oldValue, Object newValue) {
+                hopLimit = (Integer) newValue;
             }
         });
         routeTable = new RouteTable(ctx);
         routeConverter = new RouteConverter();
         createFilters((EntityList) ctx.root.getEntity("filters"));
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_EXCHANGER), TP_EXCHANGER, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.route.exchanger", list -> list.forEach(e -> ((POObject) e).accept(RouteExchanger.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/created");
     }
 
@@ -103,20 +103,13 @@ public class RouteExchanger implements ConnectionListener, POExchangeVisitor, Ac
         String filterType = (String) prop.getValue();
         RouteFilter routeFilter = null;
         if (filterType != null) {
-            switch (filterType) {
-                case VAL_FILTER_TYPE_INCLUDE_BY_HOP:
-                    routeFilter = new RouteFilter(RouteFilter.INCLUDE_BY_HOP);
-                    break;
-                case VAL_FILTER_TYPE_EXCLUDE_BY_HOP:
-                    routeFilter = new RouteFilter(RouteFilter.EXCLUDE_BY_HOP);
-                    break;
-                case VAL_FILTER_TYPE_INCLUDE_BY_DEST:
-                    routeFilter = new RouteFilter(RouteFilter.INCLUDE_BY_DEST);
-                    break;
-                case VAL_FILTER_TYPE_EXCLUDE_BY_DEST:
-                    routeFilter = new RouteFilter(RouteFilter.EXCLUDE_BY_DEST);
-                    break;
-            }
+            routeFilter = switch (filterType) {
+                case VAL_FILTER_TYPE_INCLUDE_BY_HOP -> new RouteFilter(RouteFilter.INCLUDE_BY_HOP);
+                case VAL_FILTER_TYPE_EXCLUDE_BY_HOP -> new RouteFilter(RouteFilter.EXCLUDE_BY_HOP);
+                case VAL_FILTER_TYPE_INCLUDE_BY_DEST -> new RouteFilter(RouteFilter.INCLUDE_BY_DEST);
+                case VAL_FILTER_TYPE_EXCLUDE_BY_DEST -> new RouteFilter(RouteFilter.EXCLUDE_BY_DEST);
+                default -> routeFilter;
+            };
             createFilterEntry(routeFilter, (EntityList) filterEntity.getEntity("routers"));
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/creating filter for router: " + filterEntity.getName() + ", filter=" + routeFilter);
@@ -157,7 +150,7 @@ public class RouteExchanger implements ConnectionListener, POExchangeVisitor, Ac
         Route route = routeConverter.createRoute(routingConnection.getRouterName(), routingConnection.getProtocolVersion(), Route.ADD);
         try {
             processRoute(routingConnection, route);
-            pipelineQueue.enqueue(new POConnectionActivatedObject(routingConnection));
+            eventLoop.submit(new POConnectionActivatedObject(routingConnection));
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/activated, routingConnection=" + routingConnection + ", exception enqueueRequest: " + e);
@@ -171,7 +164,7 @@ public class RouteExchanger implements ConnectionListener, POExchangeVisitor, Ac
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/processRoute, routingConnection=" + routingConnection + ", route=" + route);
         route.addHop(routingConnection.getRouterName());
         route.setRoutingConnection(routingConnection);
-        pipelineQueue.enqueue(new PORouteObject(route));
+        eventLoop.submit(new PORouteObject(route));
     }
 
     public void connectionAdded(ConnectionEvent evt) {
@@ -186,7 +179,7 @@ public class RouteExchanger implements ConnectionListener, POExchangeVisitor, Ac
     public void connectionRemoved(ConnectionEvent evt) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/connectionRemoved, evt=" + evt);
-        pipelineQueue.enqueue(new POConnectionRemoveObject(evt.getConnection()));
+        eventLoop.submit(new POConnectionRemoveObject(evt.getConnection()));
     }
 
     private void sendRoute(RoutingConnection rc, Route route) {
@@ -214,6 +207,10 @@ public class RouteExchanger implements ConnectionListener, POExchangeVisitor, Ac
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/sendRoute, rc=" + rc + ", route= " + route + " done");
+    }
+
+    public void close() {
+        eventLoop.close();
     }
 
     public void visit(PORouteObject po) {

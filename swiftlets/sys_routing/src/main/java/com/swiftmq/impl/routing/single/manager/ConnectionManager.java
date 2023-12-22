@@ -28,28 +28,26 @@ import com.swiftmq.impl.routing.single.manager.po.PORemoveObject;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionManager
         implements POCMVisitor {
-    static final String TP_CONNMGR = "sys$routing.connection.mgr";
-
-    PipelineQueue queue = null;
     SwiftletContext ctx = null;
     protected Map<String, RoutingConnection> connections = new HashMap<>();
     List<ConnectionListener> listeners = new ConcurrentList<>(new ArrayList<>());
     EntityList connectionEntity = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
+    EventLoop eventLoop;
 
     public ConnectionManager(SwiftletContext ctx) {
         this.ctx = ctx;
         connectionEntity = (EntityList) ctx.usageList.getEntity("connections");
-        queue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_CONNMGR), TP_CONNMGR, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.connection.mgr", list -> list.forEach(e -> ((POObject) e).accept(ConnectionManager.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/created");
     }
 
@@ -192,14 +190,14 @@ public class ConnectionManager
     }
 
     public void enqueue(POObject obj) {
-        queue.enqueue(obj);
+        eventLoop.submit(obj);
     }
 
     public void close() {
         if (closed.getAndSet(true))
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/close...");
-        queue.close();
+        eventLoop.close();
         connections.clear();
         listeners.clear();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/close done");

@@ -137,7 +137,7 @@ public class XARecoveryStage extends Stage {
                 int i2 = o2.getXid().getFormatId();
                 return Integer.compare(i1, i2);
             });
-            remoteRecoveryList.forEach(commitRequest -> routingConnection.getOutboundQueue().enqueue(commitRequest));
+            remoteRecoveryList.forEach(commitRequest -> routingConnection.getOutboundQueue().submit(commitRequest));
         }
     }
 
@@ -150,7 +150,7 @@ public class XARecoveryStage extends Stage {
             rc.setBranchQualifier(recoveryBranchQ);
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), XARecoveryStage.this + "/visited, request=" + request + ", sending request=" + rc);
-            routingConnection.getOutboundQueue().enqueue(rc);
+            routingConnection.getOutboundQueue().submit(rc);
             routingConnection.setXaSelected(true);
         });
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.RECOVERY_REPREQ, request -> {
@@ -174,7 +174,7 @@ public class XARecoveryStage extends Stage {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), XARecoveryStage.this + "/visited, request=" + request + ", start remote delivery");
                 // start delivery
-                routingConnection.getOutboundQueue().enqueue(new StartDeliveryRequest());
+                routingConnection.getOutboundQueue().submit(new StartDeliveryRequest());
             } else {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), XARecoveryStage.this + "/visited, request=" + request + ", disconnect");
@@ -194,7 +194,7 @@ public class XARecoveryStage extends Stage {
             reply.setOk(true);
             // fill xid list
             reply.setXidList(getPreparedXids(new Filter(pr.getBranchQualifier())));
-            routingConnection.getOutboundQueue().enqueue(reply);
+            routingConnection.getOutboundQueue().submit(reply);
             remoteRecovered = true;
         });
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.COMMIT_REQ, request -> {

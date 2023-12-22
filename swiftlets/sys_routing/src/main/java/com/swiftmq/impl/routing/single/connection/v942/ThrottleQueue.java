@@ -21,79 +21,50 @@ import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory;
 import com.swiftmq.impl.routing.single.smqpr.v942.ThrottleRequest;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ThrottleQueue extends SingleProcessorQueue {
-    static final String TP_THROTTLE = "sys$routing.connection.throttlequeue";
+public class ThrottleQueue {
     SwiftletContext ctx;
     RoutingConnection connection;
     final AtomicBoolean closed = new AtomicBoolean(false);
-    ThreadPool myTP = null;
-    QueueProcessor queueProcessor = null;
-    SingleProcessorQueue outboundQueue = null;
     Semaphore sem = null;
-
+    EventLoop eventLoop;
     public ThrottleQueue(SwiftletContext ctx, RoutingConnection connection) {
         this.ctx = ctx;
         this.connection = connection;
-        outboundQueue = connection.getOutboundQueue();
-        myTP = ctx.threadpoolSwiftlet.getPool(TP_THROTTLE);
-        queueProcessor = new QueueProcessor();
         sem = new Semaphore();
-        startQueue();
-    }
-
-    protected void startProcessor() {
-        myTP.dispatchTask(queueProcessor);
-    }
-
-    protected void process(Object[] objects, int len) {
-        for (int i = 0; i < len; i++) {
-            Request r = (Request) objects[i];
-            if (r.getDumpId() == SMQRFactory.THROTTLE_REQ) {
-                sem.reset();
-                sem.waitHere(((ThrottleRequest) r).getDelay());
-            } else {
-                outboundQueue.enqueue(r);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.connection.throttle", new EventProcessor() {
+            @Override
+            public void process(List<Object> list) {
+                for (Object event : list) {
+                    if (closed.get())
+                        break;
+                    Request r = (Request) event;
+                    if (r.getDumpId() == SMQRFactory.THROTTLE_REQ) {
+                        sem.reset();
+                        sem.waitHere(((ThrottleRequest) r).getDelay());
+                    } else {
+                        connection.getOutboundQueue().submit(r);
+                    }
+                }
             }
-            if (closed.get())
-                return;
-        }
+        });
+    }
+
+    public void enqueue(Object event) {
+        eventLoop.submit(event);
     }
 
     public void close() {
         if (closed.getAndSet(true))
             return;
-        super.close();
         sem.notifySingleWaiter();
-    }
-
-    private class QueueProcessor implements AsyncTask {
-
-        public boolean isValid() {
-            return !closed.get();
-        }
-
-        public String getDispatchToken() {
-            return TP_THROTTLE;
-        }
-
-        public String getDescription() {
-            return ctx.routingSwiftlet.getName() + "/" + connection.toString() + "/ThrottleQueue/QueueProcessor";
-        }
-
-        public void stop() {
-        }
-
-        public void run() {
-            if (dequeue() && !closed.get())
-                myTP.dispatchTask(this);
-        }
+        eventLoop.close();
     }
 }

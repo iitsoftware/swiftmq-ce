@@ -43,7 +43,7 @@ public class ProtocolSelectStage extends Stage {
                 ProtocolRequest pr = new ProtocolRequest(StageFactory.getProtocolVersions());
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ProtocolSelectStage.this + "/visited, request=" + request + ", sending request...");
-                routingConnection.getOutboundQueue().enqueue(pr);
+                routingConnection.getOutboundQueue().submit(pr);
                 startValidTimer();
             }
         });
@@ -94,7 +94,7 @@ public class ProtocolSelectStage extends Stage {
             }
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ProtocolSelectStage.this + "/visited, request=" + request + ", sending reply=" + reply);
-            routingConnection.getOutboundQueue().enqueue(reply);
+            routingConnection.getOutboundQueue().submit(reply);
         });
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/init done");
     }

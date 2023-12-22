@@ -27,8 +27,11 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
+import com.swiftmq.tools.pipeline.POObject;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Scheduler
@@ -38,7 +41,6 @@ public abstract class Scheduler
     SwiftletContext ctx = null;
     String destinationRouter = null;
     String queueName = null;
-    PipelineQueue pipelineQueue = null;
     QueueReceiver receiver = null;
     QueuePullTransaction readTransaction = null;
     RoutingConnection currentConnection = null;
@@ -49,13 +51,19 @@ public abstract class Scheduler
     final AtomicBoolean processorActive = new AtomicBoolean(false);
     final AtomicBoolean deliveryActive = new AtomicBoolean(false);
     final AtomicBoolean closed = new AtomicBoolean(false);
+    EventLoop eventLoop;
 
     public Scheduler(SwiftletContext ctx, String destinationRouter, String queueName) {
         this.ctx = ctx;
         this.destinationRouter = destinationRouter;
         this.queueName = queueName;
         mp = new MP();
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SCHEDULER), TP_SCHEDULER, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.scheduler", new EventProcessor() {
+            @Override
+            public void process(List<Object> list) {
+                list.forEach(e -> ((POObject) e).accept(Scheduler.this));
+            }
+        });
     }
 
     public String getQueueName() {
@@ -123,7 +131,7 @@ public abstract class Scheduler
         }
         if (deliverObject == null)
             deliverObject = new PODeliverObject(nMessages);
-        pipelineQueue.enqueue(deliverObject);
+        eventLoop.submit(deliverObject);
     }
 
     public void delivered(DeliveryRequest deliveryRequest) {
@@ -131,25 +139,25 @@ public abstract class Scheduler
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/delivered, deliveryRequest=" + deliveryRequest);
         if (deliveredObject == null)
             deliveredObject = new PODeliveredObject(deliveryRequest);
-        pipelineQueue.enqueue(deliveredObject);
+        eventLoop.submit(deliveredObject);
     }
 
     protected void connectionAdded(RoutingConnection connection) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/connectionAdded, connection=" + connection);
-        pipelineQueue.enqueue(new POConnectionAddedObject(connection));
+        eventLoop.submit(new POConnectionAddedObject(connection));
     }
 
     protected void connectionRemoved(RoutingConnection connection) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/connectionRemoved, connection=" + connection);
-        pipelineQueue.enqueue(new POConnectionRemovedObject(connection));
+        eventLoop.submit(new POConnectionRemovedObject(connection));
     }
 
     protected void enqueueClose(POCloseObject po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/enqueueClose, po=" + po);
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     public void visit(PODeliverObject po) {
@@ -257,7 +265,6 @@ public abstract class Scheduler
     public void visit(POCloseObject po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + " ...");
-        pipelineQueue.close();
         try {
             if (processorActive.get())
                 readTransaction.unregisterMessageProcessor(mp);
@@ -278,6 +285,7 @@ public abstract class Scheduler
             po.getCallback().onSuccess(po);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
+        eventLoop.close();
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + " done");
     }

@@ -55,7 +55,7 @@ public class AuthStage extends Stage {
                 AuthRequest ar = new AuthRequest(crf.createResponse(connectReply.getChallenge(), password));
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), AuthStage.this + "/visited, request=" + request + ", sending request: " + ar);
-                routingConnection.getOutboundQueue().enqueue(ar);
+                routingConnection.getOutboundQueue().submit(ar);
                 startValidTimer();
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
@@ -119,7 +119,7 @@ public class AuthStage extends Stage {
                     }
                 });
             }
-            routingConnection.getOutboundQueue().enqueue(reply);
+            routingConnection.getOutboundQueue().submit(reply);
         });
         if (!listener)
             getStageQueue().enqueue(new StartStageRequest());

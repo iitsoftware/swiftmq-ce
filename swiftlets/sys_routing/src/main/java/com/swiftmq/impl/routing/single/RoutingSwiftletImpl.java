@@ -419,6 +419,7 @@ public class RoutingSwiftletImpl extends RoutingSwiftlet {
             shutdownSem.waitHere();
             shutdownSem = null;
         }
+        ctx.routeExchanger.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "stopping connection manager ...");
         Semaphore sem = new Semaphore();
         ctx.connectionManager.enqueue(new PORemoveAllObject(null, sem));

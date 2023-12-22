@@ -21,38 +21,34 @@ import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.smqpr.BulkRequest;
 import com.swiftmq.impl.routing.single.smqpr.KeepAliveRequest;
 import com.swiftmq.swiftlet.net.Connection;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.tools.dump.Dumpable;
 import com.swiftmq.tools.dump.Dumpalizer;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.util.DataStreamOutputStream;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPOutputStream;
 
 public class OutboundWriter
         implements TimerListener {
-    static final String TP_CONNSVC = "sys$routing.connection.service";
     static KeepAliveRequest keepAliveRequest = new KeepAliveRequest();
     SwiftletContext ctx = null;
-    ThreadPool myTP = null;
     RoutingConnection routingConnection = null;
     Connection connection = null;
     DataStreamOutputStream outStream;
-    OutboundQueue outboundQueue = null;
-    OutboundProcessor outboundProcessor = null;
     final AtomicBoolean closed = new AtomicBoolean(false);
     TraceSpace traceSpace = null;
     boolean compression = false;
     DataByteArrayOutputStream bos = new DataByteArrayOutputStream();
     DataByteArrayOutputStream bos2 = new DataByteArrayOutputStream();
+    EventLoop eventLoop;
 
     OutboundWriter(SwiftletContext ctx, RoutingConnection routingConnection, boolean compression) throws IOException {
         this.ctx = ctx;
@@ -61,15 +57,26 @@ public class OutboundWriter
         this.compression = compression;
         this.outStream = new DataStreamOutputStream(connection.getOutputStream());
         traceSpace = ctx.traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
-        myTP = ctx.threadpoolSwiftlet.getPool(TP_CONNSVC);
-        outboundProcessor = new OutboundProcessor();
-        outboundQueue = new OutboundQueue();
-        outboundQueue.startQueue();
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.connection.service", new EventProcessor() {
+            final BulkRequest bulkRequest = new BulkRequest();
+
+            @Override
+            public void process(List<Object> list) {
+                if (list.size() == 1)
+                    writeObject((Dumpable) list.get(0));
+                else {
+                    bulkRequest.dumpables = list.toArray();
+                    bulkRequest.len = list.size();
+                    writeObject(bulkRequest);
+                    bulkRequest.dumpables = null;
+                    bulkRequest.len = 0;
+                }
+            }
+        });
     }
 
     private void compress(byte[] data, int len) throws IOException {
         GZIPOutputStream gos = new GZIPOutputStream(bos2, len);
-        BufferedOutputStream dos = new BufferedOutputStream(gos, len);
         gos.write(data, 0, len);
         gos.finish();
     }
@@ -92,73 +99,27 @@ public class OutboundWriter
         } catch (Exception e) {
             if (traceSpace.enabled) traceSpace.trace("smqr", toString() + ": exception write object, exiting!: " + e);
             ctx.networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
-            outboundQueue.close();
+            eventLoop.close();
             closed.set(true);
         }
     }
 
-    public SingleProcessorQueue getOutboundQueue() {
-        return outboundQueue;
+    public EventLoop getOutboundQueue() {
+        return eventLoop;
     }
 
     public void performTimeAction() {
-        outboundQueue.enqueue(keepAliveRequest);
+        eventLoop.submit(keepAliveRequest);
     }
 
     public void close() {
-        outboundQueue.close();
-        closed.set(true);
+        if (closed.getAndSet(true))
+            return;
+        eventLoop.close();
     }
 
     public String toString() {
         return routingConnection.toString() + "/OutboundWriter";
-    }
-
-    private class OutboundQueue extends SingleProcessorQueue {
-        BulkRequest bulkRequest = new BulkRequest();
-
-        OutboundQueue() {
-            super(100);
-        }
-
-        protected void startProcessor() {
-            myTP.dispatchTask(outboundProcessor);
-        }
-
-        protected void process(Object[] bulk, int n) {
-            if (n == 1)
-                writeObject((Dumpable) bulk[0]);
-            else {
-                bulkRequest.dumpables = bulk;
-                bulkRequest.len = n;
-                writeObject(bulkRequest);
-                bulkRequest.dumpables = null;
-                bulkRequest.len = 0;
-            }
-        }
-    }
-
-    private class OutboundProcessor implements AsyncTask {
-
-        public boolean isValid() {
-            return !closed.get();
-        }
-
-        public String getDispatchToken() {
-            return TP_CONNSVC;
-        }
-
-        public String getDescription() {
-            return ctx.routingSwiftlet.getName() + "/" + connection.toString() + "/OutboundProcessor";
-        }
-
-        public void stop() {
-        }
-
-        public void run() {
-            if (outboundQueue.dequeue() && !closed.get())
-                myTP.dispatchTask(this);
-        }
     }
 }
 

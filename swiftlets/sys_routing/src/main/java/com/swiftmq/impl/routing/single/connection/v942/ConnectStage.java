@@ -50,7 +50,7 @@ public class ConnectStage extends Stage {
             ConnectRequest cr = new ConnectRequest(ctx.routerName, routingConnection.isXa());
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), ConnectStage.this + "/visited, request=" + request + ", sending request= " + cr);
-            routingConnection.getOutboundQueue().enqueue(cr);
+            routingConnection.getOutboundQueue().submit(cr);
             startValidTimer();
         });
         visitor.setRequestHandler(com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory.CONNECT_REPREQ, request -> {
@@ -173,7 +173,7 @@ public class ConnectStage extends Stage {
                     getStageQueue().setStage(new NonXADeliveryStage(ctx, routingConnection));
                 }
             }
-            routingConnection.getOutboundQueue().enqueue(reply);
+            routingConnection.getOutboundQueue().submit(reply);
         }
 
         public void onException(POObject po) {
@@ -185,7 +185,7 @@ public class ConnectStage extends Stage {
             reply.setRouterName(ctx.routerName);
             reply.setOk(false);
             reply.setException(new Exception(po.getException()));
-            routingConnection.getOutboundQueue().enqueue(reply);
+            routingConnection.getOutboundQueue().submit(reply);
             ctx.timerSwiftlet.addInstantTimerListener(((Long) ctx.root.getProperty("reject-disconnect-delay").getValue()).longValue(), new TimerListener() {
                 public void performTimeAction() {
                     if (ctx.traceSpace.enabled)

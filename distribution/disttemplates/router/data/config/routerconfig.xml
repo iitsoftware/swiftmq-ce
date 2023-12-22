@@ -252,7 +252,8 @@
 
   <!--  Threadpool Swiftlet, Release: ${release}  -->
 
-  <swiftlet name="sys$threadpool" group-shutdown-order="default network swiftlet processing storeprocessor store">
+  <swiftlet name="sys$threadpool"
+            group-shutdown-order="default network routing swiftlet processing storeprocessor store">
     <groups>
       <group name="network">
         <eventloops>
@@ -278,6 +279,15 @@
           <eventloop name="sys$streams.processor" virtual="false"/>
         </eventloops>
       </group>
+      <group name="routing">
+        <eventloops>
+          <eventloop name="sys$routing.connection.mgr"/>
+          <eventloop name="sys$routing.route.exchanger"/>
+          <eventloop name="sys$routing.scheduler"/>
+          <eventloop name="sys$routing.connection.service"/>
+          <eventloop name="sys$routing.connection.throttle"/>
+        </eventloops>
+      </group>
       <group name="storeprocessor">
         <eventloops>
           <eventloop name="sys$store.backup"/>
@@ -291,33 +301,6 @@
         </eventloops>
       </group>
     </groups>
-    <pools>
-      <pool name="routing.connection.mgr" kernel-pool="true" max-threads="1">
-        <threads>
-          <thread name="sys$routing.connection.mgr"/>
-        </threads>
-      </pool>
-      <pool name="routing.exchanger" kernel-pool="true" max-threads="1">
-        <threads>
-          <thread name="sys$routing.route.exchanger"/>
-        </threads>
-      </pool>
-      <pool name="routing.scheduler" kernel-pool="true" max-threads="3" min-threads="3">
-        <threads>
-          <thread name="sys$routing.scheduler"/>
-        </threads>
-      </pool>
-      <pool name="routing.service" kernel-pool="true" max-threads="3" min-threads="3">
-        <threads>
-          <thread name="sys$routing.connection.service"/>
-        </threads>
-      </pool>
-      <pool name="routing.throttle" kernel-pool="true" max-threads="3" min-threads="3">
-        <threads>
-          <thread name="sys$routing.connection.throttlequeue"/>
-        </threads>
-      </pool>
-    </pools>
   </swiftlet>
 
   <!--  Timer Swiftlet, Release: ${release}  -->

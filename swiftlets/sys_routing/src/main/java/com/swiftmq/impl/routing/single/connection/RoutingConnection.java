@@ -29,8 +29,8 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.net.Connection;
 import com.swiftmq.swiftlet.net.ListenerMetaData;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
 
@@ -87,7 +87,6 @@ public class RoutingConnection
         visitor = new SMQRVisitor(ctx, this);
         stageQueue = new StageQueue(ctx);
         stageQueue.setStage(new ProtocolSelectStage(ctx, this, listener));
-        stageQueue.startQueue();
 
         // Start protocol handshaking (initiated from the connector)
         if (listener)
@@ -120,7 +119,7 @@ public class RoutingConnection
         this.xaSelected.set(xaSelected);
         try {
             if (usageEntity.get() != null)
-                usageEntity.get().getProperty("uses-xa").setValue(new Boolean(xaSelected));
+                usageEntity.get().getProperty("uses-xa").setValue(xaSelected);
         } catch (Exception e) {
         }
     }
@@ -189,7 +188,7 @@ public class RoutingConnection
         return visitor;
     }
 
-    public SingleProcessorQueue getOutboundQueue() {
+    public EventLoop getOutboundQueue() {
         return outboundWriter.getOutboundQueue();
     }
 
