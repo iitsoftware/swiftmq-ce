@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,15 +15,22 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.pagedb.scan.po;
+package com.swiftmq.impl.store.standard.processor.backup.po;
 
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class Close extends POObject {
-    public Close(Semaphore semaphore) {
+public class ChangePath extends POObject {
+    String newPath = null;
+
+    public ChangePath(Semaphore semaphore, String newPath) {
         super(null, semaphore);
+        this.newPath = newPath;
+    }
+
+    public String getNewPath() {
+        return newPath;
     }
 
     public void accept(POVisitor poVisitor) {
@@ -31,6 +38,6 @@ public class Close extends POObject {
     }
 
     public String toString() {
-        return "[Close]";
+        return "[ChangePath, newPath=" + newPath + "]";
     }
 }

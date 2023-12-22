@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,20 +15,12 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.backup.po;
+package com.swiftmq.impl.store.standard.processor.shrink.po;
 
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface EventVisitor extends POVisitor {
-    public void visit(ScanSaveSets po);
+    void visit(StartShrink po);
 
-    public void visit(ChangePath po);
-
-    public void visit(ChangeGenerations po);
-
-    public void visit(StartBackup po);
-
-    public void visit(BackupCompleted po);
-
-    public void visit(Close po);
+    void visit(Close po);
 }

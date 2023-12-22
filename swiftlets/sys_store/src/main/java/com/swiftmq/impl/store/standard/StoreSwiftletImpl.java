@@ -17,11 +17,6 @@
 
 package com.swiftmq.impl.store.standard;
 
-import com.swiftmq.impl.store.standard.backup.BackupProcessor;
-import com.swiftmq.impl.store.standard.backup.po.ChangeGenerations;
-import com.swiftmq.impl.store.standard.backup.po.ChangePath;
-import com.swiftmq.impl.store.standard.backup.po.ScanSaveSets;
-import com.swiftmq.impl.store.standard.backup.po.StartBackup;
 import com.swiftmq.impl.store.standard.cache.CacheManager;
 import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.QueueIndex;
@@ -29,10 +24,15 @@ import com.swiftmq.impl.store.standard.index.RootIndex;
 import com.swiftmq.impl.store.standard.jobs.JobRegistrar;
 import com.swiftmq.impl.store.standard.log.*;
 import com.swiftmq.impl.store.standard.pagedb.StoreConverter;
-import com.swiftmq.impl.store.standard.pagedb.scan.ScanProcessor;
-import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
-import com.swiftmq.impl.store.standard.pagedb.shrink.ShrinkProcessor;
-import com.swiftmq.impl.store.standard.pagedb.shrink.po.StartShrink;
+import com.swiftmq.impl.store.standard.processor.backup.BackupProcessor;
+import com.swiftmq.impl.store.standard.processor.backup.po.ChangeGenerations;
+import com.swiftmq.impl.store.standard.processor.backup.po.ChangePath;
+import com.swiftmq.impl.store.standard.processor.backup.po.ScanSaveSets;
+import com.swiftmq.impl.store.standard.processor.backup.po.StartBackup;
+import com.swiftmq.impl.store.standard.processor.scan.ScanProcessor;
+import com.swiftmq.impl.store.standard.processor.scan.po.StartScan;
+import com.swiftmq.impl.store.standard.processor.shrink.ShrinkProcessor;
+import com.swiftmq.impl.store.standard.processor.shrink.po.StartShrink;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactoryImpl;

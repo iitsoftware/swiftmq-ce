@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,12 +15,8 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.pagedb.shrink.po;
+package com.swiftmq.impl.store.standard.processor.backup;
 
-import com.swiftmq.tools.pipeline.POVisitor;
-
-public interface EventVisitor extends POVisitor {
-    void visit(StartShrink po);
-
-    void visit(Close po);
+public interface BackupFinishedListener {
+    void backupFinished(boolean success, String exception);
 }

@@ -96,9 +96,13 @@ public class GroupRegistry {
 
     public ThreadRunner threadRunnerForEventLoop(String id) {
         ThreadRunner runner = platformThreadRunner;
-        boolean virtual = eventLoopConfig.get(id).virtual();
-        if (virtual)
-            runner = virtualThreadRunner;
+        LoopData record = eventLoopConfig.get(id);
+        if (record == null)
+            ctx.logSwiftlet.logInformation(tracePrefix, this + "/threadRunnerForEventLoop, event loop for id=" + id + " is not configured, using platformThreadRunner");
+        else {
+            if (record.virtual())
+                runner = virtualThreadRunner;
+        }
         return runner;
     }
 

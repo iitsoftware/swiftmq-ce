@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,8 +15,23 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.backup;
+package com.swiftmq.impl.store.standard.processor.shrink.po;
 
-public interface BackupFinishedListener {
-    void backupFinished(boolean success, String exception);
+import com.swiftmq.tools.concurrent.Semaphore;
+import com.swiftmq.tools.pipeline.POObject;
+import com.swiftmq.tools.pipeline.POVisitor;
+
+public class StartShrink extends POObject {
+
+    public StartShrink(Semaphore semaphore) {
+        super(null, semaphore);
+    }
+
+    public void accept(POVisitor poVisitor) {
+        ((EventVisitor) poVisitor).visit(this);
+    }
+
+    public String toString() {
+        return "[StartShrink]";
+    }
 }

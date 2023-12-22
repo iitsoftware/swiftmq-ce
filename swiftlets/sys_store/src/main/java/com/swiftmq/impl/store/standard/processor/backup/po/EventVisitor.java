@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,29 +15,20 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.backup.po;
+package com.swiftmq.impl.store.standard.processor.backup.po;
 
-import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ChangePath extends POObject {
-    String newPath = null;
+public interface EventVisitor extends POVisitor {
+    public void visit(ScanSaveSets po);
 
-    public ChangePath(Semaphore semaphore, String newPath) {
-        super(null, semaphore);
-        this.newPath = newPath;
-    }
+    public void visit(ChangePath po);
 
-    public String getNewPath() {
-        return newPath;
-    }
+    public void visit(ChangeGenerations po);
 
-    public void accept(POVisitor poVisitor) {
-        ((EventVisitor) poVisitor).visit(this);
-    }
+    public void visit(StartBackup po);
 
-    public String toString() {
-        return "[ChangePath, newPath=" + newPath + "]";
-    }
+    public void visit(BackupCompleted po);
+
+    public void visit(Close po);
 }

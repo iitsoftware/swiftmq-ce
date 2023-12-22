@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,22 +15,30 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.backup.po;
+package com.swiftmq.impl.store.standard.processor.backup.po;
 
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;
 
-public class ChangeGenerations extends POObject {
-    int newGenerations = 0;
+public class ScanSaveSets extends POObject {
+    POObject nextPO = null;
 
-    public ChangeGenerations(Semaphore semaphore, int newGenerations) {
-        super(null, semaphore);
-        this.newGenerations = newGenerations;
+    public ScanSaveSets() {
+        super(null, null);
     }
 
-    public int getNewGenerations() {
-        return newGenerations;
+    public ScanSaveSets(Semaphore semaphore) {
+        super(null, semaphore);
+    }
+
+    public ScanSaveSets(POObject nextPO) {
+        super(null, null);
+        this.nextPO = nextPO;
+    }
+
+    public POObject getNextPO() {
+        return nextPO;
     }
 
     public void accept(POVisitor poVisitor) {
@@ -38,6 +46,6 @@ public class ChangeGenerations extends POObject {
     }
 
     public String toString() {
-        return "[ChangeGenerations, newGenerations=" + newGenerations + "]";
+        return "[ScanSaveSets, nextPO=" + nextPO + "]";
     }
 }

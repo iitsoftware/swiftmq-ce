@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,12 +15,12 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.backup;
+package com.swiftmq.impl.store.standard.processor.backup;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.backup.po.*;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
 import com.swiftmq.impl.store.standard.pagedb.PageSize;
+import com.swiftmq.impl.store.standard.processor.backup.po.*;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityAddException;
 import com.swiftmq.mgmt.EntityList;
@@ -54,7 +54,7 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         this.ctx = ctx;
         path = SwiftUtilities.addWorkingDir((String) ctx.backupEntity.getProperty("path").getValue());
         generations = (Integer) ctx.backupEntity.getProperty("keep-generations").getValue();
-        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys§store.backup", list -> list.forEach(e -> ((POObject) e).accept(BackupProcessor.this)));
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$store.backup", list -> list.forEach(e -> ((POObject) e).accept(BackupProcessor.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
     }
 

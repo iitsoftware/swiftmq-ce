@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IIT Software GmbH
+ * Copyright 2023 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,27 +15,26 @@
  *
  */
 
-package com.swiftmq.impl.store.standard.pagedb.scan;
+package com.swiftmq.impl.store.standard.processor.shrink;
 
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
-import com.swiftmq.impl.store.standard.pagedb.scan.po.Close;
-import com.swiftmq.impl.store.standard.pagedb.scan.po.EventVisitor;
-import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
-import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.impl.store.standard.processor.shrink.po.Close;
+import com.swiftmq.impl.store.standard.processor.shrink.po.EventVisitor;
+import com.swiftmq.impl.store.standard.processor.shrink.po.StartShrink;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 
-public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
-    static final String TP_SHRINK = "sys$store.processor";
+public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener {
+    static final String TP_SHRINK = "sys$store.shrink";
     StoreContext ctx = null;
-    boolean scanActive = false;
+    boolean shrinkActive = false;
     EventLoop eventLoop;
 
-    public ScanProcessor(StoreContext ctx) {
+    public ShrinkProcessor(StoreContext ctx) {
         this.ctx = ctx;
-        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$store.scan", list -> list.forEach(e -> ((POObject) e).accept(ScanProcessor.this)));
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$store.shrink", list -> list.forEach(e -> ((POObject) e).accept(ShrinkProcessor.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
     }
 
@@ -45,12 +44,12 @@ public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/checkpointFinished ...");
         try {
-            ctx.storeConverter.scanPageDB();
-            SwiftletManager.getInstance().saveConfiguration();
-            scanActive = false;
+            ctx.cacheManager.shrink();
+            ctx.stableStore.shrink();
+            shrinkActive = false;
         } catch (Exception e) {
             e.printStackTrace();
-            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), toString() + "/exception during scan: " + e);
+            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), toString() + "/exception during shrink: " + e);
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/checkpointFinished done");
@@ -60,15 +59,15 @@ public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
         eventLoop.submit(po);
     }
 
-    public void visit(StartScan po) {
+    public void visit(StartShrink po) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
-        if (scanActive) {
+        if (shrinkActive) {
             // reject it
-            String msg = "Can't start scan: another scan is active right now!";
+            String msg = "Can't start Shrink: another Shrink is active right now!";
             po.setException(msg);
             po.setSuccess(false);
         } else {
-            scanActive = true;
+            shrinkActive = true;
             ctx.transactionManager.initiateCheckPoint(this);
             po.setSuccess(true);
         }
@@ -94,6 +93,6 @@ public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
     }
 
     public String toString() {
-        return "ScanProcessor";
+        return "ShrinkProcessor";
     }
 }
