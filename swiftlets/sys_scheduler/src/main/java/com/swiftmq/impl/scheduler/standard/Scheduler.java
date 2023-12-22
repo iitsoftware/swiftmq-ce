@@ -22,11 +22,10 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.EntityRemoveException;
 import com.swiftmq.swiftlet.scheduler.*;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -37,8 +36,6 @@ public class Scheduler
         implements EventVisitor {
     static final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     static final DecimalFormat dfmt = new DecimalFormat("000");
-    static final String TP_SCHEDULER = "sys$scheduler.scheduler";
-    static final String TP_RUNNER = "sys$scheduler.runner";
     static final String DONOTHING = "DONOTHING";
     static final String STATE_NONE = "NONE";
     static final String STATE_SCHEDULED = "SCHEDULED";
@@ -50,21 +47,24 @@ public class Scheduler
     static final String STATE_NO_FURTHER_SCHEDULE = "SCHEDULE EXPIRED";
     static final String STATE_JOB_EXCEPTION = "JOB ERROR";
     SwiftletContext ctx = null;
-    PipelineQueue pipelineQueue = null;
-    ThreadPool runnerPool = null;
     Map<String, SchedulerCalendar> calendars = new ConcurrentHashMap<>();
     Map<String, Entry> schedules = new HashMap<>();
     Map<String, Map<String, JobFactory>> jobGroups = new ConcurrentHashMap<>();
+    EventLoop eventLoop;
 
     public Scheduler(SwiftletContext ctx) {
         this.ctx = ctx;
-        runnerPool = ctx.threadpoolSwiftlet.getPool(TP_RUNNER);
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SCHEDULER), TP_SCHEDULER, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$scheduler.scheduler", new EventProcessor() {
+            @Override
+            public void process(List<Object> list) {
+                list.forEach(e -> ((POObject) e).accept(Scheduler.this));
+            }
+        });
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
     }
 
     public void enqueue(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     private List<Entry> getSchedules(String calendarName) {
@@ -458,7 +458,7 @@ public class Scheduler
                         }
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " dispatching job: " + entry.job);
-                        runnerPool.dispatchTask(new JobRunner(po.getName(), entry.job, prop, entry, entry));
+                        ctx.threadpoolSwiftlet.runAsync(new JobRunner(po.getName(), entry.job, prop, entry, entry));
                     } catch (Exception e) {
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + ", exception: " + e);
@@ -505,7 +505,7 @@ public class Scheduler
                         ctx.logSwiftlet.logError(ctx.schedulerSwiftlet.getName(), toString() + "/stopping job, exception: " + e);
                     exception = e;
                 }
-                pipelineQueue.enqueue(new JobTerminated(po.getName(), exception));
+                eventLoop.submit(new JobTerminated(po.getName(), exception));
             } else {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/" + po + " rescheduled in the meantime!");
@@ -579,9 +579,9 @@ public class Scheduler
     public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/close ...");
         Semaphore sem = new Semaphore();
-        pipelineQueue.enqueue(new Close(sem));
+        eventLoop.submit(new Close(sem));
         sem.waitHere();
-        pipelineQueue.close();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/close done");
     }
 
@@ -611,13 +611,13 @@ public class Scheduler
         public void jobTerminated(String s) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/jobTerminated, message=" + s);
-            pipelineQueue.enqueue(new JobTerminated(schedule.getName(), s));
+            eventLoop.submit(new JobTerminated(schedule.getName(), s));
         }
 
         public void jobTerminated(JobException e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/jobTerminated, exception: " + e);
-            pipelineQueue.enqueue(new JobTerminated(schedule.getName(), e));
+            eventLoop.submit(new JobTerminated(schedule.getName(), e));
         }
 
         public String toString() {
@@ -625,7 +625,7 @@ public class Scheduler
         }
     }
 
-    private class JobRunner implements AsyncTask {
+    private class JobRunner implements Runnable {
         String name = null;
         Job job = null;
         Properties prop = null;
@@ -641,20 +641,8 @@ public class Scheduler
             this.scheduleEntry = scheduleEntry;
         }
 
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getDispatchToken() {
-            return TP_RUNNER;
-        }
-
         public String getDescription() {
             return "JobRunner, name=" + name + ", job=" + job;
-        }
-
-        public void stop() {
-            valid = false;
         }
 
         public void run() {
@@ -679,7 +667,7 @@ public class Scheduler
                 if (scheduleEntry.schedule.isLoggingEnabled())
                     ctx.logSwiftlet.logError(ctx.schedulerSwiftlet.getName(), getDescription() + "/starting job, exception: " + e);
                 valid = false;
-                pipelineQueue.enqueue(new JobTerminated(name, e));
+                eventLoop.submit(new JobTerminated(name, e));
             }
         }
     }

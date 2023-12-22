@@ -267,6 +267,7 @@
         <eventloops>
           <eventloop name="sys$mgmt.dispatch" virtual="false"/>
           <eventloop name="sys$topicmanager.announce"/>
+          <eventloop name="sys$scheduler.scheduler"/>
         </eventloops>
       </group>
       <group name="processing">
@@ -307,17 +308,6 @@
       <pool name="routing.throttle" kernel-pool="true" max-threads="3" min-threads="3">
         <threads>
           <thread name="sys$routing.connection.throttlequeue"/>
-        </threads>
-      </pool>
-      <pool name="scheduler.job" kernel-pool="true">
-        <threads>
-          <thread name="sys$scheduler.runner"/>
-        </threads>
-      </pool>
-      <pool name="scheduler.system" kernel-pool="true" max-threads="2">
-        <threads>
-          <thread name="sys$scheduler.requestprocessor"/>
-          <thread name="sys$scheduler.scheduler"/>
         </threads>
       </pool>
     </pools>
