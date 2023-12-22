@@ -252,7 +252,7 @@
 
   <!--  Threadpool Swiftlet, Release: ${release}  -->
 
-  <swiftlet name="sys$threadpool" group-shutdown-order="default network swiftlet processing store">
+  <swiftlet name="sys$threadpool" group-shutdown-order="default network swiftlet processing storeprocessor store">
     <groups>
       <group name="network">
         <eventloops>
@@ -276,6 +276,13 @@
           <eventloop name="sys$amqp.session.service"/>
           <eventloop name="sys$jms.session"/>
           <eventloop name="sys$streams.processor" virtual="false"/>
+        </eventloops>
+      </group>
+      <group name="storeprocessor">
+        <eventloops>
+          <eventloop name="sys$store.backup"/>
+          <eventloop name="sys$store.shrink"/>
+          <eventloop name="sys$store.scan"/>
         </eventloops>
       </group>
       <group name="store">

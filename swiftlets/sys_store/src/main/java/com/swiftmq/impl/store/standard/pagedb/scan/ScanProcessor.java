@@ -23,19 +23,19 @@ import com.swiftmq.impl.store.standard.pagedb.scan.po.Close;
 import com.swiftmq.impl.store.standard.pagedb.scan.po.EventVisitor;
 import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
 import com.swiftmq.swiftlet.SwiftletManager;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 
 public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
-    static final String TP_SHRINK = "sys$store.shrink";
+    static final String TP_SHRINK = "sys$store.processor";
     StoreContext ctx = null;
-    PipelineQueue pipelineQueue = null;
     boolean scanActive = false;
+    EventLoop eventLoop;
 
     public ScanProcessor(StoreContext ctx) {
         this.ctx = ctx;
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SHRINK), TP_SHRINK, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$store.scan", list -> list.forEach(e -> ((POObject) e).accept(ScanProcessor.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
     }
 
@@ -57,7 +57,7 @@ public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
     }
 
     public void enqueue(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     public void visit(StartScan po) {
@@ -87,9 +87,9 @@ public class ScanProcessor implements EventVisitor, CheckPointFinishedListener {
     public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close ...");
         Semaphore sem = new Semaphore();
-        pipelineQueue.enqueue(new Close(sem));
+        eventLoop.submit(new Close(sem));
         sem.waitHere();
-        pipelineQueue.close();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close done");
     }
 

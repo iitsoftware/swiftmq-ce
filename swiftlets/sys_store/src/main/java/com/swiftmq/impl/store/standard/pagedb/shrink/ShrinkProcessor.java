@@ -22,19 +22,27 @@ import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
 import com.swiftmq.impl.store.standard.pagedb.shrink.po.Close;
 import com.swiftmq.impl.store.standard.pagedb.shrink.po.EventVisitor;
 import com.swiftmq.impl.store.standard.pagedb.shrink.po.StartShrink;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+
+import java.util.List;
 
 public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener {
     static final String TP_SHRINK = "sys$store.shrink";
     StoreContext ctx = null;
-    PipelineQueue pipelineQueue = null;
     boolean shrinkActive = false;
+    EventLoop eventLoop;
 
     public ShrinkProcessor(StoreContext ctx) {
         this.ctx = ctx;
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SHRINK), TP_SHRINK, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$store.shrink", new EventProcessor() {
+            @Override
+            public void process(List<Object> list) {
+                list.forEach(e -> ((POObject) e).accept(ShrinkProcessor.this));
+            }
+        });
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
     }
 
@@ -56,7 +64,7 @@ public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener
     }
 
     public void enqueue(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     public void visit(StartShrink po) {
@@ -86,9 +94,9 @@ public class ShrinkProcessor implements EventVisitor, CheckPointFinishedListener
     public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close ...");
         Semaphore sem = new Semaphore();
-        pipelineQueue.enqueue(new Close(sem));
+        eventLoop.submit(new Close(sem));
         sem.waitHere();
-        pipelineQueue.close();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close done");
     }
 

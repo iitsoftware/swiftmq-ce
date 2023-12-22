@@ -25,9 +25,9 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityAddException;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.EntityRemoveException;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 import com.swiftmq.util.SwiftUtilities;
 
 import java.io.File;
@@ -39,23 +39,22 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class BackupProcessor implements EventVisitor, CheckPointFinishedListener {
-    static final String TP_BACKUP = "sys$store.backup";
     static final String COMPLETED_FILE = ".completed";
     static final String SAVESET = "saveset_";
     static final SimpleDateFormat fmt = new SimpleDateFormat("'" + SAVESET + "'yyyyMMddHHmmssSSS");
     StoreContext ctx = null;
     String path = null;
     int generations = 0;
-    PipelineQueue pipelineQueue = null;
     boolean backupActive = false;
     String currentSaveSet = null;
     BackupFinishedListener finishedListener = null;
+    EventLoop eventLoop;
 
     public BackupProcessor(StoreContext ctx) {
         this.ctx = ctx;
         path = SwiftUtilities.addWorkingDir((String) ctx.backupEntity.getProperty("path").getValue());
-        generations = ((Integer) ctx.backupEntity.getProperty("keep-generations").getValue()).intValue();
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_BACKUP), TP_BACKUP, this);
+        generations = (Integer) ctx.backupEntity.getProperty("keep-generations").getValue();
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys§store.backup", list -> list.forEach(e -> ((POObject) e).accept(BackupProcessor.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
     }
 
@@ -82,7 +81,7 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
     }
 
     public void enqueue(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     private void deleteSaveSet(File dir) {
@@ -260,9 +259,9 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
     public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close ...");
         Semaphore sem = new Semaphore();
-        pipelineQueue.enqueue(new Close(sem));
+        eventLoop.submit(new Close(sem));
         sem.waitHere();
-        pipelineQueue.close();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close done");
     }
 
