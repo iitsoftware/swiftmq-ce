@@ -259,6 +259,8 @@
           <eventloop name="sys$amqp.connection.service"/>
           <eventloop name="sys$jms.connection.inbound"/>
           <eventloop name="sys$jms.connection.outbound"/>
+          <eventloop name="sys$mqtt.connection.inbound"/>
+          <eventloop name="sys$mqtt.connection.outbound"/>
         </eventloops>
       </group>
       <group name="swiftlet">
@@ -282,11 +284,6 @@
       </group>
     </groups>
     <pools>
-      <pool name="mqtt.connection" kernel-pool="true" max-threads="10">
-        <threads>
-          <thread name="sys$mqtt.connection.service"/>
-        </threads>
-      </pool>
       <pool name="routing.connection.mgr" kernel-pool="true" max-threads="1">
         <threads>
           <thread name="sys$routing.connection.mgr"/>

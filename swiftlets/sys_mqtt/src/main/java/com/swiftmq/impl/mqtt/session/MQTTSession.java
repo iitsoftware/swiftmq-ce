@@ -253,7 +253,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
         for (ReplayEntry replayEntry : replayLog) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", replay, packetId= " + replayEntry.packetid + ", message=" + replayEntry.message);
-            mqttConnection.get().getOutboundQueue().enqueue(replayEntry.message);
+            mqttConnection.get().getOutboundQueue().submit(replayEntry.message);
         }
     }
 
@@ -440,14 +440,14 @@ public class MQTTSession extends MQTTVisitorAdapter {
                     break;
                 case AT_LEAST_ONCE:
                     producer.commit();
-                    mqttConnection.get().getOutboundQueue().enqueue(
+                    mqttConnection.get().getOutboundQueue().submit(
                             new MqttPubAckMessage(new MqttFixedHeader(MqttMessageType.PUBACK, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                                     MqttMessageIdVariableHeader.from(packetId))
                     );
                     break;
                 case EXACTLY_ONCE:
                     producers.put(packetId, producer);
-                    mqttConnection.get().getOutboundQueue().enqueue(
+                    mqttConnection.get().getOutboundQueue().submit(
                             new MqttMessage(new MqttFixedHeader(MqttMessageType.PUBREC, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                                     MqttMessageIdVariableHeader.from(packetId))
                     );
@@ -484,7 +484,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
                 packetId = pid.getAndIncrement();
                 outboundPackets.put(packetId, po);
             }
-            mqttConnection.get().getOutboundQueue().enqueue(
+            mqttConnection.get().getOutboundQueue().submit(
                     new MqttPublishMessage(new MqttFixedHeader(MqttMessageType.PUBLISH, false, qos, false, 0),
                             new MqttPublishVariableHeader(topicName, packetId), byteBuf)
             );
@@ -537,7 +537,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
             mqttConnection.get().getConnectionQueue().enqueue(new POProtocolError(po.getMessage()));
         } else {
             try {
-                mqttConnection.get().getOutboundQueue().enqueue(
+                mqttConnection.get().getOutboundQueue().submit(
                         new MqttMessage(new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                                 MqttMessageIdVariableHeader.from(packetId))
                 );
@@ -564,7 +564,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
                 ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + ", packetId=" + packetId + ", producer=" + producer);
             if (producer != null)
                 producer.commit();
-            mqttConnection.get().getOutboundQueue().enqueue(
+            mqttConnection.get().getOutboundQueue().submit(
                     new MqttMessage(new MqttFixedHeader(MqttMessageType.PUBCOMP, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                             MqttMessageIdVariableHeader.from(packetId))
             );
@@ -614,7 +614,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
             grantedQoS.add(subscribe(subscription));
         }
         MqttSubAckPayload subAckPayload = new MqttSubAckPayload(grantedQoS);
-        mqttConnection.get().getOutboundQueue().enqueue(
+        mqttConnection.get().getOutboundQueue().submit(
                 new MqttSubAckMessage(new MqttFixedHeader(MqttMessageType.SUBACK, false, MqttQoS.AT_LEAST_ONCE, false, 0),
                         variableHeader, subAckPayload)
         );
@@ -622,7 +622,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
             try {
                 List<MqttPublishMessage> retained = ctx.retainer.get(topicFilterTranslate(subscription.topicName()));
                 for (MqttPublishMessage publishMessage : retained) {
-                    mqttConnection.get().getOutboundQueue().enqueue(
+                    mqttConnection.get().getOutboundQueue().submit(
                             new MqttPublishMessage(new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_MOST_ONCE, true, 0),
                                     new MqttPublishVariableHeader(publishMessage.variableHeader().topicName(), 0), publishMessage.payload())
                     );
@@ -653,7 +653,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
             e.printStackTrace();
         }
 
-        mqttConnection.get().getOutboundQueue().enqueue(
+        mqttConnection.get().getOutboundQueue().submit(
                 new MqttMessage(new MqttFixedHeader(MqttMessageType.UNSUBACK, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                         variableHeader, null)
         );

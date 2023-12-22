@@ -18,7 +18,6 @@
 package com.swiftmq.impl.jms.standard.v750;
 
 import com.swiftmq.auth.ChallengeResponseFactory;
-import com.swiftmq.impl.jms.standard.JMSSwiftlet;
 import com.swiftmq.impl.jms.standard.SwiftletContext;
 import com.swiftmq.impl.jms.standard.VersionedJMSConnection;
 import com.swiftmq.jms.smqp.v750.*;
@@ -33,7 +32,6 @@ import com.swiftmq.swiftlet.net.InboundHandler;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.requestreply.GenericRequest;
 import com.swiftmq.tools.requestreply.Reply;
@@ -71,7 +69,6 @@ public class JMSConnection
     Property sentTotalProp = null;
     EntityList tmpQueueEntityList = null;
     EntityList sessionEntityList = null;
-    ThreadPool myTp = null;
     long keepAliveInterval = 0;
     boolean smartTree = false;
     EventLoop inboundLoop = null;
@@ -102,8 +99,6 @@ public class JMSConnection
         inboundReader = new InboundReader(tracePrefix, connection);
         inboundReader.addRequestService(this); // Connection service
         inboundReader.setReplyHandler(outboundWriter);
-
-        myTp = ctx.threadpoolSwiftlet.getPool(JMSSwiftlet.TP_CONNSVC);
 
         inboundLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.connection.inbound", this);
         if (keepAliveInterval > 0) {
