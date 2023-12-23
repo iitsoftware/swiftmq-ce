@@ -22,35 +22,26 @@ import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.collection.ConcurrentExpandableList;
 import com.swiftmq.tools.collection.ExpandableList;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventLoopMUX {
     private SwiftletContext ctx;
     private final EventLoop[] eventLoops;
     private final ExpandableList<Pair> registrations = new ConcurrentExpandableList<>();
-    private final AtomicInteger nextLoop = new AtomicInteger();
+    private final AtomicWrappingCounterInteger nextLoop;
 
     public EventLoopMUX(SwiftletContext ctx, String id, int numberLoops) {
         this.ctx = ctx;
+        this.nextLoop = new AtomicWrappingCounterInteger(0, numberLoops - 1);
         this.eventLoops = new EventLoop[numberLoops];
         for (int i = 0; i < numberLoops; i++)
             eventLoops[i] = ctx.threadpoolSwiftlet.createEventLoop(id, new ProcessorProxy());
     }
 
-    private int getNextLoop() {
-        while (true) {
-            int current = nextLoop.get();
-            int next = (current + 1) % eventLoops.length;
-            if (nextLoop.compareAndSet(current, next)) {
-                return current;
-            }
-        }
-    }
-
     public int register(MUXProcessor muxProcessor) {
-        return registrations.add(new Pair(muxProcessor, eventLoops[getNextLoop()]));
+        return registrations.add(new Pair(muxProcessor, eventLoops[nextLoop.getAndIncrement()]));
     }
 
     public void unregister(int id) {

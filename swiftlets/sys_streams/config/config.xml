@@ -27,7 +27,7 @@
               display="Number Shared Event Loops"
               description="Shared from all Streams"
               min="2"
-              default="4"/>
+              default="10"/>
     <entitylist name="domains"
                 display="Domains"
                 description="Stream Domain Names">
