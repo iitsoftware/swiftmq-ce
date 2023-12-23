@@ -9,7 +9,7 @@
     <property name="collect-interval"
               type="java.lang.Long"
               display="Collect Interval"
-              description="Interval for collecting the Thread Counts per Pool"
+              description="Interval for collecting the Thread Counts"
               default="1000"/>
     <property name="group-shutdown-order"
               type="java.lang.String"
@@ -17,60 +17,6 @@
               description="The order in which the groups are being shut down"
               default=""
               reboot-required="true"/>
-    <entitylist name="pools" display="Pools" description="Threadpool Definitions">
-      <entitytemplate name="pool" display="Pool" description="Threadpool Definition">
-        <property name="kernel-pool"
-                  type="java.lang.Boolean"
-                  display="Kernel Pool"
-                  description="Marked as a Kernel Pool or not"
-                  default="false"
-                  reboot-required="true"/>
-        <property name="min-threads"
-                  type="java.lang.Integer"
-                  display="Minimum Threads"
-                  description="Minimum Threads in this Pool"
-                  min="0"
-                  default="0"
-                  reboot-required="true"/>
-        <property name="max-threads"
-                  type="java.lang.Integer"
-                  display="Maximum Threads"
-                  description="Maximum Threads in this Pool"
-                  default="-1"
-                  reboot-required="false"/>
-        <property name="queue-length-threshold"
-                  type="java.lang.Integer"
-                  display="Queue Length Threshold"
-                  description="Starts new Threads when the Queue Length reaches this Threshold"
-                  min="1"
-                  default="1"
-                  reboot-required="false"/>
-        <property name="additional-threads"
-                  type="java.lang.Integer"
-                  display="Additional Threads"
-                  description="Number Threads to Startup after reaching Threshold"
-                  min="1"
-                  default="1"
-                  reboot-required="false"/>
-        <property name="priority"
-                  type="java.lang.Integer"
-                  display="Priority"
-                  description="Priority for Threads in this Pool"
-                  min="1"
-                  max="10"
-                  default="5"
-                  reboot-required="true"/>
-        <property name="idle-timeout"
-                  type="java.lang.Long"
-                  display="Idle Timeout"
-                  description="Timeout for idling Threads in this Pool"
-                  default="120000"
-                  reboot-required="true"/>
-        <entitylist name="threads" display="Threads" description="Thread Assignment Definitions">
-          <entitytemplate name="thread" display="Thread" description="Thread Assignment Definition"/>
-        </entitylist>
-      </entitytemplate>
-    </entitylist>
     <entitylist name="groups" display="Groups" description="Event Loop Groups">
       <entitytemplate name="group" display="Group" description="Event Loop Group Definition">
         <entitylist name="eventloops" display="Event Loops" description="Event Loop Assignments">
