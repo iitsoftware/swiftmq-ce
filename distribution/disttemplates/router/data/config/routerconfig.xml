@@ -259,7 +259,7 @@
         <eventloops>
           <eventloop name="sys$amqp.connection.service"/>
           <eventloop name="sys$jms.connection.inbound"/>
-          <eventloop name="sys$jms.connection.outbound"/>
+          <eventloop name="sys$jms.connection.outbound" bulk-mode="true"/>
           <eventloop name="sys$mqtt.connection.inbound"/>
           <eventloop name="sys$mqtt.connection.outbound"/>
         </eventloops>
