@@ -27,7 +27,7 @@ handling, to name a few features.
 
 ## Documentation
 
-Find the documentation [here](https://www.swiftmq.com/docs/docs/ce/intro/).
+Find the documentation [here](https://docs.swiftmq.com).
 
 ## Obtain SwiftMQ CE
 
