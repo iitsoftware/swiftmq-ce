@@ -170,6 +170,16 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         }
     }
 
+    @Override
+    public void freeze() {
+        groupRegistry.freezeGroups();
+    }
+
+    @Override
+    public void unfreeze() {
+        groupRegistry.unfreezeGroups();
+    }
+
     protected void shutdown() {
         if (ctx == null)
             return;
