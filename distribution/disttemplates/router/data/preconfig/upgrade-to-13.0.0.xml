@@ -5,7 +5,7 @@
   <swiftlet name="sys$threadpool"
             group-shutdown-order="default network routing swiftlet processing storeprocessor store">
     <pools _op="remove"/>
-    <groups _op="replace">
+    <groups _op="add">
       <group name="network">
         <eventloops>
           <eventloop name="sys$amqp.connection.service"/>
