@@ -33,7 +33,6 @@ import com.swiftmq.swiftlet.auth.AuthenticationException;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.net.Connection;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
-import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 import com.swiftmq.tools.concurrent.Semaphore;
@@ -95,12 +94,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         sentSecProp = usage.getProperty("msgs-sent");
         receivedTotalProp = usage.getProperty("total-received");
         sentTotalProp = usage.getProperty("total-sent");
-        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$mqtt.connection.inbound", new EventProcessor() {
-            @Override
-            public void process(List<Object> list) {
-                list.forEach(e -> ((POObject) e).accept(MQTTConnection.this));
-            }
-        });
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$mqtt.connection.inbound", list -> list.forEach(e -> ((POObject) e).accept(MQTTConnection.this)));
         outboundQueue = new OutboundQueue(ctx, this);
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/created");

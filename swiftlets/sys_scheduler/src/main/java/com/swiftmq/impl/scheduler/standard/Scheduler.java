@@ -23,7 +23,6 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.EntityRemoveException;
 import com.swiftmq.swiftlet.scheduler.*;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
-import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
 
@@ -54,12 +53,7 @@ public class Scheduler
 
     public Scheduler(SwiftletContext ctx) {
         this.ctx = ctx;
-        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$scheduler.scheduler", new EventProcessor() {
-            @Override
-            public void process(List<Object> list) {
-                list.forEach(e -> ((POObject) e).accept(Scheduler.this));
-            }
-        });
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$scheduler.scheduler", list -> list.forEach(e -> ((POObject) e).accept(Scheduler.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
     }
 

@@ -22,11 +22,9 @@ import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.impl.routing.single.smqpr.v942.SMQRFactory;
 import com.swiftmq.impl.routing.single.smqpr.v942.ThrottleRequest;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
-import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.requestreply.Request;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThrottleQueue {
@@ -39,19 +37,16 @@ public class ThrottleQueue {
         this.ctx = ctx;
         this.connection = connection;
         sem = new Semaphore();
-        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.connection.throttle", new EventProcessor() {
-            @Override
-            public void process(List<Object> list) {
-                for (Object event : list) {
-                    if (closed.get())
-                        break;
-                    Request r = (Request) event;
-                    if (r.getDumpId() == SMQRFactory.THROTTLE_REQ) {
-                        sem.reset();
-                        sem.waitHere(((ThrottleRequest) r).getDelay());
-                    } else {
-                        connection.getOutboundQueue().submit(r);
-                    }
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.connection.throttle", list -> {
+            for (Object event : list) {
+                if (closed.get())
+                    break;
+                Request r = (Request) event;
+                if (r.getDumpId() == SMQRFactory.THROTTLE_REQ) {
+                    sem.reset();
+                    sem.waitHere(((ThrottleRequest) r).getDelay());
+                } else {
+                    connection.getOutboundQueue().submit(r);
                 }
             }
         });

@@ -28,10 +28,8 @@ import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
-import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.pipeline.POObject;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Scheduler
@@ -58,12 +56,7 @@ public abstract class Scheduler
         this.destinationRouter = destinationRouter;
         this.queueName = queueName;
         mp = new MP();
-        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.scheduler", new EventProcessor() {
-            @Override
-            public void process(List<Object> list) {
-                list.forEach(e -> ((POObject) e).accept(Scheduler.this));
-            }
-        });
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.scheduler", list -> list.forEach(e -> ((POObject) e).accept(Scheduler.this)));
     }
 
     public String getQueueName() {

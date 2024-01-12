@@ -30,7 +30,6 @@ import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.swiftlet.routing.event.RoutingEvent;
 import com.swiftmq.swiftlet.routing.event.RoutingListener;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
-import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.dump.Dumpalizer;
@@ -40,7 +39,6 @@ import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import javax.jms.DeliveryMode;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -61,12 +59,7 @@ public class DispatchQueue
 
     public DispatchQueue(SwiftletContext ctx) {
         this.ctx = ctx;
-        this.eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$mgmt.dispatch", new EventProcessor() {
-            @Override
-            public void process(List<Object> list) {
-                list.forEach(e -> ((POObject) e).accept(DispatchQueue.this));
-            }
-        });
+        this.eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$mgmt.dispatch", list -> list.forEach(e -> ((POObject) e).accept(DispatchQueue.this)));
         ctx.usageList.setEntityRemoveListener(new EntityRemoveListener() {
             public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException {
                 eventLoop.submit(new Disconnect(delEntity.getName()));

@@ -42,7 +42,6 @@ import com.swiftmq.swiftlet.auth.AuthenticationException;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
-import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
@@ -89,12 +88,9 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
         this.amqpHandler = amqpHandler;
         this.channelNo = channelNo;
         versionedConnection = amqpHandler.getVersionedConnection();
-        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.session.service", new EventProcessor() {
-            @Override
-            public void process(List<Object> list) {
-                for (Object event : list)
-                    ((POObject) event).accept(ChannelHandler.this);
-            }
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.session.service", list -> {
+            for (Object event : list)
+                ((POObject) event).accept(ChannelHandler.this);
         });
     }
 
