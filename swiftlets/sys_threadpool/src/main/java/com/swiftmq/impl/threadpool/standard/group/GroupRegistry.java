@@ -24,10 +24,7 @@ import com.swiftmq.impl.threadpool.standard.group.pool.VirtualThreadRunner;
 import com.swiftmq.mgmt.*;
 import com.swiftmq.util.SwiftUtilities;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class GroupRegistry {
@@ -46,7 +43,7 @@ public class GroupRegistry {
         this.tracePrefix = ctx.threadpoolSwiftlet.getName();
         this.groupList = (EntityList) ctx.config.getEntity("groups");
         this.groups = new ConcurrentHashMap<>();
-        registerGroup(new Group(DEFAULT_LAYER_ID));
+        registerGroup(new Group(DEFAULT_LAYER_ID, true));
         createGroups();
     }
 
@@ -55,7 +52,7 @@ public class GroupRegistry {
             public void onEntityAdd(Entity parent, Entity newEntity) throws EntityAddException {
                 try {
                     final String groupName = newEntity.getName();
-                    registerGroup(new Group(groupName));
+                    registerGroup(new Group(groupName, (Boolean) newEntity.getProperty("freezable").getValue()));
                     EntityListEventAdapter loopAdapter = new EntityListEventAdapter((EntityList) newEntity.getEntity("eventloops"), true, true) {
                         @Override
                         public void onEntityAdd(Entity parent, Entity newEntity) {
@@ -151,7 +148,13 @@ public class GroupRegistry {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(tracePrefix, this + "/freezeGroups");
         var groupOrderList = getGroupOrderList();
 
-        CompletableFuture<Void>[] futures = new CompletableFuture[groupOrderList.size()];
+        long freezableGroupCount = groupOrderList.stream()
+                .map(groups::get)
+                .filter(Objects::nonNull)
+                .filter(Group::isFreezable)
+                .count();
+
+        CompletableFuture[] futures = new CompletableFuture[(int) freezableGroupCount];
         int index = 0;
 
         for (String name : groupOrderList) {
@@ -159,12 +162,14 @@ public class GroupRegistry {
             if (group == null)
                 ctx.logSwiftlet.logError(tracePrefix, this + "/freezeGroups/unknown group in group-shutdown-order: " + name);
             else {
-                CompletableFuture<Void> groupFreezeFuture = new CompletableFuture<>();
-                futures[index++] = groupFreezeFuture;
-                ctx.logSwiftlet.logInformation(tracePrefix, this + "/freezeGroups/group " + name);
-                group.freezeGroup()
-                        .thenRun(() -> ctx.logSwiftlet.logInformation(tracePrefix, this + "/freezeGroups/group " + name + " done"))
-                        .thenRun(() -> groupFreezeFuture.complete(null));
+                if (group.isFreezable()) {
+                    CompletableFuture<Void> groupFreezeFuture = new CompletableFuture<>();
+                    futures[index++] = groupFreezeFuture;
+                    ctx.logSwiftlet.logInformation(tracePrefix, this + "/freezeGroups/group " + name);
+                    group.freezeGroup()
+                            .thenRun(() -> ctx.logSwiftlet.logInformation(tracePrefix, this + "/freezeGroups/group " + name + " done"))
+                            .thenRun(() -> groupFreezeFuture.complete(null));
+                }
             }
         }
 
@@ -181,9 +186,11 @@ public class GroupRegistry {
             if (group == null)
                 ctx.logSwiftlet.logError(tracePrefix, this + "/unfreezeGroups/unknown group in group-shutdown-order: " + name);
             else {
-                ctx.logSwiftlet.logInformation(tracePrefix, this + "/unfreezeGroups/group " + name);
-                group.unfreezeGroup();
-                ctx.logSwiftlet.logInformation(tracePrefix, this + "/unfreezeGroups/group " + name + " done");
+                if (group.isFreezable()) {
+                    ctx.logSwiftlet.logInformation(tracePrefix, this + "/unfreezeGroups/group " + name);
+                    group.unfreezeGroup();
+                    ctx.logSwiftlet.logInformation(tracePrefix, this + "/unfreezeGroups/group " + name + " done");
+                }
             }
         }
     }

@@ -26,15 +26,21 @@ import java.util.concurrent.Future;
 
 public class Group {
     private final String name;
+    private boolean freezable = true;
     private final List<EventLoopImpl> eventLoops;
 
-    public Group(String name) {
+    public Group(String name, boolean freezable) {
         this.name = name;
+        this.freezable = freezable;
         this.eventLoops = new ConcurrentList<>(new ArrayList<>());
     }
 
     public String getName() {
         return name;
+    }
+
+    public boolean isFreezable() {
+        return freezable;
     }
 
     public void addEventLoop(EventLoopImpl eventLoop) {

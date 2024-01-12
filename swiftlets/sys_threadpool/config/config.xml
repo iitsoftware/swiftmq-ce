@@ -19,6 +19,12 @@
               reboot-required="true"/>
     <entitylist name="groups" display="Groups" description="Event Loop Groups">
       <entitytemplate name="group" display="Group" description="Event Loop Group Definition">
+        <property name="freezable"
+                  type="java.lang.Boolean"
+                  display="Freezable"
+                  description="If true, the groups event loops can be frozen for HA"
+                  default="true"
+                  read-only="true"/>
         <entitylist name="eventloops" display="Event Loops" description="Event Loop Assignments">
           <entitytemplate name="eventloop" display="Event Loop" description="Name of the Event Loop">
             <property name="virtual"
