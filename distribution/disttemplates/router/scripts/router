@@ -6,13 +6,13 @@ JAVA_HOME=$(cat .javahome)
 EXECUTABLES=$(cat .executables)
 CLASSP="../jars/swiftmq.jar:../graalvm/*"
 OPENS="--module-path=../graalvm --add-modules=org.graalvm.polyglot --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS -Dnashorn.args=--no-deprecation-warning"
-PRECONFIG="-Dswiftmq.preconfig=${$EXECUTABLES/java $CLASSP com.swiftmq.SystemPreconfig)"
+PRECONFIG="$("$EXECUTABLES"/java -cp "$CLASSP" com.swiftmq.SystemPreconfig)"
 if [ "$1" != "" ]
 then
   PRECONFIG="$PRECONFIG,$1"
   shift
 fi
-ROUTEROPT="$OPENS $PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret"
+ROUTEROPT="$OPENS -Dswiftmq.preconfig=$PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret"
 
 if [[ ! -e ../certs/.certimported ]]; then
    CACERTS="$JAVAHOME/lib/security/cacerts"
@@ -34,9 +34,4 @@ fi
 
 echo "Starting SwiftMQ with '$JVMPARAM' with '$JAVA_HOME'."
 echo "Please have a look at data/log/stdout.log ..."
-if [ "${EXECUTABLES}" != "" ]
-then
-  exec ${EXECUTABLES}/java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
-else
-  exec java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
-fi
+exec ${EXECUTABLES}/java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
