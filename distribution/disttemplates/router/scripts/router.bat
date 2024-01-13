@@ -8,23 +8,27 @@ set OPENS=--module-path=../graalvm --add-modules=org.graalvm.polyglot --add-open
 set "PRECONFIG=-Dswiftmq.preconfig="
 set "TEMP_FILE=tempfile.txt"
 
+set "PRECONFIG=-Dswiftmq.preconfig="
+set "TEMP_FILE=tempfile.txt"
+
 :: Clear the temp file
 type nul > %TEMP_FILE%
 
-:: Accumulate file names
-for %%F in (..\data\preconfig\*.xml) do (
+:: Accumulate file names, sorted
+for /f "delims=" %%F in ('dir "..\data\preconfig\*.xml" /b /on') do (
     echo %%F >> %TEMP_FILE%
 )
 
-:: Read the temp file and build the PRECONFIG string
-set /p PRECONFIG=%PRECONFIG%<%TEMP_FILE%
-for /f "skip=1 delims=" %%A in (%TEMP_FILE%) do (
-    set /p =,%PRECONFIG%%%A< nul >> %TEMP_FILE%
-    set /p PRECONFIG=<%TEMP_FILE%
+:: Build the PRECONFIG string
+set "first=true"
+for /f "delims=" %%A in (%TEMP_FILE%) do (
+    if defined first (
+        set "PRECONFIG=%PRECONFIG%..\data\preconfig\%%A"
+        set "first="
+    ) else (
+        set "PRECONFIG=%PRECONFIG%,..\data\preconfig\%%A"
+    )
 )
-
-:: Display the result
-echo %PRECONFIG%
 
 :: Clean up the temporary file
 del %TEMP_FILE%
