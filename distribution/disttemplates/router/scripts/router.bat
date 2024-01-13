@@ -9,29 +9,16 @@ set "PRECONFIG=-Dswiftmq.preconfig="
 set "TEMP_FILE=tempfile.txt"
 
 set "PRECONFIG=-Dswiftmq.preconfig="
-set "TEMP_FILE=tempfile.txt"
+set "FIRST_FILE_FOUND=0"
 
-:: Clear the temp file
-type nul > %TEMP_FILE%
-
-:: Accumulate file names, sorted
 for /f "delims=" %%F in ('dir "..\data\preconfig\*.xml" /b /on') do (
-    echo %%F >> %TEMP_FILE%
-)
-
-:: Build the PRECONFIG string
-set "first=true"
-for /f "delims=" %%A in (%TEMP_FILE%) do (
-    if defined first (
-        set "PRECONFIG=%PRECONFIG%..\data\preconfig\%%A"
-        set "first="
+    if %FIRST_FILE_FOUND%==0 (
+        set PRECONFIG=%PRECONFIG%..\data\preconfig\%%F
+        set FIRST_FILE_FOUND=1
     ) else (
-        set "PRECONFIG=%PRECONFIG%,..\data\preconfig\%%A"
+        set PRECONFIG=%PRECONFIG%,..\data\preconfig\%%F
     )
 )
-
-:: Clean up the temporary file
-del %TEMP_FILE%
 
 IF NOT "%~1"=="" (
   set PRECONFIG=%PRECONFIG%,%~1
