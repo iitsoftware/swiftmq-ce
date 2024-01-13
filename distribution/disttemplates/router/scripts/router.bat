@@ -5,20 +5,20 @@ set /p EXECUTABLES=<.executables
 set /p JAVA_HOME=<.javahome
 set OPENS=--module-path=../graalvm --add-modules=org.graalvm.polyglot --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED -Dnashorn.args=--no-deprecation-warning
 
+setlocal enabledelayedexpansion
 set "PRECONFIG=-Dswiftmq.preconfig="
-set "TEMP_FILE=tempfile.txt"
-
-set "PRECONFIG=-Dswiftmq.preconfig="
-set "FIRST_FILE_FOUND=0"
 
 for /f "delims=" %%F in ('dir "..\data\preconfig\*.xml" /b /on') do (
-    if %FIRST_FILE_FOUND%==0 (
-        set PRECONFIG=%PRECONFIG%..\data\preconfig\%%F
-        set FIRST_FILE_FOUND=1
+    set "file=..\data\preconfig\%%F"
+    if not "!PRECONFIG!"=="-Dswiftmq.preconfig=" (
+        set "PRECONFIG=!PRECONFIG!,!file!"
     ) else (
-        set PRECONFIG=%PRECONFIG%,..\data\preconfig\%%F
+        set "PRECONFIG=!PRECONFIG!!file!"
     )
 )
+
+echo !PRECONFIG!
+endlocal
 
 IF NOT "%~1"=="" (
   set PRECONFIG=%PRECONFIG%,%~1
