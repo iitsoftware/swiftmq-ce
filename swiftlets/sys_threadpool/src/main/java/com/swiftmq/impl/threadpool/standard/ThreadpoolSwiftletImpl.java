@@ -49,7 +49,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     public static final String PROP_PLATFORM_THREADS = "01platform";
     public static final String PROP_VIRTUAL_THREADS = "02virtual";
     public static final String PROP_ADHOC_THREADS = "03adhoc";
-    private static Thread keepAliveThread = null;
+    private Thread keepAliveThread = null;
 
     SwiftletContext ctx = null;
     GroupRegistry groupRegistry = null;
@@ -58,19 +58,18 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
 
-    private static void initializeKeepAliveThread() {
-        keepAliveThread = Thread.startVirtualThread(() -> {
-            // The thread waits indefinitely until it is interrupted
-            LockSupport.park();
+    private void initializeKeepAliveThread() {
+        keepAliveThread = new Thread(() -> {
+            ctx.logSwiftlet.logInformation(getName(), "Keep-alive thread running.");
+            LockSupport.park(); // The thread waits here until it is unparked
+            ctx.logSwiftlet.logInformation(getName(), "Keep-alive thread terminating.");
         });
-
-        // Ensure it's a non-daemon thread
         keepAliveThread.setDaemon(false);
+        keepAliveThread.start();
     }
 
-    private static void releaseKeepAliveThread() {
-        // Interrupt the keep-alive thread to stop it
-        keepAliveThread.interrupt();
+    private void releaseKeepAliveThread() {
+        LockSupport.unpark(keepAliveThread); // Unpark the keep-alive thread to stop it
     }
 
     private void collectChanged(long oldInterval, long newInterval) {
