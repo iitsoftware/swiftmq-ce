@@ -26,6 +26,7 @@ import com.swiftmq.util.SwiftUtilities;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class GroupRegistry {
     private static final String DEFAULT_LAYER_ID = "default";
@@ -209,7 +210,8 @@ public class GroupRegistry {
     }
 
     private List<String> getGroupOrderList() {
-        return Arrays.stream(SwiftUtilities.tokenize((String) ctx.config.getProperty("group-shutdown-order").getValue(), " ")).toList();
+        return Arrays.stream(SwiftUtilities.tokenize((String) ctx.config.getProperty("group-shutdown-order").getValue(), " "))
+                .collect(Collectors.toList());
     }
 
     public void close() {
