@@ -38,8 +38,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class StreamController {
@@ -108,34 +110,50 @@ public class StreamController {
     }
 
     private void evalScript() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript ...");
-        ScriptEngineManager manager = new ScriptEngineManager();
-        ClassLoader classLoader = createClassLoader();
-        streamContext.classLoader = classLoader;
-        Thread.currentThread().setContextClassLoader(classLoader);
-        ScriptEngine engine = null;
-        if (ctx.ISGRAAL)
-            engine = GraalSetup.engine(classLoader);
-        else
-            engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
-        if (engine == null)
-            throw new Exception("Engine for script-language '" + entity.getProperty("script-language").getValue() + "' not found!");
-        ScriptContext newContext = new SimpleScriptContext();
-        streamContext.engineScope = engine.createBindings();
-        streamContext.engineScope.put("stream", streamContext.stream);
-        streamContext.engineScope.put("parameters", new Parameters((EntityList) entity.getEntity("parameters")));
-        streamContext.engineScope.put("time", new TimeSupport());
-        streamContext.engineScope.put("os", new OsSupport());
-        streamContext.engineScope.put("repository", repositorySupport);
-        streamContext.engineScope.put("transform", new ContentTransformer());
-        streamContext.engineScope.put("typeconvert", new TypeConverter());
-        newContext.setBindings(streamContext.engineScope, ScriptContext.ENGINE_SCOPE);
+        // This must be covered by a platform thread until Polyglot Virtual Threads are supported by GraalVM
+        AtomicReference<Exception> exceptionRef = new AtomicReference<>(null);
+        CompletableFuture<?> future = new CompletableFuture<>();
+        ctx.evalScriptLoop.submit(new Runnable() {
+            @Override
+            public void run() {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript ...");
+                try {
+                    ScriptEngineManager manager = new ScriptEngineManager();
+                    ClassLoader classLoader = createClassLoader();
+                    streamContext.classLoader = classLoader;
+                    Thread.currentThread().setContextClassLoader(classLoader);
+                    ScriptEngine engine = null;
+                    if (ctx.ISGRAAL)
+                        engine = GraalSetup.engine(classLoader);
+                    else
+                        engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
+                    if (engine == null)
+                        throw new Exception("Engine for script-language '" + entity.getProperty("script-language").getValue() + "' not found!");
+                    ScriptContext newContext = new SimpleScriptContext();
+                    streamContext.engineScope = engine.createBindings();
+                    streamContext.engineScope.put("stream", streamContext.stream);
+                    streamContext.engineScope.put("parameters", new Parameters((EntityList) entity.getEntity("parameters")));
+                    streamContext.engineScope.put("time", new TimeSupport());
+                    streamContext.engineScope.put("os", new OsSupport());
+                    streamContext.engineScope.put("repository", repositorySupport);
+                    streamContext.engineScope.put("transform", new ContentTransformer());
+                    streamContext.engineScope.put("typeconvert", new TypeConverter());
+                    newContext.setBindings(streamContext.engineScope, ScriptContext.ENGINE_SCOPE);
 
-        engine.eval(loadScript((String) entity.getProperty("script-file").getValue()), newContext);
-        Thread.currentThread().setContextClassLoader(null);
-
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript done");
+                    engine.eval(loadScript((String) entity.getProperty("script-file").getValue()), newContext);
+                    Thread.currentThread().setContextClassLoader(null);
+                } catch (Exception e) {
+                    exceptionRef.set(e);
+                }
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript done");
+                future.complete(null);
+            }
+        });
+        future.get();
+        if (exceptionRef.get() != null)
+            throw exceptionRef.get();
     }
 
     private void start() throws Exception {
