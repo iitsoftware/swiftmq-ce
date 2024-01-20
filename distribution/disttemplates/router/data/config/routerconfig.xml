@@ -65,6 +65,7 @@
   <swiftlet name="sys$deploy">
     <deploy-spaces>
       <deploy-space name="extension-swiftlets" path="../data/deploy"/>
+      <deploy-space name="jms-app" path="../data/jmsapp"/>
     </deploy-spaces>
   </swiftlet>
 
