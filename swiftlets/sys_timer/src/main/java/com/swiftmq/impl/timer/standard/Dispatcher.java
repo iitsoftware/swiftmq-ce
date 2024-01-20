@@ -49,10 +49,6 @@ class Dispatcher implements Runnable {
         this.ctx = ctx;
     }
 
-    public void stop() {
-        valid.set(false);
-    }
-
     public void run() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$timer", "Dispatcher, started.");
@@ -247,7 +243,7 @@ class Dispatcher implements Runnable {
     }
 
     void close() {
-        if (valid.getAndSet(false))
+        if (!valid.getAndSet(false))
             return;
         ;
         lock.lock();

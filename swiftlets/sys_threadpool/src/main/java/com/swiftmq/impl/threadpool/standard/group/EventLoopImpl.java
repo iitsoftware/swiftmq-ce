@@ -20,13 +20,11 @@ package com.swiftmq.impl.threadpool.standard.group;
 import com.swiftmq.impl.threadpool.standard.group.pool.ThreadRunner;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
-import com.swiftmq.tools.collection.ConcurrentList;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -49,7 +47,6 @@ public class EventLoopImpl implements EventLoop {
     private final EventProcessor eventProcessor;
     private final List<Object> events = new ArrayList<>();
     private CompletableFuture<Void> freezeFuture = null;
-    private final List<CompletableFuture<?>> taskFutures = new ConcurrentList<>(new ArrayList<>());
 
     public EventLoopImpl(String id, boolean bulkMode, EventProcessor eventProcessor, ThreadRunner threadPool) {
         this.id = id;
@@ -131,16 +128,6 @@ public class EventLoopImpl implements EventLoop {
         }
     }
 
-    private void waitForAllTasksCompletion() {
-        CompletableFuture<Void> allTasks = CompletableFuture.allOf(taskFutures.toArray(new CompletableFuture[0]));
-        try {
-            allTasks.get();
-        } catch (InterruptedException | ExecutionException e) {
-            // Handle exceptions, possibly log them or rethrow as appropriate
-        }
-        taskFutures.clear();
-    }
-
     public void setCloseListener(CloseListener closeListener) {
         this.closeListener = closeListener;
     }
@@ -153,9 +140,9 @@ public class EventLoopImpl implements EventLoop {
                 // Complete immediately if no active runs
                 return CompletableFuture.completedFuture(null);
             }
-            freezeFuture = new CompletableFuture<Void>();
+            freezeFuture = new CompletableFuture<>();
             thread.interrupt(); // Interrupt the thread to exit from eventQueue.take()
-            return (CompletableFuture<Void>) freezeFuture;
+            return freezeFuture;
         } finally {
             freezeLock.unlock();
         }
@@ -170,15 +157,6 @@ public class EventLoopImpl implements EventLoop {
         } finally {
             freezeLock.unlock();
         }
-    }
-
-    @Override
-    public CompletableFuture<?> executeInNewThread(Runnable runnable) {
-        CompletableFuture<?> taskFuture = threadPool.execute(runnable);
-        taskFutures.add(taskFuture);
-        // Remove the future from the list when it completes
-        taskFuture.whenComplete((result, throwable) -> taskFutures.remove(taskFuture));
-        return taskFuture;
     }
 
     @Override
@@ -204,7 +182,6 @@ public class EventLoopImpl implements EventLoop {
             queueLock.unlock();
         }
         thread.interrupt();
-        waitForAllTasksCompletion();
     }
 
     @Override
