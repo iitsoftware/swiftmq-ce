@@ -105,7 +105,10 @@ public class NettyTCPListener extends TCPListener {
         ChannelFuture future = channelFuture.getAndSet(null);
         if (future != null)
             future.channel().close();
-        workerGroup.shutdownGracefully();
-        bossGroup.shutdownGracefully();
+        try {
+            workerGroup.shutdownGracefully().get();
+            bossGroup.shutdownGracefully().get();
+        } catch (Exception ignored) {
+        }
     }
 }

@@ -17,15 +17,13 @@
 
 package com.swiftmq.impl.threadpool.standard.group.pool;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class VirtualThreadRunner implements ThreadRunner {
     private final ExecutorService virtualExecutor;
     private final AtomicInteger activeTaskCount = new AtomicInteger(0);
+    private final ConcurrentHashMap<Runnable, Boolean> runningTasks = new ConcurrentHashMap<>();
 
     public VirtualThreadRunner() {
         this.virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
@@ -34,11 +32,13 @@ public class VirtualThreadRunner implements ThreadRunner {
     @Override
     public CompletableFuture<?> execute(Runnable task) {
         Runnable wrappedTask = () -> {
+            runningTasks.put(task, Boolean.TRUE);
             activeTaskCount.incrementAndGet();
             try {
                 task.run();
             } finally {
                 activeTaskCount.decrementAndGet();
+                runningTasks.remove(task);
             }
         };
         return CompletableFuture.runAsync(wrappedTask, virtualExecutor);
@@ -48,8 +48,18 @@ public class VirtualThreadRunner implements ThreadRunner {
         return activeTaskCount.get();
     }
 
+    public void listActiveTasks() {
+        if (runningTasks.isEmpty()) {
+            System.out.println("No active tasks.");
+        } else {
+            System.out.println("Active tasks:");
+            runningTasks.keySet().forEach(task -> System.out.println(task.toString()));
+        }
+    }
+
     @Override
     public void shutdown() {
+        listActiveTasks();
         virtualExecutor.shutdown();
         try {
             if (!virtualExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -66,6 +76,7 @@ public class VirtualThreadRunner implements ThreadRunner {
 
     // Method to allow controlled shutdown with a custom timeout
     public void shutdown(long timeout, TimeUnit unit) {
+        listActiveTasks();
         virtualExecutor.shutdown();
         try {
             if (!virtualExecutor.awaitTermination(timeout, unit)) {

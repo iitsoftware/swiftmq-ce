@@ -102,7 +102,10 @@ public class NettyTCPConnector extends TCPConnector {
         ChannelFuture future = channelFuture.getAndSet(null);
         if (future != null)
             future.channel().close();
-        group.shutdownGracefully();
+        try {
+            group.shutdownGracefully().get();
+        } catch (Exception ignored) {
+        }
         connectionHandler.set(null);
         connection.set(null);
     }

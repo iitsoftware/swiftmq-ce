@@ -27,6 +27,7 @@ import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.io.File;
 import java.io.RandomAccessFile;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -199,6 +200,8 @@ public class LogManagerEventProcessor implements LogManager, EventProcessor {
                 checkPointPending = true;
                 checkPointInitiated = false;
             }
+        } catch (ClosedByInterruptException e) {
+            ctx.logSwiftlet.logInformation("sys$store", this + "/process, closed by interruption");
         } catch (Exception e) {
             // PANIC
             if (ctx.traceSpace.enabled)
