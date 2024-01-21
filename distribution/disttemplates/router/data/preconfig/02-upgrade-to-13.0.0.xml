@@ -49,7 +49,7 @@
       </group>
       <group name="store">
         <eventloops>
-          <eventloop name="sys$store.log" virtual="false"/>
+          <eventloop name="sys$store.log">
         </eventloops>
       </group>
     </groups>

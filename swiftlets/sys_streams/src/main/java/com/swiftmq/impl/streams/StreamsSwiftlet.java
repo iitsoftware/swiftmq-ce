@@ -437,6 +437,7 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
         } catch (Exception e) {
         }
         ctx.eventLoopMUX.close();
+        ctx.evalScriptLoop.close();
         isShutdown = false;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done.");
     }

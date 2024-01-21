@@ -113,9 +113,7 @@ public class StreamController {
         // This must be covered by a platform thread until Polyglot Virtual Threads are supported by GraalVM
         AtomicReference<Exception> exceptionRef = new AtomicReference<>(null);
         CompletableFuture<?> future = new CompletableFuture<>();
-        ctx.evalScriptLoop.submit(new Runnable() {
-            @Override
-            public void run() {
+        ctx.evalScriptLoop.submit((Runnable) () -> {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript ...");
                 try {
@@ -149,7 +147,6 @@ public class StreamController {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript done");
                 future.complete(null);
-            }
         });
         future.get();
         if (exceptionRef.get() != null)

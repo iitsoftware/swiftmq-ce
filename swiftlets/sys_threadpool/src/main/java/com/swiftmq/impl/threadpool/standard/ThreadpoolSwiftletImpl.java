@@ -202,9 +202,9 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: closing thread pools ...");
         releaseKeepAliveThread();
-        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocVirtualThreadRunner shutdown");
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown");
         adHocVirtualThreadRunner.shutdown(10, TimeUnit.SECONDS);
-        ctx.logSwiftlet.logInformation(getName(), "/shutdown/adHocVirtualThreadRunner shutdown done");
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown done");
         groupRegistry.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: done.");
     }
