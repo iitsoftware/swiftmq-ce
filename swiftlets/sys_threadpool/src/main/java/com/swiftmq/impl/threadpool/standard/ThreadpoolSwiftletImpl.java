@@ -41,7 +41,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.LockSupport;
 
 public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         implements TimerListener {
@@ -49,7 +48,6 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     public static final String PROP_PLATFORM_THREADS = "01platform";
     public static final String PROP_VIRTUAL_THREADS = "02virtual";
     public static final String PROP_ADHOC_THREADS = "03adhoc";
-    private Thread keepAliveThread = null;
 
     SwiftletContext ctx = null;
     GroupRegistry groupRegistry = null;
@@ -58,19 +56,6 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
 
-    private void initializeKeepAliveThread() {
-        keepAliveThread = new Thread(() -> {
-            ctx.logSwiftlet.logInformation(getName(), "Keep-alive thread running.");
-            LockSupport.park(); // The thread waits here until it is unparked
-            ctx.logSwiftlet.logInformation(getName(), "Keep-alive thread terminating.");
-        });
-        keepAliveThread.setDaemon(false);
-        keepAliveThread.start();
-    }
-
-    private void releaseKeepAliveThread() {
-        LockSupport.unpark(keepAliveThread); // Unpark the keep-alive thread to stop it
-    }
 
     private void collectChanged(long oldInterval, long newInterval) {
         if (!collectOn.get())
@@ -147,7 +132,6 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     protected void startup(Configuration config) throws SwiftletException {
         ctx = new SwiftletContext(config, this);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
-        initializeKeepAliveThread();
 
         groupRegistry = new GroupRegistry(ctx);
         adHocVirtualThreadRunner = new VirtualThreadRunner();
@@ -201,7 +185,6 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         if (ctx == null)
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: closing thread pools ...");
-        releaseKeepAliveThread();
         ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown");
         adHocVirtualThreadRunner.shutdown(10, TimeUnit.SECONDS);
         ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown done");
