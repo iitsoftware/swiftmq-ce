@@ -32,4 +32,6 @@ public interface LogManager {
     void setForceSync(boolean forceSync);
 
     boolean isForceSync();
+
+    void initLogFile();
 }

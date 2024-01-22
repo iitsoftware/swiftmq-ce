@@ -54,13 +54,16 @@ public class LogManagerEventProcessor implements LogManager, EventProcessor {
         this.maxLogSize = maxLogSize;
         this.forceSync = forceSync;
         logFile = ctx.storeSwiftlet.createTxLogFile(path + File.separatorChar + FILENAME, "rw");
-        logFile.init(maxLogSize + (maxLogSize / 4));
         semList = new ArrayList<>();
         releaseList = new ArrayList<>();
         callbackList = new ArrayList<>();
         ctx.logSwiftlet.logInformation("sys$store", this + "/create, maxLogSize=" + maxLogSize + ", file=" + path + File.separatorChar + FILENAME + ", logFile=" + logFile);
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", this + "/create, maxLogSize=" + maxLogSize + ", file=" + path + File.separatorChar + FILENAME + ", logFile=" + logFile);
+    }
+
+    public void initLogFile() {
+        logFile.init(maxLogSize + (maxLogSize / 4));
     }
 
     public void setLogManagerListener(LogManagerListener logManagerListener) {

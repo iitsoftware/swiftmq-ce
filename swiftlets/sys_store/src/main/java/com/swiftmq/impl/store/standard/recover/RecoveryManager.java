@@ -274,6 +274,9 @@ public class RecoveryManager {
         ctx.logSwiftlet.logInformation("sys$store", this + "/restart, " + commits + " transactions rolled forward");
         ctx.logSwiftlet.logInformation("sys$store", this + "/restart, " + rollbacks + " transactions aborted");
 
+        // Init the log file
+        ctx.logManager.initLogFile();
+
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/restart...done.");
     }
 
