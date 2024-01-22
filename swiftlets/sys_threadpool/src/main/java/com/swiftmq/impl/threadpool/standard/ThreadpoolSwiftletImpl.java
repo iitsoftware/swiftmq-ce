@@ -96,7 +96,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
 
     @Override
     public EventLoop createEventLoop(String id, EventProcessor eventProcessor) {
-        EventLoopImpl eventLoop = new EventLoopImpl(id, groupRegistry.isBulkMode(id), eventProcessor, groupRegistry.threadRunnerForEventLoop(id));
+        EventLoopImpl eventLoop = new EventLoopImpl(ctx, id, groupRegistry.isBulkMode(id), eventProcessor, groupRegistry.threadRunnerForEventLoop(id));
         groupRegistry.getGroup(id).addEventLoop(eventLoop);
         return eventLoop;
     }

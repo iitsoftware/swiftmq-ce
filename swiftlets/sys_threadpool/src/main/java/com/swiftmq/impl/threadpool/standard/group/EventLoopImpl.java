@@ -17,6 +17,7 @@
 
 package com.swiftmq.impl.threadpool.standard.group;
 
+import com.swiftmq.impl.threadpool.standard.SwiftletContext;
 import com.swiftmq.impl.threadpool.standard.group.pool.ThreadRunner;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
@@ -26,19 +27,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class EventLoopImpl implements EventLoop {
+    private SwiftletContext ctx;
     private final List<Object> eventQueue = new LinkedList<>();
-    private final AtomicBoolean isFrozen = new AtomicBoolean(false);
-    private final AtomicBoolean isClosing = new AtomicBoolean(false);
-    private final AtomicInteger activeRuns = new AtomicInteger(0);
-    private final ReentrantLock freezeLock = new ReentrantLock();
+    private final AtomicBoolean shouldTerminate = new AtomicBoolean(false);
     private final ReentrantLock queueLock = new ReentrantLock();
     private final Condition notEmpty = queueLock.newCondition();
-    private final Condition freezeCondition = freezeLock.newCondition();
     private volatile Thread thread = null;
     private final ThreadRunner threadPool;
     private CloseListener closeListener = null;
@@ -46,85 +44,98 @@ public class EventLoopImpl implements EventLoop {
     private final boolean bulkMode;
     private final EventProcessor eventProcessor;
     private final List<Object> events = new ArrayList<>();
-    private CompletableFuture<Void> freezeFuture = null;
+    private final AtomicReference<CompletableFuture<Void>> freezeFuture = new AtomicReference<>();
 
-    public EventLoopImpl(String id, boolean bulkMode, EventProcessor eventProcessor, ThreadRunner threadPool) {
+    public EventLoopImpl(SwiftletContext ctx, String id, boolean bulkMode, EventProcessor eventProcessor, ThreadRunner threadPool) {
+        this.ctx = ctx;
         this.id = id;
         this.bulkMode = bulkMode;
         this.eventProcessor = eventProcessor;
         this.threadPool = threadPool;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/created");
         initializeThread();
     }
 
-    private void initializeThread() {
-        threadPool.execute(() -> {
-            thread = Thread.currentThread(); // store it for interruption
-            while (!isClosing.get()) {
-                try {
-                    queueLock.lock();
-                    try {
-                        if (eventQueue.isEmpty())
-                            notEmpty.await();
-                        if (bulkMode) {
-                            events.addAll(eventQueue);
-                            eventQueue.clear();
-                        } else
-                            events.add(eventQueue.removeFirst());
-                    } finally {
-                        queueLock.unlock();
-                    }
-
-                    activeRuns.incrementAndGet();
-                    try {
-                        eventProcessor.process(events);
-                    } finally {
-                        events.clear();
-                        activeRuns.decrementAndGet();
-                        signalIfFrozen();
-                    }
-                } catch (InterruptedException e) {
-                    if (isClosing.get()) {
-                        // If closing, exit the loop and terminate the thread
-                        break;
-                    }
-                    // If interrupted for other reasons, such as freeze, check the freeze state
-                    checkFreeze();
-                }
-            }
-        });
-    }
-
-
-    private void checkFreeze() {
-        freezeLock.lock();
+    public CompletableFuture<Void> freeze() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/freeze");
+        queueLock.lock();
         try {
-            while (isFrozen.get()) {
-                try {
-                    freezeCondition.await();
-                } catch (InterruptedException e) {
-                    // Check if the interruption is due to closing
-                    if (isClosing.get()) {
-                        break;
-                    }
-                    // If not closing, continue waiting
-                }
-            }
+            shouldTerminate.set(true);
+            freezeFuture.set(new CompletableFuture<>());
+            notEmpty.signalAll(); // Wake up the thread if it's waiting
+            return freezeFuture.get();
         } finally {
-            freezeLock.unlock();
+            queueLock.unlock();
         }
     }
 
-    private void signalIfFrozen() {
-        freezeLock.lock();
+    public void unfreeze() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/unfreeze");
+        queueLock.lock();
         try {
-            if (isFrozen.get() && activeRuns.get() == 0) {
-                freezeCondition.signalAll();
-                if (freezeFuture != null && !freezeFuture.isDone()) {
-                    freezeFuture.complete(null);
-                }
+            shouldTerminate.set(false);
+            initializeThread(); // Start a new thread if needed
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/unfreeze done");
+        } finally {
+            queueLock.unlock();
+        }
+    }
+
+    private void initializeThread() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/initializeThread");
+        threadPool.execute(() -> {
+            thread = Thread.currentThread();
+            while (!shouldTerminate.get()) {
+                processEvents();
+            }
+
+            // Complete the freezeFuture here after the loop has terminated
+            CompletableFuture<Void> f = freezeFuture.getAndSet(null);
+            if (f != null) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/calling freezeFuture");
+                f.complete(null);
+            }
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/terminating");
+        });
+    }
+
+    private void processEvents() {
+        queueLock.lock();
+        try {
+            while (eventQueue.isEmpty() && !shouldTerminate.get()) {
+                notEmpty.await();
+            }
+            if (shouldTerminate.get()) {
+                return; // Exit the method if the loop should terminate
+            }
+
+            if (bulkMode) {
+                events.addAll(eventQueue);
+                eventQueue.clear();
+            } else {
+                events.add(eventQueue.removeFirst());
+            }
+        } catch (InterruptedException e) {
+            if (shouldTerminate.get()) {
+                return;
             }
         } finally {
-            freezeLock.unlock();
+            queueLock.unlock();
+        }
+
+        eventProcessor.process(events);
+        events.clear();
+    }
+
+    @Override
+    public void submit(Object event) {
+        queueLock.lock();
+        try {
+            eventQueue.add(event);
+            notEmpty.signal();
+        } finally {
+            queueLock.unlock();
         }
     }
 
@@ -132,71 +143,35 @@ public class EventLoopImpl implements EventLoop {
         this.closeListener = closeListener;
     }
 
-    public CompletableFuture<Void> freeze() {
-        freezeLock.lock();
-        try {
-            isFrozen.set(true);
-            if (activeRuns.get() == 0) {
-                // Complete immediately if no active runs
-                return CompletableFuture.completedFuture(null);
-            }
-            freezeFuture = new CompletableFuture<>();
-            thread.interrupt(); // Interrupt the thread to exit from eventQueue.take()
-            return freezeFuture;
-        } finally {
-            freezeLock.unlock();
-        }
-    }
-
-    public void unfreeze() {
-        freezeLock.lock();
-        try {
-            isFrozen.set(false);
-            freezeFuture = null;
-            freezeCondition.signalAll(); // Wake up threads waiting in checkFreeze
-        } finally {
-            freezeLock.unlock();
-        }
-    }
-
-    @Override
-    public void submit(Object event) {
-        queueLock.lock();
-        try {
-            if (!isClosing.get()) {
-                eventQueue.add(event);
-                notEmpty.signal();
-            }
-        } finally {
-            queueLock.unlock();
-        }
-
-    }
-
     public void internalClose() {
-        isClosing.set(true);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/internalClose  ...");
+        shouldTerminate.set(true);
         queueLock.lock();
         try {
-            notEmpty.signal();
+            notEmpty.signalAll(); // Wake up the thread if it's waiting
         } finally {
             queueLock.unlock();
         }
-        thread.interrupt();
+        if (thread != null) {
+            thread.interrupt(); // Optional: Interrupt the thread to speed up closing
+        }
+        if (closeListener != null) {
+            closeListener.onClose(this);
+        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/internalClose done");
     }
 
     @Override
     public void close() {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/close  ...");
         internalClose();
-        if (closeListener != null) {
-            closeListener.onClose(this);
-        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/close  done");
     }
 
     @Override
     public String toString() {
-        return "EventLoopImpl {" +
+        return "EventLoopImpl " +
                 "id='" + id + '\'' +
-                ", bulkMode=" + bulkMode +
-                '}';
+                ", bulkMode=" + bulkMode;
     }
 }
