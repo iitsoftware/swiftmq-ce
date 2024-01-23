@@ -2313,14 +2313,19 @@ public class MessageQueue extends AbstractQueue {
             List<StoreId> dTx = activeTransactions.get(dTxId.getTxId());
             if (ctx.queueSpace.enabled)
                 ctx.queueSpace.trace(getQueueName(), "moveToTransaction messageIndex=" + messageIndex + ", sourceTxId=" + txId + ", destTxId=" + dTxId.getTxId());
-            if (sTx.contains(messageIndex) || queueContent.contains(messageIndex)) {
-                StoreId storeId = (StoreId) messageIndex;
-                dTx.add(storeId);
-                sTx.remove(storeId);
-                storeId.setTxId(dTxId.getTxId());
-                storeId.setLocked(true);
-                size = storeId.getMsgSize();
-            } else {
+            boolean found = false;
+            for (int i = 0; i < sTx.size(); i++) {
+                StoreId storeId = sTx.get(i);
+                if (storeId.equals(messageIndex)) {
+                    dTx.add(storeId);
+                    sTx.remove(i);
+                    storeId.setTxId(dTxId.getTxId());
+                    size = storeId.getMsgSize();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
                 if (ctx.queueSpace.enabled)
                     ctx.queueSpace.trace(getQueueName(), "moveToTransaction, messageIndex '" + messageIndex + "' was not found");
                 throw new QueueException("moveToTransaction, messageIndex '" + messageIndex + "' was not found");
