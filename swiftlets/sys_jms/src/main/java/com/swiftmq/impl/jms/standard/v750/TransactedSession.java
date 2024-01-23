@@ -70,7 +70,7 @@ public abstract class TransactedSession extends Session {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RollbackReply");
         RollbackReply reply = (RollbackReply) request.getPayload();
-        recoveryEpoche = reply.getRecoveryEpoche();
+        recoveryEpoche.set(reply.getRecoveryEpoche());
         try {
             transactionManager.rollback(false);
             purgeMarkedProducers();
@@ -82,7 +82,7 @@ public abstract class TransactedSession extends Session {
                     AsyncMessageProcessor mp = (AsyncMessageProcessor) consumer.getMessageProcessor();
                     if (mp != null) {
                         int maxBulkSize = (int) (mp.getMaxBulkSize() / 1024);
-                        mp = new AsyncMessageProcessor(this, ctx, consumer, mp.getConsumerCacheSize(), recoveryEpoche);
+                        mp = new AsyncMessageProcessor(this, ctx, consumer, mp.getConsumerCacheSize(), recoveryEpoche.get());
                         mp.setMaxBulkSize(maxBulkSize);
                         consumer.setMessageListener(consumer.getClientDispatchId(), consumer.getClientListenerId(), mp);
                         mp.register();
@@ -94,13 +94,13 @@ public abstract class TransactedSession extends Session {
             reply.setOk(false);
             reply.setException(e);
         }
-        recoveryInProgress = false;
+        recoveryInProgress.set(false);
         reply.send();
     }
 
     public void visit(RollbackRequest req) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRollbackRequest");
-        recoveryInProgress = true;
+        recoveryInProgress.set(true);
         RollbackReply reply = (RollbackReply) req.createReply();
         reply.setRecoveryEpoche(req.getRecoveryEpoche());
         reply.setOk(true);
