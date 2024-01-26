@@ -21,6 +21,8 @@ import com.swiftmq.jms.smqp.v750.AsyncMessageDeliveryRequest;
 import com.swiftmq.swiftlet.queue.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class AsyncMessageProcessor extends MessageProcessor {
     RegisterMessageProcessor registerRequest = null;
@@ -30,11 +32,11 @@ public class AsyncMessageProcessor extends MessageProcessor {
     Consumer consumer = null;
     int consumerCacheSize = 0;
     int recoveryEpoche = 0;
-    int deliveryCount = 0;
-    boolean valid = true;
-    int numberMessages = 0;
-    int lowWaterMark = 0;
-    long maxBulkSize = -1;
+    final AtomicInteger deliveryCount = new AtomicInteger();
+    final AtomicBoolean valid = new AtomicBoolean(true);
+    final AtomicInteger numberMessages = new AtomicInteger();
+    final AtomicInteger lowWaterMark = new AtomicInteger();
+    final AtomicLong maxBulkSize = new AtomicLong(-1);
     final AtomicBoolean started = new AtomicBoolean(false);
 
     public AsyncMessageProcessor(Session session, SessionContext ctx, Consumer consumer, int consumerCacheSize, int recoveryEpoche) {
@@ -49,17 +51,17 @@ public class AsyncMessageProcessor extends MessageProcessor {
         createBulkBuffer(consumerCacheSize);
         registerRequest = new RegisterMessageProcessor(this);
         runRequest = new RunMessageProcessor(this);
-        lowWaterMark = session.getMyConnection().ctx.consumerCacheLowWaterMark;
-        if (lowWaterMark * 2 >= consumerCacheSize)
-            lowWaterMark = 0;
-    }
-
-    public void setMaxBulkSize(long maxBulkSize) {
-        this.maxBulkSize = maxBulkSize == -1 ? maxBulkSize : maxBulkSize * 1024;
+        lowWaterMark.set(session.getMyConnection().ctx.consumerCacheLowWaterMark);
+        if (lowWaterMark.get() * 2 >= consumerCacheSize)
+            lowWaterMark.set(0);
     }
 
     public long getMaxBulkSize() {
-        return maxBulkSize;
+        return maxBulkSize.get();
+    }
+
+    public void setMaxBulkSize(long maxBulkSize) {
+        this.maxBulkSize.set(maxBulkSize == -1 ? maxBulkSize : maxBulkSize * 1024);
     }
 
     public int getConsumerCacheSize() {
@@ -71,20 +73,20 @@ public class AsyncMessageProcessor extends MessageProcessor {
     }
 
     public boolean isValid() {
-        return valid && !session.closed.get();
+        return valid.get() && !session.closed.get();
     }
 
     public void stop() {
-        valid = false;
+        valid.set(false);
     }
 
     public void reset() {
-        deliveryCount = 0;
-        valid = true;
+        deliveryCount.set(0);
+        valid.set(true);
     }
 
     public void processMessages(int numberMessages) {
-        this.numberMessages = numberMessages;
+        this.numberMessages.set(numberMessages);
         if (isValid()) {
             ctx.sessionLoop.submit(runRequest);
         }
@@ -95,7 +97,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
     }
 
     public void processException(Exception exception) {
-        valid = !(exception instanceof QueueHandlerClosedException);
+        valid.set(!(exception instanceof QueueHandlerClosedException));
     }
 
     public boolean isStarted() {
@@ -123,23 +125,23 @@ public class AsyncMessageProcessor extends MessageProcessor {
     public void run() {
         if (!isValid())
             return;
-        ctx.incMsgsReceived(numberMessages);
-        deliveryCount += numberMessages;
+        ctx.incMsgsReceived(numberMessages.get());
+        deliveryCount.addAndGet(numberMessages.get());
         boolean restart = false;
-        if (maxBulkSize != -1) {
-            maxBulkSize -= getCurrentBulkSize();
-            restart = deliveryCount >= consumerCacheSize - lowWaterMark || maxBulkSize <= 0;
+        if (maxBulkSize.get() != -1) {
+            maxBulkSize.addAndGet(-getCurrentBulkSize());
+            restart = deliveryCount.get() >= consumerCacheSize - lowWaterMark.get() || maxBulkSize.get() <= 0;
         } else
-            restart = deliveryCount >= consumerCacheSize - lowWaterMark;
+            restart = deliveryCount.get() >= consumerCacheSize - lowWaterMark.get();
         MessageEntry[] buffer = getBulkBuffer();
         if (isAutoCommit()) {
-            MessageEntry[] bulk = new MessageEntry[numberMessages];
-            System.arraycopy(buffer, 0, bulk, 0, numberMessages);
+            MessageEntry[] bulk = new MessageEntry[numberMessages.get()];
+            System.arraycopy(buffer, 0, bulk, 0, numberMessages.get());
             AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), null, bulk, session.dispatchId, restart, recoveryEpoche);
             ctx.outboundLoop.submit(request);
         } else {
-            for (int i = 0; i < numberMessages; i++) {
-                AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), buffer[i], null, session.dispatchId, i == numberMessages - 1 && restart, recoveryEpoche);
+            for (int i = 0; i < numberMessages.get(); i++) {
+                AsyncMessageDeliveryRequest request = new AsyncMessageDeliveryRequest(consumer.getClientDispatchId(), consumer.getClientListenerId(), buffer[i], null, session.dispatchId, i == numberMessages.get() - 1 && restart, recoveryEpoche);
                 DeliveryItem item = new DeliveryItem();
                 item.messageEntry = buffer[i];
                 item.consumer = consumer;
@@ -150,8 +152,8 @@ public class AsyncMessageProcessor extends MessageProcessor {
         if (!restart) {
             ctx.sessionLoop.submit(registerRequest);
         } else {
-            deliveryCount = 0;
-            maxBulkSize = -1;
+            deliveryCount.set(0);
+            maxBulkSize.set(-1);
             started.set(false);
         }
     }

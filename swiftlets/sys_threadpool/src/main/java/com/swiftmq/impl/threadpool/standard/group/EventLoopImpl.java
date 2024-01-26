@@ -35,8 +35,12 @@ public class EventLoopImpl implements EventLoop {
     private SwiftletContext ctx;
     private final List<Object> eventQueue = new LinkedList<>();
     private final AtomicBoolean shouldTerminate = new AtomicBoolean(false);
+    private final AtomicBoolean isFrozen = new AtomicBoolean(false);
     private final ReentrantLock queueLock = new ReentrantLock();
+    private final ReentrantLock freezeLock = new ReentrantLock();
     private final Condition notEmpty = queueLock.newCondition();
+    private final Condition unfrozen = freezeLock.newCondition();
+    private final AtomicReference<CompletableFuture<Void>> freezeFuture = new AtomicReference<>();
     private volatile Thread thread = null;
     private final ThreadRunner threadPool;
     private CloseListener closeListener = null;
@@ -44,7 +48,6 @@ public class EventLoopImpl implements EventLoop {
     private final boolean bulkMode;
     private final EventProcessor eventProcessor;
     private final List<Object> events = new ArrayList<>();
-    private final AtomicReference<CompletableFuture<Void>> freezeFuture = new AtomicReference<>();
 
     public EventLoopImpl(SwiftletContext ctx, String id, boolean bulkMode, EventProcessor eventProcessor, ThreadRunner threadPool) {
         this.ctx = ctx;
@@ -58,26 +61,50 @@ public class EventLoopImpl implements EventLoop {
 
     public CompletableFuture<Void> freeze() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/freeze");
+        isFrozen.set(true);
+        freezeFuture.set(new CompletableFuture<>());
         queueLock.lock();
         try {
-            shouldTerminate.set(true);
-            freezeFuture.set(new CompletableFuture<>());
             notEmpty.signalAll(); // Wake up the thread if it's waiting
-            return freezeFuture.get();
         } finally {
             queueLock.unlock();
         }
+        return freezeFuture.get();
     }
 
     public void unfreeze() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/unfreeze");
-        queueLock.lock();
+        freezeLock.lock();
         try {
-            shouldTerminate.set(false);
-            initializeThread(); // Start a new thread if needed
+            isFrozen.set(false);
+            unfrozen.signalAll();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/unfreeze done");
         } finally {
-            queueLock.unlock();
+            freezeLock.unlock();
+        }
+    }
+
+    private void checkFrozenAndWaitUnfrozen() {
+        freezeLock.lock();
+        try {
+            while (isFrozen.get()) {
+                CompletableFuture<Void> f = freezeFuture.getAndSet(null);
+                if (f != null && !f.isDone()) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/entering frozen state");
+                    f.complete(null);
+                }
+
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/waiting to be unfrozen");
+                unfrozen.await();
+            }
+        } catch (InterruptedException e) {
+            // Handle thread interruption, for example during shutdown
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/interrupted while waiting to be unfrozen");
+        } finally {
+            freezeLock.unlock();
         }
     }
 
@@ -88,14 +115,6 @@ public class EventLoopImpl implements EventLoop {
             while (!shouldTerminate.get()) {
                 processEvents();
             }
-
-            // Complete the freezeFuture here after the loop has terminated
-            CompletableFuture<Void> f = freezeFuture.getAndSet(null);
-            if (f != null) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/calling freezeFuture");
-                f.complete(null);
-            }
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/terminating");
         });
     }
@@ -105,6 +124,7 @@ public class EventLoopImpl implements EventLoop {
         try {
             while (eventQueue.isEmpty() && !shouldTerminate.get()) {
                 notEmpty.await();
+                checkFrozenAndWaitUnfrozen();
             }
             if (shouldTerminate.get()) {
                 return; // Exit the method if the loop should terminate
@@ -154,6 +174,12 @@ public class EventLoopImpl implements EventLoop {
         }
         if (thread != null) {
             thread.interrupt(); // Optional: Interrupt the thread to speed up closing
+        }
+        freezeLock.lock();
+        try {
+            unfrozen.signalAll(); // Wake up the thread if it's waiting
+        } finally {
+            freezeLock.unlock();
         }
         if (closeListener != null) {
             closeListener.onClose(this);
