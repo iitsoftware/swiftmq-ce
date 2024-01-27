@@ -32,7 +32,6 @@ import com.swiftmq.swiftlet.xa.XidFilter;
 
 import javax.transaction.xa.Xid;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -221,16 +220,8 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
     }
 
     public XAContext createXAContext(XidImpl xid) {
-        return contexts.compute(xid, (key, existingValue) -> {
-            if (existingValue != null) {
-                // Context already exists, return null
-                return null;
-            }
-            // Create and return a new XALiveContextImpl
-            return new XALiveContextImpl(ctx, xid, false);
-        });
+        return contexts.computeIfAbsent(xid, key -> new XALiveContextImpl(ctx, xid, false));
     }
-
     public XAContext getXAContext(XidImpl xid) {
         return contexts.get(xid);
     }
@@ -254,16 +245,15 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
     }
 
     private void buildPreparedTransactions() throws Exception {
-        List prepareRecordList = ctx.storeSwiftlet.getPrepareLogRecords();
+        List<PrepareLogRecord> prepareRecordList = ctx.storeSwiftlet.getPrepareLogRecords();
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "buildPreparedTransactions, recordList: " + prepareRecordList);
-        if (prepareRecordList != null && prepareRecordList.size() > 0) {
-            for (Object o : prepareRecordList) {
-                PrepareLogRecord record = (PrepareLogRecord) o;
-                AbstractQueue queue = getPreparedQueue(record.getQueueName());
+        if (prepareRecordList != null && !prepareRecordList.isEmpty()) {
+            for (PrepareLogRecord o : prepareRecordList) {
+                AbstractQueue queue = getPreparedQueue(o.getQueueName());
                 if (queue != null) {
-                    XidImpl xid = record.getGlobalTxId();
-                    Object localTxId = queue.buildPreparedTransaction(record);
+                    XidImpl xid = o.getGlobalTxId();
+                    Object localTxId = queue.buildPreparedTransaction(o);
                     XALiveContextImpl xac = (XALiveContextImpl) contexts.get(xid);
                     if (xac == null) {
                         xac = new XALiveContextImpl(ctx, xid, true);
@@ -298,7 +288,7 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
             ctx.logSwiftlet.logError(getName(), "exception during buildPreparedTransactions: " + e.toString());
         }
 
-        if (contexts.size() > 0) {
+        if (!contexts.isEmpty()) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), contexts.size() + " prepared transactions found");
             ctx.logSwiftlet.logWarning(getName(), contexts.size() + " prepared transactions found!");
@@ -308,22 +298,20 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
         }
 
         Property prop = configuration.getProperty("scan-interval");
-        scanInterval = ((Long) prop.getValue()).longValue();
+        scanInterval = (Long) prop.getValue();
         ctx.timerSwiftlet.addTimerListener(scanInterval, this);
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                ctx.timerSwiftlet.removeTimerListener(XAResourceManagerSwiftletImpl.this);
-                scanInterval = ((Long) newValue).longValue();
-                ctx.timerSwiftlet.addTimerListener(scanInterval, XAResourceManagerSwiftletImpl.this);
-            }
+        prop.setPropertyChangeListener((property, oldValue, newValue) -> {
+            ctx.timerSwiftlet.removeTimerListener(XAResourceManagerSwiftletImpl.this);
+            scanInterval = ((Long) newValue).longValue();
+            ctx.timerSwiftlet.addTimerListener(scanInterval, XAResourceManagerSwiftletImpl.this);
         });
         prop = configuration.getProperty("default-transaction-timeout");
-        defaultTxTimeout = ((Long) prop.getValue()).longValue();
+        defaultTxTimeout = (Long) prop.getValue();
         long timeout = getTransactionTimeout();
         if (timeout > 0)
             ctx.timerSwiftlet.addTimerListener(timeout, txTimer);
         prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
+            public void propertyChanged(Property property, Object oldValue, Object newValue) {
                 long timeout = getTransactionTimeout();
                 if (timeout > 0)
                     ctx.timerSwiftlet.removeTimerListener(txTimer);
@@ -335,54 +323,50 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
         });
 
         CommandRegistry commandRegistry = ctx.preparedUsageList.getCommandRegistry();
-        CommandExecutor commitExecutor = new CommandExecutor() {
-            public String[] execute(String[] context, Entity entity, String[] cmd) {
-                if (cmd.length != 2)
-                    return new String[]{TreeCommands.ERROR, "Invalid command, please try 'commit <id>'"};
-                Entity e = ctx.preparedUsageList.getEntity(cmd[1]);
-                if (e == null)
-                    return new String[]{TreeCommands.ERROR, "Unknown Entity: " + cmd[1]};
-                XAContext xac = contexts.get(e.getDynamicObject());
-                XidImpl xid = xac.getXid();
-                try {
-                    xac.commit(false);
-                    if (!xid.isRouting())
-                        ctx.heuristicHandler.addHeuristic(xid, true);
-                } catch (Exception e1) {
-                    return new String[]{TreeCommands.ERROR, "Exception during commit: " + e1};
-                }
-                removeXAContext(xid);
-                return null;
+        CommandExecutor commitExecutor = (context, entity, cmd) -> {
+            if (cmd.length != 2)
+                return new String[]{TreeCommands.ERROR, "Invalid command, please try 'commit <id>'"};
+            Entity e = ctx.preparedUsageList.getEntity(cmd[1]);
+            if (e == null)
+                return new String[]{TreeCommands.ERROR, "Unknown Entity: " + cmd[1]};
+            XAContext xac = contexts.get(e.getDynamicObject());
+            XidImpl xid = xac.getXid();
+            try {
+                xac.commit(false);
+                if (!xid.isRouting())
+                    ctx.heuristicHandler.addHeuristic(xid, true);
+            } catch (Exception e1) {
+                return new String[]{TreeCommands.ERROR, "Exception during commit: " + e1};
             }
+            removeXAContext(xid);
+            return null;
         };
         Command commitCommand = new Command("commit", "commit <id>", "Commit", true, commitExecutor, true, true);
         commandRegistry.addCommand(commitCommand);
-        CommandExecutor rollbackExecutor = new CommandExecutor() {
-            public String[] execute(String[] context, Entity entity, String[] cmd) {
-                if (cmd.length != 2)
-                    return new String[]{TreeCommands.ERROR, "Invalid command, please try 'rollback <id>'"};
-                Entity e = ctx.preparedUsageList.getEntity(cmd[1]);
-                if (e == null)
-                    return new String[]{TreeCommands.ERROR, "Unknown Entity: " + cmd[1]};
-                XAContext xac = contexts.get(e.getDynamicObject());
-                XidImpl xid = xac.getXid();
-                try {
-                    xac.rollback();
-                    if (!xid.isRouting())
-                        ctx.heuristicHandler.addHeuristic(xid, false);
-                } catch (Exception e1) {
-                    return new String[]{TreeCommands.ERROR, "Exception during rollback: " + e1};
-                }
-                removeXAContext(xid);
-                return null;
+        CommandExecutor rollbackExecutor = (context, entity, cmd) -> {
+            if (cmd.length != 2)
+                return new String[]{TreeCommands.ERROR, "Invalid command, please try 'rollback <id>'"};
+            Entity e = ctx.preparedUsageList.getEntity(cmd[1]);
+            if (e == null)
+                return new String[]{TreeCommands.ERROR, "Unknown Entity: " + cmd[1]};
+            XAContext xac = contexts.get(e.getDynamicObject());
+            XidImpl xid = xac.getXid();
+            try {
+                xac.rollback();
+                if (!xid.isRouting())
+                    ctx.heuristicHandler.addHeuristic(xid, false);
+            } catch (Exception e1) {
+                return new String[]{TreeCommands.ERROR, "Exception during rollback: " + e1};
             }
+            removeXAContext(xid);
+            return null;
         };
         Command rollbackCommand = new Command("rollback", "rollback <id>", "Rollback", true, rollbackExecutor, true, true);
         commandRegistry.addCommand(rollbackCommand);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup...done");
     }
 
-    protected void shutdown() throws SwiftletException {
+    protected void shutdown() {
         // true when shutdown while standby
         if (ctx == null)
             return;
@@ -391,8 +375,8 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
         ctx.timerSwiftlet.removeTimerListener(this);
         if (defaultTxTimeout > 0)
             ctx.timerSwiftlet.removeTimerListener(txTimer);
-        for (Iterator iter = contexts.entrySet().iterator(); iter.hasNext(); ) {
-            XAContext xac = (XAContext) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<XidImpl, XAContext> xidXAContextEntry : contexts.entrySet()) {
+            XAContext xac = (XAContext) ((Map.Entry<?, ?>) xidXAContextEntry).getValue();
             xac.close();
         }
         contexts.clear();
@@ -405,7 +389,7 @@ public class XAResourceManagerSwiftletImpl extends XAResourceManagerSwiftlet imp
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "TxTimer/performTimeAction ...");
             long timeoutTime = System.currentTimeMillis() - getTransactionTimeout();
             for (Map.Entry<XidImpl, XAContext> xidXAContextEntry : contexts.entrySet()) {
-                XAContext xac = (XAContext) ((Map.Entry) xidXAContextEntry).getValue();
+                XAContext xac = (XAContext) ((Map.Entry<?, ?>) xidXAContextEntry).getValue();
                 if (xac instanceof XALiveContextImpl) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace(getName(), "TxTimer/performTimeAction, checking: " + xac);

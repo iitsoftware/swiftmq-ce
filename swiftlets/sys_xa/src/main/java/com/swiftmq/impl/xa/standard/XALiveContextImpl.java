@@ -77,7 +77,7 @@ public class XALiveContextImpl extends XAContextImpl {
             nReg.getAndIncrement();
             int id = registrations.add(description);
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/register, id=" + id + ", description: " + description);
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/register, id=" + id + ", description: " + description);
             return id;
         } finally {
             lock.writeLock().unlock();
@@ -87,7 +87,7 @@ public class XALiveContextImpl extends XAContextImpl {
 
     void _addTransaction(AbstractQueue queue, Object transactionId) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/_addTransaction, queue=" + queue + ", transactionId: " + transactionId);
+            ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/_addTransaction, queue=" + queue + ", transactionId: " + transactionId);
         recoveryTransactions.add(new Object[]{queue, transactionId});
     }
 
@@ -97,7 +97,7 @@ public class XALiveContextImpl extends XAContextImpl {
             if (prepared.get())
                 throw new XAContextException(XAException.XAER_PROTO, "XA transaction is in prepared state");
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/addTransaction, id=" + id + ", queue=" + queueName + ", queueTransaction: " + queueTransaction);
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/addTransaction, id=" + id + ", queue=" + queueName + ", queueTransaction: " + queueTransaction);
             transactions.add(queueTransaction);
         } finally {
             lock.writeLock().unlock();
@@ -112,7 +112,7 @@ public class XALiveContextImpl extends XAContextImpl {
                 throw new XAContextException(XAException.XAER_PROTO, "try to unregister an invalid id");
             nReg.getAndDecrement();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/unregister, id=" + id + ", description: " + registrations.get(id));
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/unregister, id=" + id + ", description: " + registrations.get(id));
             registrations.remove(id);
             this.rollbackOnly.set(rollbackOnly);
             if (rolledBack.get()) {
@@ -138,7 +138,7 @@ public class XALiveContextImpl extends XAContextImpl {
             if (registeredUsageList.get() || closed.get() || !prepared.get())
                 return;
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/registerUsageList...");
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/registerUsageList...");
             Entity entity = ctx.preparedUsageList.createEntity();
             entity.setName(Integer.toString(incCount()));
             entity.setDynamicObject(xid);
@@ -150,7 +150,7 @@ public class XALiveContextImpl extends XAContextImpl {
             }
             registeredUsageList.set(true);
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/registerUsageList done");
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/registerUsageList done");
         } finally {
             lock.writeLock().unlock();
         }
@@ -160,7 +160,7 @@ public class XALiveContextImpl extends XAContextImpl {
     public void prepare() throws XAContextException {
         lock.writeLock().lock();
         try {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/prepare...");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/prepare...");
             if (rollbackOnly.get())
                 throw new XAContextException(XAException.XA_RBROLLBACK, "can't prepare XA transaction because it is set to 'rollback-only'");
             if (wasTimeout.get())
@@ -175,16 +175,15 @@ public class XALiveContextImpl extends XAContextImpl {
             // Recovery Transactions are already prepared!
             // Only need to prepare the live tx...
             for (QueueTransaction transaction : transactions) {
-                QueueTransaction t = transaction;
                 try {
-                    t.prepare(xid);
+                    transaction.prepare(xid);
                 } catch (Exception e) {
-                    if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
-                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "prepare xid=" + signature + ", failed for queue: " + t.getQueueName());
+                    if (!ctx.queueManager.isTemporaryQueue(transaction.getQueueName()))
+                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), this + "prepare xid=" + signature + ", failed for queue: " + transaction.getQueueName());
                 }
             }
             prepared.set(true);
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/prepare done");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/prepare done");
         } finally {
             lock.writeLock().unlock();
         }
@@ -196,7 +195,7 @@ public class XALiveContextImpl extends XAContextImpl {
         try {
             long fcDelay = 0;
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/commit onePhase=" + onePhase + " ...");
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/commit onePhase=" + onePhase + " ...");
             if (wasTimeout.get())
                 throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
             if (closed.get())
@@ -204,13 +203,12 @@ public class XALiveContextImpl extends XAContextImpl {
             if (rollbackOnly.get())
                 throw new XAContextException(XAException.XA_RBROLLBACK, "XA transaction is marked as rollback-only");
             for (Object[] recoveryTransaction : recoveryTransactions) {
-                Object[] wrapper = recoveryTransaction;
                 try {
-                    ((AbstractQueue) wrapper[0]).commit(wrapper[1], xid);
-                    ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), toString() + "commit xid=" + signature);
+                    ((AbstractQueue) recoveryTransaction[0]).commit(recoveryTransaction[1], xid);
+                    ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), this + "commit xid=" + signature);
                 } catch (Exception e) {
-                    if (!ctx.queueManager.isTemporaryQueue(((AbstractQueue) wrapper[0]).getQueueName()))
-                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (two phase) xid=" + signature + ", failed for queue: " + ((AbstractQueue) wrapper[0]).getQueueName());
+                    if (!ctx.queueManager.isTemporaryQueue(((AbstractQueue) recoveryTransaction[0]).getQueueName()))
+                        ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), this + "commit (two phase) xid=" + signature + ", failed for queue: " + ((AbstractQueue) recoveryTransaction[0]).getQueueName());
                 }
             }
             if (onePhase) {
@@ -224,21 +222,20 @@ public class XALiveContextImpl extends XAContextImpl {
                             fcDelay = Math.max(fcDelay, ((QueuePushTransaction) t).getFlowControlDelay());
                     } catch (Exception e) {
                         if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
-                            ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (one phase) xid=" + signature + ", failed for queue: " + t.getQueueName());
+                            ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), this + "commit (one phase) xid=" + signature + ", failed for queue: " + t.getQueueName());
                     }
                 }
             } else {
                 if (!prepared.get())
                     throw new XAContextException(XAException.XAER_PROTO, "can't use two phase commit, XA transaction is not in prepared state");
                 for (QueueTransaction transaction : transactions) {
-                    QueueTransaction t = transaction;
                     try {
-                        t.commit(xid);
-                        if (t instanceof QueuePushTransaction)
-                            fcDelay = Math.max(fcDelay, ((QueuePushTransaction) t).getFlowControlDelay());
+                        transaction.commit(xid);
+                        if (transaction instanceof QueuePushTransaction)
+                            fcDelay = Math.max(fcDelay, ((QueuePushTransaction) transaction).getFlowControlDelay());
                     } catch (Exception e) {
-                        if (!ctx.queueManager.isTemporaryQueue(t.getQueueName()))
-                            ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "commit (two phase) xid=" + signature + ", failed for queue: " + t.getQueueName() + ", exception: " + e);
+                        if (!ctx.queueManager.isTemporaryQueue(transaction.getQueueName()))
+                            ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), this + "commit (two phase) xid=" + signature + ", failed for queue: " + transaction.getQueueName() + ", exception: " + e);
                     }
                 }
                 if (registeredUsageList.get())
@@ -248,7 +245,7 @@ public class XALiveContextImpl extends XAContextImpl {
             transactions.clear();
             recoveryTransactions.clear();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/commit onePhase=" + onePhase + " done");
+                ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/commit onePhase=" + onePhase + " done");
             return fcDelay;
         } finally {
             lock.writeLock().unlock();
@@ -258,25 +255,23 @@ public class XALiveContextImpl extends XAContextImpl {
 
     private void _rollback(boolean reportException) {
         for (Object[] recoveryTransaction : recoveryTransactions) {
-            Object[] wrapper = recoveryTransaction;
             try {
-                ((AbstractQueue) wrapper[0]).rollback(wrapper[1], xid, true);
-                ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), toString() + "rollback xid=" + signature);
+                ((AbstractQueue) recoveryTransaction[0]).rollback(recoveryTransaction[1], xid, true);
+                ctx.logSwiftlet.logInformation(ctx.xaSwiftlet.getName(), this + "rollback xid=" + signature);
             } catch (Exception e) {
-                if (!ctx.queueManager.isTemporaryQueue(((AbstractQueue) wrapper[0]).getQueueName()))
-                    ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "rollback (two phase) xid=" + signature + ", failed for queue: " + ((AbstractQueue) wrapper[0]).getQueueName());
+                if (!ctx.queueManager.isTemporaryQueue(((AbstractQueue) recoveryTransaction[0]).getQueueName()))
+                    ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), this + "rollback (two phase) xid=" + signature + ", failed for queue: " + ((AbstractQueue) recoveryTransaction[0]).getQueueName());
             }
         }
         for (QueueTransaction transaction : transactions) {
-            QueueTransaction t = transaction;
             try {
                 if (prepared.get())
-                    t.rollback(xid, true);
+                    transaction.rollback(xid, true);
                 else
-                    t.rollback();
+                    transaction.rollback();
             } catch (Exception e) {
-                if (reportException && !ctx.queueManager.isTemporaryQueue(t.getQueueName()))
-                    ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), toString() + "rollback xid=" + signature + ", failed for queue: " + t.getQueueName() + ", exception: " + e);
+                if (reportException && !ctx.queueManager.isTemporaryQueue(transaction.getQueueName()))
+                    ctx.logSwiftlet.logError(ctx.xaSwiftlet.getName(), this + "rollback xid=" + signature + ", failed for queue: " + transaction.getQueueName() + ", exception: " + e);
             }
         }
     }
@@ -284,7 +279,7 @@ public class XALiveContextImpl extends XAContextImpl {
     public void rollback() throws XAContextException {
         lock.writeLock().lock();
         try {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback...");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/rollback...");
             if (wasTimeout.get())
                 throw new XAContextException(XAException.XA_RBTIMEOUT, "transaction timeout occured");
             if (closed.get())
@@ -296,7 +291,7 @@ public class XALiveContextImpl extends XAContextImpl {
             rolledBack.set(true);
             transactions.clear();
             recoveryTransactions.clear();
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/rollback done");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/rollback done");
         } finally {
             lock.writeLock().unlock();
         }
@@ -306,7 +301,7 @@ public class XALiveContextImpl extends XAContextImpl {
     boolean timeout(long timeoutTime) {
         lock.writeLock().lock();
         try {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/timeout...");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/timeout...");
             if (xid.isRouting() || prepared.get() || closed.get() || creationTime > timeoutTime)
                 return false;
             _rollback(false);
@@ -317,8 +312,8 @@ public class XALiveContextImpl extends XAContextImpl {
             wasTimeout.set(true);
             transactions.clear();
             recoveryTransactions.clear();
-            ctx.logSwiftlet.logWarning(ctx.xaSwiftlet.getName(), toString() + "transaction timeout, transaction rolled back!");
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/timeout done");
+            ctx.logSwiftlet.logWarning(ctx.xaSwiftlet.getName(), this + "transaction timeout, transaction rolled back!");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/timeout done");
             return true;
         } finally {
             lock.writeLock().unlock();
@@ -329,7 +324,7 @@ public class XALiveContextImpl extends XAContextImpl {
     public void close() {
         lock.writeLock().lock();
         try {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close...");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/close...");
             if (closed.get())
                 return;
             closed.set(true);
@@ -340,7 +335,7 @@ public class XALiveContextImpl extends XAContextImpl {
             closed.set(true);
             transactions.clear();
             recoveryTransactions.clear();
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/close done");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), this + "/close done");
         } finally {
             lock.writeLock().unlock();
         }

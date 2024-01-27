@@ -26,6 +26,7 @@ import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.store.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.collection.ConcurrentExpandableList;
 import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.collection.OrderedSet;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
@@ -72,8 +73,7 @@ public class MessageQueue extends AbstractQueue {
     boolean asyncActive = false;
     CompositeStoreTransaction compositeTx = null;
     long activeReceiverId = -1;
-    int monitorAlertThreshold = -1;
-    Map<String, WireTap> wireTaps = new HashMap<String, WireTap>();
+    Map<String, WireTap> wireTaps = new HashMap<>();
     boolean active = true;
     QueueLatency queueLatency = new QueueLatency();
 
@@ -128,10 +128,9 @@ public class MessageQueue extends AbstractQueue {
     }
 
     private void forwardWireTaps(MessageImpl message) {
-        if (wireTaps.size() == 0)
+        if (wireTaps.isEmpty())
             return;
-        for (Map.Entry<String, WireTap> wt : wireTaps.entrySet())
-            wt.getValue().putMessage(message);
+        wireTaps.forEach((key, value) -> value.putMessage(message));
     }
 
     void setQueueController(Entity queueController) {
@@ -194,10 +193,6 @@ public class MessageQueue extends AbstractQueue {
             }
             watchListeners = null;
         }
-    }
-
-    protected long getMsgId() {
-        return msgId.getAndIncrement();
     }
 
     protected long getNextMsgId() {
@@ -315,7 +310,7 @@ public class MessageQueue extends AbstractQueue {
         return insertMessage(swt, message, null);
     }
 
-    private StoreWriteTransaction insertMessage(StoreWriteTransaction swt, MessageImpl message, List preparedList) throws Exception {
+    private StoreWriteTransaction insertMessage(StoreWriteTransaction swt, MessageImpl message, List<StoreId> preparedList) throws Exception {
         StoreWriteTransaction transaction = swt;
         if (!temporary && persistenceMode != AbstractQueue.AS_MESSAGE)
             overwritePersistence(message);
@@ -416,7 +411,7 @@ public class MessageQueue extends AbstractQueue {
         }
 
         if (!prepare) {
-            incrementConsumeCount(storeId);
+            incrementConsumeCount();
 
             // remove storeId from the queueContent
             queueContent.remove(storeId);
@@ -434,7 +429,7 @@ public class MessageQueue extends AbstractQueue {
         return transaction;
     }
 
-    private void incrementConsumeCount(StoreId storeId) {
+    private void incrementConsumeCount() {
         consumed.getAndIncrement();
         totalConsumed.getAndIncrement();
     }
@@ -480,10 +475,9 @@ public class MessageQueue extends AbstractQueue {
         }
         if (ctx.queueSpace.enabled)
             ctx.queueSpace.trace(getQueueName(), "notifyWaiters, activeMsgProcList: " + activeMsgProcList + ", size(): " + msgProcessors[activeMsgProcList].size());
-        List currentProcessors = msgProcessors[activeMsgProcList];
+        List<MessageProcessor> currentProcessors = msgProcessors[activeMsgProcList];
         activeMsgProcList = activeMsgProcList == 0 ? 1 : 0;
-        for (int i = 0; i < currentProcessors.size(); i++) {
-            MessageProcessor mp = (MessageProcessor) currentProcessors.get(i);
+        for (MessageProcessor mp : currentProcessors) {
             if (mp != null) {
                 mp.setRegistrationId(-1);
                 int viewId = mp.getViewId();
@@ -530,8 +524,7 @@ public class MessageQueue extends AbstractQueue {
         // build the index out of the PersistentStore
         List<StoreEntry> list = pStore.getStoreEntries();
         for (StoreEntry o : list) {
-            StoreEntry si = o;
-            queueContent.add(new StoreId(getNextMsgId(), si.priority, si.deliveryCount, true, si.expirationTime, si));
+            queueContent.add(new StoreId(getNextMsgId(), o.priority, o.deliveryCount, true, o.expirationTime, o));
         }
     }
 
@@ -549,9 +542,9 @@ public class MessageQueue extends AbstractQueue {
             if (ctx.queueSpace.enabled)
                 ctx.queueSpace.trace(getQueueName(), "startQueue: cleanUpInterval=" + cleanUpInterval);
             msgProcessors = new List[2];
-            msgProcessors[0] = new ArrayList();
-            msgProcessors[1] = new ArrayList();
-            activeTransactions = new ExpandableList<>();
+            msgProcessors[0] = new ArrayList<>();
+            msgProcessors[1] = new ArrayList<>();
+            activeTransactions = new ConcurrentExpandableList<>();
             queueContent = new TreeSet<>();
             try {
                 if (!temporary) {
@@ -638,9 +631,8 @@ public class MessageQueue extends AbstractQueue {
             view.setViewId(viewId);
             // Fill view
             try {
-                for (Iterator<StoreId> iter = queueContent.iterator(); iter.hasNext(); ) {
-                    StoreId storeId = iter.next();
-                    MessageEntry me = (MessageEntry) cache.get(storeId);
+                for (StoreId storeId : queueContent) {
+                    MessageEntry me = cache.get(storeId);
                     view.storeOnMatch(storeId, me.getMessage());
                 }
             } catch (Exception e) {
@@ -667,10 +659,8 @@ public class MessageQueue extends AbstractQueue {
 
     private List<StoreId> buildStoreIdList(List persistentKeyList) {
         List<StoreId> list = new ArrayList<>();
-        for (int i = 0; i < persistentKeyList.size(); i++) {
-            Object pk = persistentKeyList.get(i);
-            for (Iterator<StoreId> iter = queueContent.iterator(); iter.hasNext(); ) {
-                StoreId storeId = iter.next();
+        for (Object pk : persistentKeyList) {
+            for (StoreId storeId : queueContent) {
                 if (storeId.isPersistent() && storeId.getPersistentKey() != null && ((StoreEntry) storeId.getPersistentKey()).key.equals(pk)) {
                     storeId.setLocked(true);
                     list.add(storeId);
@@ -714,13 +704,13 @@ public class MessageQueue extends AbstractQueue {
                 StoreTransaction storeTransaction = null;
                 List preparedList = new ArrayList();
                 List txList = transactionId.getTxList();
-                if (txList != null && txList.size() > 0) {
+                if (txList != null && !txList.isEmpty()) {
                     if (transactionId.getTransactionType() == TransactionId.PUSH_TRANSACTION) {
                         if (maxMessages > 0 && queueContent.size() + txList.size() > maxMessages) {
                             throw new QueueLimitException("Maximum Messages in Queue reached!");
                         }
-                        for (int i = 0; i < txList.size(); i++) {
-                            MessageImpl message = (MessageImpl) txList.get(i);
+                        for (Object o : txList) {
+                            MessageImpl message = (MessageImpl) o;
                             if (checkDuplicate(message)) {
                                 if (ctx.queueSpace.enabled)
                                     ctx.queueSpace.trace(getQueueName(), "prepare: " + transactionId + ", duplicate message rejected: " + message);
@@ -732,8 +722,8 @@ public class MessageQueue extends AbstractQueue {
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "prepare: " + transactionId + " SUCCESSFUL");
                     } else { //PULL_TRANSACTION
-                        for (int i = 0; i < txList.size(); i++)
-                            storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) txList.get(i), true);
+                        for (Object o : txList)
+                            storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) o, true);
                         preparedList.addAll(txList);
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "prepare: " + transactionId + " SUCCESSFUL");
@@ -778,8 +768,8 @@ public class MessageQueue extends AbstractQueue {
                 try {
                     StoreTransaction storeTransaction = null;
                     List preparedList = transactionId.getPreparedList();
-                    for (int i = 0; i < preparedList.size(); i++) {
-                        StoreId storeId = (StoreId) preparedList.get(i);
+                    for (Object o : preparedList) {
+                        StoreId storeId = (StoreId) o;
                         storeId.setLocked(false);
                         if (type == TransactionId.PULL_TRANSACTION) {
                             storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, storeId);
@@ -805,8 +795,8 @@ public class MessageQueue extends AbstractQueue {
                         if (st != null)
                             st.commit(globalTxId);
                         List preparedList = transactionId.getPreparedList();
-                        for (int i = 0; i < preparedList.size(); i++) {
-                            StoreId storeId = (StoreId) preparedList.get(i);
+                        for (Object o : preparedList) {
+                            StoreId storeId = (StoreId) o;
                             storeId.setLocked(false);
                             if (type == TransactionId.PULL_TRANSACTION) {
                                 queueContent.remove(storeId);
@@ -817,7 +807,7 @@ public class MessageQueue extends AbstractQueue {
                                 totalConsumed.getAndIncrement();
                             }
                         }
-                        if (flowController != null) {
+                        if (getFlowController() != null) {
                             if (type == TransactionId.PULL_TRANSACTION)
                                 getFlowController().setReceiveMessageCount(preparedList.size());
                             else
@@ -851,13 +841,13 @@ public class MessageQueue extends AbstractQueue {
             if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId);
             try {
                 StoreTransaction storeTransaction = compositeTx;
-                if (txList != null && txList.size() > 0) {
+                if (txList != null && !txList.isEmpty()) {
                     if (transactionId.getTransactionType() == TransactionId.PUSH_TRANSACTION) {
                         if (maxMessages > 0 && queueContent.size() + txList.size() > maxMessages) {
                             throw new QueueLimitException("Maximum Messages in Queue reached!");
                         }
-                        for (int i = 0; i < txList.size(); i++) {
-                            MessageImpl message = (MessageImpl) txList.get(i);
+                        for (Object o : txList) {
+                            MessageImpl message = (MessageImpl) o;
                             if (checkDuplicate(message)) {
                                 if (ctx.queueSpace.enabled)
                                     ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + ", duplicate message rejected: " + message);
@@ -873,8 +863,8 @@ public class MessageQueue extends AbstractQueue {
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " queueSemaphore.notify()");
                     } else { //PULL_TRANSACTION
-                        for (int i = 0; i < txList.size(); i++)
-                            storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) txList.get(i));
+                        for (Object o : txList)
+                            storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) o);
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " SUCCESSFUL");
                         if (getFlowController() != null)
@@ -913,13 +903,13 @@ public class MessageQueue extends AbstractQueue {
             if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId);
             try {
                 StoreTransaction storeTransaction = compositeTx;
-                if (txList != null && txList.size() > 0) {
+                if (txList != null && !txList.isEmpty()) {
                     if (transactionId.getTransactionType() == TransactionId.PUSH_TRANSACTION) {
                         if (maxMessages > 0 && queueContent.size() + txList.size() > maxMessages) {
                             throw new QueueLimitException("Maximum Messages in Queue reached!");
                         }
-                        for (int i = 0; i < txList.size(); i++) {
-                            MessageImpl message = (MessageImpl) txList.get(i);
+                        for (Object o : txList) {
+                            MessageImpl message = (MessageImpl) o;
                             if (checkDuplicate(message)) {
                                 if (ctx.queueSpace.enabled)
                                     ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + ", duplicate message rejected: " + message);
@@ -933,8 +923,8 @@ public class MessageQueue extends AbstractQueue {
                         if (getFlowController() != null)
                             getFlowController().setSentMessageCount(txList.size());
                     } else { //PULL_TRANSACTION
-                        for (int i = 0; i < txList.size(); i++)
-                            storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) txList.get(i));
+                        for (Object o : txList)
+                            storeTransaction = removeMessage((StoreReadTransaction) storeTransaction, (StoreId) o);
                         if (ctx.queueSpace.enabled)
                             ctx.queueSpace.trace(getQueueName(), "commit: " + transactionId + " SUCCESSFUL");
                         if (getFlowController() != null)
@@ -953,7 +943,7 @@ public class MessageQueue extends AbstractQueue {
                                 if (getFlowController() != null) {
                                     getFlowController().setQueueSize(queueContent.size());
                                     if (success)
-                                        next.setResult(Long.valueOf(getFlowController().getNewDelay()));
+                                        next.setResult(getFlowController().getNewDelay());
                                     else
                                         next.setException(getException());
                                 }
@@ -974,7 +964,7 @@ public class MessageQueue extends AbstractQueue {
                         notifyWaiters();
                     if (getFlowController() != null) {
                         getFlowController().setQueueSize(queueContent.size());
-                        callback.setResult(Long.valueOf(getFlowController().getNewDelay()));
+                        callback.setResult(getFlowController().getNewDelay());
                     }
                     callback.notifyCallbackStack(true);
                 }
@@ -1013,8 +1003,8 @@ public class MessageQueue extends AbstractQueue {
                 try {
                     StoreTransaction storeTransaction = null;
                     List preparedList = transactionId.getPreparedList();
-                    for (int i = 0; i < preparedList.size(); i++) {
-                        StoreId storeId = (StoreId) preparedList.get(i);
+                    for (Object o : preparedList) {
+                        StoreId storeId = (StoreId) o;
                         storeId.setLocked(false);
                         if (type == TransactionId.PUSH_TRANSACTION) {
                             if (duplicateDetectionEnabled)
@@ -1042,8 +1032,8 @@ public class MessageQueue extends AbstractQueue {
                         List preparedList = transactionId.getPreparedList();
                         if (type == TransactionId.PUSH_TRANSACTION) {
                             // Remove storeId and message from the queue
-                            for (int i = 0; i < preparedList.size(); i++) {
-                                StoreId storeId = (StoreId) preparedList.get(i);
+                            for (Object o : preparedList) {
+                                StoreId storeId = (StoreId) o;
                                 if (duplicateDetectionEnabled)
                                     removeFromDuplicateLog(storeId);
                                 queueContent.remove(storeId);
@@ -1054,8 +1044,8 @@ public class MessageQueue extends AbstractQueue {
                         } else {
                             // PULL_TRANSACTION
                             // Eventually incremend deliveryCount
-                            for (int i = 0; i < preparedList.size(); i++) {
-                                StoreId storeId = (StoreId) preparedList.get(i);
+                            for (Object o : preparedList) {
+                                StoreId storeId = (StoreId) o;
                                 storeId.setLocked(false);
                                 if (setRedelivered) {
                                     storeId.setDeliveryCount(storeId.getDeliveryCount() + 1);
@@ -1101,8 +1091,8 @@ public class MessageQueue extends AbstractQueue {
                         if (pStore != null && setRedelivered)
                             srt = pStore.createReadTransaction(setRedelivered);
                         // Unlock storeId's
-                        for (int i = 0; i < txList.size(); i++) {
-                            StoreId storeId = (StoreId) txList.get(i);
+                        for (Object o : txList) {
+                            StoreId storeId = (StoreId) o;
                             storeId.setLocked(false);
                             if (setRedelivered) {
                                 try {
@@ -1160,8 +1150,8 @@ public class MessageQueue extends AbstractQueue {
                         if (pStore != null && setRedelivered)
                             srt = pStore.createReadTransaction(setRedelivered);
                         // Unlock storeId's
-                        for (int i = 0; i < txList.size(); i++) {
-                            StoreId storeId = (StoreId) txList.get(i);
+                        for (Object o : txList) {
+                            StoreId storeId = (StoreId) o;
                             storeId.setLocked(false);
                             if (setRedelivered) {
                                 try {
@@ -1235,26 +1225,22 @@ public class MessageQueue extends AbstractQueue {
             try {
                 ArrayList<StoreId> removeIds = new ArrayList<>();
                 long actTime = System.currentTimeMillis();
-                Iterator<StoreId> iterator = queueContent.iterator();
-                while (iterator.hasNext()) {
-                    StoreId storeId = iterator.next();
+                for (StoreId storeId : queueContent) {
                     if (storeId.getExpirationTime() != 0 && storeId.getExpirationTime() < actTime && !storeId.isLocked())
                         removeIds.add(storeId);
                 }
-                if (removeIds.size() > 0) {
-                    for (int i = 0; i < removeIds.size(); i++) {
+                if (!removeIds.isEmpty()) {
+                    for (StoreId removeId : removeIds) {
                         StoreReadTransaction srt = null;
                         if (pStore != null)
                             srt = pStore.createReadTransaction(false);
-                        StoreId storeId = removeIds.get(i);
                         if (ctx.queueManager.isLogExpired())
-                            ctx.logSwiftlet.logWarning(getQueueName(), "CleanUp, removing expired message: " + storeId);
+                            ctx.logSwiftlet.logWarning(getQueueName(), "CleanUp, removing expired message: " + removeId);
                         if (ctx.queueSpace.enabled)
-                            ctx.queueSpace.trace(getQueueName(), "CleanUp, removing expired message: " + storeId);
-                        removeMessage(srt, storeId);
+                            ctx.queueSpace.trace(getQueueName(), "CleanUp, removing expired message: " + removeId);
+                        removeMessage(srt, removeId);
                         if (srt != null) {
                             srt.commit();
-                            srt = null;
                         }
                     }
                     removeIds.clear();
@@ -1778,7 +1764,7 @@ public class MessageQueue extends AbstractQueue {
                     if (!storeId.isLocked()) {
                         me = cache.get(storeId);
                         if (messageProcessor.isAutoCommit()) {
-                            incrementConsumeCount(storeId);
+                            incrementConsumeCount();
                             iterator.remove();
                             if (viewId != -1)
                                 queueContent.remove(storeId);
@@ -1894,7 +1880,7 @@ public class MessageQueue extends AbstractQueue {
                 if (me == null)
                     me = cache.get(storeId);
                 if (messageProcessor.isAutoCommit()) {
-                    incrementConsumeCount(storeId);
+                    incrementConsumeCount();
                     queueContent.remove(storeId);
                     if (views != null)
                         removeFromViews(storeId);

@@ -19,13 +19,16 @@ package com.swiftmq.impl.threadpool.standard.group;
 
 import com.swiftmq.impl.threadpool.standard.SwiftletContext;
 import com.swiftmq.impl.threadpool.standard.group.pool.ThreadRunner;
+import com.swiftmq.impl.threadpool.standard.group.pool.VirtualThreadRunner;
 import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.EventProcessor;
+import com.swiftmq.tools.concurrent.Semaphore;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
@@ -84,6 +87,60 @@ public class EventLoopImpl implements EventLoop {
         }
     }
 
+    public static void main(String[] args) throws InterruptedException {
+        MyEventProcessor eventProcessor = new MyEventProcessor(5000);
+        EventLoopImpl eventLoop = new EventLoopImpl(null, "1", true, eventProcessor, new VirtualThreadRunner());
+
+        ExecutorService eventSubmitter = Executors.newFixedThreadPool(1);
+        System.out.println("Starting event submission...");
+
+        for (int i = 0; i < 5000; i++) {
+            int finalI = i;
+            eventSubmitter.submit(() -> {
+                try {
+                    Thread.sleep((long) (10)); // Random delay
+                    System.out.println("Submitting event: " + finalI);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                eventLoop.submit(finalI);
+            });
+        }
+
+        Thread freezeUnfreezeThread = new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    System.out.println("Freezing event loop...");
+                    Thread.sleep((long) (1000));
+                    eventLoop.freeze();
+                    System.out.println("Event loop frozen.");
+
+                    System.out.println("Unfreezing event loop...");
+                    Thread.sleep((long) (5000));
+                    eventLoop.unfreeze();
+                    System.out.println("Event loop unfrozen.");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        freezeUnfreezeThread.start();
+        Semaphore sem = new Semaphore();
+        sem.waitHere(5 * 60000);
+        eventSubmitter.shutdown();
+        eventSubmitter.awaitTermination(5, TimeUnit.MINUTES);
+
+        System.out.println("Closing event loop...");
+        eventLoop.close();
+        System.out.println("Event loop closed.");
+
+        freezeUnfreezeThread.interrupt();
+        freezeUnfreezeThread.join();
+
+        eventProcessor.checkResults();
+        System.out.println("Event processing completed.");
+    }
+
     private void checkFrozenAndWaitUnfrozen() {
         freezeLock.lock();
         try {
@@ -97,7 +154,9 @@ public class EventLoopImpl implements EventLoop {
 
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/waiting to be unfrozen");
+//                System.out.println("Wait unfrozen");
                 unfrozen.await();
+//                System.out.println("unfrozen");
             }
         } catch (InterruptedException e) {
             // Handle thread interruption, for example during shutdown
@@ -115,37 +174,9 @@ public class EventLoopImpl implements EventLoop {
             while (!shouldTerminate.get()) {
                 processEvents();
             }
+//            System.out.println("Thread terminates");
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/terminating");
         });
-    }
-
-    private void processEvents() {
-        queueLock.lock();
-        try {
-            while (eventQueue.isEmpty() && !shouldTerminate.get()) {
-                notEmpty.await();
-                checkFrozenAndWaitUnfrozen();
-            }
-            if (shouldTerminate.get()) {
-                return; // Exit the method if the loop should terminate
-            }
-
-            if (bulkMode) {
-                events.addAll(eventQueue);
-                eventQueue.clear();
-            } else {
-                events.add(eventQueue.removeFirst());
-            }
-        } catch (InterruptedException e) {
-            if (shouldTerminate.get()) {
-                return;
-            }
-        } finally {
-            queueLock.unlock();
-        }
-
-        eventProcessor.process(events);
-        events.clear();
     }
 
     @Override
@@ -199,5 +230,72 @@ public class EventLoopImpl implements EventLoop {
         return "EventLoopImpl " +
                 "id='" + id + '\'' +
                 ", bulkMode=" + bulkMode;
+    }
+
+    private void processEvents() {
+        boolean shouldProcess = false;
+        try {
+            queueLock.lock();
+            try {
+                while (eventQueue.isEmpty() && !shouldTerminate.get() && !isFrozen.get()) {
+                    notEmpty.await();
+                }
+                if (!shouldTerminate.get()) {
+                    shouldProcess = true;
+                    if (bulkMode) {
+                        events.addAll(eventQueue);
+                        eventQueue.clear();
+                    } else {
+                        events.add(eventQueue.removeFirst());
+                    }
+                }
+            } finally {
+                queueLock.unlock();
+            }
+
+            // Move event processing outside of the queueLock block
+            if (shouldProcess) {
+                checkFrozenAndWaitUnfrozen(); // This will handle the freeze logic
+                eventProcessor.process(events);
+                events.clear();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); //Restore the interrupted status
+        }
+    }
+
+    static class MyEventProcessor implements EventProcessor {
+        private final Set<Integer> receivedEvents = new HashSet<>();
+        private final int totalEvents;
+        private int lastEvent = -1;
+
+        public MyEventProcessor(int totalEvents) {
+            this.totalEvents = totalEvents;
+        }
+
+        @Override
+        public void process(List<Object> events) {
+            for (Object event : events) {
+                int currentEvent = (Integer) event;
+                System.out.println("Process: " + currentEvent);
+                if (currentEvent <= lastEvent || receivedEvents.contains(currentEvent)) {
+                    System.out.println("Duplicate or out-of-order event detected");
+                }
+                receivedEvents.add(currentEvent);
+                lastEvent = currentEvent;
+            }
+        }
+
+        public void checkResults() {
+            if (receivedEvents.size() != totalEvents) {
+                throw new RuntimeException("Mismatch in number of events. Expected: " + totalEvents + ", Received: " + receivedEvents.size());
+            }
+            for (int i = 0; i < totalEvents; i++) {
+                if (!receivedEvents.contains(i)) {
+                    throw new RuntimeException("Missing event: " + i);
+                }
+            }
+            System.out.println("All " + totalEvents + " events processed successfully, with no duplicates or missing events.");
+        }
     }
 }

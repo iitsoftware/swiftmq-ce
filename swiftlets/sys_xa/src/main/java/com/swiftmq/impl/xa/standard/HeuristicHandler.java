@@ -35,9 +35,10 @@ import com.swiftmq.tools.util.IdGenerator;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class HeuristicHandler extends EntityChangeAdapter implements EntityWatchListener {
     private static final String HEURISTIC_QUEUE = "sys$xa_heuristic";
@@ -46,8 +47,8 @@ public class HeuristicHandler extends EntityChangeAdapter implements EntityWatch
     private static final String PROP_OPER = "operation";
     private static final String MSGID = "sys$xa_heuristic/";
     SwiftletContext ctx = null;
-    volatile boolean duringLoad = false;
-    volatile int maxId = 0;
+    final AtomicBoolean duringLoad = new AtomicBoolean(false);
+    final AtomicInteger maxId = new AtomicInteger();
 
     public HeuristicHandler(SwiftletContext ctx) {
         super(null);
@@ -113,9 +114,9 @@ public class HeuristicHandler extends EntityChangeAdapter implements EntityWatch
 
     private Entity findHeuristic(XidImpl xid) {
         Map map = ctx.heuristicUsageList.getEntities();
-        if (map != null && map.size() > 0) {
-            for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+        if (map != null && !map.isEmpty()) {
+            for (Object o : map.entrySet()) {
+                Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 XidImpl thatXid = (XidImpl) entity.getUserObject();
                 if (thatXid.equals(xid))
                     return entity;
@@ -145,10 +146,10 @@ public class HeuristicHandler extends EntityChangeAdapter implements EntityWatch
 
     public List getXids() {
         Map map = ctx.heuristicUsageList.getEntities();
-        if (map != null && map.size() > 0) {
+        if (map != null && !map.isEmpty()) {
             List list = new ArrayList();
-            for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Object o : map.entrySet()) {
+                Entity entity = (Entity) ((Map.Entry) o).getValue();
                 list.add(entity.getUserObject());
             }
             return list;
@@ -160,9 +161,9 @@ public class HeuristicHandler extends EntityChangeAdapter implements EntityWatch
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/addHeuristic, xid=" + xid);
         Entity entity = ctx.heuristicUsageList.createEntity();
-        if (maxId == Integer.MAX_VALUE)
-            maxId = 0;
-        entity.setName(String.valueOf(++maxId));
+        if (maxId.get() == Integer.MAX_VALUE)
+            maxId.set(0);
+        entity.setName(String.valueOf(maxId.incrementAndGet()));
         entity.setUserObject(xid);
         entity.getProperty("xid").setValue(xid.toString());
         entity.getProperty("operation").setValue(commit ? "COMMIT" : "ROLLBACK");
@@ -172,7 +173,7 @@ public class HeuristicHandler extends EntityChangeAdapter implements EntityWatch
 
     public void loadHeuristics() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/loadHeuristics");
-        duringLoad = true;
+        duringLoad.set(true);
         try {
             if (!ctx.queueManager.isQueueDefined(HEURISTIC_QUEUE))
                 ctx.queueManager.createQueue(HEURISTIC_QUEUE, (ActiveLogin) null);
@@ -182,7 +183,7 @@ public class HeuristicHandler extends EntityChangeAdapter implements EntityWatch
             while ((entry = t.getMessage(0)) != null) {
                 Entity entity = ctx.heuristicUsageList.createEntity();
                 MessageImpl msg = entry.getMessage();
-                maxId = Math.max(maxId, msg.getIntProperty(PROP_IID));
+                maxId.set(Math.max(maxId.get(), msg.getIntProperty(PROP_IID)));
                 messageToEntity(msg, entity);
                 entity.createCommands();
                 ctx.heuristicUsageList.addEntity(entity);
@@ -190,12 +191,12 @@ public class HeuristicHandler extends EntityChangeAdapter implements EntityWatch
             t.rollback();
             receiver.close();
         } finally {
-            duringLoad = false;
+            duringLoad.set(false);
         }
     }
 
     public void entityAdded(Entity parent, Entity newEntity) {
-        if (duringLoad)
+        if (duringLoad.get())
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.xaSwiftlet.getName(), toString() + "/entityAdded");
         try {
