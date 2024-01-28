@@ -44,7 +44,7 @@ public class NontransactedSession extends Session {
     }
 
     public void visit(MessageDeliveredRequest req) {
-        if (closed.get() || recoveryInProgress.get())
+        if (closed || recoveryInProgress)
             return;
         if (!req.isDuplicate())
             deliveredList.add(req);
@@ -52,7 +52,7 @@ public class NontransactedSession extends Session {
     }
 
     public void visit(AcknowledgeMessageRequest req) {
-        if (closed.get())
+        if (closed)
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitAcknowledgeMessageRequest");
@@ -198,7 +198,7 @@ public class NontransactedSession extends Session {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply");
         RecoverSessionReply reply = (RecoverSessionReply) request.getPayload();
-        recoveryEpoche.set(reply.getRecoveryEpoche());
+        recoveryEpoche = reply.getRecoveryEpoche();
         try {
             for (int i = 0; i < consumerList.size(); i++) {
                 Consumer consumer = consumerList.get(i);
@@ -210,7 +210,7 @@ public class NontransactedSession extends Session {
                         ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply, get message processor: " + mp);
                     if (mp != null) {
                         int maxBulkSize = (int) (mp.getMaxBulkSize() / 1024);
-                        mp = new AsyncMessageProcessor(this, ctx, consumer, mp.getConsumerCacheSize(), recoveryEpoche.get());
+                        mp = new AsyncMessageProcessor(this, ctx, consumer, mp.getConsumerCacheSize(), recoveryEpoche);
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitGenericRequest/RecoverSessionReply, new message processor: " + mp);
                         mp.setMaxBulkSize(maxBulkSize);
@@ -223,13 +223,13 @@ public class NontransactedSession extends Session {
             reply.setOk(false);
             reply.setException(e);
         }
-        recoveryInProgress.set(false);
+        recoveryInProgress = false;
         reply.send();
     }
 
     public void visit(RecoverSessionRequest req) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRecoverSessionRequest");
-        recoveryInProgress.set(true);
+        recoveryInProgress = true;
         RecoverSessionReply reply = (RecoverSessionReply) req.createReply();
         reply.setRecoveryEpoche(req.getRecoveryEpoche());
         reply.setOk(true);

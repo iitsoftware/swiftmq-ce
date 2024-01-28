@@ -39,8 +39,6 @@ import com.swiftmq.tools.requestreply.RequestService;
 
 import javax.jms.InvalidDestinationException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Session extends SessionVisitor
         implements RequestService, EventProcessor {
@@ -48,9 +46,9 @@ public abstract class Session extends SessionVisitor
     protected ExpandableList<Producer> producerList = new ExpandableList<>();
     protected SessionContext ctx = null;
     protected int dispatchId;
-    protected final AtomicInteger recoveryEpoche = new AtomicInteger();
-    protected final AtomicBoolean recoveryInProgress = new AtomicBoolean(false);
-    protected final AtomicBoolean closed = new AtomicBoolean(false);
+    protected int recoveryEpoche = 0;
+    protected boolean recoveryInProgress = false;
+    protected volatile boolean closed = false;
     protected JMSConnection myConnection = null;
 
     public Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
@@ -93,17 +91,17 @@ public abstract class Session extends SessionVisitor
     }
 
     public void setRecoveryEpoche(int recoveryEpoche) {
-        this.recoveryEpoche.set(recoveryEpoche);
+        this.recoveryEpoche = recoveryEpoche;
     }
 
     @Override
     public void process(List<Object> events) {
-        if (!closed.get())
+        if (!closed)
             events.forEach(e -> ((Request) e).accept(this));
     }
 
     public void visit(StartConsumerRequest req) {
-        if (closed.get())
+        if (closed)
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitStartConsumerRequest");
         int qcId = req.getQueueConsumerId();
@@ -115,7 +113,7 @@ public abstract class Session extends SessionVisitor
         try {
             AsyncMessageProcessor mp = (AsyncMessageProcessor) consumer.getMessageProcessor();
             if (mp == null) {
-                mp = new AsyncMessageProcessor(this, ctx, consumer, req.getConsumerCacheSize(), recoveryEpoche.get());
+                mp = new AsyncMessageProcessor(this, ctx, consumer, req.getConsumerCacheSize(), recoveryEpoche);
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitStartConsumerRequest, new message processor: " + mp);
                 consumer.setMessageListener(clientDispatchId, clientListenerId, mp);
@@ -131,7 +129,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(DeliveryItem item) {
-        if (closed.get() || recoveryInProgress.get() || item.request.getRecoveryEpoche() != recoveryEpoche.get())
+        if (closed || recoveryInProgress || item.request.getRecoveryEpoche() != recoveryEpoche)
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitDeliveryItem, item= " + item);
@@ -139,7 +137,7 @@ public abstract class Session extends SessionVisitor
             item.request.setMessageEntry(item.messageEntry);
             ctx.outboundLoop.submit(item.request);
         } catch (Exception e) {
-            if (!closed.get()) {
+            if (!closed) {
                 e.printStackTrace();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/handleDelivery, exception= " + e);
@@ -148,7 +146,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(RegisterMessageProcessor request) {
-        if (closed.get())
+        if (closed)
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRegisterMessageProcessor, request= " + request);
@@ -156,7 +154,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(RunMessageProcessor request) {
-        if (closed.get())
+        if (closed)
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitRunMessageProcessor, request= " + request);
@@ -168,7 +166,7 @@ public abstract class Session extends SessionVisitor
     }
 
     public void visit(MessageDeliveredRequest req) {
-        if (closed.get() || recoveryInProgress.get())
+        if (closed || recoveryInProgress)
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest ...");
@@ -212,8 +210,9 @@ public abstract class Session extends SessionVisitor
     }
 
     protected void close() {
-        if (closed.getAndSet(true))
+        if (closed)
             return;
+        closed = true;
         ctx.sessionLoop.close();
 
         for (int i = 0; i < consumerList.size(); i++) {
@@ -239,7 +238,7 @@ public abstract class Session extends SessionVisitor
     }
 
     protected boolean isClosed() {
-        return closed.get();
+        return closed;
     }
 
     public String toString() {

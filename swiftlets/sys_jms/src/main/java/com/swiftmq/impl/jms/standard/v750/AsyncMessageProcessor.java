@@ -73,7 +73,7 @@ public class AsyncMessageProcessor extends MessageProcessor {
     }
 
     public boolean isValid() {
-        return valid.get() && !session.closed.get();
+        return valid.get() && !session.closed;
     }
 
     public void stop() {
