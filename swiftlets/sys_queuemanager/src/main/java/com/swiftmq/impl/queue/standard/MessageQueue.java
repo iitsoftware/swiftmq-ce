@@ -30,7 +30,6 @@ import com.swiftmq.tools.collection.ConcurrentExpandableList;
 import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.collection.OrderedSet;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
-import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 import com.swiftmq.tools.concurrent.AtomicWrappingCounterLong;
 import com.swiftmq.util.SwiftUtilities;
 
@@ -61,12 +60,6 @@ public class MessageQueue extends AbstractQueue {
     protected boolean duplicateDetectionEnabled = true;
     protected int duplicateDetectionBacklogSize = 500;
     List<Object[]> watchListeners = null;
-    AtomicWrappingCounterInteger totalConsumed = new AtomicWrappingCounterInteger(0);
-    AtomicWrappingCounterInteger totalProduced = new AtomicWrappingCounterInteger(0);
-    AtomicWrappingCounterInteger consumed = new AtomicWrappingCounterInteger(0);
-    AtomicWrappingCounterInteger produced = new AtomicWrappingCounterInteger(0);
-    long lastConsumedTimestamp = 0;
-    long lastProducedTimestamp = 0;
     Lock queueLock = new ReentrantLock();
     Condition msgAvail = null;
     Condition asyncFinished = null;
@@ -75,7 +68,8 @@ public class MessageQueue extends AbstractQueue {
     long activeReceiverId = -1;
     Map<String, WireTap> wireTaps = new HashMap<>();
     boolean active = true;
-    QueueLatency queueLatency = new QueueLatency();
+    private final QueueLatency queueLatency = new QueueLatency();
+    private final QueueMetrics queueMetrics = new QueueMetrics();
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
         this.ctx = ctx;
@@ -372,8 +366,7 @@ public class MessageQueue extends AbstractQueue {
         if (views != null) {
             insertIntoViews(storeId, message);
         }
-        produced.getAndIncrement();
-        totalProduced.getAndIncrement();
+        queueMetrics.incrementProduced();
         return transaction;
     }
 
@@ -430,8 +423,7 @@ public class MessageQueue extends AbstractQueue {
     }
 
     private void incrementConsumeCount() {
-        consumed.getAndIncrement();
-        totalConsumed.getAndIncrement();
+        queueMetrics.incrementConsumed();
     }
 
     private void removeFromViews(StoreId storeId) {
@@ -555,8 +547,6 @@ public class MessageQueue extends AbstractQueue {
                 if (ctx.queueSpace.enabled)
                     ctx.queueSpace.trace(getQueueName(), "Queue has " + queueContent.size() + " entries");
                 running = true;
-                lastConsumedTimestamp = System.currentTimeMillis();
-                lastProducedTimestamp = lastConsumedTimestamp;
             } catch (Exception e) {
                 ctx.logSwiftlet.logError(getQueueName(), "Exception buildIndex: " + e.getMessage());
                 if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "Exception buildIndex: " + e);
@@ -803,8 +793,7 @@ public class MessageQueue extends AbstractQueue {
                                 if (views != null)
                                     removeFromViews(storeId);
                                 cache.remove(storeId);
-                                consumed.getAndIncrement();
-                                totalConsumed.getAndIncrement();
+                                queueMetrics.incrementConsumed();
                             }
                         }
                         if (getFlowController() != null) {
@@ -1267,43 +1256,19 @@ public class MessageQueue extends AbstractQueue {
     }
 
     public int getConsumingRate() {
-        lockAndWaitAsyncFinished();
-        try {
-            int rate = 0;
-            if (consumed.get() > 0) {
-                double secs = (System.currentTimeMillis() - lastConsumedTimestamp) / 1000.0;
-                rate = (int) Math.round(consumed.get() / secs);
-                consumed.reset();
-            }
-            lastConsumedTimestamp = System.currentTimeMillis();
-            return rate;
-        } finally {
-            queueLock.unlock();
-        }
+        return queueMetrics.getConsumingRate();
     }
 
     public int getProducingRate() {
-        lockAndWaitAsyncFinished();
-        try {
-            int rate = 0;
-            if (produced.get() > 0) {
-                double secs = (System.currentTimeMillis() - lastProducedTimestamp) / 1000.0;
-                rate = (int) Math.round(produced.get() / secs);
-                produced.reset();
-            }
-            lastProducedTimestamp = System.currentTimeMillis();
-            return rate;
-        } finally {
-            queueLock.unlock();
-        }
+        return queueMetrics.getProducingRate();
     }
 
     public int getConsumedTotal() {
-        return totalConsumed.get();
+        return queueMetrics.getConsumedTotal();
     }
 
     public int getProducedTotal() {
-        return totalProduced.get();
+        return queueMetrics.getProducedTotal();
     }
 
     public long getAndResetAverageLatency() {
@@ -1318,8 +1283,7 @@ public class MessageQueue extends AbstractQueue {
     }
 
     public void resetCounters() {
-        totalConsumed.reset();
-        totalProduced.reset();
+        queueMetrics.resetCounters();
     }
 
     public MessageEntry getMessage(Object transactionId)
