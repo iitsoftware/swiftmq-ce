@@ -59,7 +59,6 @@ public class MessageQueue extends AbstractQueue {
     Selector currentGetSelector = null;
     protected boolean duplicateDetectionEnabled = true;
     protected int duplicateDetectionBacklogSize = 500;
-    List<Object[]> watchListeners = null;
     Lock queueLock = new ReentrantLock();
     Condition msgAvail = null;
     Condition asyncFinished = null;
@@ -70,6 +69,7 @@ public class MessageQueue extends AbstractQueue {
     private final QueueLatency queueLatency = new QueueLatency();
     private final QueueMetrics queueMetrics = new QueueMetrics();
     private final WireTapManager wireTapManager = new WireTapManager();
+    private final PropertyWatchManager propertyWatchManager = new PropertyWatchManager();
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
         this.ctx = ctx;
@@ -116,28 +116,25 @@ public class MessageQueue extends AbstractQueue {
     }
 
     void setQueueController(Entity queueController) {
-        watchListeners = new ArrayList<>();
         Property prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
         PropertyWatchListener l = property -> cache.setMaxMessages((Integer) property.getValue());
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
+        propertyWatchManager.addPropertyWatchListener(prop, l);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
         l = property -> cache.setMaxBytesKB((Integer) property.getValue());
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
-
-        prop = queueController.getProperty(QueueManagerImpl.PROP_CLEANUP_INTERVAL);
+        propertyWatchManager.addPropertyWatchListener(prop, l);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_MESSAGES_MAXIMUM);
         l = property -> setMaxMessages((Integer) property.getValue());
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
+        propertyWatchManager.addPropertyWatchListener(prop, l);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_PERSISTENCE);
         l = property -> setPersistenceMode(SwiftUtilities.persistenceModeToInt((String) property.getValue()));
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
+        propertyWatchManager.addPropertyWatchListener(prop, l);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_FLOWCONTROL_QUEUE_SIZE);
         l = property -> {
@@ -148,33 +145,26 @@ public class MessageQueue extends AbstractQueue {
                 setFlowController(null);
         };
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
+        propertyWatchManager.addPropertyWatchListener(prop, l);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_ENABLED);
         l = property -> setDuplicateDetectionEnabled((Boolean) property.getValue());
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
+        propertyWatchManager.addPropertyWatchListener(prop, l);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_BACKLOG_SIZE);
         l = property -> setDuplicateDetectionBacklogSize((Integer) property.getValue());
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
+        propertyWatchManager.addPropertyWatchListener(prop, l);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_CONSUMER);
         l = property -> setConsumerMode(ctx.consumerModeInt((String) property.getValue()));
         prop.addPropertyWatchListener(l);
-        watchListeners.add(new Object[]{prop, l});
+        propertyWatchManager.addPropertyWatchListener(prop, l);
     }
 
     private void removeWatchListeners() {
-        if (watchListeners != null) {
-            for (Object[] obj : watchListeners) {
-                Property p = (Property) obj[0];
-                PropertyWatchListener l = (PropertyWatchListener) obj[1];
-                p.removePropertyWatchListener(l);
-            }
-            watchListeners = null;
-        }
+        propertyWatchManager.removePropertyWatchListeners();
     }
 
     protected long getNextMsgId() {
