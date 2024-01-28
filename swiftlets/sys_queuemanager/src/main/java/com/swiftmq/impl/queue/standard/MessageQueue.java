@@ -66,10 +66,10 @@ public class MessageQueue extends AbstractQueue {
     boolean asyncActive = false;
     CompositeStoreTransaction compositeTx = null;
     long activeReceiverId = -1;
-    Map<String, WireTap> wireTaps = new HashMap<>();
     boolean active = true;
     private final QueueLatency queueLatency = new QueueLatency();
     private final QueueMetrics queueMetrics = new QueueMetrics();
+    private final WireTapManager wireTapManager = new WireTapManager();
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
         this.ctx = ctx;
@@ -93,12 +93,7 @@ public class MessageQueue extends AbstractQueue {
         try {
             if (ctx.queueSpace.enabled)
                 ctx.queueSpace.trace(getQueueName(), "addWireTapSubscriber, name=" + name + ", subscriber=" + subscriber);
-            WireTap wiretap = wireTaps.get(name);
-            if (wiretap == null) {
-                wiretap = new WireTap(name, subscriber);
-                wireTaps.put(name, wiretap);
-            } else
-                wiretap.addSubscriber(subscriber);
+            wireTapManager.addWireTapSubscriber(name, subscriber);
         } finally {
             queueLock.unlock();
         }
@@ -110,21 +105,14 @@ public class MessageQueue extends AbstractQueue {
         try {
             if (ctx.queueSpace.enabled)
                 ctx.queueSpace.trace(getQueueName(), "removeWireTapSubscriber, name=" + name + ", subscriber=" + subscriber);
-            WireTap wiretap = wireTaps.get(name);
-            if (wiretap != null) {
-                wiretap.removeSubscriber(subscriber);
-                if (!wiretap.hasSubscribers())
-                    wireTaps.remove(name);
-            }
+            wireTapManager.removeWireTapSubscriber(name, subscriber);
         } finally {
             queueLock.unlock();
         }
     }
 
     private void forwardWireTaps(MessageImpl message) {
-        if (wireTaps.isEmpty())
-            return;
-        wireTaps.forEach((key, value) -> value.putMessage(message));
+        wireTapManager.forwardWireTaps(message);
     }
 
     void setQueueController(Entity queueController) {
@@ -566,7 +554,7 @@ public class MessageQueue extends AbstractQueue {
                 throw new QueueException("queue " + getQueueName() + " is not running");
 
             running = false;
-            wireTaps.clear();
+            wireTapManager.reset();
             removeWatchListeners();
 
             if (isTemporary()) {
