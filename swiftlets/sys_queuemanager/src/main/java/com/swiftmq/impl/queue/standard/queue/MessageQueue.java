@@ -49,8 +49,6 @@ public class MessageQueue extends AbstractQueue {
     NonPersistentStore nStore = null;
     protected SortedSet<StoreId> queueContent = null;
     protected OrderedSet duplicateBacklog = new OrderedSet(500);
-    int activeMsgProcList = 0;
-    List[] msgProcessors = null;
     boolean running = false;
     ExpandableList<View> views = null;
     AtomicWrappingCounterLong msgId = new AtomicWrappingCounterLong(0);
@@ -71,6 +69,7 @@ public class MessageQueue extends AbstractQueue {
     private final WireTapManager wireTapManager = new WireTapManager();
     private final PropertyWatchManager propertyWatchManager = new PropertyWatchManager();
     private final ActiveTransactionRegistry activeTransactionRegistry = new ActiveTransactionRegistry();
+    private final MessageProcessorRegistry messageProcessorRegistry = new MessageProcessorRegistry();
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
         this.ctx = ctx;
@@ -434,26 +433,19 @@ public class MessageQueue extends AbstractQueue {
                 ctx.queueSpace.trace(getQueueName(), "notifyWaiters, Queue is paused");
             return; // Queue is paused
         }
-        if (ctx.queueSpace.enabled)
-            ctx.queueSpace.trace(getQueueName(), "notifyWaiters, activeMsgProcList: " + activeMsgProcList + ", size(): " + msgProcessors[activeMsgProcList].size());
-        List<MessageProcessor> currentProcessors = msgProcessors[activeMsgProcList];
-        activeMsgProcList = activeMsgProcList == 0 ? 1 : 0;
-        for (MessageProcessor mp : currentProcessors) {
-            if (mp != null) {
-                mp.setRegistrationId(-1);
-                int viewId = mp.getViewId();
-                if (viewId == -1 || views.get(viewId) == null || views.get(viewId).isDirty()) {
-                    if (ctx.queueSpace.enabled)
-                        ctx.queueSpace.trace(getQueueName(), "notifyWaiters, no view or view is dirty, run message proc");
-                    registerMessageProcessor(mp);
-                } else {
-                    if (ctx.queueSpace.enabled)
-                        ctx.queueSpace.trace(getQueueName(), "notifyWaiters, view is NOT dirty, store message proc");
-                    storeMessageProcessor(mp);
-                }
+        messageProcessorRegistry.process(mp -> {
+            mp.setRegistrationId(-1);
+            int viewId = mp.getViewId();
+            if (viewId == -1 || views.get(viewId) == null || views.get(viewId).isDirty()) {
+                if (ctx.queueSpace.enabled)
+                    ctx.queueSpace.trace(getQueueName(), "notifyWaiters, no view or view is dirty, run message proc");
+                registerMessageProcessor(mp);
+            } else {
+                if (ctx.queueSpace.enabled)
+                    ctx.queueSpace.trace(getQueueName(), "notifyWaiters, view is NOT dirty, store message proc");
+                storeMessageProcessor(mp);
             }
-        }
-        currentProcessors.clear();
+        });
         msgAvail.signalAll();
     }
 
@@ -495,9 +487,6 @@ public class MessageQueue extends AbstractQueue {
             if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "startQueue: Cache=" + cache);
             if (ctx.queueSpace.enabled)
                 ctx.queueSpace.trace(getQueueName(), "startQueue: cleanUpInterval=" + cleanUpInterval);
-            msgProcessors = new List[2];
-            msgProcessors[0] = new ArrayList<>();
-            msgProcessors[1] = new ArrayList<>();
             queueContent = new TreeSet<>();
             try {
                 if (!temporary) {
@@ -544,7 +533,7 @@ public class MessageQueue extends AbstractQueue {
                 throw new QueueException(e.toString());
             }
             // notifyWaiters();
-            msgProcessors = null;
+            messageProcessorRegistry.reset();
             msgAvail.signalAll();
             if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "stopQueue: queue is stopped");
         } finally {
@@ -1635,15 +1624,7 @@ public class MessageQueue extends AbstractQueue {
     }
 
     private int storeMessageProcessor(MessageProcessor messageProcessor) {
-        int regId = messageProcessor.getRegistrationId();
-        if (regId >= 0 && regId < msgProcessors[activeMsgProcList].size() && msgProcessors[activeMsgProcList].get(regId) == messageProcessor)
-            return regId;
-        msgProcessors[activeMsgProcList].add(messageProcessor);
-        int id = msgProcessors[activeMsgProcList].size() - 1;
-        messageProcessor.setRegistrationId(id);
-        if (ctx.queueSpace.enabled)
-            ctx.queueSpace.trace(getQueueName(), "storing message processor, id: " + id + ", activeMsgProcList: " + activeMsgProcList);
-        return id;
+        return messageProcessorRegistry.storeMessageProcessor(messageProcessor);
     }
 
     private void _registerBulkMessageProcessor(MessageProcessor messageProcessor) {
@@ -1894,11 +1875,7 @@ public class MessageQueue extends AbstractQueue {
     public void unregisterMessageProcessor(MessageProcessor messageProcessor) {
         lockAndWaitAsyncFinished();
         try {
-            int id = messageProcessor.getRegistrationId();
-            if (id != -1 && id < msgProcessors[activeMsgProcList].size()) {
-                msgProcessors[activeMsgProcList].set(id, null);
-                messageProcessor.setRegistrationId(-1);
-            }
+            messageProcessorRegistry.removeMessageProcessor(messageProcessor);
         } finally {
             queueLock.unlock();
         }
@@ -1959,16 +1936,7 @@ public class MessageQueue extends AbstractQueue {
         try {
             if (!running)
                 return;
-            MessageProcessor msgProc = (MessageProcessor) msgProcessors[activeMsgProcList].get(id);
-            if (ctx.queueSpace.enabled)
-                ctx.queueSpace.trace(getQueueName(), "timeout message processor, id: " + id + ", regTime: " + registrationTime);
-            if (msgProc != null && registrationTime == msgProc.getRegistrationTime()) {
-                msgProcessors[activeMsgProcList].set(id, null);
-                msgProc.setRegistrationId(-1);
-                if (ctx.queueSpace.enabled)
-                    ctx.queueSpace.trace(getQueueName(), "throwing QueueTimeoutException, id: " + id + ", regTime: " + registrationTime);
-                msgProc.processException(new QueueTimeoutException("timout occurred"));
-            }
+            messageProcessorRegistry.removeIf(processor -> processor.getRegistrationTime() == registrationTime);
         } finally {
             queueLock.unlock();
         }
@@ -2256,17 +2224,7 @@ public class MessageQueue extends AbstractQueue {
         try {
             if (getWaiting && (currentGetSelector == null || currentGetSelector.isSelected(message)))
                 return true;
-            for (int i = 0; i < msgProcessors[activeMsgProcList].size(); i++) {
-                MessageProcessor mp = (MessageProcessor) msgProcessors[activeMsgProcList].get(i);
-                if (mp != null) {
-                    Selector selector = mp.getSelector();
-                    if (selector == null)
-                        return true;
-                    if (selector.isSelected(message))
-                        return true;
-                }
-            }
-            return false;
+            return messageProcessorRegistry.hasInterestedProcessor(message);
         } finally {
             queueLock.unlock();
         }
