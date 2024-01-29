@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2024 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,16 +15,12 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.queue;
 
-import com.swiftmq.swiftlet.store.NonPersistentStore;
-import com.swiftmq.swiftlet.store.PersistentStore;
+import com.swiftmq.swiftlet.queue.QueueException;
 
-import java.util.HashMap;
-
-public class MessageQueueFactoryImpl implements MessageQueueFactory {
-    public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
-        cache.setCacheTable(new HashMap(cache.getMaxMessages()));
-        return new MessageQueue(ctx, cache, pStore, nStore, cleanUpDelay);
+public class MessageLockedException extends QueueException {
+    public MessageLockedException(String string) {
+        super(string);
     }
 }

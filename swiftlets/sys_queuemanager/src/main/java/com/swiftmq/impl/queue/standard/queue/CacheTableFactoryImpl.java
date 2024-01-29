@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IIT Software GmbH
+ * Copyright 2024 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,16 +15,13 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.queue;
 
-import com.swiftmq.swiftlet.queue.MessageEntry;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ViewEntry {
-    MessageEntry messageEntry;
-    int index;
-
-    public ViewEntry(MessageEntry messageEntry, int index) {
-        this.messageEntry = messageEntry;
-        this.index = index;
+public class CacheTableFactoryImpl implements CacheTableFactory {
+    public Map createCacheTable(String queueName, int initialSize) {
+        return new HashMap(initialSize);
     }
 }

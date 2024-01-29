@@ -15,7 +15,7 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.queue;
 
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.swiftlet.queue.WireTap;

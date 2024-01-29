@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 IIT Software GmbH
+ * Copyright 2024 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,7 +15,7 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.command;
 
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.queue.AbstractQueue;

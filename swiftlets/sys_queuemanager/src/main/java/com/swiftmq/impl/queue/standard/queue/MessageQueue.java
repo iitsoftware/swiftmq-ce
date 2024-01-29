@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2024 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,8 +15,10 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.queue;
 
+import com.swiftmq.impl.queue.standard.QueueManagerImpl;
+import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.XidImpl;
 import com.swiftmq.mgmt.Entity;
@@ -26,7 +28,6 @@ import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.store.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.tools.collection.ConcurrentExpandableList;
 import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.collection.OrderedSet;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
@@ -50,7 +51,6 @@ public class MessageQueue extends AbstractQueue {
     protected OrderedSet duplicateBacklog = new OrderedSet(500);
     int activeMsgProcList = 0;
     List[] msgProcessors = null;
-    ExpandableList<List<StoreId>> activeTransactions = null;
     boolean running = false;
     ExpandableList<View> views = null;
     AtomicWrappingCounterLong msgId = new AtomicWrappingCounterLong(0);
@@ -70,6 +70,7 @@ public class MessageQueue extends AbstractQueue {
     private final QueueMetrics queueMetrics = new QueueMetrics();
     private final WireTapManager wireTapManager = new WireTapManager();
     private final PropertyWatchManager propertyWatchManager = new PropertyWatchManager();
+    private final ActiveTransactionRegistry activeTransactionRegistry = new ActiveTransactionRegistry();
 
     public MessageQueue(SwiftletContext ctx, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay) {
         this.ctx = ctx;
@@ -115,52 +116,42 @@ public class MessageQueue extends AbstractQueue {
         wireTapManager.forwardWireTaps(message);
     }
 
+    private void setupPropertyWatch(Entity queueController, String propertyName, PropertyWatchListener listener) {
+        Property prop = queueController.getProperty(propertyName);
+        prop.addPropertyWatchListener(listener);
+        propertyWatchManager.addPropertyWatchListener(prop, listener);
+    }
+
     void setQueueController(Entity queueController) {
-        Property prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
-        PropertyWatchListener l = property -> cache.setMaxMessages((Integer) property.getValue());
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_CACHE_SIZE,
+                property -> cache.setMaxMessages((Integer) property.getValue()));
 
-        prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
-        l = property -> cache.setMaxBytesKB((Integer) property.getValue());
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB,
+                property -> cache.setMaxBytesKB((Integer) property.getValue()));
 
-        prop = queueController.getProperty(QueueManagerImpl.PROP_MESSAGES_MAXIMUM);
-        l = property -> setMaxMessages((Integer) property.getValue());
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_MESSAGES_MAXIMUM,
+                property -> setMaxMessages((Integer) property.getValue()));
 
-        prop = queueController.getProperty(QueueManagerImpl.PROP_PERSISTENCE);
-        l = property -> setPersistenceMode(SwiftUtilities.persistenceModeToInt((String) property.getValue()));
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_PERSISTENCE,
+                property -> setPersistenceMode(SwiftUtilities.persistenceModeToInt((String) property.getValue())));
 
-        prop = queueController.getProperty(QueueManagerImpl.PROP_FLOWCONTROL_QUEUE_SIZE);
-        l = property -> {
-            int fcQueueSize = (Integer) property.getValue();
-            if (fcQueueSize >= 0)
-                setFlowController(new FlowControllerImpl(fcQueueSize, ctx.queueManager.getMaxFlowControlDelay()));
-            else
-                setFlowController(null);
-        };
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_FLOWCONTROL_QUEUE_SIZE,
+                property -> {
+                    int fcQueueSize = (Integer) property.getValue();
+                    if (fcQueueSize >= 0)
+                        setFlowController(new FlowControllerImpl(fcQueueSize, ctx.queueManager.getMaxFlowControlDelay()));
+                    else
+                        setFlowController(null);
+                });
 
-        prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_ENABLED);
-        l = property -> setDuplicateDetectionEnabled((Boolean) property.getValue());
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_DUPLICATE_DETECTION_ENABLED,
+                property -> setDuplicateDetectionEnabled((Boolean) property.getValue()));
 
-        prop = queueController.getProperty(QueueManagerImpl.PROP_DUPLICATE_DETECTION_BACKLOG_SIZE);
-        l = property -> setDuplicateDetectionBacklogSize((Integer) property.getValue());
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_DUPLICATE_DETECTION_BACKLOG_SIZE,
+                property -> setDuplicateDetectionBacklogSize((Integer) property.getValue()));
 
-        prop = queueController.getProperty(QueueManagerImpl.PROP_CONSUMER);
-        l = property -> setConsumerMode(ctx.consumerModeInt((String) property.getValue()));
-        prop.addPropertyWatchListener(l);
-        propertyWatchManager.addPropertyWatchListener(prop, l);
+        setupPropertyWatch(queueController, QueueManagerImpl.PROP_CONSUMER,
+                property -> setConsumerMode(ctx.consumerModeInt((String) property.getValue())));
     }
 
     private void removeWatchListeners() {
@@ -467,21 +458,14 @@ public class MessageQueue extends AbstractQueue {
     }
 
     private void ensureTxList(TransactionId tId) {
-        int txId = tId.getTxId();
-        if (txId == -1) {
-            List<StoreId> txList = new ArrayList<>();
-            txId = activeTransactions.add(txList);
-            if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "ensureTxList: " + txId);
-            tId.setTxId(txId);
-            tId.setTxList(txList);
-        }
+        activeTransactionRegistry.ensureTransaction(tId);
     }
 
     private void removeTxId(TransactionId tId) {
         int txId = tId.getTxId();
         if (txId != -1 && tId.getTransactionType() == TransactionId.PULL_TRANSACTION) {
             if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "removeTxId: " + txId);
-            activeTransactions.remove(txId);
+            activeTransactionRegistry.removeTransaction(txId);
         }
     }
 
@@ -514,7 +498,6 @@ public class MessageQueue extends AbstractQueue {
             msgProcessors = new List[2];
             msgProcessors[0] = new ArrayList<>();
             msgProcessors[1] = new ArrayList<>();
-            activeTransactions = new ConcurrentExpandableList<>();
             queueContent = new TreeSet<>();
             try {
                 if (!temporary) {
@@ -2237,8 +2220,8 @@ public class MessageQueue extends AbstractQueue {
             }
             long size = 0;
             TransactionId dTxId = (TransactionId) destTxId;
-            List<StoreId> sTx = activeTransactions.get(txId);
-            List<StoreId> dTx = activeTransactions.get(dTxId.getTxId());
+            List<StoreId> sTx = activeTransactionRegistry.getTransactionList(txId);
+            List<StoreId> dTx = activeTransactionRegistry.getTransactionList(dTxId.getTxId());
             if (ctx.queueSpace.enabled)
                 ctx.queueSpace.trace(getQueueName(), "moveToTransaction messageIndex=" + messageIndex + ", sourceTxId=" + txId + ", destTxId=" + dTxId.getTxId());
             boolean found = false;

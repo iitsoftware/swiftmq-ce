@@ -15,7 +15,7 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.queue;
 
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.mgmt.PropertyWatchListener;

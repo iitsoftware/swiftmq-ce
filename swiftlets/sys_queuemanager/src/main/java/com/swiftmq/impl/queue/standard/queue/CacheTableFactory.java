@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2024 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,11 +15,10 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.queue;
 
-import com.swiftmq.swiftlet.store.NonPersistentStore;
-import com.swiftmq.swiftlet.store.PersistentStore;
+import java.util.Map;
 
-public interface MessageQueueFactory {
-    public MessageQueue createMessageQueue(SwiftletContext ctx, String localQueueName, Cache cache, PersistentStore pStore, NonPersistentStore nStore, long cleanUpDelay);
+public interface CacheTableFactory {
+    Map createCacheTable(String queueName, int initialSize);
 }

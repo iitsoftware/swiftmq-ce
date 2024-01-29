@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2024 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,20 +15,23 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.queue;
 
+import com.swiftmq.impl.queue.standard.QueueManagerImpl;
+import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.queue.QueueFactory;
 import com.swiftmq.swiftlet.store.NonPersistentStore;
+import com.swiftmq.swiftlet.store.PersistentStore;
 import com.swiftmq.util.SwiftUtilities;
 
-public class TempQueueFactory implements QueueFactory {
+public class SystemQueueFactory implements QueueFactory {
     SwiftletContext ctx = null;
 
-    TempQueueFactory(SwiftletContext ctx) {
+    public SystemQueueFactory(SwiftletContext ctx) {
         this.ctx = ctx;
     }
 
@@ -39,26 +42,28 @@ public class TempQueueFactory implements QueueFactory {
 
     public AbstractQueue createQueue(String queueName, Entity queueController)
             throws QueueException {
+        PersistentStore pStore = null;
         NonPersistentStore nStore = null;
 
         try {
+            pStore = ctx.storeSwiftlet.getPersistentStore(queueName);
             nStore = ctx.storeSwiftlet.getNonPersistentStore(queueName);
         } catch (Exception e) {
             throw new QueueException(e.toString());
         }
 
         Property prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE);
-        int cacheSize = (Integer) prop.getValue();
+        int cacheSize = ((Integer) prop.getValue()).intValue();
         prop = queueController.getProperty(QueueManagerImpl.PROP_CACHE_SIZE_BYTES_KB);
         int cacheSizeBytesKB = (Integer) prop.getValue();
 
-        Cache cache = new CacheImpl(cacheSize, cacheSizeBytesKB, null, nStore);
+        Cache cache = new CacheImpl(cacheSize, cacheSizeBytesKB, pStore, nStore);
         cache.setCacheTable(ctx.cacheTableFactory.createCacheTable(queueName, cacheSize));
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_CLEANUP_INTERVAL);
         long cleanUp = (Long) prop.getValue();
 
-        MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, null, nStore, cleanUp);
+        MessageQueue mq = ctx.messageQueueFactory.createMessageQueue(ctx, queueName, cache, pStore, nStore, cleanUp);
 
         prop = queueController.getProperty(QueueManagerImpl.PROP_MESSAGES_MAXIMUM);
         int maxMessages = (Integer) prop.getValue();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 IIT Software GmbH
+ * Copyright 2024 IIT Software GmbH
  *
  * IIT Software GmbH licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -15,12 +15,25 @@
  *
  */
 
-package com.swiftmq.impl.queue.standard;
+package com.swiftmq.impl.queue.standard.command;
 
-import com.swiftmq.swiftlet.queue.QueueException;
+import com.swiftmq.impl.queue.standard.SwiftletContext;
 
-public class MessageLockedException extends QueueException {
-    public MessageLockedException(String string) {
-        super(string);
+public class Mover extends Copier {
+    public Mover(SwiftletContext ctx) {
+        super(ctx);
+        setRemove(true);
+    }
+
+    protected String _getCommand() {
+        return "move";
+    }
+
+    protected String _getPattern() {
+        return "move <source> -queue|-topic <target> [(-selector <selector>)|(-index <start> <stop>)] [-maxlimit <nmsgs>]";
+    }
+
+    protected String _getDescription() {
+        return "Move messages.";
     }
 }

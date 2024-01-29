@@ -19,7 +19,9 @@ package com.swiftmq.impl.queue.standard;
 
 import com.swiftmq.impl.queue.standard.cluster.*;
 import com.swiftmq.impl.queue.standard.cluster.v700.QueueMetricImpl;
+import com.swiftmq.impl.queue.standard.command.*;
 import com.swiftmq.impl.queue.standard.jobs.JobRegistrar;
+import com.swiftmq.impl.queue.standard.queue.*;
 import com.swiftmq.jms.DestinationFactory;
 import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.mgmt.*;
@@ -62,7 +64,6 @@ public class QueueManagerImpl extends QueueManager
     public static final String CLUSTER_TOPIC = "swiftmq.cluster";
 
     public static final int[] VERSIONS = {700};
-
     public static final String PROP_LOG_EXPIRED = "log-expired-messages";
     public static final String PROP_LOG_DUPLICATES = "log-duplicate-messages";
     public static final String PROP_DELIVER_EXPIRED = "deliver-expired-messages";
@@ -90,10 +91,10 @@ public class QueueManagerImpl extends QueueManager
     public static final String PROP_DUPLICATE_DETECTION_BACKLOG_SIZE = "duplicate-detection-backlog-size";
     public static final String PROP_MULTI_QUEUE_TX_GLOBAL_LOCK = "multi-queue-transaction-global-lock";
     public static final String PROP_CONSUMER = "consumer-mode";
-    static final String PROP_CACHE_SIZE = "cache-size";
-    static final String PROP_CACHE_SIZE_BYTES_KB = "cache-size-bytes-kb";
-    static final String PREFIX_TEMP_QUEUE = "tmp$";
-    static final char SYSTEM_QUEUE_CHAR = '$';
+    public static final String PROP_CACHE_SIZE = "cache-size";
+    public static final String PROP_CACHE_SIZE_BYTES_KB = "cache-size-bytes-kb";
+    public static final String PREFIX_TEMP_QUEUE = "tmp$";
+    public static final char SYSTEM_QUEUE_CHAR = '$';
 
     SwiftletContext ctx = null;
     EntityList queueControllerList = null;
@@ -741,112 +742,67 @@ public class QueueManagerImpl extends QueueManager
 
     public void performTimeAction() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "collecting message counts...");
-        for (Object o : queueTable.entrySet()) {
-            ActiveQueue queue = (ActiveQueue) ((Map.Entry<?, ?>) o).getValue();
+        for (Map.Entry<?, ?> entry : queueTable.entrySet()) {
+            ActiveQueue queue = (ActiveQueue) entry.getValue();
             if (queue != null) {
                 AbstractQueue ac = queue.getAbstractQueue();
                 if (ac != null && ac.isRunning()) {
-                    String queueName = ac.getLocalName();
-                    Entity queueEntity = ctx.usageList.getEntity(queueName);
-                    if (queueEntity != null) {
-                        try {
-                            Property prop = queueEntity.getProperty(PROP_MESSAGECOUNT);
-                            int oldValue = (Integer) prop.getValue();
-                            int actValue = (int) ac.getNumberQueueMessages();
-                            if (oldValue != actValue) {
-                                prop.setValue(actValue);
-                            }
-                            prop = queueEntity.getProperty(PROP_MSG_CONSUME_RATE);
-                            int oldCR = (Integer) prop.getValue();
-                            int actCR = ac.getConsumingRate();
-                            if (oldCR != actCR) {
-                                prop.setValue(actCR);
-                            }
-                            prop = queueEntity.getProperty(PROP_MSG_PRODUCE_RATE);
-                            int oldPR = (Integer) prop.getValue();
-                            int actPR = ac.getProducingRate();
-                            if (oldPR != actPR) {
-                                prop.setValue(actPR);
-                            }
-                            prop = queueEntity.getProperty(PROP_TOTAL_CONSUMED);
-                            int oldTC = (Integer) prop.getValue();
-                            int actTC = ac.getConsumedTotal();
-                            if (oldTC != actTC) {
-                                prop.setValue(actTC);
-                            }
-                            prop = queueEntity.getProperty(PROP_TOTAL_PRODUCED);
-                            int oldTP = (Integer) prop.getValue();
-                            int actTP = ac.getProducedTotal();
-                            if (oldTP != actTP) {
-                                prop.setValue(actTP);
-                            }
-                            prop = queueEntity.getProperty(PROP_LATENCY);
-                            long oldLT = (Long) prop.getValue();
-                            long actLT = ac.getAndResetAverageLatency();
-                            if (oldLT != actLT) {
-                                prop.setValue(actLT);
-                            }
-                            prop = queueEntity.getProperty(PROP_MCACHE_MESSAGES);
-                            int oldCM = (Integer) prop.getValue();
-                            int actCM = ac.getCurrentCacheSizeMessages();
-                            if (oldCM != actCM) {
-                                prop.setValue(actCM);
-                            }
-                            prop = queueEntity.getProperty(PROP_MCACHE_SIZE_KB);
-                            int oldS = (Integer) prop.getValue();
-                            int actS = ac.getCurrentCacheSizeKB();
-                            if (oldS != actS) {
-                                prop.setValue(actS);
-                            }
-                            prop = queueEntity.getProperty(PROP_FLOWCONTROL_DELAY);
-                            long oldDelay = (Long) prop.getValue();
-                            long actDelay = 0;
-                            FlowController fc = ac.getFlowController();
-                            if (fc != null)
-                                actDelay = fc.getLastDelay();
-                            if (oldDelay != actValue) {
-                                prop.setValue(actDelay);
-                            }
-                            prop = queueEntity.getProperty(PROP_AMESSAGES_MAXIMUM);
-                            int oldMax = (Integer) prop.getValue();
-                            int actMax = ac.getMaxMessages();
-                            if (oldMax != actMax) {
-                                prop.setValue(actMax);
-                            }
-                            prop = queueEntity.getProperty(PROP_ACACHE_SIZE);
-                            int oldSize = (Integer) prop.getValue();
-                            int actSize = ac.getCacheSize();
-                            if (oldSize != actSize) {
-                                prop.setValue(actSize);
-                            }
-                            prop = queueEntity.getProperty(PROP_ACACHE_SIZE_KB);
-                            int oldSizeKB = (Integer) prop.getValue();
-                            int actSizeKB = ac.getCacheSizeKB();
-                            if (oldSizeKB != actSizeKB) {
-                                prop.setValue(actSizeKB);
-                            }
-                            prop = queueEntity.getProperty(PROP_AFLOWCONTROL_QUEUE_SIZE);
-                            int oldFC = (Integer) prop.getValue();
-                            int actFC = 0;
-                            fc = ac.getFlowController();
-                            if (fc != null)
-                                actFC = fc.getStartQueueSize();
-                            if (oldFC != actFC) {
-                                prop.setValue(actFC);
-                            }
-                            prop = queueEntity.getProperty(PROP_ACLEANUP_INTERVAL);
-                            long oldCU = (Long) prop.getValue();
-                            long actCU = ac.getCleanUpInterval();
-                            if (oldCU != actCU) {
-                                prop.setValue(actCU);
-                            }
-                        } catch (Exception ignored) {
-                        }
-                    }
+                    updateQueueProperties(ac, ctx.usageList.getEntity(ac.getLocalName()));
                 }
             }
         }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "collecting message counts...DONE.");
+    }
+
+    private void updateQueueProperties(AbstractQueue ac, Entity queueEntity) {
+        if (queueEntity == null) return;
+        try {
+            updatePropertyIfChanged(queueEntity, PROP_MESSAGECOUNT, (int) ac.getNumberQueueMessages());
+            updatePropertyIfChanged(queueEntity, PROP_MSG_CONSUME_RATE, ac.getConsumingRate());
+            updatePropertyIfChanged(queueEntity, PROP_MSG_PRODUCE_RATE, ac.getProducingRate());
+            updatePropertyIfChanged(queueEntity, PROP_TOTAL_CONSUMED, ac.getConsumedTotal());
+            updatePropertyIfChanged(queueEntity, PROP_TOTAL_PRODUCED, ac.getProducedTotal());
+            updatePropertyIfChanged(queueEntity, PROP_LATENCY, ac.getAndResetAverageLatency());
+            updatePropertyIfChanged(queueEntity, PROP_MCACHE_MESSAGES, ac.getCurrentCacheSizeMessages());
+            updatePropertyIfChanged(queueEntity, PROP_MCACHE_SIZE_KB, ac.getCurrentCacheSizeKB());
+
+            long actDelay = 0;
+            FlowController fc = ac.getFlowController();
+            if (fc != null) {
+                actDelay = fc.getLastDelay();
+            }
+            updatePropertyIfChanged(queueEntity, PROP_FLOWCONTROL_DELAY, actDelay);
+
+            updatePropertyIfChanged(queueEntity, PROP_AMESSAGES_MAXIMUM, ac.getMaxMessages());
+            updatePropertyIfChanged(queueEntity, PROP_ACACHE_SIZE, ac.getCacheSize());
+            updatePropertyIfChanged(queueEntity, PROP_ACACHE_SIZE_KB, ac.getCacheSizeKB());
+
+            int actFC = 0;
+            if (fc != null) {
+                actFC = fc.getStartQueueSize();
+            }
+            updatePropertyIfChanged(queueEntity, PROP_AFLOWCONTROL_QUEUE_SIZE, actFC);
+            updatePropertyIfChanged(queueEntity, PROP_ACLEANUP_INTERVAL, ac.getCleanUpInterval());
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
+    }
+
+    private void updatePropertyIfChanged(Entity entity, String propName, Object newValue) {
+        Property prop = entity.getProperty(propName);
+        if (prop == null) {
+            throw new IllegalStateException("Property " + propName + " not found in entity " + entity.getName());
+        }
+
+        Object currentValue = prop.getValue();
+        if ((currentValue == null && newValue != null) ||
+                (currentValue != null && !currentValue.equals(newValue))) {
+            try {
+                prop.setValue(newValue);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to update property " + propName, e);
+            }
+        }
     }
 
     public void createQueue(String queueName, ActiveLogin activeLogin)
