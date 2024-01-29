@@ -81,16 +81,13 @@ public class MessageProcessorRegistry {
         return false;
     }
 
-    public void switchProcessorList() {
-        activeListIndex = (activeListIndex + 1) % messageProcessors.length;
-        messageProcessors[activeListIndex] = new ArrayList<>();
-    }
-
     public void process(Consumer<MessageProcessor> processorConsumer) {
         List<MessageProcessor> currentProcessors = messageProcessors[activeListIndex];
+        int oldIndex = activeListIndex;
+        activeListIndex = (activeListIndex + 1) % messageProcessors.length;
         if (currentProcessors.isEmpty())
             return;
-        messageProcessors[activeListIndex] = new ArrayList<>(); // Assign a new ArrayList
+        messageProcessors[oldIndex] = new ArrayList<>(); // Assign a new ArrayList
 
         for (MessageProcessor processor : currentProcessors) {
             if (processor != null) {
