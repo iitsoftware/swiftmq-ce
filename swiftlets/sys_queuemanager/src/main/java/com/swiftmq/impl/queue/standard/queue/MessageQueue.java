@@ -58,8 +58,8 @@ public class MessageQueue extends AbstractQueue {
     protected boolean duplicateDetectionEnabled = true;
     protected int duplicateDetectionBacklogSize = 500;
     Lock queueLock = new ReentrantLock();
-    Condition msgAvail = null;
-    Condition asyncFinished = null;
+    Condition msgAvail = queueLock.newCondition();
+    Condition asyncFinished = queueLock.newCondition();
     boolean asyncActive = false;
     CompositeStoreTransaction compositeTx = null;
     long activeReceiverId = -1;
@@ -77,8 +77,6 @@ public class MessageQueue extends AbstractQueue {
         this.pStore = pStore;
         this.nStore = nStore;
         this.cleanUpInterval = cleanUpDelay;
-        msgAvail = queueLock.newCondition();
-        asyncFinished = queueLock.newCondition();
     }
 
     private void lockAndWaitAsyncFinished() {
@@ -151,10 +149,6 @@ public class MessageQueue extends AbstractQueue {
 
         setupPropertyWatch(queueController, QueueManagerImpl.PROP_CONSUMER,
                 property -> setConsumerMode(ctx.consumerModeInt((String) property.getValue())));
-    }
-
-    private void removeWatchListeners() {
-        propertyWatchManager.removePropertyWatchListeners();
     }
 
     protected long getNextMsgId() {
@@ -517,7 +511,7 @@ public class MessageQueue extends AbstractQueue {
 
             running = false;
             wireTapManager.reset();
-            removeWatchListeners();
+            propertyWatchManager.removePropertyWatchListeners();
 
             if (isTemporary()) {
                 if (ctx.queueSpace.enabled)
