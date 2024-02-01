@@ -38,6 +38,7 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -121,7 +122,13 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
 
     @Override
     public void freeze() {
-        groupRegistry.freezeGroups();
+        try {
+            groupRegistry.freezeGroups().get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
