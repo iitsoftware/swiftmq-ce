@@ -167,9 +167,12 @@ public class GroupRegistry {
                     CompletableFuture<Void> groupFreezeFuture = new CompletableFuture<>();
                     futures[index++] = groupFreezeFuture;
                     ctx.logSwiftlet.logInformation(tracePrefix, this + "/freezeGroups/group " + name);
-                    group.freezeGroup()
-                            .thenRun(() -> ctx.logSwiftlet.logInformation(tracePrefix, this + "/freezeGroups/group " + name + " done"))
-                            .thenRun(() -> groupFreezeFuture.complete(null));
+                    try {
+                        group.freezeGroup().get();
+                    } catch (Exception ignored) {
+                    }
+                    ctx.logSwiftlet.logInformation(tracePrefix, this + "/freezeGroups/group " + name + " done");
+                    groupFreezeFuture.complete(null);
                 }
             }
         }

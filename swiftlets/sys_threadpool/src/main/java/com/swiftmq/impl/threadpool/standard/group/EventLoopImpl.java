@@ -62,14 +62,15 @@ public class EventLoopImpl implements EventLoop {
     public CompletableFuture<Void> freeze() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), id + "/freeze");
         isFrozen.set(true);
-        freezeFuture.set(new CompletableFuture<>());
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        freezeFuture.set(future);
         queueLock.lock();
         try {
             notEmpty.signalAll(); // Wake up the thread if it's waiting
         } finally {
             queueLock.unlock();
         }
-        return freezeFuture.get();
+        return future;
     }
 
     public void unfreeze() {
