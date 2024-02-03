@@ -28,8 +28,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class MessageProcessorRegistry {
-    private List<MessageProcessor>[] messageProcessors = null;
-    private int activeListIndex;
+    private List<MessageProcessor> messageProcessors = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     public MessageProcessorRegistry() {
@@ -38,30 +37,29 @@ public class MessageProcessorRegistry {
 
     public int storeMessageProcessor(MessageProcessor processor) {
         int regId = processor.getRegistrationId();
-        if (regId >= 0 && regId < messageProcessors[activeListIndex].size() && messageProcessors[activeListIndex].get(regId) == processor) {
+        if (regId >= 0 && regId < messageProcessors.size() && messageProcessors.get(regId) == processor) {
             return regId;
         }
 
-        messageProcessors[activeListIndex].add(processor);
-        regId = messageProcessors[activeListIndex].size() - 1;
+        messageProcessors.add(processor);
+        regId = messageProcessors.size() - 1;
         processor.setRegistrationId(regId);
         return regId;
     }
 
     public void removeMessageProcessor(MessageProcessor processor) {
         int id = processor.getRegistrationId();
-        if (id != -1 && id < messageProcessors[activeListIndex].size()) {
-            messageProcessors[activeListIndex].set(id, null);
+        if (id != -1 && id < messageProcessors.size()) {
+            messageProcessors.set(id, null);
             processor.setRegistrationId(-1);
         }
     }
 
     public void removeIf(Predicate<MessageProcessor> condition) {
-        List<MessageProcessor> currentProcessors = messageProcessors[activeListIndex];
-        for (int i = 0; i < currentProcessors.size(); i++) {
-            MessageProcessor processor = currentProcessors.get(i);
+        for (int i = 0; i < messageProcessors.size(); i++) {
+            MessageProcessor processor = messageProcessors.get(i);
             if (processor != null && condition.test(processor)) {
-                currentProcessors.set(i, null);
+                messageProcessors.set(i, null);
                 processor.setRegistrationId(-1);
                 processor.processException(new QueueTimeoutException("timout occurred"));
                 break;
@@ -70,7 +68,7 @@ public class MessageProcessorRegistry {
     }
 
     public boolean hasInterestedProcessor(MessageImpl message) {
-        for (MessageProcessor mp : messageProcessors[activeListIndex]) {
+        for (MessageProcessor mp : messageProcessors) {
             if (mp != null) {
                 Selector selector = mp.getSelector();
                 if (selector == null || selector.isSelected(message)) {
@@ -82,25 +80,18 @@ public class MessageProcessorRegistry {
     }
 
     public void process(Consumer<MessageProcessor> processorConsumer) {
-        List<MessageProcessor> currentProcessors = messageProcessors[activeListIndex];
-        int oldIndex = activeListIndex;
-        activeListIndex = (activeListIndex + 1) % messageProcessors.length;
-        if (currentProcessors.isEmpty())
-            return;
-        messageProcessors[oldIndex] = new ArrayList<>(); // Assign a new ArrayList
-
-        for (MessageProcessor processor : currentProcessors) {
+        // Necessary copy and reset as the processors might register again during the call
+        List<MessageProcessor> list = new ArrayList<>(messageProcessors);
+        reset();
+        for (MessageProcessor processor : list) {
             if (processor != null) {
+                processor.setRegistrationId(-1);
                 processorConsumer.accept(processor);
             }
         }
     }
 
     public void reset() {
-        // Initialize the array with two ArrayLists for round-robin processing
-        messageProcessors = new ArrayList[2];
-        messageProcessors[0] = new ArrayList<>();
-        messageProcessors[1] = new ArrayList<>();
-        activeListIndex = 0;
+        messageProcessors = new ArrayList<>();
     }
 }
