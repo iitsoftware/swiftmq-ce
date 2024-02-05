@@ -6,20 +6,20 @@
   <parent>
   	  <groupId>com.swiftmq</groupId>
 	  <artifactId>swiftmq-ce</artifactId>
-    <version>12.5.4</version>
+    <version>13.0.0</version>
       <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <groupId>com.swiftmq.swiftlets</groupId>
   <artifactId>sys_amqp</artifactId>
-  <version>12.5.4</version>
+  <version>13.0.0</version>
 
 
   <dependencies>
     <dependency>
       <groupId>com.swiftmq</groupId>
       <artifactId>swiftmq-client</artifactId>
-      <version>12.5.4</version>
+      <version>13.0.0</version>
     </dependency>
   </dependencies>
   <build>
