@@ -299,7 +299,7 @@
       </group>
       <group name="store">
         <eventloops>
-          <eventloop name="sys$store.log"/>
+          <eventloop name="sys$store.log" bulk-mode="true"/>
         </eventloops>
       </group>
     </groups>
