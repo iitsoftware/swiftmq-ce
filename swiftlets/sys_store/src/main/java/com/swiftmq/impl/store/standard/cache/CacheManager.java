@@ -18,7 +18,9 @@
 package com.swiftmq.impl.store.standard.cache;
 
 import com.swiftmq.impl.store.standard.StoreContext;
+import com.swiftmq.impl.store.standard.cache.pagedb.PageDB;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
+import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.tools.collection.IntRingBuffer;
 
@@ -39,6 +41,7 @@ public class CacheManager {
     boolean forceEnsure = false;
     int getCount = 0;
     int hitCount = 0;
+    byte[] emptyData;
     Lock lock = new ReentrantLock();
 
     public CacheManager(StoreContext ctx, StableStore stableStore, int minSize, int maxSize) throws Exception {
@@ -48,6 +51,7 @@ public class CacheManager {
         this.stableStore = stableStore;
         this.minSize = minSize;
         this.maxSize = maxSize;
+        emptyData = PageDB.makeEmptyArray(PageSize.getCurrent());
         init();
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/created, minSize=" + minSize + " pages");
     }
@@ -151,7 +155,7 @@ public class CacheManager {
                 slot = getSlot(pageNo);
                 if (slot == null)
                     panic(new Exception("slot for page " + pageNo + " not found in cache (createAndPin)!"));
-                System.arraycopy(stableStore.emptyData, 0, slot.page.data, 0, stableStore.emptyData.length);
+                System.arraycopy(emptyData, 0, slot.page.data, 0, emptyData.length);
             }
             slot.pinCount = 1;
             slot.accessCount = 1;

@@ -18,7 +18,7 @@
 package com.swiftmq.impl.store.standard.pagedb;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.cache.StableStore;
+import com.swiftmq.impl.store.standard.cache.pagedb.PageDB;
 import com.swiftmq.impl.store.standard.index.*;
 import com.swiftmq.impl.store.standard.log.CommitLogRecord;
 import com.swiftmq.jms.MessageImpl;
@@ -56,9 +56,9 @@ public class StoreConverter {
         this.pagedbDir = pagedbDir;
         currentSize = PageSize.getCurrent();
         recommendedSize = PageSize.getRecommended();
-        pageDB = pagedbDir + File.separatorChar + StableStore.FILENAME;
-        pageDBOld = pagedbDir + File.separatorChar + StableStore.FILENAME + "_old";
-        pageDBNew = pagedbDir + File.separatorChar + StableStore.FILENAME + "_new";
+        pageDB = pagedbDir + File.separatorChar + PageDB.FILENAME;
+        pageDBOld = pagedbDir + File.separatorChar + PageDB.FILENAME + "_old";
+        pageDBNew = pagedbDir + File.separatorChar + PageDB.FILENAME + "_new";
     }
 
     public boolean isConverted() {
@@ -251,7 +251,7 @@ public class StoreConverter {
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", toString() + "/convert, current page size: " + currentSize + ", new page size: " + recommendedSize);
-        StableStore.copyToNewSize(pageDB, pageDBNew, currentSize, recommendedSize);
+        PageDB.copyToNewSize(pageDB, pageDBNew, currentSize, recommendedSize);
         new File(pageDB).renameTo(new File(pageDBOld));
         new File(pageDBNew).renameTo(new File(pageDB));
     }

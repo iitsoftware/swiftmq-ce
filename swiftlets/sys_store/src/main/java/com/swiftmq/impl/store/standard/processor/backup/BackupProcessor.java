@@ -18,6 +18,7 @@
 package com.swiftmq.impl.store.standard.processor.backup;
 
 import com.swiftmq.impl.store.standard.StoreContext;
+import com.swiftmq.impl.store.standard.cache.pagedb.PageDB;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
 import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.impl.store.standard.processor.backup.po.*;
@@ -55,19 +56,19 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         path = SwiftUtilities.addWorkingDir((String) ctx.backupEntity.getProperty("path").getValue());
         generations = (Integer) ctx.backupEntity.getProperty("keep-generations").getValue();
         eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$store.backup", list -> list.forEach(e -> ((POObject) e).accept(BackupProcessor.this)));
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/created");
     }
 
     // Called from the LogManager after a Checkpoint has been performed and before the Transaction Manager
     // is restarted
     public void checkpointFinished() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/checkpointFinished ...");
+            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/checkpointFinished ...");
         BackupCompleted nextPO = new BackupCompleted();
         try {
             if (ctx.preparedLog.backupRequired())
                 ctx.preparedLog.backup(currentSaveSet);
-            ctx.stableStore.copy(currentSaveSet);
+            PageDB.copy(SwiftUtilities.addWorkingDir((String) ctx.dbEntity.getProperty("path").getValue()), currentSaveSet);
             ctx.durableStore.copy(currentSaveSet);
             new File(currentSaveSet + File.separatorChar + COMPLETED_FILE).createNewFile();
             nextPO.setSuccess(true);
@@ -77,7 +78,7 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         }
         enqueue(new ScanSaveSets(nextPO));
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/checkpointFinished done");
+            ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/checkpointFinished done");
     }
 
     public void enqueue(POObject po) {
@@ -85,7 +86,7 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
     }
 
     private void deleteSaveSet(File dir) {
-        ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), toString() + "/Delete save set: " + dir.getName());
+        ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), this + "/Delete save set: " + dir.getName());
         File[] files = dir.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++)
@@ -130,7 +131,7 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
     }
 
     public void visit(ScanSaveSets po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " ...");
 
         // Delete Usage content
         Map entities = ctx.backupList.getEntities();
@@ -145,14 +146,10 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
 
         // Scan save sets
         File dir = new File(path);
-        File[] files = dir.listFiles(new FilenameFilter() {
-            public boolean accept(File d, String name) {
-                return name.startsWith(SAVESET) && d.isDirectory();
-            }
-        });
+        File[] files = dir.listFiles((d, name) -> name.startsWith(SAVESET) && d.isDirectory());
         if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                scanSaveSet(files[i]);
+            for (File file : files) {
+                scanSaveSet(file);
             }
         }
 
@@ -173,11 +170,11 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         // Enqueue next PO
         if (po.getNextPO() != null)
             enqueue(po.getNextPO());
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " done");
     }
 
     public void visit(ChangePath po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " ...");
         if (backupActive) {
             // reject it
             po.setException("Can't change Path: another Backup is active right now!");
@@ -189,11 +186,11 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         Semaphore sem = po.getSemaphore();
         if (sem != null)
             sem.notifySingleWaiter();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " done");
     }
 
     public void visit(ChangeGenerations po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " ...");
         if (backupActive) {
             // reject it
             po.setException("Can't change Generations: another Backup is active right now!");
@@ -205,11 +202,11 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         Semaphore sem = po.getSemaphore();
         if (sem != null)
             sem.notifySingleWaiter();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " done");
     }
 
     public void visit(StartBackup po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " ...");
         if (backupActive) {
             // reject it
             String msg = "Can't start Backup: another Backup is active right now!";
@@ -218,12 +215,12 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
             BackupFinishedListener l = po.getFinishedListener();
             if (l != null)
                 l.backupFinished(false, msg);
-            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), toString() + "/" + msg);
+            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), this + "/" + msg);
         } else {
             // start backup
             backupActive = true;
             currentSaveSet = path + File.separatorChar + fmt.format(new Date()) + "_" + PageSize.getCurrent();
-            ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), toString() + "/Backup started, save set: " + currentSaveSet);
+            ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), this + "/Backup started, save set: " + currentSaveSet);
             new File(currentSaveSet).mkdir();
             finishedListener = po.getFinishedListener();
             po.setSuccess(true);
@@ -232,37 +229,37 @@ public class BackupProcessor implements EventVisitor, CheckPointFinishedListener
         Semaphore sem = po.getSemaphore();
         if (sem != null)
             sem.notifySingleWaiter();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " done");
     }
 
     public void visit(BackupCompleted po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " ...");
         if (po.isSuccess())
-            ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), toString() + "/Backup completed, save set: " + currentSaveSet);
+            ctx.logSwiftlet.logInformation(ctx.storeSwiftlet.getName(), this + "/Backup completed, save set: " + currentSaveSet);
         else
-            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), toString() + "/Backup completed, save set: " + currentSaveSet + ", exception=" + po.getException());
+            ctx.logSwiftlet.logError(ctx.storeSwiftlet.getName(), this + "/Backup completed, save set: " + currentSaveSet + ", exception=" + po.getException());
         backupActive = false;
         if (finishedListener != null) {
             finishedListener.backupFinished(po.isSuccess(), po.getException());
             finishedListener = null;
         }
         currentSaveSet = null;
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " done");
     }
 
     public void visit(Close po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " ...");
         po.getSemaphore().notifySingleWaiter();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/" + po + " done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/" + po + " done");
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/close ...");
         Semaphore sem = new Semaphore();
         eventLoop.submit(new Close(sem));
         sem.waitHere();
         eventLoop.close();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/close done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), this + "/close done");
     }
 
     public String toString() {
