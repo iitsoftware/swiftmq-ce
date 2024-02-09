@@ -177,7 +177,6 @@ public class StableStore implements TimerListener, MgmtListener {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init ...");
         nFree.set(0);
         filename = path + File.separatorChar + FILENAME;
-        emptyData = makeEmptyArray(PageSize.getCurrent());
         file = new RandomAccessFile(filename, "rw");
         fileLength = file.length();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init, fileLength=" + fileLength);
@@ -267,7 +266,6 @@ public class StableStore implements TimerListener, MgmtListener {
         p.empty = true;
         p.dirty = false;
         p.data = new byte[PageSize.getCurrent()];
-        System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
         return p;
     }
 
@@ -394,7 +392,7 @@ public class StableStore implements TimerListener, MgmtListener {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/writePage, page=" + p);
         try {
             if (p.empty)
-                System.arraycopy(emptyData, 0, p.data, 0, emptyData.length);
+                p.data = new byte[PageSize.getCurrent()];
             p.data[0] = (byte) (p.empty ? 1 : 0);
             file.seek((long) p.pageNo * (long) PageSize.getCurrent());
             file.write(p.data);
