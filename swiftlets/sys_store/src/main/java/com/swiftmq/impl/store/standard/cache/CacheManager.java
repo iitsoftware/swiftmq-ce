@@ -21,7 +21,10 @@ import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.log.CheckPointFinishedListener;
 import com.swiftmq.swiftlet.SwiftletManager;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,8 +33,7 @@ public class CacheManager {
     boolean checkPointVerbose = Boolean.getBoolean(PROP_VERBOSE);
     StoreContext ctx;
     StableStore stableStore;
-    Slot[] slots = null;
-    int nSlots = 0;
+    TreeMap<Integer, Slot> slots = new TreeMap<>();
     int minSize;
     int maxSize;
     boolean forceEnsure = false;
@@ -46,14 +48,7 @@ public class CacheManager {
         this.stableStore = stableStore;
         this.minSize = minSize;
         this.maxSize = maxSize;
-        init();
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/created, minSize=" + minSize + " pages");
-    }
-
-    private void init() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init ...");
-        slots = new Slot[maxSize];
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init done");
     }
 
     private void panic(Exception e) {
@@ -64,55 +59,34 @@ public class CacheManager {
         System.exit(-1);
     }
 
-    private Slot getSlot(int pageNo) {
-        if (pageNo < slots.length)
-            return slots[pageNo];
-        return null;
-    }
-
-    private void addSlot(int pageNo, Slot slot) {
-        if (pageNo >= slots.length) {
-            Slot[] s = new Slot[pageNo + minSize];
-            System.arraycopy(slots, 0, s, 0, slots.length);
-            slots = s;
-        }
-        slots[pageNo] = slot;
-        nSlots++;
-    }
-
-    private void removeSlot(int pageNo) {
-        slots[pageNo] = null;
-        nSlots--;
-    }
-
-    private void freeSlots() throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/freeSlots (before), size=" + nSlots);
-        int size = slots.length;
-        for (int i = size - 1; i >= 0; i--) {
-            Slot slot = slots[i];
-            if (slot != null) {
-                if (slot.pinCount == 0) {
-                    if (slot.page.dirty) {
-                        if (slot.page.empty)
-                            stableStore.free(slot.page);
-                        else
-                            stableStore.put(slot.page);
-                    }
-                    removeSlot(i);
-                }
-            }
-        }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/freeSlots (after), size=" + nSlots);
-    }
-
     private void addSlot(Slot newSlot) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/addSlot, slots.size()=" + nSlots);
-        addSlot(newSlot.page.pageNo, newSlot);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$store", toString() + "/addSlot, slots.size()=" + slots.size());
+        slots.put(newSlot.page.pageNo, newSlot);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/addSlot...done.");
     }
 
+    private void evictLRUUnpinnedSlots() {
+        int slotsToEvict = slots.size() - minSize;
+
+        if (slotsToEvict > 0) {
+            slots.entrySet().stream()
+                    .filter(entry -> entry.getValue().pinCount == 0) // Filter unpinned slots
+                    .sorted(Map.Entry.comparingByValue(Comparator.comparingLong(Slot::getLastAccessTime))) // Sort by lastAccessTime
+                    .limit(slotsToEvict) // Limit to the number of slots to evict
+                    .forEach(entry -> {
+                        // Optionally: flush if dirty
+                        Page page = entry.getValue().page;
+                        try {
+                            if (page.dirty)
+                                stableStore.put(page);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        slots.remove(entry.getKey()); // Remove the slot from the TreeMap
+                    });
+        }
+    }
     public void setForceEnsure(boolean forceEnsure) {
         this.forceEnsure = forceEnsure;
     }
@@ -135,7 +109,7 @@ public class CacheManager {
             Slot slot = new Slot();
             slot.page = stableStore.create();
             slot.pinCount = 1;
-            slot.accessCount = 1;
+            slot.lastAccessTime = System.nanoTime();
             addSlot(slot);
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/createAndPin, slot=" + slot);
             return slot.page;
@@ -153,7 +127,7 @@ public class CacheManager {
             Slot slot = null;
             if (forceEnsure)
                 ensure(pageNo);
-            slot = getSlot(pageNo);
+            slot = slots.get(pageNo);
             if (slot == null) {
                 slot = new Slot();
                 slot.page = stableStore.get(pageNo);
@@ -161,7 +135,7 @@ public class CacheManager {
             } else
                 hitCount++;
             slot.pinCount++;
-            slot.accessCount++;
+            slot.lastAccessTime = System.nanoTime();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/fetchAndPin, slot=" + slot);
             return slot.page;
         } finally {
@@ -173,26 +147,20 @@ public class CacheManager {
         lock.lock();
         try {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$store", toString() + "/unpin, pageNo=" + pageNo + ", nSlots=" + nSlots + ", maxSize=" + maxSize);
-            Slot slot = getSlot(pageNo);
+                ctx.traceSpace.trace("sys$store", toString() + "/unpin, pageNo=" + pageNo + ", nSlots=" + slots.size() + ", maxSize=" + maxSize);
+            Slot slot = slots.get(pageNo);
             if (slot == null)
                 panic(new Exception("page " + pageNo + " not found in cache, pin before you unpin!"));
             if (slot.pinCount == 0)
                 panic(new Exception("page " + pageNo + ": unpin, pinCount is already 0!"));
             slot.pinCount--;
-            if (slot.pinCount == 0) {
-                if (slot.page.dirty) {
-                    if (nSlots > maxSize) {
-                        if (slot.page.empty) {
-                            stableStore.free(slot.page);
-                        } else {
-                            stableStore.put(slot.page);
-                        }
-                        removeSlot(pageNo);
-                    }
-                } else if (nSlots > maxSize)
-                    removeSlot(pageNo);
+            if (slot.pinCount == 0 && slot.page.dirty && slot.page.empty) {
+                // No free pages in the cache!
+                stableStore.free(slot.page);
+                slots.remove(pageNo);
             }
+            if (slots.size() > maxSize)
+                evictLRUUnpinnedSlots();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/unpin, slot=" + slot);
         } finally {
             lock.unlock();
@@ -203,7 +171,7 @@ public class CacheManager {
         lock.lock();
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/replace, page=" + page);
-            Slot slot = getSlot(page.pageNo);
+            Slot slot = slots.get(page.pageNo);
             if (slot == null)
                 panic(new Exception("page " + page + " to replace not found in cache!"));
             slot.page = page;
@@ -236,24 +204,18 @@ public class CacheManager {
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/flush...");
             if (checkPointVerbose && getCount > 0)
-                System.out.println("CacheManager, hitrate: " + (int) (((double) hitCount / (double) getCount) * 100.0) + "%, fillrate: " + (int) (((double) nSlots / (double) maxSize) * 100.0) + "%");
+                System.out.println("CacheManager, hitrate: " + (int) (((double) hitCount / (double) getCount) * 100.0) + "%, fillrate: " + (int) (((double) slots.size() / (double) maxSize) * 100.0) + "%");
             getCount = 0;
             hitCount = 0;
-            int size = slots.length;
-            for (int i = size - 1; i >= 0; i--) {
-                Slot slot = slots[i];
-                if (slot != null) {
-                    if (slot.page.dirty) {
-                        if (slot.page.empty) {
-                            if (slot.pinCount == 0) {
-                                stableStore.free(slot.page);
-                            }
-                        } else {
-                            stableStore.put(slot.page);
+            for (Map.Entry<Integer, Slot> entry : slots.entrySet()) {
+                Slot slot = entry.getValue();
+                if (slot.page.dirty) {
+                    if (slot.page.empty) {
+                        if (slot.pinCount == 0) {
+                            stableStore.free(slot.page);
                         }
-                    }
-                    if (slot.pinCount == 0 && (slot.page.empty || nSlots > minSize && slot.accessCount == 1)) {
-                        removeSlot(slot.page.pageNo);
+                    } else {
+                        stableStore.put(slot.page);
                     }
                 }
             }
@@ -268,7 +230,7 @@ public class CacheManager {
         lock.lock();
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/shrink");
-            freeSlots();
+            flush();
         } finally {
             lock.unlock();
         }
@@ -279,7 +241,7 @@ public class CacheManager {
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/close");
             stableStore.close();
-            slots = null;
+            slots.clear();
         } finally {
             lock.unlock();
         }
@@ -290,8 +252,7 @@ public class CacheManager {
         try {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/reset");
             stableStore.reset();
-            slots = null;
-            init();
+            slots.clear();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/reset done");
         } finally {
             lock.unlock();

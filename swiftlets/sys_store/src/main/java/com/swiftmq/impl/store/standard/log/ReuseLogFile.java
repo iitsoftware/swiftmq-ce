@@ -81,8 +81,6 @@ public class ReuseLogFile implements LogFile {
                 file.setLength(maxSize);
                 file.seek(0);
                 byte[] b = new byte[BUFFER_SIZE];
-                for (int i = 0; i < b.length; i++)
-                    b[i] = 0;
                 position = 0;
                 while (position < maxSize) {
                     int len = Math.min((int) (maxSize - position), b.length);

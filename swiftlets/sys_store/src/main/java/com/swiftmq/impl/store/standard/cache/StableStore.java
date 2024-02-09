@@ -21,7 +21,6 @@ import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
-import com.swiftmq.mgmt.PropertyChangeException;
 import com.swiftmq.mgmt.PropertyChangeListener;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.event.SwiftletManagerAdapter;
@@ -32,6 +31,8 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 
 import java.io.File;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -42,6 +43,7 @@ public class StableStore implements TimerListener, MgmtListener {
     protected PriorityQueue<Integer> freePages = new PriorityQueue<>();
     protected final AtomicInteger nFree = new AtomicInteger();
     protected RandomAccessFile file;
+    protected FileChannel fileChannel;
     protected String filename;
     protected volatile long fileLength;
     protected final AtomicInteger numberPages = new AtomicInteger();
@@ -59,6 +61,7 @@ public class StableStore implements TimerListener, MgmtListener {
     private boolean offline = false;
     private boolean freePoolEnabled = true;
     private volatile boolean checkPointActive = false;
+    private long position = 0;
 
     public StableStore(StoreContext ctx, String path, int initialPages) throws Exception {
         this(ctx, path, initialPages, false, true);
@@ -86,10 +89,14 @@ public class StableStore implements TimerListener, MgmtListener {
 
     private static byte[] makeEmptyArray(int size) {
         byte[] data = new byte[size];
-        data[0] = 1; // emtpy
-        for (int i = 1; i < size; i++)
-            data[i] = 0;
+        data[0] = 1; // empty
         return data;
+    }
+
+    private void position(long seekPoint, int advance) throws Exception {
+        if (position != seekPoint)
+            fileChannel.position(seekPoint);
+        position = seekPoint + advance;
     }
 
     private static Page loadPage(RandomAccessFile file, int pageNo, int size) throws Exception {
@@ -178,6 +185,7 @@ public class StableStore implements TimerListener, MgmtListener {
         nFree.set(0);
         filename = path + File.separatorChar + FILENAME;
         file = new RandomAccessFile(filename, "rw");
+        fileChannel = file.getChannel();
         fileLength = file.length();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init, fileLength=" + fileLength);
         if (fileLength > 0) {
@@ -200,12 +208,10 @@ public class StableStore implements TimerListener, MgmtListener {
             sizeCollectProp = ctx.dbEntity.getProperty("size-collect-interval");
             collectInterval = (long) (Long) sizeCollectProp.getValue();
             startTimer();
-            PropertyChangeListener propChangeListener = new PropertyChangeListener() {
-                public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                    stopTimer();
-                    collectInterval = (Long) newValue;
-                    startTimer();
-                }
+            PropertyChangeListener propChangeListener = (property, oldValue, newValue) -> {
+                stopTimer();
+                collectInterval = (Long) newValue;
+                startTimer();
             };
             sizeCollectProp.setPropertyChangeListener(propChangeListener);
             swiftletManagerAdapter = new SwiftletManagerAdapter() {
@@ -283,7 +289,7 @@ public class StableStore implements TimerListener, MgmtListener {
 
     public void sync() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/sync...");
-        file.getFD().sync();
+        fileChannel.force(false);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/sync done.");
     }
 
@@ -318,8 +324,20 @@ public class StableStore implements TimerListener, MgmtListener {
     protected Page loadPage(int pageNo) throws Exception {
         Page p = createPage(pageNo);
         long seekPoint = (long) pageNo * (long) PageSize.getCurrent();
-        file.seek(seekPoint);
-        file.readFully(p.data);
+        position(seekPoint, p.data.length);
+        ByteBuffer buffer = ByteBuffer.wrap(p.data);
+        int bytesRead;
+        int totalBytesRead = 0;
+        int bytesToRead = p.data.length;
+
+        while (totalBytesRead < bytesToRead) {
+            bytesRead = fileChannel.read(buffer);
+            if (bytesRead == -1) {
+                // End of file reached
+                break;
+            }
+            totalBytesRead += bytesRead;
+        }
         p.empty = p.data[0] == 1;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", toString() + "/loadPage, pageNo=" + pageNo + ", empty=" + p.empty);
@@ -394,8 +412,13 @@ public class StableStore implements TimerListener, MgmtListener {
             if (p.empty)
                 p.data = new byte[PageSize.getCurrent()];
             p.data[0] = (byte) (p.empty ? 1 : 0);
-            file.seek((long) p.pageNo * (long) PageSize.getCurrent());
-            file.write(p.data);
+            long seekPoint = (long) p.pageNo * (long) PageSize.getCurrent();
+            position(seekPoint, p.data.length);
+            ByteBuffer buffer = ByteBuffer.wrap(p.data);
+
+            while (buffer.hasRemaining()) {
+                fileChannel.write(buffer);
+            }
             p.dirty = false;
             long length = (long) (p.pageNo + 1) * (long) PageSize.getCurrent();
             if (length > fileLength)
@@ -474,6 +497,7 @@ public class StableStore implements TimerListener, MgmtListener {
             freePages.clear();
         numberPages.set(0);
         fileLength = 0;
+        fileChannel.close();
         file.close();
     }
 
