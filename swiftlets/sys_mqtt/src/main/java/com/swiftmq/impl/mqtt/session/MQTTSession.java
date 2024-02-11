@@ -512,7 +512,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
         MqttPubAckMessage pubAckMessage = po.getMessage();
         POSendMessage poSendMessage = outboundPackets.remove(pubAckMessage.variableHeader().messageId());
         if (poSendMessage == null || poSendMessage.getQos() != MqttQoS.AT_LEAST_ONCE) {
-            mqttConnection.get().getConnectionQueue().enqueue(new POProtocolError(pubAckMessage));
+            mqttConnection.get().dispatch(new POProtocolError(pubAckMessage));
         } else {
             try {
                 removeReplay(pubAckMessage.variableHeader().messageId());
@@ -534,7 +534,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
         int packetId = ((MqttMessageIdVariableHeader) (po.getMessage().variableHeader())).messageId();
         POSendMessage poSendMessage = outboundPackets.get(packetId);
         if (poSendMessage == null || poSendMessage.getQos() != MqttQoS.EXACTLY_ONCE) {
-            mqttConnection.get().getConnectionQueue().enqueue(new POProtocolError(po.getMessage()));
+            mqttConnection.get().dispatch(new POProtocolError(po.getMessage()));
         } else {
             try {
                 mqttConnection.get().getOutboundQueue().submit(
@@ -583,7 +583,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
         removeReplay(packetId);
         POSendMessage poSendMessage = outboundPackets.remove(packetId);
         if (poSendMessage == null || poSendMessage.getQos() != MqttQoS.EXACTLY_ONCE)
-            mqttConnection.get().getConnectionQueue().enqueue(new POProtocolError(po.getMessage()));
+            mqttConnection.get().dispatch(new POProtocolError(po.getMessage()));
         else {
             try {
                 if (!poSendMessage.getTransaction().isClosed()) {

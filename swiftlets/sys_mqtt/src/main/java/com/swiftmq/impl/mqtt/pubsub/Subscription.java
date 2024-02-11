@@ -143,7 +143,7 @@ public class Subscription extends MessageProcessor {
                 if (sqos > pqos)
                     mqos = MqttQoS.valueOf(pqos);
             }
-            session.getMqttConnection().getConnectionQueue().enqueue(new POSendMessage(jmsTopicName, messageEntry.getMessage(), mqos, tx, this));
+            session.getMqttConnection().dispatch(new POSendMessage(jmsTopicName, messageEntry.getMessage(), mqos, tx, this));
             incMsgsReceived(1);
         } catch (Exception e) {
             e.printStackTrace();

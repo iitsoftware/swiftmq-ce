@@ -37,7 +37,6 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 
 import java.util.List;
 import java.util.Objects;
@@ -53,7 +52,6 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
     Entity connectionTemplate = null;
     Connection connection = null;
     OutboundQueue outboundQueue = null;
-    PipelineQueue connectionQueue = null;
     final AtomicReference<ActiveLogin> activeLogin = new AtomicReference<>();
     final AtomicBoolean closed = new AtomicBoolean(false);
     final AtomicBoolean closeInProgress = new AtomicBoolean(false);
@@ -124,10 +122,6 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         return connection.getHostname();
     }
 
-    public PipelineQueue getConnectionQueue() {
-        return connectionQueue;
-    }
-
     public OutboundQueue getOutboundQueue() {
         return outboundQueue;
     }
@@ -156,6 +150,10 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/performTimeAction, packetCount=" + packetCount.get());
         if (packetCount.getAndSet(0) == 0)
             initiateClose("inactivity timeout");
+    }
+
+    public void dispatch(POObject event) {
+        eventLoop.submit(event);
     }
 
     private void process(MqttMessage message) {
@@ -507,7 +505,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
                 session.destroy();
         }
 
-        connectionQueue.close();
+        eventLoop.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
