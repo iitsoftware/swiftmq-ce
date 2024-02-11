@@ -43,19 +43,20 @@
         </entitylist>
       </entitytemplate>
     </entitylist>
-    <entitylist name="usage" display="Usage" description="Thread Usage">
+    <entitylist name="usage" display="Usage" description="Thread Usage"
+                dynamic-properties="platform virtual adhoc">
       <entitytemplate name="usage" display="Threads" description="Active Threads">
-        <property name="01platform"
+        <property name="platform"
                   type="java.lang.Integer"
                   display="Platform Event Loops"
                   description="Active Platform Event Loop Threads"
                   default="0"/>
-        <property name="02virtual"
+        <property name="virtual"
                   type="java.lang.Integer"
                   display="Virtual Event Loops"
                   description="Active Virtual Event Loop Threads"
                   default="0"/>
-        <property name="03adhoc"
+        <property name="adhoc"
                   type="java.lang.Integer"
                   display="Ad Hoc Virtual"
                   description="Active Virtual Ad Hoc Threads"

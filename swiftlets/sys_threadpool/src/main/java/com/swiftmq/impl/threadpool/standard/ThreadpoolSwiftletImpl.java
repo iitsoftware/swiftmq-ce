@@ -46,9 +46,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         implements TimerListener {
     public static final String PROP_COLLECT_INTERVAL = "collect-interval";
-    public static final String PROP_PLATFORM_THREADS = "01platform";
-    public static final String PROP_VIRTUAL_THREADS = "02virtual";
-    public static final String PROP_ADHOC_THREADS = "03adhoc";
+    public static final String PROP_PLATFORM_THREADS = "platform";
+    public static final String PROP_VIRTUAL_THREADS = "virtual";
+    public static final String PROP_ADHOC_THREADS = "adhoc";
 
     SwiftletContext ctx = null;
     GroupRegistry groupRegistry = null;
