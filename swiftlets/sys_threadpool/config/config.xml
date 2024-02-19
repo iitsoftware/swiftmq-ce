@@ -56,10 +56,15 @@
                   display="Virtual Event Loops"
                   description="Active Virtual Event Loop Threads"
                   default="0"/>
-        <property name="adhoc"
+        <property name="adhocvirtual"
                   type="java.lang.Integer"
                   display="Ad Hoc Virtual"
                   description="Active Virtual Ad Hoc Threads"
+                  default="0"/>
+        <property name="adhocplatform"
+                  type="java.lang.Integer"
+                  display="Ad Hoc Platform"
+                  description="Active Platform Ad Hoc Threads"
                   default="0"/>
       </entitytemplate>
     </entitylist>
