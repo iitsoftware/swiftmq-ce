@@ -1,6 +1,20 @@
 #!/bin/bash
+cd ..
+SWIFTMQ_HOME=$(SWIFTMQ_HOME)
+OSNAME=$(uname)
+cd scripts
 if [ "$SWIFTMQ_IN_DOCKER" != "true" ] && [ ! -f ./.executables ]; then
-  ./install -d
+    if [[ "$OSNAME" == "Darwin" ]]; then
+        echo $SWIFTMQ_HOME/graalvm-jdk/Content/Home > .javahome
+        echo $SWIFTMQ_HOME/graalvm-jdk/Content/Home/bin > .executables
+        echo
+        echo "Please enter the sudo password to remove the quarantine from the GraalVM installation."
+        echo
+        sudo xattr -r -d com.apple.quarantine $SWIFTMQ_HOME/graalvm-jdk/Content/Home
+    else
+        echo $SWIFTMQ_HOME/graalvm-jdk > .javahome
+        echo $SWIFTMQ_HOME/graalvm-jdk/bin > .executables
+    fi
 fi
 JAVA_HOME=$(cat .javahome)
 EXECUTABLES=$(cat .executables)
