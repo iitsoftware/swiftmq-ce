@@ -47,6 +47,6 @@ then
   PROXY="-Dhttp.proxyHost=${proxyhost} -Dhttp.proxyPort=${proxyport} -Dhttps.proxyHost=${proxyhost} -Dhttps.proxyPort=${proxyport}"
 fi
 
-echo "Starting SwiftMQ with '$JVMPARAM' with '$JAVA_HOME'."
+echo "Starting SwiftMQ with '$JVMPARAM' heap size on bundled GraalVM."
 echo "Please have a look at data/log/stdout.log ..."
 exec ${EXECUTABLES}/java -server $JVMPARAM $ROUTEROPT $PROXY -cp $CLASSP com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
