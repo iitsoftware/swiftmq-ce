@@ -19,6 +19,7 @@ package com.swiftmq.impl.threadpool.standard;
 
 import com.swiftmq.impl.threadpool.standard.group.EventLoopImpl;
 import com.swiftmq.impl.threadpool.standard.group.GroupRegistry;
+import com.swiftmq.impl.threadpool.standard.group.pool.PlatformThreadRunner;
 import com.swiftmq.impl.threadpool.standard.group.pool.ThreadRunner;
 import com.swiftmq.impl.threadpool.standard.group.pool.VirtualThreadRunner;
 import com.swiftmq.mgmt.Configuration;
@@ -37,9 +38,7 @@ import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,11 +47,13 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     public static final String PROP_COLLECT_INTERVAL = "collect-interval";
     public static final String PROP_PLATFORM_THREADS = "platform";
     public static final String PROP_VIRTUAL_THREADS = "virtual";
-    public static final String PROP_ADHOC_THREADS = "adhoc";
+    public static final String PROP_ADHOC_VIRTUAL_THREADS = "adhocvirtual";
+    public static final String PROP_ADHOC_PLATFORM_THREADS = "adhocplatform";
 
     SwiftletContext ctx = null;
     GroupRegistry groupRegistry = null;
     ThreadRunner adHocVirtualThreadRunner = null;
+    ThreadRunner adHocPlatformThreadRunner = null;
 
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
@@ -77,7 +78,12 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
 
     @Override
     public CompletableFuture<?> runAsync(Runnable runnable) {
-        return adHocVirtualThreadRunner.execute(runnable);
+        return runAsync(runnable, true);
+    }
+
+    @Override
+    public CompletableFuture<?> runAsync(Runnable runnable, boolean virtual) {
+        return virtual ? adHocVirtualThreadRunner.execute(runnable) : adHocPlatformThreadRunner.execute(runnable);
     }
 
     @Override
@@ -92,7 +98,8 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         try {
             Integer platformRunningCount = groupRegistry.platformThreads();
             Integer virtualRunningCount = groupRegistry.virtualThreads();
-            Integer adHocRunningCount = adHocVirtualThreadRunner.getActiveThreadCount();
+            Integer adHocVirtualRunningCount = adHocVirtualThreadRunner.getActiveThreadCount();
+            Integer adHocPlatformRunningCount = adHocPlatformThreadRunner.getActiveThreadCount();
             Property prop = ctx.usage.getProperty(PROP_PLATFORM_THREADS);
             Integer oldValue = (Integer) prop.getValue();
             if (!Objects.equals(oldValue, platformRunningCount)) {
@@ -107,11 +114,18 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
                 prop.setValue(virtualRunningCount);
                 prop.setReadOnly(true);
             }
-            prop = ctx.usage.getProperty(PROP_ADHOC_THREADS);
+            prop = ctx.usage.getProperty(PROP_ADHOC_VIRTUAL_THREADS);
             oldValue = (Integer) prop.getValue();
-            if (!Objects.equals(oldValue, adHocRunningCount)) {
+            if (!Objects.equals(oldValue, adHocVirtualRunningCount)) {
                 prop.setReadOnly(false);
-                prop.setValue(adHocRunningCount);
+                prop.setValue(adHocVirtualRunningCount);
+                prop.setReadOnly(true);
+            }
+            prop = ctx.usage.getProperty(PROP_ADHOC_PLATFORM_THREADS);
+            oldValue = (Integer) prop.getValue();
+            if (!Objects.equals(oldValue, adHocPlatformRunningCount)) {
+                prop.setReadOnly(false);
+                prop.setValue(adHocPlatformRunningCount);
                 prop.setReadOnly(true);
             }
         } catch (Exception e) {
@@ -142,6 +156,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
 
         groupRegistry = new GroupRegistry(ctx);
         adHocVirtualThreadRunner = new VirtualThreadRunner();
+        adHocPlatformThreadRunner = new PlatformThreadRunner((ThreadPoolExecutor) Executors.newCachedThreadPool());
 
         try {
             SwiftletManager.getInstance().addSwiftletManagerListener("sys$mgmt", new SwiftletManagerAdapter() {
@@ -195,6 +210,9 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown");
         adHocVirtualThreadRunner.shutdown(10, TimeUnit.SECONDS);
         ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown done");
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocPlatformThreadRunner shutdown");
+        adHocPlatformThreadRunner.shutdown(10, TimeUnit.SECONDS);
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocPlatformThreadRunner shutdown done");
         groupRegistry.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: done.");
     }
