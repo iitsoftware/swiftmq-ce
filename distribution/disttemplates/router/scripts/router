@@ -19,8 +19,8 @@ if [ "$SWIFTMQ_IN_DOCKER" != "true" ] && [ ! -f ./.executables ]; then
 fi
 JAVA_HOME=$(cat .javahome)
 EXECUTABLES=$(cat .executables)
-CLASSP="../jars/swiftmq.jar:../graalvm/*"
-OPENS="--module-path=../graalvm --add-exports=org.graalvm.truffle.runtime/com.oracle.truffle.runtime=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS -Dnashorn.args=--no-deprecation-warning"
+CLASSP="../jars/swiftmq.jar"
+OPENS="--module-path=../graalvm --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS -Dnashorn.args=--no-deprecation-warning"
 PRECONFIG="$("$EXECUTABLES"/java -cp "$CLASSP" com.swiftmq.SystemPreconfig)"
 if [ "$1" != "" ]
 then
