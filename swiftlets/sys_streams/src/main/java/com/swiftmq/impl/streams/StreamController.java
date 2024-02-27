@@ -31,7 +31,6 @@ import com.swiftmq.util.SwiftUtilities;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.SimpleScriptContext;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -117,17 +116,10 @@ public class StreamController {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript ...");
                 try {
-                    ScriptEngineManager manager = new ScriptEngineManager();
                     ClassLoader classLoader = createClassLoader();
                     streamContext.classLoader = classLoader;
                     Thread.currentThread().setContextClassLoader(classLoader);
-                    ScriptEngine engine = null;
-                    if (ctx.ISGRAAL)
-                        engine = GraalSetup.engine(classLoader);
-                    else
-                        engine = manager.getEngineByName((String) entity.getProperty("script-language").getValue());
-                    if (engine == null)
-                        throw new Exception("Engine for script-language '" + entity.getProperty("script-language").getValue() + "' not found!");
+                    ScriptEngine engine = GraalSetup.engine(classLoader);
                     ScriptContext newContext = new SimpleScriptContext();
                     streamContext.engineScope = engine.createBindings();
                     streamContext.engineScope.put("stream", streamContext.stream);

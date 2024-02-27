@@ -58,9 +58,6 @@ public class SwiftletContext {
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
     public String streamLibDir = SwiftUtilities.addWorkingDir("../data/streamlib");
-    public boolean ISGRAAL = false;
-    public boolean HASENGINE = false;
-    public int JAVAVERSION = 0;
     public EventLoopMUX eventLoopMUX;
     public EventLoop evalScriptLoop;
 
@@ -84,17 +81,7 @@ public class SwiftletContext {
         jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
         storeSwiftlet = (StoreSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$store");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        Runtime.Version version = Runtime.version();
-        JAVAVERSION = version.feature();
-        try {
-            ISGRAAL = Version.getCurrent().isRelease();
-        } catch (Exception e) {
-            ISGRAAL = false;
-        }
-        HASENGINE = JAVAVERSION < 15 || ISGRAAL;
-        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", running on GraalVM: " + ISGRAAL);
-        if (ISGRAAL)
-            logSwiftlet.logInformation(streamsSwiftlet.getName(), "GraalVM Version: " + Version.getCurrent());
+        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", GraalVM Version: " + Version.getCurrent() + ", available Processors: " + Runtime.getRuntime().availableProcessors());
         eventLoopMUX = new EventLoopMUX(this, "sys$streams.processor", (int) config.getProperty("shared-event-loops").getValue());
         evalScriptLoop = threadpoolSwiftlet.createEventLoop("sys$streams.evalscript", list -> list.forEach(e -> ((Runnable) e).run()));
     }
