@@ -1,4 +1,4 @@
-FROM container-registry.oracle.com/graalvm/jdk:21
+FROM ghcr.io/graalvm/jdk-community:21
 RUN microdnf install -y rsync gzip
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
