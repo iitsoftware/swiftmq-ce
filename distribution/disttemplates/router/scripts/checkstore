@@ -1,0 +1,14 @@
+#!/bin/bash
+echo $1
+if [ "$1" = "JDBC" ]; then
+  echo "Using JDBC Store Swiftlet"
+  rm -f /swiftmq/kernel/sys\$store/*
+  cp /swiftmq/optional-swiftlets/kernel/sys_store_jdbc/deploy/* /swiftmq/kernel/sys\$store/.
+  if [ "$(ls -A /swiftmq/jdbc-driver)" ]; then
+    cp /swiftmq/jdbc-driver/* /swiftmq/kernel/sys\$store/.
+  fi
+else
+  echo "Using standard Store Swiftlet"
+  rm -f /swiftmq/kernel/sys\$store/*
+  cp /swiftmq/opt/sys\$store/standard/* /swiftmq/kernel/sys\$store/.
+fi
