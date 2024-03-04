@@ -31,6 +31,8 @@ import com.swiftmq.tools.pipeline.POObject;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class StreamProcessor implements POStreamVisitor {
     StreamContext ctx;
@@ -40,11 +42,22 @@ public class StreamProcessor implements POStreamVisitor {
     int totalMsg = 0;
     int timeOnMessage = 0;
     AtomicInteger muxId = new AtomicInteger();
+    Lock lock = new ReentrantLock();
 
     public StreamProcessor(StreamContext ctx, StreamController controller) {
         this.ctx = ctx;
         this.controller = controller;
-        this.muxId.set(ctx.ctx.eventLoopMUX.register(event -> ((POObject) event).accept(StreamProcessor.this)));
+        this.muxId.set(ctx.ctx.eventLoopMUX.register(event ->
+                {
+                    // Unfortunately required because auf the Java Memory Model - evalScript is done from another thread
+                    lock.lock();
+                    try {
+                        ((POObject) event).accept(StreamProcessor.this);
+                    } finally {
+                        lock.unlock();
+                    }
+                }
+        ));
     }
 
     public void dispatch(POObject po) {
