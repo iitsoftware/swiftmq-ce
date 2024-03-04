@@ -49,7 +49,7 @@ public class MessageQueue extends AbstractQueue {
     NonPersistentStore nStore = null;
     protected SortedSet<StoreId> queueContent = null;
     protected OrderedSet duplicateBacklog = new OrderedSet(500);
-    boolean running = false;
+    volatile boolean running = false;
     ExpandableList<View> views = null;
     AtomicWrappingCounterLong msgId = new AtomicWrappingCounterLong(0);
     boolean alwaysDeliverExpired = false;

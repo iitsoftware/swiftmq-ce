@@ -170,6 +170,7 @@ public class StreamController {
                 if (sem.isNotified() && !po.isSuccess())
                     throw new Exception(po.getException());
                 started.set(true);
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Stream running: " + fqn);
             } catch (Exception e) {
                 ctx.usageList.removeEntity(streamContext.usage);
                 streamContext.logStackTrace(e);
