@@ -28,6 +28,7 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.deploy.ExtendableClassLoader;
 import com.swiftmq.util.SwiftUtilities;
+import org.graalvm.polyglot.Context;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -73,6 +74,7 @@ public class StreamController {
     }
 
     private ClassLoader createClassLoader() {
+        final FallBackClassLoader fallBackClassLoader = new FallBackClassLoader(Context.class.getClassLoader(), StreamController.class.getClassLoader());
         File libDir = new File(ctx.streamLibDir + File.separatorChar + fqn);
         if (libDir.exists()) {
             File[] libs = libDir.listFiles((dir, name) -> name.endsWith(".jar"));
@@ -85,10 +87,10 @@ public class StreamController {
                     e.printStackTrace();
                 }
                 ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Create classloader for stream: " + fqn + " with libs: " + Arrays.asList(urls));
-                return new ExtendableClassLoader(libDir, urls, StreamController.class.getClassLoader());
+                return new ExtendableClassLoader(libDir, urls, fallBackClassLoader);
             }
         }
-        return StreamController.class.getClassLoader();
+        return fallBackClassLoader;
     }
 
     private Reader loadScript(String name) throws Exception {
@@ -283,4 +285,28 @@ public class StreamController {
     public String toString() {
         return "StreamController, name=" + domainName + "." + packageName + "." + entity.getName();
     }
+
+    public class FallBackClassLoader extends ClassLoader {
+
+        private ClassLoader firstClassLoader;
+        private ClassLoader secondClassLoader;
+
+        public FallBackClassLoader(ClassLoader firstClassLoader, ClassLoader secondClassLoader) {
+            super(null); // Do not set the system class loader as parent
+            this.firstClassLoader = firstClassLoader;
+            this.secondClassLoader = secondClassLoader;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                // Try to load the class using the first class loader
+                return firstClassLoader.loadClass(name);
+            } catch (ClassNotFoundException e) {
+                // If not found, try the second class loader
+                return secondClassLoader.loadClass(name);
+            }
+        }
+    }
+
 }
