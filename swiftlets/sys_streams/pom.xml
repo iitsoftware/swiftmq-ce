@@ -46,11 +46,6 @@
       <version>2.0.7</version>
     </dependency>
     <dependency>
-      <groupId>org.graalvm.js</groupId>
-      <artifactId>js-scriptengine</artifactId>
-      <version>23.1.2</version>
-    </dependency>
-    <dependency>
       <groupId>org.graalvm.polyglot</groupId>
       <artifactId>js</artifactId>
       <version>23.1.2</version>

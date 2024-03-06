@@ -30,9 +30,6 @@ import com.swiftmq.tools.deploy.ExtendableClassLoader;
 import com.swiftmq.util.SwiftUtilities;
 import org.graalvm.polyglot.Context;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.SimpleScriptContext;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -93,21 +90,32 @@ public class StreamController {
         return fallBackClassLoader;
     }
 
-    private Reader loadScript(String name) throws Exception {
-        Reader reader = null;
+    private String loadScript(String name) throws Exception {
+        String script = null;
         if (name.startsWith(REGPREFIX)) {
-            String script = repositorySupport.get(name);
-            if (script == null)
+            script = repositorySupport.get(name);
+            if (script == null) {
                 throw new Exception("Script '" + name + "' not found in Stream Repository!");
-            reader = new StringReader(script);
+            }
         } else {
-
             File file = new File(SwiftUtilities.addWorkingDir(name));
-            if (!file.exists())
+            if (!file.exists()) {
                 throw new FileNotFoundException("Script file '" + name + "' not found!");
-            reader = new FileReader(file);
+            }
+            script = readFileToString(file);
         }
-        return reader;
+        return script;
+    }
+
+    private String readFileToString(File file) throws IOException {
+        StringBuilder scriptContent = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                scriptContent.append(line).append("\n");
+            }
+        }
+        return scriptContent.toString();
     }
 
     private void evalScript() throws Exception {
@@ -121,19 +129,17 @@ public class StreamController {
                     ClassLoader classLoader = createClassLoader();
                     streamContext.classLoader = classLoader;
                     Thread.currentThread().setContextClassLoader(classLoader);
-                    ScriptEngine engine = GraalSetup.engine(classLoader);
-                    ScriptContext newContext = new SimpleScriptContext();
-                    streamContext.engineScope = engine.createBindings();
-                    streamContext.engineScope.put("stream", streamContext.stream);
-                    streamContext.engineScope.put("parameters", new Parameters((EntityList) entity.getEntity("parameters")));
-                    streamContext.engineScope.put("time", new TimeSupport());
-                    streamContext.engineScope.put("os", new OsSupport());
-                    streamContext.engineScope.put("repository", repositorySupport);
-                    streamContext.engineScope.put("transform", new ContentTransformer());
-                    streamContext.engineScope.put("typeconvert", new TypeConverter());
-                    newContext.setBindings(streamContext.engineScope, ScriptContext.ENGINE_SCOPE);
+                    Context context = GraalSetup.context(classLoader);
+                    streamContext.bindings = context.getBindings("js");
+                    streamContext.bindings.putMember("stream", streamContext.stream);
+                    streamContext.bindings.putMember("parameters", new Parameters((EntityList) entity.getEntity("parameters")));
+                    streamContext.bindings.putMember("time", new TimeSupport());
+                    streamContext.bindings.putMember("os", new OsSupport());
+                    streamContext.bindings.putMember("repository", repositorySupport);
+                    streamContext.bindings.putMember("transform", new ContentTransformer());
+                    streamContext.bindings.putMember("typeconvert", new TypeConverter());
 
-                    engine.eval(loadScript((String) entity.getProperty("script-file").getValue()), newContext);
+                    context.eval("js", loadScript((String) entity.getProperty("script-file").getValue()));
                     Thread.currentThread().setContextClassLoader(null);
                 } catch (Exception e) {
                     exceptionRef.set(e);
@@ -286,10 +292,10 @@ public class StreamController {
         return "StreamController, name=" + domainName + "." + packageName + "." + entity.getName();
     }
 
-    public class FallBackClassLoader extends ClassLoader {
+    private static final class FallBackClassLoader extends ClassLoader {
 
-        private ClassLoader firstClassLoader;
-        private ClassLoader secondClassLoader;
+        private final ClassLoader firstClassLoader;
+        private final ClassLoader secondClassLoader;
 
         public FallBackClassLoader(ClassLoader firstClassLoader, ClassLoader secondClassLoader) {
             super(null); // Do not set the system class loader as parent
