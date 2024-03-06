@@ -277,7 +277,6 @@
           <eventloop name="sys$amqp.sasl.service"/>
           <eventloop name="sys$amqp.session.service"/>
           <eventloop name="sys$jms.session"/>
-          <eventloop name="sys$streams.evalscript" virtual="false"/>
           <eventloop name="sys$streams.processor" virtual="false"/>
         </eventloops>
       </group>
