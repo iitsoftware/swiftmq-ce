@@ -142,11 +142,13 @@ public class StreamController {
                     context.eval("js", loadScript((String) entity.getProperty("script-file").getValue()));
                     Thread.currentThread().setContextClassLoader(null);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     exceptionRef.set(e);
+                } finally {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript done");
+                    future.complete(null);
                 }
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript done");
-                future.complete(null);
         });
         future.get();
         if (exceptionRef.get() != null)
