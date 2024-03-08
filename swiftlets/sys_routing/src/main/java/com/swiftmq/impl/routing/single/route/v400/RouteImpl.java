@@ -32,7 +32,7 @@ public class RouteImpl implements Route {
     String version = null;
     String key = null;
     String destinationRouter = null;
-    List hopList = null;
+    List<String> hopList = null;
     String lastHop = null;
     RoutingConnection routingConnection = null;
 
@@ -40,7 +40,7 @@ public class RouteImpl implements Route {
         this.version = version;
         this.type = type;
         this.destinationRouter = destinationRouter;
-        hopList = new ArrayList();
+        hopList = new ArrayList<>();
     }
 
     public RouteImpl() {
@@ -73,7 +73,7 @@ public class RouteImpl implements Route {
 
     public String getKey() {
         if (key == null) {
-            StringBuffer b = new StringBuffer();
+            StringBuilder b = new StringBuilder();
             for (int i = hopList.size() - 1; i >= 0; i--) {
                 b.append(hopList.get(i));
                 if (i > 0)
@@ -95,11 +95,7 @@ public class RouteImpl implements Route {
     }
 
     public boolean hasHop(String routerName) {
-        for (int i = 0; i < hopList.size(); i++) {
-            if (routerName.equals(((String) hopList.get(i))))
-                return true;
-        }
-        return false;
+        return hopList.stream().anyMatch(routerName::equals);
     }
 
     public int getHopCount() {
@@ -124,8 +120,8 @@ public class RouteImpl implements Route {
         out.writeUTF(version);
         out.writeUTF(destinationRouter);
         out.writeInt(hopList.size());
-        for (int i = 0; i < hopList.size(); i++) {
-            out.writeUTF((String) hopList.get(i));
+        for (String s : hopList) {
+            out.writeUTF(s);
         }
     }
 
@@ -134,7 +130,7 @@ public class RouteImpl implements Route {
         version = in.readUTF();
         destinationRouter = in.readUTF();
         int size = in.readInt();
-        hopList = new ArrayList();
+        hopList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             hopList.add(in.readUTF());
         }

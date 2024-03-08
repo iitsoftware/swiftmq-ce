@@ -27,7 +27,10 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.tools.pipeline.POObject;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class Scheduler
         implements POSchedulerVisitor, DeliveryCallback {
@@ -36,7 +39,6 @@ public abstract class Scheduler
     SwiftletContext ctx = null;
     String destinationRouter = null;
     String queueName = null;
-    PipelineQueue pipelineQueue = null;
     QueueReceiver receiver = null;
     QueuePullTransaction readTransaction = null;
     RoutingConnection currentConnection = null;
@@ -44,16 +46,17 @@ public abstract class Scheduler
     PODeliverObject deliverObject = null;
     PODeliveredObject deliveredObject = null;
     MP mp = null;
-    boolean processorActive = false;
-    boolean deliveryActive = false;
-    boolean closed = false;
+    final AtomicBoolean processorActive = new AtomicBoolean(false);
+    final AtomicBoolean deliveryActive = new AtomicBoolean(false);
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    EventLoop eventLoop;
 
     public Scheduler(SwiftletContext ctx, String destinationRouter, String queueName) {
         this.ctx = ctx;
         this.destinationRouter = destinationRouter;
         this.queueName = queueName;
         mp = new MP();
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_SCHEDULER), TP_SCHEDULER, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.scheduler", list -> list.forEach(e -> ((POObject) e).accept(Scheduler.this)));
     }
 
     public String getQueueName() {
@@ -75,7 +78,7 @@ public abstract class Scheduler
     private void startProcessor() throws Exception {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/startProcessor ...");
-        processorActive = false;
+        processorActive.set(false);
         currentConnection = getNextConnection();
         if (currentConnection == null) {
             try {
@@ -103,7 +106,7 @@ public abstract class Scheduler
             readTransaction = receiver.createTransaction(false);
         }
         readTransaction.registerMessageProcessor(mp);
-        processorActive = true;
+        processorActive.set(true);
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/startProcessor done");
     }
@@ -121,7 +124,7 @@ public abstract class Scheduler
         }
         if (deliverObject == null)
             deliverObject = new PODeliverObject(nMessages);
-        pipelineQueue.enqueue(deliverObject);
+        eventLoop.submit(deliverObject);
     }
 
     public void delivered(DeliveryRequest deliveryRequest) {
@@ -129,25 +132,25 @@ public abstract class Scheduler
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/delivered, deliveryRequest=" + deliveryRequest);
         if (deliveredObject == null)
             deliveredObject = new PODeliveredObject(deliveryRequest);
-        pipelineQueue.enqueue(deliveredObject);
+        eventLoop.submit(deliveredObject);
     }
 
     protected void connectionAdded(RoutingConnection connection) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/connectionAdded, connection=" + connection);
-        pipelineQueue.enqueue(new POConnectionAddedObject(connection));
+        eventLoop.submit(new POConnectionAddedObject(connection));
     }
 
     protected void connectionRemoved(RoutingConnection connection) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/connectionRemoved, connection=" + connection);
-        pipelineQueue.enqueue(new POConnectionRemovedObject(connection));
+        eventLoop.submit(new POConnectionRemovedObject(connection));
     }
 
     protected void enqueueClose(POCloseObject po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/enqueueClose, po=" + po);
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     public void visit(PODeliverObject po) {
@@ -156,7 +159,7 @@ public abstract class Scheduler
         if (currentConnection != null) {
             try {
                 currentConnection.enqueueRequest(deliveryRequest);
-                deliveryActive = true;
+                deliveryActive.set(true);
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + ", exception=" + e);
@@ -195,7 +198,7 @@ public abstract class Scheduler
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + " ...");
         try {
-            deliveryActive = false;
+            deliveryActive.set(false);
             startProcessor();
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
@@ -209,7 +212,7 @@ public abstract class Scheduler
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + " ...");
         try {
-            if (!processorActive && !deliveryActive)
+            if (!processorActive.get() && !deliveryActive.get())
                 startProcessor();
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
@@ -230,7 +233,7 @@ public abstract class Scheduler
     public void visit(POConnectionRemovedObject po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + " ...");
-        if (currentConnection != null && po.getConnection() == currentConnection && deliveryActive) {
+        if (currentConnection != null && po.getConnection() == currentConnection && deliveryActive.get()) {
             try {
                 if (readTransaction != null)
                     readTransaction.rollback();
@@ -240,7 +243,7 @@ public abstract class Scheduler
             }
             readTransaction = null;
             currentConnection = null;
-            deliveryActive = false;
+            deliveryActive.set(false);
             try {
                 startProcessor();
             } catch (Exception e) {
@@ -255,9 +258,8 @@ public abstract class Scheduler
     public void visit(POCloseObject po) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + " ...");
-        pipelineQueue.close();
         try {
-            if (processorActive)
+            if (processorActive.get())
                 readTransaction.unregisterMessageProcessor(mp);
         } catch (Exception e) {
         }
@@ -271,11 +273,12 @@ public abstract class Scheduler
                 receiver.close();
         } catch (Exception e) {
         }
-        closed = true;
+        closed.set(true);
         if (po.getCallback() != null)
             po.getCallback().onSuccess(po);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
+        eventLoop.close();
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/visit, po=" + po + " done");
     }
@@ -295,7 +298,7 @@ public abstract class Scheduler
         }
 
         public boolean isValid() {
-            return !closed;
+            return !closed.get();
         }
 
         public void processMessage(MessageEntry entry) {

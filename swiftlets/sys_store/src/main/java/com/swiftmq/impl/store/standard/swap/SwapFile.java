@@ -20,26 +20,26 @@ package com.swiftmq.impl.store.standard.swap;
 import com.swiftmq.swiftlet.store.StoreEntry;
 
 public interface SwapFile {
-    public String getFilename();
+    String getFilename();
 
-    public StoreEntry get(long fp) throws Exception;
+    StoreEntry get(long fp) throws Exception;
 
-    public long add(StoreEntry entry) throws Exception;
+    long add(StoreEntry entry) throws Exception;
 
-    public void remove(long fp) throws Exception;
+    void remove(long fp) throws Exception;
 
-    public void updateDeliveryCount(long fp, int deliveryCount) throws Exception;
+    void updateDeliveryCount(long fp, int deliveryCount) throws Exception;
 
-    public boolean hasSpace() throws Exception;
+    boolean hasSpace() throws Exception;
 
-    public long getNumberMessages();
+    long getNumberMessages();
 
-    public void setNumberMessages(long numberMessages);
+    void setNumberMessages(long numberMessages);
 
-    public long getMaxLength();
+    long getMaxLength();
 
-    public void closeNoDelete();
+    void closeNoDelete();
 
-    public void close();
+    void close();
 }
 

@@ -19,70 +19,60 @@ package jms.funcunified.nontransacted.autoack;
 
 import jms.base.SimpleConnectedUnifiedPTPTestCase;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class PTPSendSingleQueue extends SimpleConnectedUnifiedPTPTestCase
-{
-  public PTPSendSingleQueue(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-  }
-
-  public void testPTPSendSingleQueueNP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      msg = (TextMessage) consumer.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class PTPSendSingleQueue extends SimpleConnectedUnifiedPTPTestCase {
+    public PTPSendSingleQueue(String name) {
+        super(name);
     }
-  }
 
-  public void testPTPSendSingleQueueP()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-
-      msg = (TextMessage) consumer.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
     }
-  }
+
+    public void testPTPSendSingleQueueNP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            msg = (TextMessage) consumer.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    public void testPTPSendSingleQueueP() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+
+            msg = (TextMessage) consumer.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

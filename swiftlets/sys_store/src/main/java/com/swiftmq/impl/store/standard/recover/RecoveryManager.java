@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RecoveryManager {
     static final String PROP_ANALYZE = "swiftmq.store.analyze";
@@ -39,6 +41,7 @@ public class RecoveryManager {
     int prepares = 0;
     long magic = -1;
     byte[] emptyData = null;
+    Lock lock = new ReentrantLock();
 
     public RecoveryManager(StoreContext ctx) {
         this.ctx = ctx;
@@ -46,18 +49,18 @@ public class RecoveryManager {
         emptyData[0] = 1; // emtpy
         for (int i = 1; i < PageSize.getCurrent(); i++)
             emptyData[i] = 0;
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/create");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/create");
     }
 
     private void processCommit(List journal) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processCommit...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processCommit...");
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/processCommit, " + journal.size() + " actions rolling forward");
+            ctx.traceSpace.trace("sys$store", this + "/processCommit, " + journal.size() + " actions rolling forward");
         commits++;
-        for (int i = 0; i < journal.size(); i++) {
-            LogAction la = (LogAction) journal.get(i);
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processCommit, " + la);
+        for (Object o : journal) {
+            LogAction la = (LogAction) o;
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processCommit, " + la);
             switch (la.getType()) {
                 case LogAction.INSERT: {
                     Page p = ctx.cacheManager.fetchAndPin(((InsertLogAction) la).getPageNo());
@@ -95,18 +98,18 @@ public class RecoveryManager {
                 }
             }
         }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processCommit...done.");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processCommit...done.");
     }
 
     private void processAbort(List journal) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processAbort...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processAbort...");
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/processAbort, " + journal.size() + " actions aborted");
+            ctx.traceSpace.trace("sys$store", this + "/processAbort, " + journal.size() + " actions aborted");
         rollbacks++;
         for (int i = journal.size() - 1; i >= 0; i--) {
             LogAction la = (LogAction) journal.get(i);
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processAbort, " + la);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processAbort, " + la);
             switch (la.getType()) {
                 case LogAction.INSERT: {
                     Page p = ctx.cacheManager.fetchAndPin(((InsertLogAction) la).getPageNo());
@@ -147,24 +150,24 @@ public class RecoveryManager {
             }
         }
 
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processAbort...done.");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processAbort...done.");
     }
 
     private boolean processLogRecord(LogRecord lr, boolean first) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processLogRecord: " + lr);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processLogRecord: " + lr);
         if (first && lr.getLogType() == LogRecord.START) {
             magic = lr.getMagic();
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processLogRecord...done.");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processLogRecord...done.");
             return true;
         }
         if (magic != -1 && lr.getMagic() != magic) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$store", toString() + "/processLogRecord, magic doesn't match, end of log");
+                ctx.traceSpace.trace("sys$store", this + "/processLogRecord, magic doesn't match, end of log");
             return false;
         }
         if (!lr.isComplete()) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$store", toString() + "/processLogRecord, log record isn't complete!");
+                ctx.traceSpace.trace("sys$store", this + "/processLogRecord, log record isn't complete!");
         }
         List journal = lr.getJournal();
         if (journal != null && journal.size() > 0) {
@@ -180,17 +183,17 @@ public class RecoveryManager {
                     break;
             }
         } else if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/processLogRecord, journal is empty!");
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/processLogRecord...done.");
+            ctx.traceSpace.trace("sys$store", this + "/processLogRecord, journal is empty!");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/processLogRecord...done.");
         return true;
     }
 
     public void restart(boolean recover) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/restart...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/restart...");
         commits = 0;
         rollbacks = 0;
         prepares = 0;
-        boolean ccheck = new Boolean(System.getProperty(PROP_ANALYZE, "false")).booleanValue();
+        boolean ccheck = Boolean.parseBoolean(System.getProperty(PROP_ANALYZE, "false"));
 
         // Restart
         RandomAccessFile logFile = ctx.logManager.getLogFile();
@@ -268,27 +271,32 @@ public class RecoveryManager {
         // build reference map
         analyzer.buildReferences();
 
-        ctx.logSwiftlet.logInformation("sys$store", toString() + "/restart, " + commits + " transactions rolled forward");
-        ctx.logSwiftlet.logInformation("sys$store", toString() + "/restart, " + rollbacks + " transactions aborted");
+        ctx.logSwiftlet.logInformation("sys$store", this + "/restart, " + commits + " transactions rolled forward");
+        ctx.logSwiftlet.logInformation("sys$store", this + "/restart, " + rollbacks + " transactions aborted");
 
-        // Start LogManager
-        ctx.logManager.startQueue();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/restart...done.");
+        // Init the log file
+        ctx.logManager.initLogFile();
+
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/restart...done.");
     }
 
     public void commit(CommitLogRecord logRecord) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/commit...");
-        ctx.logManager.enqueue(logRecord);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/commit...done.");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/commit...");
+        ctx.logManagerEventLoop.submit(logRecord);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/commit...done.");
     }
 
     public void abort(AbortLogRecord logRecord) throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abort...");
-        synchronized (this) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/abort...");
+        lock.lock();
+        try {
             processAbort(logRecord.getJournal());
+        } finally {
+            lock.unlock();
         }
-        ctx.logManager.enqueue(logRecord);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abort...done.");
+
+        ctx.logManagerEventLoop.submit(logRecord);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", this + "/abort...done.");
     }
 
     public String toString() {

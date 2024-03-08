@@ -17,30 +17,26 @@
 
 package jms.ha.persistent.ptp.nontransacted.autoack;
 
+import jms.ha.persistent.ptp.nontransacted.autoack.multiconsumer.Sender;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import jms.ha.persistent.ptp.nontransacted.autoack.multiconsumer.Sender;
 
-public class SenderSuite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new jms.ha.persistent.ptp.nontransacted.autoack.SenderSuite();
-    suite.addTest(new Sender("send", "testqueue@router"));
-    suite.addTest(new Sender("send", "testqueue1@router"));
-    suite.addTest(new Sender("send", "testqueue2@router"));
-    return suite;
-  }
+public class SenderSuite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new jms.ha.persistent.ptp.nontransacted.autoack.SenderSuite();
+        suite.addTest(new Sender("send", "testqueue@router"));
+        suite.addTest(new Sender("send", "testqueue1@router"));
+        suite.addTest(new Sender("send", "testqueue2@router"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "autoack";
-  }
+    public String toString() {
+        return "autoack";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

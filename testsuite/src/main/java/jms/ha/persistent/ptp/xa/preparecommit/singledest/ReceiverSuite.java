@@ -17,35 +17,28 @@
 
 package jms.ha.persistent.ptp.xa.preparecommit.singledest;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class ReceiverSuite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
-    super.run(testResult);
-  }
+public class ReceiverSuite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new ReceiverSuite();
-    suite.addTest(new Receiver("receive"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new ReceiverSuite();
+        suite.addTest(new Receiver("receive"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "singledest";
-  }
+    public String toString() {
+        return "singledest";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

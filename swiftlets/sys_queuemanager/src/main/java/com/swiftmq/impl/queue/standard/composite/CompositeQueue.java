@@ -29,6 +29,7 @@ import com.swiftmq.swiftlet.queue.FlowController;
 import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.store.CompositeStoreTransaction;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterLong;
 import com.swiftmq.tools.concurrent.CallbackJoin;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
@@ -37,7 +38,6 @@ import com.swiftmq.tools.util.IdGenerator;
 import javax.jms.InvalidSelectorException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +49,7 @@ public class CompositeQueue extends AbstractQueue {
     EntityList queueBindings = null;
     EntityList topicBindings = null;
     String idPrefix = null;
-    long sequenceNo = 0;
+    AtomicWrappingCounterLong sequenceNo = new AtomicWrappingCounterLong(0);
 
     public CompositeQueue(SwiftletContext ctx, Entity compositeQueueEntity) {
         this.ctx = ctx;
@@ -133,11 +133,9 @@ public class CompositeQueue extends AbstractQueue {
         return msgCopy;
     }
 
-    private synchronized String nextId() {
+    private String nextId() {
         StringBuffer b = new StringBuffer(idPrefix);
-        b.append(sequenceNo++);
-        if (sequenceNo == Long.MAX_VALUE)
-            sequenceNo = 0;
+        b.append(sequenceNo.getAndIncrement());
         return b.toString();
     }
 
@@ -145,8 +143,8 @@ public class CompositeQueue extends AbstractQueue {
         if (ctx.queueSpace.enabled)
             ctx.queueSpace.trace(getQueueName(), "lockQueue, cTxId=" + object);
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             entry.queue.lockQueue(entry.txId);
         }
     }
@@ -155,8 +153,8 @@ public class CompositeQueue extends AbstractQueue {
         if (ctx.queueSpace.enabled)
             ctx.queueSpace.trace(getQueueName(), "unlockQueue, cTxId=" + object);
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             entry.queue.unlockQueue(entry.txId, markAsyncActive);
         }
     }
@@ -176,8 +174,8 @@ public class CompositeQueue extends AbstractQueue {
         CompositeTransactionId cTxId = new CompositeTransactionId();
         Map m = queueBindings.getEntities();
         if (m != null && m.size() > 0) {
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Object o : m.entrySet()) {
+                Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(entity.getName(), true);
                 if (queue == null) {
                     ctx.logSwiftlet.logError(ctx.queueManager.getName(), "Composite Queue '" + getQueueName() + "': Queue Binding, queue '" + entity.getName() + "' not found!");
@@ -194,9 +192,9 @@ public class CompositeQueue extends AbstractQueue {
             }
         }
         m = topicBindings.getEntities();
-        if (m != null && m.size() > 0) {
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+        if (m != null && !m.isEmpty()) {
+            for (Object o : m.entrySet()) {
+                Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 String queueName = ctx.topicManager.getQueueForTopic(entity.getName());
                 AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(queueName, true);
                 if (queue == null) {
@@ -227,8 +225,8 @@ public class CompositeQueue extends AbstractQueue {
         boolean hasDefaultDelivery = false;
         int timesDelivered = 0;
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             if (entry.isDefaultBinding)
                 hasDefaultDelivery = true;
             if (!entry.isDefaultBinding && (entry.selector == null || entry.selector.isSelected(message))) {
@@ -260,8 +258,8 @@ public class CompositeQueue extends AbstractQueue {
         if (timesDelivered == 0 && hasDefaultDelivery) {
             if (ctx.queueSpace.enabled)
                 ctx.queueSpace.trace(getQueueName(), "putMessage, let's check the default bindings ...");
-            for (int i = 0; i < entries.size(); i++) {
-                CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+            for (Object o : entries) {
+                CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
                 if (entry.isDefaultBinding) {
                     try {
                         MessageImpl m = message;
@@ -306,8 +304,8 @@ public class CompositeQueue extends AbstractQueue {
             ctx.queueSpace.trace(getQueueName(), "commit, cTxId=" + object + ", xid=" + xid + " ...");
         long delay = 0;
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             entry.queue.commit(entry.txId, xid);
             FlowController fc = entry.queue.getFlowController();
             if (fc != null)
@@ -323,8 +321,8 @@ public class CompositeQueue extends AbstractQueue {
         long delay = 0;
         CompositeTransactionId cTxId = (CompositeTransactionId) object;
         List entries = cTxId.getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             if (cTxId.getCompositeStoreTransaction() != null)
                 entry.queue.setCompositeStoreTransaction(entry.txId, cTxId.getCompositeStoreTransaction());
             entry.queue.commit(entry.txId);
@@ -342,8 +340,8 @@ public class CompositeQueue extends AbstractQueue {
         if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "commit (callback), cTxId=" + object + " ...");
         DelayCollector delayCollector = new DelayCollector(callback);
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             delayCollector.incNumberCallbacks();
             entry.queue.commit(entry.txId, new CommitCallback(delayCollector, entry.queue));
         }
@@ -356,8 +354,8 @@ public class CompositeQueue extends AbstractQueue {
         if (ctx.queueSpace.enabled)
             ctx.queueSpace.trace(getQueueName(), "rollback, cTxId=" + object + ", xid=" + xid + " ...");
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             entry.queue.rollback(entry.txId, xid, setRedelivered);
         }
         if (ctx.queueSpace.enabled)
@@ -367,8 +365,8 @@ public class CompositeQueue extends AbstractQueue {
     public void rollback(Object object, boolean setRedelivered) throws QueueException {
         if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "rollback, cTxId=" + object + " ...");
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             entry.queue.rollback(entry.txId, setRedelivered);
         }
         if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "rollback, cTxId=" + object + " done.");
@@ -378,8 +376,8 @@ public class CompositeQueue extends AbstractQueue {
         if (ctx.queueSpace.enabled) ctx.queueSpace.trace(getQueueName(), "rollback, cTxId=" + object + " ...");
         RollbackJoin join = new RollbackJoin(callback);
         List entries = ((CompositeTransactionId) object).getEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) entries.get(i);
+        for (Object o : entries) {
+            CompositeTransactionIdEntry entry = (CompositeTransactionIdEntry) o;
             join.incNumberCallbacks();
             entry.queue.rollback(entry.txId, setRedelivered, new RollbackCallback(join));
         }
@@ -435,7 +433,7 @@ public class CompositeQueue extends AbstractQueue {
         }
     }
 
-    private class DelayCollector extends CallbackJoin {
+    private static class DelayCollector extends CallbackJoin {
         long delay = 0;
 
         protected DelayCollector(AsyncCompletionCallback asyncCompletionCallback) {
@@ -456,7 +454,7 @@ public class CompositeQueue extends AbstractQueue {
         }
     }
 
-    private class CommitCallback extends AsyncCompletionCallback {
+    private static class CommitCallback extends AsyncCompletionCallback {
         DelayCollector delayCollector = null;
         AbstractQueue queue = null;
 
@@ -467,14 +465,14 @@ public class CompositeQueue extends AbstractQueue {
 
         public void done(boolean success) {
             if (queue.getFlowController() != null)
-                setResult(Long.valueOf(queue.getFlowController().getLastDelay()));
+                setResult(queue.getFlowController().getLastDelay());
             else
                 setResult(0L);
             delayCollector.done(this, success);
         }
     }
 
-    private class RollbackJoin extends CallbackJoin {
+    private static class RollbackJoin extends CallbackJoin {
         protected RollbackJoin(AsyncCompletionCallback asyncCompletionCallback) {
             super(asyncCompletionCallback);
         }
@@ -487,7 +485,7 @@ public class CompositeQueue extends AbstractQueue {
         }
     }
 
-    private class RollbackCallback extends AsyncCompletionCallback {
+    private static class RollbackCallback extends AsyncCompletionCallback {
         RollbackJoin join = null;
 
         private RollbackCallback(RollbackJoin join) {

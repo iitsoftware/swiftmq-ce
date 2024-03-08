@@ -25,50 +25,42 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import java.util.Enumeration;
 
-public class Browser extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.browser.nmsgs", "50000"));
-  String queueName = null;
-  MsgNoVerifier verifier = null;
-  QueueBrowser browser = null;
+public class Browser extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.browser.nmsgs", "50000"));
+    String queueName = null;
+    MsgNoVerifier verifier = null;
+    QueueBrowser browser = null;
 
-  public Browser(String name, String queueName)
-  {
-    super(name);
-    this.queueName = queueName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
-    browser = qs.createBrowser(getQueue(queueName));
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
-
-  public void browse()
-  {
-    try
-    {
-      for (Enumeration _enum = browser.getEnumeration(); _enum.hasMoreElements();)
-      {
-        Message msg = (Message) _enum.nextElement();
-        if (msg == null)
-          throw new Exception("null message received!");
-        verifier.add(msg);
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Browser(String name, String queueName) {
+        super(name);
+        this.queueName = queueName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    browser.close();
-    verifier = null;
-    browser = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
+        browser = qs.createBrowser(getQueue(queueName));
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+    }
+
+    public void browse() {
+        try {
+            for (Enumeration _enum = browser.getEnumeration(); _enum.hasMoreElements(); ) {
+                Message msg = (Message) _enum.nextElement();
+                if (msg == null)
+                    throw new Exception("null message received!");
+                verifier.add(msg);
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        browser.close();
+        verifier = null;
+        browser = null;
+        super.tearDown();
+    }
 }
 

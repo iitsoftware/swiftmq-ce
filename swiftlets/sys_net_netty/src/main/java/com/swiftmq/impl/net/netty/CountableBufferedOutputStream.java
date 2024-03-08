@@ -20,19 +20,18 @@ package com.swiftmq.impl.net.netty;
 import com.swiftmq.net.protocol.OutputListener;
 import com.swiftmq.net.protocol.ProtocolOutputHandler;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import io.netty.buffer.UnpooledDirectByteBuf;
 import io.netty.channel.socket.SocketChannel;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CountableBufferedOutputStream extends OutputStream
         implements Countable, OutputListener {
     SocketChannel channel;
     ProtocolOutputHandler protocolOutputHandler = null;
-    volatile long byteCount = 0;
+    final AtomicLong byteCount = new AtomicLong();
 
     public CountableBufferedOutputStream(ProtocolOutputHandler protocolOutputHandler, SocketChannel channel) {
         this.protocolOutputHandler = protocolOutputHandler;
@@ -41,12 +40,12 @@ public class CountableBufferedOutputStream extends OutputStream
     }
 
     public void write(byte[] b, int offset, int len) throws IOException {
-        byteCount += len;
+        byteCount.addAndGet(len);
         protocolOutputHandler.write(b, offset, len);
     }
 
     public void write(int b) throws IOException {
-        byteCount++;
+        byteCount.getAndIncrement();
         protocolOutputHandler.write(b);
     }
 
@@ -64,15 +63,15 @@ public class CountableBufferedOutputStream extends OutputStream
     }
 
     public void addByteCount(long cnt) {
-        byteCount += cnt;
+        byteCount.addAndGet(cnt);
     }
 
     public long getByteCount() {
-        return byteCount;
+        return byteCount.get();
     }
 
     public void resetByteCount() {
-        byteCount = 0;
+        byteCount.set(0);
     }
 }
 

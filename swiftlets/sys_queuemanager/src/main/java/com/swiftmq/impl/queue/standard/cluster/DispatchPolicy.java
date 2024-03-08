@@ -21,27 +21,27 @@ import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.swiftlet.queue.event.QueueReceiverListener;
 
 public interface DispatchPolicy extends QueueReceiverListener {
-    public void setDispatchPolicyListener(DispatchPolicyListener l);
+    void setDispatchPolicyListener(DispatchPolicyListener l);
 
-    public void addLocalMetric(QueueMetric metric);
+    void addLocalMetric(QueueMetric metric);
 
-    public void removeLocalMetric(QueueMetric metric);
+    void removeLocalMetric(QueueMetric metric);
 
-    public ClusteredQueueMetric getLocalMetric();
+    ClusteredQueueMetric getLocalMetric();
 
-    public void addMetric(String routerName, ClusteredQueueMetric metric);
+    void addMetric(String routerName, ClusteredQueueMetric metric);
 
-    public void removeMetric(String routerName);
+    void removeMetric(String routerName);
 
-    public boolean isReceiverSomewhere();
+    boolean isReceiverSomewhere();
 
-    public boolean isMessageBasedDispatch();
+    boolean isMessageBasedDispatch();
 
-    public String getNextSendQueue();
+    String getNextSendQueue();
 
-    public String getNextSendQueue(MessageImpl message);
+    String getNextSendQueue(MessageImpl message);
 
-    public String getNextReceiveQueue();
+    String getNextReceiveQueue();
 
-    public void close();
+    void close();
 }

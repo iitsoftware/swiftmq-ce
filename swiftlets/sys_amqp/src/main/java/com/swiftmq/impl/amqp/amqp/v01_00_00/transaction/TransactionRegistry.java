@@ -252,12 +252,12 @@ public class TransactionRegistry {
         return sessionHandler.toString() + "/TransactionRegistry";
     }
 
-    private class ActiveTxEntry {
+    private static class ActiveTxEntry {
         Map inboundTxEntryMap = null;
         Map outboundTxEntryMap = null;
     }
 
-    private class InboundTxEntry {
+    private static class InboundTxEntry {
         QueuePushTransaction tx;
         TargetLink targetLink;
 
@@ -267,7 +267,7 @@ public class TransactionRegistry {
         }
     }
 
-    private class OutboundTxEntry {
+    private static class OutboundTxEntry {
         SourceLink sourceLink;
         MessageIndex messageIndex;
         DeliveryStateIF deliveryStateIF;

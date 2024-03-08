@@ -20,25 +20,21 @@ package jms.ha.persistent.ptp.cc.singlesession;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ptp.cc.singlesession.autoack.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.cc.singlesession.clientack.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.cc.singlesession.transacted.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ptp.cc.singlesession.autoack.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.cc.singlesession.clientack.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.cc.singlesession.transacted.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "singlesession";
-  }
+    public String toString() {
+        return "singlesession";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

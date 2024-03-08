@@ -20,105 +20,90 @@ package jms.xaunified.recover.singledest.ptp;
 import jms.base.SimpleConnectedUnifiedXAPTPTestCase;
 import jms.base.XidImpl;
 
-import javax.jms.*;
-import javax.transaction.xa.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Tester extends SimpleConnectedUnifiedXAPTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  public void testNP()
-  {
-    try
-    {
-      Xid xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 5; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.prepare(xid);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+public class Tester extends SimpleConnectedUnifiedXAPTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
 
-  public void testP()
-  {
-    try
-    {
-      Xid xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 5; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.prepare(xid);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public void testNP() {
+        try {
+            Xid xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 5; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.prepare(xid);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  public void testRecoverRollback()
-  {
-    try
-    {
-      Xid[] xids = xares.recover(XAResource.TMNOFLAGS);
-      assertTrue("Invalid number of xids. Expected 2, taken: " + xids.length, xids.length == 2);
-      for (int i = 0; i < xids.length; i++)
-      {
-        xares.rollback(xids[i]);
-      }
-      xids = xares.recover(XAResource.TMNOFLAGS);
-      assertTrue("Invalid number of xids. Expected 0, taken: " + xids.length, xids.length == 0);
-    } catch (XAException e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public void testP() {
+        try {
+            Xid xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 5; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.prepare(xid);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  public void testRecoverCommit()
-  {
-    try
-    {
-      Xid[] xids = xares.recover(XAResource.TMNOFLAGS);
-      assertTrue("Invalid number of xids. Expected 2, taken: " + xids.length, xids.length == 2);
-      for (int i = 0; i < xids.length; i++)
-      {
-        xares.commit(xids[i], false);
-      }
-      xids = xares.recover(XAResource.TMNOFLAGS);
-      assertTrue("Invalid number of xids. Expected 0, taken: " + xids.length, xids.length == 0);
-
-      Xid xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      TextMessage msg = null;
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.prepare(xid);
-      xares.commit(xid, false);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public void testRecoverRollback() {
+        try {
+            Xid[] xids = xares.recover(XAResource.TMNOFLAGS);
+            assertTrue("Invalid number of xids. Expected 2, taken: " + xids.length, xids.length == 2);
+            for (int i = 0; i < xids.length; i++) {
+                xares.rollback(xids[i]);
+            }
+            xids = xares.recover(XAResource.TMNOFLAGS);
+            assertTrue("Invalid number of xids. Expected 0, taken: " + xids.length, xids.length == 0);
+        } catch (XAException e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
     }
-  }
+
+    public void testRecoverCommit() {
+        try {
+            Xid[] xids = xares.recover(XAResource.TMNOFLAGS);
+            assertTrue("Invalid number of xids. Expected 2, taken: " + xids.length, xids.length == 2);
+            for (int i = 0; i < xids.length; i++) {
+                xares.commit(xids[i], false);
+            }
+            xids = xares.recover(XAResource.TMNOFLAGS);
+            assertTrue("Invalid number of xids. Expected 0, taken: " + xids.length, xids.length == 0);
+
+            Xid xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            TextMessage msg = null;
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.prepare(xid);
+            xares.commit(xid, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
 }

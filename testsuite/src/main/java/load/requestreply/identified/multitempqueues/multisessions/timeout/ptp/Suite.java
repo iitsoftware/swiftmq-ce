@@ -18,30 +18,26 @@
 package load.requestreply.identified.multitempqueues.multisessions.timeout.ptp;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    int n = Integer.parseInt(System.getProperty("load.requestreply.requestors", "200"));
-    TestSuite suite = new Suite();
-    suite.addTest(new Replier("testReply"));
-    for (int i = 0; i < n; i++)
-    {
-      suite.addTest(new Requestor("testRequest"));
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        int n = Integer.parseInt(System.getProperty("load.requestreply.requestors", "200"));
+        TestSuite suite = new Suite();
+        suite.addTest(new Replier("testReply"));
+        for (int i = 0; i < n; i++) {
+            suite.addTest(new Requestor("testRequest"));
+        }
+        return suite;
     }
-    return suite;
-  }
 
-  public String toString()
-  {
-    return "PTP";
-  }
+    public String toString() {
+        return "PTP";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

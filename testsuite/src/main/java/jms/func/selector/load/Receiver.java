@@ -24,49 +24,41 @@ import javax.jms.Message;
 import javax.jms.QueueReceiver;
 import javax.jms.Session;
 
-public class Receiver extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.func.selector.load.nmsgs", "25000"));
-  MsgNoVerifier verifier = null;
-  int partition = -1;
-  QueueReceiver receiver1 = null;
+public class Receiver extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.func.selector.load.nmsgs", "25000"));
+    MsgNoVerifier verifier = null;
+    int partition = -1;
+    QueueReceiver receiver1 = null;
 
-  public Receiver(String name, int partition)
-  {
-    super(name);
-    this.partition = partition;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-    receiver.close();
-    receiver1 = qs.createReceiver(queue, "partition = " + partition);
-  }
-
-  public void receive()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Message msg = receiver1.receive();
-        if (msg == null)
-          throw new Exception("null message received!");
-        verifier.add(msg);
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Receiver(String name, int partition) {
+        super(name);
+        this.partition = partition;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    receiver1.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+        receiver.close();
+        receiver1 = qs.createReceiver(queue, "partition = " + partition);
+    }
+
+    public void receive() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                Message msg = receiver1.receive();
+                if (msg == null)
+                    throw new Exception("null message received!");
+                verifier.add(msg);
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        receiver1.close();
+        super.tearDown();
+    }
 }

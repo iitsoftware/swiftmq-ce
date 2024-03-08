@@ -18,7 +18,6 @@
 package com.swiftmq.impl.jms.standard.v750;
 
 import com.swiftmq.auth.ChallengeResponseFactory;
-import com.swiftmq.impl.jms.standard.JMSSwiftlet;
 import com.swiftmq.impl.jms.standard.SwiftletContext;
 import com.swiftmq.impl.jms.standard.VersionedJMSConnection;
 import com.swiftmq.jms.smqp.v750.*;
@@ -31,7 +30,8 @@ import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.net.Connection;
 import com.swiftmq.swiftlet.net.InboundHandler;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.requestreply.GenericRequest;
 import com.swiftmq.tools.requestreply.Reply;
@@ -42,9 +42,10 @@ import com.swiftmq.util.SwiftUtilities;
 import javax.jms.JMSException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class JMSConnection
-        implements RequestService, VersionedJMSConnection {
+        implements RequestService, VersionedJMSConnection, EventProcessor {
     SwiftletContext ctx = null;
     boolean closed = false;
     boolean started = false;
@@ -53,8 +54,7 @@ public class JMSConnection
     protected OutboundWriter outboundWriter;
     protected ActiveLogin activeLogin;
     protected String tracePrefix;
-    String tpPrefix;
-    ArrayList tmpQueues = new ArrayList();
+    List<String> tmpQueues = new ArrayList<>();
     ConnectionVisitor visitor = null;
     String clientId = null;
     String remoteHostname = null;
@@ -69,10 +69,9 @@ public class JMSConnection
     Property sentTotalProp = null;
     EntityList tmpQueueEntityList = null;
     EntityList sessionEntityList = null;
-    ThreadPool myTp = null;
     long keepAliveInterval = 0;
     boolean smartTree = false;
-    ConnectionQueue connectionQueue = null;
+    EventLoop inboundLoop = null;
     int nSessions = 0;
 
     public JMSConnection(SwiftletContext ctx, Entity connectionEntity, Connection connection) {
@@ -94,7 +93,6 @@ public class JMSConnection
 
         visitor = new ConnectionVisitor();
 
-        tpPrefix = "sys$jms/JMSConnection " + connectionId;
         tracePrefix = "JMSConnection " + connectionId;
 
         outboundWriter = new OutboundWriter(connection, this);
@@ -102,10 +100,7 @@ public class JMSConnection
         inboundReader.addRequestService(this); // Connection service
         inboundReader.setReplyHandler(outboundWriter);
 
-        myTp = ctx.threadpoolSwiftlet.getPool(JMSSwiftlet.TP_CONNSVC);
-
-        connectionQueue = new ConnectionQueue(myTp, this);
-        connectionQueue.startQueue();
+        inboundLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.connection.inbound", this);
         if (keepAliveInterval > 0) {
             ctx.timerSwiftlet.addTimerListener(keepAliveInterval, inboundReader);
             ctx.timerSwiftlet.addTimerListener(keepAliveInterval, outboundWriter);
@@ -133,7 +128,7 @@ public class JMSConnection
     }
 
     public void collect(long lastCollectTime) {
-        connectionQueue.enqueue(new CollectRequest(lastCollectTime));
+        inboundLoop.submit(new CollectRequest(lastCollectTime));
     }
 
     public boolean isClosed() {
@@ -142,7 +137,7 @@ public class JMSConnection
 
     public void close() {
         inboundReader.setClosed(true);
-        connectionQueue.enqueue(new GenericRequest(0, false, null));
+        inboundLoop.submit(new GenericRequest(0, false, null));
     }
 
     protected Session createSession(CreateSessionRequest req, int sessionDispatchId, Entity sessionEntity) {
@@ -150,30 +145,35 @@ public class JMSConnection
         switch (req.getType()) {
             case CreateSessionRequest.QUEUE_SESSION:
                 if (req.isTransacted())
-                    session = new TransactedQueueSession(tracePrefix, sessionEntity, outboundWriter.getOutboundQueue(), sessionDispatchId, activeLogin);
+                    session = new TransactedQueueSession(tracePrefix, sessionEntity, outboundWriter.getEventLoop(), sessionDispatchId, activeLogin);
                 else
-                    session = new NontransactedQueueSession(tracePrefix, sessionEntity, outboundWriter.getOutboundQueue(), sessionDispatchId, activeLogin, req.getAcknowledgeMode());
+                    session = new NontransactedQueueSession(tracePrefix, sessionEntity, outboundWriter.getEventLoop(), sessionDispatchId, activeLogin, req.getAcknowledgeMode());
                 break;
             case CreateSessionRequest.TOPIC_SESSION:
                 if (req.isTransacted())
-                    session = new TransactedTopicSession(tracePrefix, sessionEntity, outboundWriter.getOutboundQueue(), sessionDispatchId, activeLogin);
+                    session = new TransactedTopicSession(tracePrefix, sessionEntity, outboundWriter.getEventLoop(), sessionDispatchId, activeLogin);
                 else
-                    session = new NontransactedTopicSession(tracePrefix, sessionEntity, outboundWriter.getOutboundQueue(), sessionDispatchId, activeLogin, req.getAcknowledgeMode());
+                    session = new NontransactedTopicSession(tracePrefix, sessionEntity, outboundWriter.getEventLoop(), sessionDispatchId, activeLogin, req.getAcknowledgeMode());
                 break;
             case CreateSessionRequest.UNIFIED:
                 if (req.isTransacted())
-                    session = new TransactedUnifiedSession(tracePrefix, sessionEntity, outboundWriter.getOutboundQueue(), sessionDispatchId, activeLogin);
+                    session = new TransactedUnifiedSession(tracePrefix, sessionEntity, outboundWriter.getEventLoop(), sessionDispatchId, activeLogin);
                 else
-                    session = new NontransactedUnifiedSession(tracePrefix, sessionEntity, outboundWriter.getOutboundQueue(), sessionDispatchId, activeLogin, req.getAcknowledgeMode());
+                    session = new NontransactedUnifiedSession(tracePrefix, sessionEntity, outboundWriter.getEventLoop(), sessionDispatchId, activeLogin, req.getAcknowledgeMode());
                 break;
         }
         session.setRecoveryEpoche(req.getRecoveryEpoche());
         return session;
     }
 
+    @Override
+    public void process(List<Object> events) {
+        events.forEach(e -> ((Request) e).accept(visitor));
+    }
+
     public void serviceRequest(Request request) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/serviceRequest: " + request);
-        connectionQueue.enqueue(request);
+        inboundLoop.submit(request);
     }
 
     public String toString() {
@@ -232,7 +232,7 @@ public class JMSConnection
                     sessionEntity.setDynamicObject(session);
                     sessionEntity.createCommands();
                     Property prop = sessionEntity.getProperty("transacted");
-                    prop.setValue(new Boolean(req.isTransacted()));
+                    prop.setValue(req.isTransacted());
                     prop.setReadOnly(true);
                     prop = sessionEntity.getProperty("acknowledgemode");
                     prop.setValue(SwiftUtilities.ackModeToString(req.getAcknowledgeMode()));
@@ -469,11 +469,10 @@ public class JMSConnection
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/closing connection");
 
             // delete all temp queues
-            for (int i = 0; i < tmpQueues.size(); i++) {
+            for (String tmpQueue : tmpQueues) {
                 try {
-                    String tmpQueueName = (String) tmpQueues.get(i);
-                    ctx.queueManager.deleteTemporaryQueue(tmpQueueName);
-                    ctx.jndiSwiftlet.deregisterJNDIQueueObject(tmpQueueName);
+                    ctx.queueManager.deleteTemporaryQueue(tmpQueue);
+                    ctx.jndiSwiftlet.deregisterJNDIQueueObject(tmpQueue);
                 } catch (Exception e) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$jms", tracePrefix + "/delete tmp queue, got exception: " + e);
@@ -493,8 +492,8 @@ public class JMSConnection
                 inboundReader.removeRequestService(i);
             }
             inboundReader.removeRequestService(0);
-            connectionQueue.stopQueue();
-            connectionQueue.clear();
+            inboundLoop.close();
+            outboundWriter.close();
             ctx.logSwiftlet.logInformation("sys$jms", tracePrefix + "/connection closed");
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", tracePrefix + "/closing connection DONE.");
         }
@@ -517,17 +516,17 @@ public class JMSConnection
                 }
             }
             double deltasec = Math.max(1.0, (double) (System.currentTimeMillis() - collectRequest.getLastCollect()) / 1000.0);
-            double rsec = ((double) received / (double) deltasec) + 0.5;
-            double ssec = ((double) sent / (double) deltasec) + 0.5;
+            double rsec = ((double) received / deltasec) + 0.5;
+            double ssec = ((double) sent / deltasec) + 0.5;
             try {
-                if (((Integer) receivedSecProp.getValue()).intValue() != rsec)
-                    receivedSecProp.setValue(new Integer((int) rsec));
-                if (((Integer) sentSecProp.getValue()).intValue() != ssec)
-                    sentSecProp.setValue(new Integer((int) ssec));
-                if (((Integer) receivedTotalProp.getValue()).intValue() != totalReceived)
-                    receivedTotalProp.setValue(new Integer(totalReceived));
-                if (((Integer) sentTotalProp.getValue()).intValue() != totalSent)
-                    sentTotalProp.setValue(new Integer(totalSent));
+                if ((Integer) receivedSecProp.getValue() != rsec)
+                    receivedSecProp.setValue(rsec);
+                if ((Integer) sentSecProp.getValue() != ssec)
+                    sentSecProp.setValue(ssec);
+                if ((Integer) receivedTotalProp.getValue() != totalReceived)
+                    receivedTotalProp.setValue(totalReceived);
+                if ((Integer) sentTotalProp.getValue() != totalSent)
+                    sentTotalProp.setValue(totalSent);
             } catch (Exception e) {
             }
         }

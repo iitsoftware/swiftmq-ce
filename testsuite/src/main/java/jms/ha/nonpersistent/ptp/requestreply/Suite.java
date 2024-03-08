@@ -17,36 +17,29 @@
 
 package jms.ha.nonpersistent.ptp.requestreply;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
-    super.run(testResult);
-  }
+public class Suite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Replier("reply"));
-    suite.addTest(new Requestor("request"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Replier("reply"));
+        suite.addTest(new Requestor("request"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "requestreply";
-  }
+    public String toString() {
+        return "requestreply";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

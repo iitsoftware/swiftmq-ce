@@ -18,25 +18,22 @@
 package jms.funcunified.transacted.mixed;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new SendReceive("test"));
-    return suite;
-  }
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new SendReceive("test"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Mixed";
-  }
+    public String toString() {
+        return "Mixed";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -57,12 +57,12 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
     long leaseExpiration = 0;
     boolean valid = false;
     Object[] requests = null;
-    Map changedProps = new HashMap();
+    Map<String, PropertyChangedRequest> changedProps = new HashMap<>();
     int length = 0;
     DataByteArrayInputStream dis = new DataByteArrayInputStream();
     DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
-    Set announcedRouters = new HashSet();
-    List subscriptionFilter = new ArrayList();
+    Set<String> announcedRouters = new HashSet<>();
+    List<SubscriptionFilter> subscriptionFilter = new ArrayList<>();
     BulkRequest bulkRequest = new BulkRequest();
     ConnectRequest connectRequest = null;
     boolean started = false;
@@ -70,7 +70,7 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
     Serializable challenge = null;
     Entity usageEntity = null;
     Property leaseTimeoutProp = null;
-    Set dirtyContexts = new HashSet();
+    Set<String> dirtyContexts = new HashSet<>();
     String userName = null;
     AuthenticatorImpl authenticator = null;
 
@@ -148,8 +148,8 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
 
     private boolean isFilterMatch(String[] context) {
         boolean b = false;
-        for (int i = 0; i < subscriptionFilter.size(); i++) {
-            if (((SubscriptionFilter) subscriptionFilter.get(i)).isMatch(context)) {
+        for (SubscriptionFilter o : subscriptionFilter) {
+            if (((SubscriptionFilter) o).isMatch(context)) {
                 b = true;
                 break;
             }
@@ -163,15 +163,13 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
         String[] context = entity.getContext();
         Map props = entity.getProperties();
         if (props != null && props.size() > 0) {
-            for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
-                Property p = (Property) ((Map.Entry) iter.next()).getValue();
+            for (Object o : props.entrySet()) {
+                Property p = (Property) ((Map.Entry<?, ?>) o).getValue();
                 Object defaultValue = p.getDefaultValue();
                 Object currentValue = p.getValue();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/createPropertyChangeRequests, ctx=" + SwiftUtilities.concat(context, "/") + ", p: " + p.getName() + ", current=" + currentValue + ", default=" + defaultValue);
-                if (currentValue != defaultValue ||
-                        currentValue != null && defaultValue != null &&
-                                !currentValue.equals(defaultValue)) {
+                if (currentValue != defaultValue || currentValue != null && defaultValue != null && !currentValue.equals(defaultValue)) {
                     ensure();
                     requests[length++] = new PropertyChangedRequest(context, p.getName(), currentValue);
                     if (ctx.traceSpace.enabled)
@@ -206,8 +204,8 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
         markContextDirty(entity.getContext());
         Map entities = entity.getEntities();
         if (entities != null && entities.size() > 0) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry o : (Iterable<Map.Entry>) entities.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 markAllDirty(e);
             }
         }
@@ -573,8 +571,8 @@ public class DispatcherImpl extends ProtocolVisitorAdapter
                     requests[length++] = new EntityListClearRequest(context);
                     Map map = entity.getEntities();
                     if (map != null && map.size() > 0) {
-                        for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-                            Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+                        for (Map.Entry o : (Iterable<Map.Entry>) map.entrySet()) {
+                            Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                             ensure();
                             requests[length++] = new EntityAddedRequest(context, e.getName());
                             createPropertyChangeRequests(e);

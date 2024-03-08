@@ -17,39 +17,34 @@
 
 package amqp.v100.ptp.transacted.retirement.rollback.requestreply.exactly_once;
 
-import com.swiftmq.amqp.v100.client.QoS;
 import amqp.v100.base.Util;
 import amqp.v100.ptp.transacted.retirement.rollback.requestreply.Replier;
 import amqp.v100.ptp.transacted.retirement.rollback.requestreply.Requestor;
+import com.swiftmq.amqp.v100.client.QoS;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
-    int nRequestors = Integer.parseInt(System.getProperty("nrequestors", "10"));
-    int nRequests = Integer.parseInt(System.getProperty("nmsgs", "100000"))/nRequestors;
-    TestSuite suite = new Suite();
-    for (int i=0;i<nPairs;i++)
-    {
-      suite.addTest(new Replier("serviceRequests", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix()+(i+1)));
-      for (int j=0;j<nRequestors;j++)
-       suite.addTest(new Requestor("sendRequests", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix()+(i+1), nRequests));
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
+        int nRequestors = Integer.parseInt(System.getProperty("nrequestors", "10"));
+        int nRequests = Integer.parseInt(System.getProperty("nmsgs", "100000")) / nRequestors;
+        TestSuite suite = new Suite();
+        for (int i = 0; i < nPairs; i++) {
+            suite.addTest(new Replier("serviceRequests", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1)));
+            for (int j = 0; j < nRequestors; j++)
+                suite.addTest(new Requestor("sendRequests", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1), nRequests));
+        }
+        return suite;
     }
-    return suite;
-  }
 
-  public String toString()
-  {
-    return "exactly_once";
-  }
+    public String toString() {
+        return "exactly_once";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

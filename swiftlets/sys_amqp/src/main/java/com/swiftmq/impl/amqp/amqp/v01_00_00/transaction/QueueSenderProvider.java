@@ -20,6 +20,6 @@ package com.swiftmq.impl.amqp.amqp.v01_00_00.transaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 
 public interface QueueSenderProvider extends ResourceProvider {
-    public QueueSender getQueueSender();
+    QueueSender getQueueSender();
 
 }

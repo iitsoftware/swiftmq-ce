@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class RoutingConnectorJobFactory implements JobFactory {
     SwiftletContext ctx = null;
-    Map parameters = new HashMap();
+    Map<String, JobParameter> parameters = new HashMap<>();
 
     public RoutingConnectorJobFactory(SwiftletContext ctx) {
         this.ctx = ctx;
@@ -44,12 +44,12 @@ public class RoutingConnectorJobFactory implements JobFactory {
         return "Activates a Routing Connector";
     }
 
-    public Map getJobParameters() {
+    public Map<String, JobParameter> getJobParameters() {
         return parameters;
     }
 
     public JobParameter getJobParameter(String s) {
-        return (JobParameter) parameters.get(s);
+        return parameters.get(s);
     }
 
     public Job getJobInstance() {

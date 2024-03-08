@@ -18,8 +18,8 @@
 package com.swiftmq.impl.mqtt.po;
 
 import com.swiftmq.impl.mqtt.pubsub.Subscription;
-import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttQoS;
+import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.pipeline.POVisitor;

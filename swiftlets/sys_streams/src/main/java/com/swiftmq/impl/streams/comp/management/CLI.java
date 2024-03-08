@@ -27,7 +27,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 /**
  * Executor class for CLI commands. Note that you need to change to

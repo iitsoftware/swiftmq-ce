@@ -17,27 +17,24 @@
 
 package jms.xa.specials;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xa.specials.concurrentcommit.Suite.suite());
-    suite.addTest(jms.xa.specials.differentsessions.Suite.suite());
-    suite.addTest(jms.xa.specials.redelivered.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xa.specials.concurrentcommit.Suite.suite());
+        suite.addTest(jms.xa.specials.differentsessions.Suite.suite());
+        suite.addTest(jms.xa.specials.redelivered.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "specials";
-  }
+    public String toString() {
+        return "specials";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

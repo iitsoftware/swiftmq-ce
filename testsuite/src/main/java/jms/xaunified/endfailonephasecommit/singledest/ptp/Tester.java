@@ -20,89 +20,77 @@ package jms.xaunified.endfailonephasecommit.singledest.ptp;
 import jms.base.SimpleConnectedUnifiedXAPTPTestCase;
 import jms.base.XidImpl;
 
-import javax.jms.*;
-import javax.transaction.xa.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Tester extends SimpleConnectedUnifiedXAPTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  public void testNP()
-  {
-    try
-    {
-      Xid xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 5; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid, XAResource.TMFAIL);
-      try
-      {
-        xares.commit(xid, true);
-        failFast("doesn't throws XAException!");
-      } catch (XAException e)
-      {
-        xares.rollback(xid);
-      }
-
-      xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 5; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg!=null", msg == null);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.commit(xid, true);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+public class Tester extends SimpleConnectedUnifiedXAPTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
 
-  public void testP()
-  {
-    try
-    {
-      Xid xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 5; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid, XAResource.TMFAIL);
-      try
-      {
-        xares.commit(xid, true);
-        failFast("doesn't throws XAException!");
-      } catch (XAException e)
-      {
-        xares.rollback(xid);
-      }
+    public void testNP() {
+        try {
+            Xid xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 5; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid, XAResource.TMFAIL);
+            try {
+                xares.commit(xid, true);
+                failFast("doesn't throws XAException!");
+            } catch (XAException e) {
+                xares.rollback(xid);
+            }
 
-      xid = new XidImpl();
-      xares.start(xid, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 5; i++)
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        assertTrue("Received msg!=null", msg == null);
-      }
-      xares.end(xid, XAResource.TMSUCCESS);
-      xares.commit(xid, true);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+            xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 5; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg!=null", msg == null);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.commit(xid, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
     }
-  }
+
+    public void testP() {
+        try {
+            Xid xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 5; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid, XAResource.TMFAIL);
+            try {
+                xares.commit(xid, true);
+                failFast("doesn't throws XAException!");
+            } catch (XAException e) {
+                xares.rollback(xid);
+            }
+
+            xid = new XidImpl();
+            xares.start(xid, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 5; i++) {
+                msg = (TextMessage) consumer.receive(2000);
+                assertTrue("Received msg!=null", msg == null);
+            }
+            xares.end(xid, XAResource.TMSUCCESS);
+            xares.commit(xid, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
 }

@@ -42,7 +42,7 @@ public class StoreReadTransactionImpl extends StoreTransactionImpl
     public void remove(Object key)
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/remove, key=" + key);
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
         keys.add(key);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/remove done, key=" + key);
@@ -78,7 +78,7 @@ public class StoreReadTransactionImpl extends StoreTransactionImpl
     public void commit()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/commit...");
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
         txId = ctx.transactionManager.createTxId();
         journal = new ArrayList();

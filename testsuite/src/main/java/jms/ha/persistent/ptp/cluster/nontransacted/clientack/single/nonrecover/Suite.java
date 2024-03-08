@@ -20,24 +20,20 @@ package jms.ha.persistent.ptp.cluster.nontransacted.clientack.single.nonrecover;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ptp.cluster.nontransacted.clientack.single.nonrecover.receive.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.cluster.nontransacted.clientack.single.nonrecover.onmessage.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ptp.cluster.nontransacted.clientack.single.nonrecover.receive.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.cluster.nontransacted.clientack.single.nonrecover.onmessage.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "nonrecover";
-  }
+    public String toString() {
+        return "nonrecover";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

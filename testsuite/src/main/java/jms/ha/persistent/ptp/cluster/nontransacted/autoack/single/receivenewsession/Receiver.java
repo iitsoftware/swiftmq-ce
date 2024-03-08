@@ -25,86 +25,74 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-public class Receiver extends SimpleConnectedPTPClusterTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
-  long initDelay = Long.parseLong(System.getProperty("jms.ha.cluster.receive.initdelay", "20000"));
-  MsgNoVerifier verifier = null;
-  QueueSession s1 = null;
-  QueueSession s2 = null;
-  QueueSession s3 = null;
-  QueueReceiver receiver1 = null;
-  QueueReceiver receiver2 = null;
-  QueueReceiver receiver3 = null;
+public class Receiver extends SimpleConnectedPTPClusterTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
+    long initDelay = Long.parseLong(System.getProperty("jms.ha.cluster.receive.initdelay", "20000"));
+    MsgNoVerifier verifier = null;
+    QueueSession s1 = null;
+    QueueSession s2 = null;
+    QueueSession s3 = null;
+    QueueReceiver receiver1 = null;
+    QueueReceiver receiver2 = null;
+    QueueReceiver receiver3 = null;
 
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void beforeCreateSession() throws Exception
-  {
-    s1 = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-    s2 = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-    s3 = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-  }
-
-  protected void afterCreateSession() throws Exception
-  {
-    s1.close();
-    s2.close();
-    s3.close();
-  }
-
-  protected void beforeCreateReceiver() throws Exception
-  {
-    receiver1 = qs.createReceiver(queue);
-    receiver2 = qs.createReceiver(queue);
-    receiver3 = qs.createReceiver(queue);
-  }
-
-  protected void afterCreateReceiver() throws Exception
-  {
-    receiver1.close();
-    receiver2.close();
-    receiver3.close();
-  }
-
-  protected void setUp() throws Exception
-  {
-    pause(initDelay);
-    setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
-    verifier = new MsgNoVerifier(this, nMsgs, "no", true);
-    verifier.setCheckSequence(false);
-  }
-
-  public void receive()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Message msg = receiver.receive();
-        if (msg == null)
-          throw new Exception("null message received!");
-        verifier.add(msg);
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Receiver(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    s1 = null;
-    s2 = null;
-    s3 = null;
-    receiver1 = null;
-    receiver2 = null;
-    receiver3 = null;
-    super.tearDown();
-  }
+    protected void beforeCreateSession() throws Exception {
+        s1 = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+        s2 = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+        s3 = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+    }
+
+    protected void afterCreateSession() throws Exception {
+        s1.close();
+        s2.close();
+        s3.close();
+    }
+
+    protected void beforeCreateReceiver() throws Exception {
+        receiver1 = qs.createReceiver(queue);
+        receiver2 = qs.createReceiver(queue);
+        receiver3 = qs.createReceiver(queue);
+    }
+
+    protected void afterCreateReceiver() throws Exception {
+        receiver1.close();
+        receiver2.close();
+        receiver3.close();
+    }
+
+    protected void setUp() throws Exception {
+        pause(initDelay);
+        setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
+        verifier = new MsgNoVerifier(this, nMsgs, "no", true);
+        verifier.setCheckSequence(false);
+    }
+
+    public void receive() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                Message msg = receiver.receive();
+                if (msg == null)
+                    throw new Exception("null message received!");
+                verifier.add(msg);
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        s1 = null;
+        s2 = null;
+        s3 = null;
+        receiver1 = null;
+        receiver2 = null;
+        receiver3 = null;
+        super.tearDown();
+    }
 }

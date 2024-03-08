@@ -20,45 +20,38 @@ package jms.base;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 
-public class SimpleConnectedXAPTPClusterTestCase extends SimpleConnectedXAPTPTestCase
-{
-  public SimpleConnectedXAPTPClusterTestCase(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(0);
-  }
-
-  protected void setUp(int additionalQueues) throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createXAQueueConnection(qcfName);
-    String queueName = System.getProperty("jndi.cluster.queue");
-    assertNotNull("missing property 'jndi.cluster.queue'", queueName);
-    queue = getQueue(queueName);
-    qs = qc.createXAQueueSession();
-    xares = qs.getXAResource();
-    if (createSender)
-      sender = qs.getQueueSession().createSender(queue);
-    if (createReceiver)
-      receiver = qs.getQueueSession().createReceiver(queue);
-    if (additionalQueues > 0)
-    {
-      addSender = new QueueSender[additionalQueues];
-      for (int i = 0; i < additionalQueues; i++)
-      {
-        addSender[i] = qs.getQueueSession().createSender(getQueue("t" + i + "@router"));
-      }
-      addReceiver = new QueueReceiver[additionalQueues];
-      for (int i = 0; i < additionalQueues; i++)
-      {
-        addReceiver[i] = qs.getQueueSession().createReceiver(getQueue("t" + i + "@router"));
-      }
+public class SimpleConnectedXAPTPClusterTestCase extends SimpleConnectedXAPTPTestCase {
+    public SimpleConnectedXAPTPClusterTestCase(String name) {
+        super(name);
     }
-    qc.start();
-  }
+
+    protected void setUp() throws Exception {
+        setUp(0);
+    }
+
+    protected void setUp(int additionalQueues) throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createXAQueueConnection(qcfName);
+        String queueName = System.getProperty("jndi.cluster.queue");
+        assertNotNull("missing property 'jndi.cluster.queue'", queueName);
+        queue = getQueue(queueName);
+        qs = qc.createXAQueueSession();
+        xares = qs.getXAResource();
+        if (createSender)
+            sender = qs.getQueueSession().createSender(queue);
+        if (createReceiver)
+            receiver = qs.getQueueSession().createReceiver(queue);
+        if (additionalQueues > 0) {
+            addSender = new QueueSender[additionalQueues];
+            for (int i = 0; i < additionalQueues; i++) {
+                addSender[i] = qs.getQueueSession().createSender(getQueue("t" + i + "@router"));
+            }
+            addReceiver = new QueueReceiver[additionalQueues];
+            for (int i = 0; i < additionalQueues; i++) {
+                addReceiver[i] = qs.getQueueSession().createReceiver(getQueue("t" + i + "@router"));
+            }
+        }
+        qc.start();
+    }
 }

@@ -20,25 +20,21 @@ package jms.ha.persistent.ptp.nontransacted;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ptp.nontransacted.autoack.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.nontransacted.clientack.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.nontransacted.requestreply.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ptp.nontransacted.autoack.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.nontransacted.clientack.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.nontransacted.requestreply.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "nontransacted";
-  }
+    public String toString() {
+        return "nontransacted";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

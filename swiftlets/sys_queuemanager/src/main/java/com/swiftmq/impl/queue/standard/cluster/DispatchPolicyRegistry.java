@@ -21,26 +21,29 @@ import com.swiftmq.impl.queue.standard.SwiftletContext;
 import com.swiftmq.impl.queue.standard.cluster.v700.ClusteredQueueMetricCollectionImpl;
 import com.swiftmq.swiftlet.SwiftletManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DispatchPolicyRegistry {
     SwiftletContext ctx = null;
-    Map policies = new HashMap();
+    Map<String, DispatchPolicy> policies = new ConcurrentHashMap<>();
 
     public DispatchPolicyRegistry(SwiftletContext ctx) {
         this.ctx = ctx;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/created");
     }
 
-    public synchronized DispatchPolicy add(String queueName, DispatchPolicy policy) {
+    public DispatchPolicy add(String queueName, DispatchPolicy policy) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/add, queueName=" + queueName + ", policy=" + policy);
         policies.put(queueName, policy);
         return policy;
     }
 
-    public synchronized DispatchPolicy remove(String queueName) {
-        DispatchPolicy dp = (DispatchPolicy) policies.remove(queueName);
+    public DispatchPolicy remove(String queueName) {
+        DispatchPolicy dp = policies.remove(queueName);
         if (dp != null)
             dp.close();
         if (ctx.traceSpace.enabled)
@@ -48,27 +51,27 @@ public class DispatchPolicyRegistry {
         return dp;
     }
 
-    public synchronized DispatchPolicy get(String queueName) {
-        DispatchPolicy dp = (DispatchPolicy) policies.get(queueName);
+    public DispatchPolicy get(String queueName) {
+        DispatchPolicy dp = policies.get(queueName);
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/get, queueName=" + queueName + ", policy=" + dp);
         return dp;
     }
 
-    public synchronized void removeRouterMetrics(String routerName) {
+    public void removeRouterMetrics(String routerName) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/removeRouterMetrics, routerName=" + routerName + " ...");
-        for (Iterator iter = policies.entrySet().iterator(); iter.hasNext(); ) {
-            ((DispatchPolicy) ((Map.Entry) iter.next()).getValue()).removeMetric(routerName);
+        for (Map.Entry<String, DispatchPolicy> entry : policies.entrySet()) {
+            ((DispatchPolicy) ((Map.Entry<?, ?>) entry).getValue()).removeMetric(routerName);
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/removeRouterMetrics, routerName=" + routerName + " done.");
     }
 
-    public synchronized ClusteredQueueMetricCollection getClusteredQueueMetricCollection() {
-        List list = new ArrayList();
-        for (Iterator iter = policies.entrySet().iterator(); iter.hasNext(); ) {
-            list.add(((DispatchPolicy) ((Map.Entry) iter.next()).getValue()).getLocalMetric());
+    public ClusteredQueueMetricCollection getClusteredQueueMetricCollection() {
+        List<ClusteredQueueMetric> list = new ArrayList<>();
+        for (Map.Entry<String, DispatchPolicy> entry : policies.entrySet()) {
+            list.add(((DispatchPolicy) ((Map.Entry) entry).getValue()).getLocalMetric());
         }
         return new ClusteredQueueMetricCollectionImpl(SwiftletManager.getInstance().getRouterName(), list);
     }

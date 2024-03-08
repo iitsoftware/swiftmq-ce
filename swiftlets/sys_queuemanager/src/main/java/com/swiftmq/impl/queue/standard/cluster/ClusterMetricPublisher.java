@@ -92,8 +92,8 @@ public class ClusterMetricPublisher implements TimerListener, PropertyChangeList
     }
 
     public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-        intervalChanged(((Long) oldValue).longValue(), ((Long) newValue).longValue());
-        interval = ((Long) newValue).longValue();
+        intervalChanged((Long) oldValue, (Long) newValue);
+        interval = (Long) newValue;
     }
 
     public void performTimeAction() {
@@ -104,12 +104,12 @@ public class ClusterMetricPublisher implements TimerListener, PropertyChangeList
             ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, cmc=" + cmc);
         List list = cmc.getClusteredQueueMetrics();
         if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                ClusteredQueueMetric cm = (ClusteredQueueMetric) list.get(i);
+            for (Object o : list) {
+                ClusteredQueueMetric cm = (ClusteredQueueMetric) o;
                 List list2 = cm.getQueueMetrics();
                 if (list2 != null) {
-                    for (int j = 0; j < list2.size(); j++) {
-                        QueueMetric qm = (QueueMetric) list2.get(j);
+                    for (Object object : list2) {
+                        QueueMetric qm = (QueueMetric) object;
                         AbstractQueue queue = ctx.queueManager.getQueueForInternalUse(qm.getQueueName());
                         if (queue != null) {
                             try {
@@ -133,6 +133,7 @@ public class ClusterMetricPublisher implements TimerListener, PropertyChangeList
             transaction.putMessage(msg);
             transaction.commit();
         } catch (Exception e) {
+            e.printStackTrace();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/performTimeAction, exception=" + e);
         }

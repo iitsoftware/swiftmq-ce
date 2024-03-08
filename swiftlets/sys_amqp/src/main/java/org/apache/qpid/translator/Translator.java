@@ -19,7 +19,6 @@ package org.apache.qpid.translator;
 import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -196,17 +195,6 @@ public class Translator {
             }
         }
         return output.toString();
-    }
-
-    public static void main(String[] argv) throws Throwable {
-//        if (argv.length == 0 || argv[0].equals("--jms-to-amqp")) {
-//            System.out.print(new Translator(new InputStreamReader(System.in)).translate(JMS_TO_AMQP));
-//        } else if (argv[0].equals("--amqp-to-jms")) {
-//            System.out.print(new Translator(new InputStreamReader(System.in)).translate(AMQP_TO_JMS));
-//        } else {
-//            System.out.println("Specify either --jms-to-amqp or --amqp-to-jms");
-//        }
-        System.out.println(new Translator(new StringReader("amqp.correlation_id = 'amqp.correlation_id' AND JMSMessageID = '1245' and amqp.durable = PERSISTENT")).translate(AMQP_TO_JMS));
     }
 }
 

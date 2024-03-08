@@ -17,26 +17,23 @@
 
 package jms.xa.noendrollback;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xa.noendrollback.singledest.Suite.suite());
-    suite.addTest(jms.xa.noendrollback.multidest.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xa.noendrollback.singledest.Suite.suite());
+        suite.addTest(jms.xa.noendrollback.multidest.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "noendrollback";
-  }
+    public String toString() {
+        return "noendrollback";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

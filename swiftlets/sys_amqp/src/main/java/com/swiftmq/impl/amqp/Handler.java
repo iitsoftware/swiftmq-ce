@@ -20,9 +20,9 @@ package com.swiftmq.impl.amqp;
 import com.swiftmq.net.client.InboundHandler;
 
 public interface Handler extends InboundHandler {
-    public String getVersion();
+    String getVersion();
 
-    public void collect(long lastCollect);
+    void collect(long lastCollect);
 
-    public void close();
+    void close();
 }

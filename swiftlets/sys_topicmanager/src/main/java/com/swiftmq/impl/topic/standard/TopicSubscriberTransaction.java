@@ -24,29 +24,20 @@ import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueTransactionClosedException;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class TopicSubscriberTransaction {
     TopicSubscription topicSubscription;
     QueuePushTransaction transaction;
     String destination = null;
     boolean valid = true;
     boolean persistentMessageIncluded = false;
-    volatile long fcDelay = 0;
+    final AtomicLong fcDelay = new AtomicLong();
 
-    /**
-     * @param topicSubscription
-     * @param transaction
-     * @SBGen Constructor assigns topicSubscription, transaction
-     */
     protected TopicSubscriberTransaction(TopicSubscription topicSubscription, QueuePushTransaction transaction, String destination) {
-        // SBgen: Assign variables
         this.topicSubscription = topicSubscription;
         this.transaction = transaction;
         this.destination = destination;
-        // SBgen: End assign
-    }
-
-    public long getFcDelay() {
-        return fcDelay;
     }
 
     public boolean isPersistentMessageIncluded() {
@@ -119,9 +110,9 @@ public class TopicSubscriberTransaction {
             public void done(boolean success) {
                 topicSubscription.removeTransaction(TopicSubscriberTransaction.this);
                 valid = false;
-                fcDelay = transaction.getFlowControlDelay();
+                fcDelay.set(transaction.getFlowControlDelay());
                 if (success)
-                    next.setResult(Long.valueOf(fcDelay));
+                    next.setResult(fcDelay.get());
                 else
                     next.setException(getException());
             }
@@ -160,15 +151,6 @@ public class TopicSubscriberTransaction {
                     next.setException(getException());
             }
         });
-    }
-
-    /**
-     * @return
-     * @SBGen Method get valid
-     */
-    protected boolean isValid() {
-        // SBgen: Get variable
-        return (valid);
     }
 
     public String toString() {

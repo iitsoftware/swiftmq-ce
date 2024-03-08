@@ -17,29 +17,25 @@
 
 package amqp.v100.ptp.recover.send.at_most_once;
 
-import com.swiftmq.amqp.v100.client.QoS;
 import amqp.v100.base.Util;
 import amqp.v100.ptp.recover.send.SendTester;
+import com.swiftmq.amqp.v100.client.QoS;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new SendTester("test", QoS.AT_MOST_ONCE, Util.getQueueNamePrefix() + "1", false, true));
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new SendTester("test", QoS.AT_MOST_ONCE, Util.getQueueNamePrefix() + "1", false, true));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "at_most_once";
-  }
+    public String toString() {
+        return "at_most_once";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

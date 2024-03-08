@@ -27,76 +27,64 @@ import javax.jms.TextMessage;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-public class Sender extends SimpleConnectedXAPTPClusterTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
-  String queueName = null;
-  QueueSender mySender = null;
+public class Sender extends SimpleConnectedXAPTPClusterTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
+    String queueName = null;
+    QueueSender mySender = null;
 
-  public Sender(String name, String queueName)
-  {
-    super(name);
-    this.queueName = queueName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    sender.close();
-    receiver.close();
-    mySender = qs.getQueueSession().createSender(getQueue(queueName));
-  }
-
-  public void send()
-  {
-    try
-    {
-      boolean rollback = false;
-      int n = 0;
-      TextMessage msg = qs.createTextMessage();
-      Xid xid = new XidImpl(getClass().getName());
-      xares.start(xid, XAResource.TMNOFLAGS);
-      while (n < nMsgs)
-      {
-        msg.setIntProperty("no", n);
-        msg.setText("Msg: " + n);
-        mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        if ((n + 1) % 10 == 0)
-        {
-          xares.end(xid, XAResource.TMSUCCESS);
-          xares.prepare(xid);
-          if (rollback)
-          {
-            rollback = false;
-            n -= 10;
-            xares.rollback(xid);
-          } else
-          {
-            xares.commit(xid, false);
-            rollback = true;
-          }
-          if (n + 1 < nMsgs)
-          {
-            xid = new XidImpl(getClass().getName());
-            xares.start(xid, XAResource.TMNOFLAGS);
-          }
-        }
-        n++;
-      }
-
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public Sender(String name, String queueName) {
+        super(name);
+        this.queueName = queueName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    queueName = null;
-    mySender = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp();
+        sender.close();
+        receiver.close();
+        mySender = qs.getQueueSession().createSender(getQueue(queueName));
+    }
+
+    public void send() {
+        try {
+            boolean rollback = false;
+            int n = 0;
+            TextMessage msg = qs.createTextMessage();
+            Xid xid = new XidImpl(getClass().getName());
+            xares.start(xid, XAResource.TMNOFLAGS);
+            while (n < nMsgs) {
+                msg.setIntProperty("no", n);
+                msg.setText("Msg: " + n);
+                mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                if ((n + 1) % 10 == 0) {
+                    xares.end(xid, XAResource.TMSUCCESS);
+                    xares.prepare(xid);
+                    if (rollback) {
+                        rollback = false;
+                        n -= 10;
+                        xares.rollback(xid);
+                    } else {
+                        xares.commit(xid, false);
+                        rollback = true;
+                    }
+                    if (n + 1 < nMsgs) {
+                        xid = new XidImpl(getClass().getName());
+                        xares.start(xid, XAResource.TMNOFLAGS);
+                    }
+                }
+                n++;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        queueName = null;
+        mySender = null;
+        super.tearDown();
+    }
 
 }
 

@@ -28,13 +28,14 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class NettyTCPListener extends TCPListener {
     SwiftletContext ctx;
     EventLoopGroup bossGroup;
     EventLoopGroup workerGroup;
     TaskExecutor taskExecutor;
-    ChannelFuture channelFuture = null;
+    final AtomicReference<ChannelFuture> channelFuture = new AtomicReference<>();
     boolean useTLS = false;
 
     public NettyTCPListener(SwiftletContext ctx, ListenerMetaData metaData) {
@@ -91,9 +92,9 @@ public class NettyTCPListener extends TCPListener {
                     .childOption(ChannelOption.TCP_NODELAY, getMetaData().isUseTcpNoDelay());
 
             if (getMetaData().getBindAddress() != null)
-                channelFuture = b.bind(getMetaData().getBindAddress(), getMetaData().getPort()).sync();
+                channelFuture.set(b.bind(getMetaData().getBindAddress(), getMetaData().getPort()).sync());
             else
-                channelFuture = b.bind(getMetaData().getPort()).sync();
+                channelFuture.set(b.bind(getMetaData().getPort()).sync());
         } catch (InterruptedException e) {
             throw new IOException(e.toString());
         }
@@ -101,9 +102,13 @@ public class NettyTCPListener extends TCPListener {
 
     @Override
     public void close() {
-        if (channelFuture != null)
-            channelFuture.channel().close();
-        workerGroup.shutdownGracefully();
-        bossGroup.shutdownGracefully();
+        ChannelFuture future = channelFuture.getAndSet(null);
+        if (future != null)
+            future.channel().close();
+        try {
+            workerGroup.shutdownGracefully().get();
+            bossGroup.shutdownGracefully().get();
+        } catch (Exception ignored) {
+        }
     }
 }

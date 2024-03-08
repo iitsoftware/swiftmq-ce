@@ -21,12 +21,12 @@ import com.swiftmq.swiftlet.queue.FlowController;
 
 public class TopicFlowController extends FlowController {
 
-    public synchronized void setLastDelay(long lastDelay) {
-        this.lastDelay = lastDelay;
+    public void setLastDelay(long lastDelay) {
+        this.lastDelay.set(lastDelay);
     }
 
-    public synchronized long getNewDelay() {
-        return lastDelay;
+    public long getNewDelay() {
+        return lastDelay.get();
     }
 }
 

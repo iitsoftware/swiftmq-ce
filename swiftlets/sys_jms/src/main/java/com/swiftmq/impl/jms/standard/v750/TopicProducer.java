@@ -33,7 +33,7 @@ public class TopicProducer extends Producer {
             this.topic = ctx.topicManager.verifyTopic(topic);
         String queueName = topic.getQueueName();
         setQueueSender(ctx.queueManager.createQueueSender(queueName, ctx.activeLogin));
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/created");
     }
 
     public String toString() {

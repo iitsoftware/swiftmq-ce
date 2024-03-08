@@ -22,26 +22,22 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class ReceiverSuite extends ActiveTestSuite
-{
+public class ReceiverSuite extends ActiveTestSuite {
 
-  public static Test suite()
-  {
-    TestSuite suite = new jms.func.selector.load.preload.ReceiverSuite();
-    suite.addTest(new Receiver("receive", 0));
-    suite.addTest(new Receiver("receive", 1));
-    suite.addTest(new Receiver("receive", 2));
-    suite.addTest(new Receiver("receive", 3));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new jms.func.selector.load.preload.ReceiverSuite();
+        suite.addTest(new Receiver("receive", 0));
+        suite.addTest(new Receiver("receive", 1));
+        suite.addTest(new Receiver("receive", 2));
+        suite.addTest(new Receiver("receive", 3));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "preloadreceiver";
-  }
+    public String toString() {
+        return "preloadreceiver";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.func.selector.load.preload.ReceiverSuite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.func.selector.load.preload.ReceiverSuite.suite());
+    }
 }

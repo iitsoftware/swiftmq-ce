@@ -20,28 +20,23 @@ package com.swiftmq.impl.store.standard.index;
 import com.swiftmq.impl.store.standard.StoreContext;
 import com.swiftmq.impl.store.standard.cache.Page;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ReferenceMap {
     StoreContext ctx = null;
-    Map map = new HashMap();
+    Map<Integer, MessagePageReference> map = new ConcurrentHashMap<>();
 
     public ReferenceMap(StoreContext ctx) {
         this.ctx = ctx;
     }
 
-    public synchronized MessagePageReference getReference(Integer pageNo, boolean create) {
-        MessagePageReference ref = (MessagePageReference) map.get(pageNo);
-        if (ref == null && create) {
-            ref = new MessagePageReference(ctx, pageNo.intValue(), 0);
-            map.put(pageNo, ref);
-        }
-        return ref;
+    public MessagePageReference getReference(Integer pageNo, boolean create) {
+        return create ? map.computeIfAbsent(pageNo, key -> new MessagePageReference(ctx, key, 0)) : map.get(pageNo);
     }
 
-    public synchronized void removeReferencesLessThan(long lessThan) {
+    public void removeReferencesLessThan(long lessThan) {
         for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
             MessagePageReference ref = (MessagePageReference) ((Map.Entry) iter.next()).getValue();
             if (ref != null && ref.getRefCount() < lessThan)
@@ -49,22 +44,22 @@ public class ReferenceMap {
         }
     }
 
-    public synchronized void removeReference(Integer pageNo) {
+    public void removeReference(Integer pageNo) {
         map.remove(pageNo);
     }
 
-    public synchronized void dump() {
+    public void dump() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/dump ...");
-        for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Integer rootPageNo = (Integer) entry.getKey();
-            MessagePageReference ref = (MessagePageReference) entry.getValue();
+        for (Map.Entry<Integer, MessagePageReference> integerMessagePageReferenceEntry : map.entrySet()) {
+            Map.Entry<Integer, MessagePageReference> entry = integerMessagePageReferenceEntry;
+            Integer rootPageNo = entry.getKey();
+            MessagePageReference ref = entry.getValue();
             try {
-                Page p = ctx.cacheManager.fetchAndPin(rootPageNo.intValue());
+                Page p = ctx.cacheManager.fetchAndPin(rootPageNo);
                 MessagePage mp = new MessagePage(p);
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$store", toString() + "/dump, rootPageNo=" + rootPageNo + ", ref=" + ref + ", mp=" + mp);
-                ctx.cacheManager.unpin(rootPageNo.intValue());
+                ctx.cacheManager.unpin(rootPageNo);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -72,7 +67,7 @@ public class ReferenceMap {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/dump done");
     }
 
-    public synchronized void clear() {
+    public void clear() {
         map.clear();
     }
 

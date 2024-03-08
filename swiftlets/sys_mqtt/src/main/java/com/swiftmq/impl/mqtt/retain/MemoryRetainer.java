@@ -22,11 +22,14 @@ import com.swiftmq.impl.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
 import com.swiftmq.tools.sql.LikeComparator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryRetainer implements Retainer {
     SwiftletContext ctx;
-    Map<String, MqttPublishMessage> messages = new HashMap<String, MqttPublishMessage>();
+    Map<String, MqttPublishMessage> messages = new ConcurrentHashMap<>();
 
     public MemoryRetainer(SwiftletContext ctx) {
         this.ctx = ctx;
@@ -35,7 +38,7 @@ public class MemoryRetainer implements Retainer {
     }
 
     @Override
-    public synchronized void add(String mqttTopic, MqttPublishMessage message) {
+    public void add(String mqttTopic, MqttPublishMessage message) {
         ByteBuf payload = message.payload();
         if (payload.size() == 0) {
             if (ctx.traceSpace.enabled)
@@ -48,10 +51,9 @@ public class MemoryRetainer implements Retainer {
     }
 
     @Override
-    public synchronized List<MqttPublishMessage> get(String mqttTopic) {
+    public List<MqttPublishMessage> get(String mqttTopic) {
         List<MqttPublishMessage> result = new ArrayList<MqttPublishMessage>();
-        for (Iterator<Map.Entry<String, MqttPublishMessage>> iter = messages.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry<String, MqttPublishMessage> entry = iter.next();
+        for (Map.Entry<String, MqttPublishMessage> entry : messages.entrySet()) {
             String topic = entry.getKey();
             if (LikeComparator.compare(topic, mqttTopic, '\\'))
                 result.add(entry.getValue());
@@ -62,7 +64,7 @@ public class MemoryRetainer implements Retainer {
     }
 
     @Override
-    public synchronized void close() {
+    public void close() {
         messages.clear();
     }
 

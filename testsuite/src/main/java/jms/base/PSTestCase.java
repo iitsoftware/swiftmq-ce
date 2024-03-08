@@ -17,115 +17,87 @@
 
 package jms.base;
 
+import com.swiftmq.jms.TopicImpl;
+
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.InitialContext;
 
-public class PSTestCase extends JMSTestCase
-{
-  public InitialContext ctx = null;
-  public TopicConnectionFactory tcf = null;
+public class PSTestCase extends JMSTestCase {
+    public InitialContext ctx = null;
+    public TopicConnectionFactory tcf = null;
 
-  public PSTestCase(String name)
-  {
-    super(name);
-  }
-
-  public TopicConnection createTopicConnection(InitialContext ctx, String lookup)
-  {
-    return createTopicConnection(ctx, lookup, null);
-  }
-
-  public TopicConnection createTopicConnection(InitialContext ctx, String lookup, String clientId, boolean start)
-  {
-    TopicConnection tc = null;
-    try
-    {
-      if (tcf == null)
-        tcf = (TopicConnectionFactory) ctx.lookup(lookup);
-      tc = tcf.createTopicConnection();
-      if (clientId != null)
-        tc.setClientID(clientId);
-      if (start)
-        tc.start();
-    } catch (Exception e)
-    {
-      failFast("create topic connection failed: " + e);
+    public PSTestCase(String name) {
+        super(name);
     }
-    return tc;
-  }
 
-  public TopicConnection createTopicConnection(InitialContext ctx, String lookup, String clientId)
-  {
-    return createTopicConnection(ctx, lookup, clientId, true);
-  }
-
-  public TopicConnection createTopicConnection(String lookup, String clientId, boolean start)
-  {
-    TopicConnection tc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      tc = createTopicConnection(ctx, lookup, clientId, start);
-    } catch (Exception e)
-    {
-      failFast("create topic connection failed: " + e);
+    public TopicConnection createTopicConnection(InitialContext ctx, String lookup) {
+        return createTopicConnection(ctx, lookup, null);
     }
-    return tc;
-  }
 
-  public TopicConnection createTopicConnection(String lookup, String clientId)
-  {
-    TopicConnection tc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      tc = createTopicConnection(ctx, lookup, clientId, true);
-    } catch (Exception e)
-    {
-      failFast("create topic connection failed: " + e);
+    public TopicConnection createTopicConnection(InitialContext ctx, String lookup, String clientId, boolean start) {
+        TopicConnection tc = null;
+        try {
+            if (tcf == null)
+                tcf = (TopicConnectionFactory) ctx.lookup(lookup);
+            tc = tcf.createTopicConnection();
+            if (clientId != null)
+                tc.setClientID(clientId);
+            if (start)
+                tc.start();
+        } catch (Exception e) {
+            failFast("create topic connection failed: " + e);
+        }
+        return tc;
     }
-    return tc;
-  }
 
-  public TopicConnection createTopicConnection(String lookup, boolean start)
-  {
-    return createTopicConnection(lookup, null, start);
-  }
-
-  public TopicConnection createTopicConnection(String lookup)
-  {
-    return createTopicConnection(lookup, null, true);
-  }
-
-  public Topic getTopic(String name)
-  {
-    Topic topic = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      topic = (Topic) ctx.lookup(name);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("get topic failed: " + e);
+    public TopicConnection createTopicConnection(InitialContext ctx, String lookup, String clientId) {
+        return createTopicConnection(ctx, lookup, clientId, true);
     }
-    if (topic == null)
-      throw new RuntimeException("Lookup for name '"+name+"' returns null");
-    return topic;
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (ctx != null)
-      ctx.close();
-    ctx = null;
-    tcf = null;
-    super.tearDown();
-  }
+    public TopicConnection createTopicConnection(String lookup, String clientId, boolean start) {
+        TopicConnection tc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            tc = createTopicConnection(ctx, lookup, clientId, start);
+        } catch (Exception e) {
+            failFast("create topic connection failed: " + e);
+        }
+        return tc;
+    }
+
+    public TopicConnection createTopicConnection(String lookup, String clientId) {
+        TopicConnection tc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            tc = createTopicConnection(ctx, lookup, clientId, true);
+        } catch (Exception e) {
+            failFast("create topic connection failed: " + e);
+        }
+        return tc;
+    }
+
+    public TopicConnection createTopicConnection(String lookup, boolean start) {
+        return createTopicConnection(lookup, null, start);
+    }
+
+    public TopicConnection createTopicConnection(String lookup) {
+        return createTopicConnection(lookup, null, true);
+    }
+
+    public Topic getTopic(String name) {
+        return new TopicImpl(name);
+    }
+
+    protected void tearDown() throws Exception {
+        if (ctx != null)
+            ctx.close();
+        ctx = null;
+        tcf = null;
+        super.tearDown();
+    }
 }
 

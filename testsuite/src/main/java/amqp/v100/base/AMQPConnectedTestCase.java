@@ -20,51 +20,41 @@ package amqp.v100.base;
 import com.swiftmq.amqp.v100.client.Connection;
 import junit.framework.TestCase;
 
-public class AMQPConnectedTestCase extends TestCase
-{
-  static int id = 0;
-  Connection connection = null;
-  String containerId = null;
+public class AMQPConnectedTestCase extends TestCase {
+    static int id = 0;
+    Connection connection = null;
+    String containerId = null;
 
-  public AMQPConnectedTestCase(String name)
-  {
-    super(name);
-  }
-
-  protected static synchronized int nextId()
-  {
-    return id++;
-  }
-
-  protected void setContainerId(String containerId)
-  {
-    this.containerId = containerId;
-  }
-
-  public void pause(long ms)
-  {
-    try
-    {
-      Thread.sleep(ms);
-    } catch (Exception ignored)
-    {
+    public AMQPConnectedTestCase(String name) {
+        super(name);
     }
-  }
 
-  public Connection getConnection()
-  {
-    return connection;
-  }
+    protected static synchronized int nextId() {
+        return id++;
+    }
 
-  protected void setUp() throws Exception
-  {
-    connection = Util.createConnection(containerId);
-  }
+    protected void setContainerId(String containerId) {
+        this.containerId = containerId;
+    }
 
-  protected void tearDown() throws Exception
-  {
-    if (connection != null)
-      connection.close();
-    connection = null;
-  }
+    public void pause(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    protected void setUp() throws Exception {
+        connection = Util.createConnection(containerId);
+    }
+
+    protected void tearDown() throws Exception {
+        if (connection != null)
+            connection.close();
+        connection = null;
+    }
 }

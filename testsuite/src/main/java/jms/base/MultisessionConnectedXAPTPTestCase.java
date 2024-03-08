@@ -19,45 +19,40 @@ package jms.base;
 
 import javax.jms.*;
 
-public class MultisessionConnectedXAPTPTestCase extends XAPTPTestCase
-{
-  public XAQueueConnection qc = null;
-  public XAQueueSession[] sessions = null;
-  public Queue queue = null;
-  public QueueSender[] addSender = null;
-  public QueueReceiver[] addReceiver = null;
+public class MultisessionConnectedXAPTPTestCase extends XAPTPTestCase {
+    public XAQueueConnection qc = null;
+    public XAQueueSession[] sessions = null;
+    public Queue queue = null;
+    public QueueSender[] addSender = null;
+    public QueueReceiver[] addReceiver = null;
 
-  public MultisessionConnectedXAPTPTestCase(String name)
-  {
-    super(name);
-  }
+    public MultisessionConnectedXAPTPTestCase(String name) {
+        super(name);
+    }
 
-  protected void setUp() throws Exception
-  {
-    setUp(1);
-  }
+    protected void setUp() throws Exception {
+        setUp(1);
+    }
 
-  protected void setUp(int nSessions) throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createXAQueueConnection(qcfName);
-    String queueName = System.getProperty("jndi.queue");
-    assertNotNull("missing property 'jndi.queue'", queueName);
-    queue = getQueue(queueName);
-    sessions = new XAQueueSession[nSessions];
-    for (int i=0;i<nSessions;i++)
-      sessions[i] = qc.createXAQueueSession();
-    qc.start();
-  }
+    protected void setUp(int nSessions) throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createXAQueueConnection(qcfName);
+        String queueName = System.getProperty("jndi.queue");
+        assertNotNull("missing property 'jndi.queue'", queueName);
+        queue = getQueue(queueName);
+        sessions = new XAQueueSession[nSessions];
+        for (int i = 0; i < nSessions; i++)
+            sessions[i] = qc.createXAQueueSession();
+        qc.start();
+    }
 
-  protected void tearDown() throws Exception
-  {
-    for (int i=0;i<sessions.length;i++)
-      sessions[i].close();
-    qc.close();
-    super.tearDown();
-  }
+    protected void tearDown() throws Exception {
+        for (int i = 0; i < sessions.length; i++)
+            sessions[i].close();
+        qc.close();
+        super.tearDown();
+    }
 
 }
 

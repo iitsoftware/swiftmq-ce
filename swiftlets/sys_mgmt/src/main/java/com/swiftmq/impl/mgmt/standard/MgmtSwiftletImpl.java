@@ -26,21 +26,33 @@ import com.swiftmq.swiftlet.mgmt.CLIExecutor;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.routing.RoutingSwiftlet;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class MgmtSwiftletImpl extends MgmtSwiftlet {
     SwiftletContext ctx = null;
     Listener listener = null;
     MessageInterfaceController miController = null;
-    int toolCount = 0;
+    final AtomicInteger toolCount = new AtomicInteger();
 
-    public synchronized void fireEvent(boolean activated) {
+    public void fireEvent(boolean activated) {
         if (activated) {
-            toolCount++;
-            if (toolCount == 1)
+            int oldValue, newValue;
+            do {
+                oldValue = toolCount.get();
+                newValue = oldValue + 1;
+            } while (!toolCount.compareAndSet(oldValue, newValue));
+            if (newValue == 1) {
                 fireMgmtEvent(activated);
+            }
         } else {
-            toolCount--;
-            if (toolCount == 0)
+            int oldValue, newValue;
+            do {
+                oldValue = toolCount.get();
+                newValue = Math.max(oldValue - 1, 0); // Ensure it doesn't go below 0
+            } while (!toolCount.compareAndSet(oldValue, newValue));
+            if (newValue == 0) {
                 fireMgmtEvent(activated);
+            }
         }
     }
 

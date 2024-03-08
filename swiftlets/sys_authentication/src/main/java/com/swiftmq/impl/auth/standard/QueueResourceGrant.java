@@ -17,40 +17,42 @@
 
 package com.swiftmq.impl.auth.standard;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class QueueResourceGrant extends ResourceGrant {
-    boolean receiverGranted;
-    boolean senderGranted;
-    boolean browserGranted;
+    final AtomicBoolean receiverGranted = new AtomicBoolean(false);
+    final AtomicBoolean senderGranted = new AtomicBoolean(false);
+    final AtomicBoolean browserGranted = new AtomicBoolean(false);
 
     public QueueResourceGrant(String resourceName, boolean receiverGranted, boolean senderGranted, boolean browserGranted) {
         super(resourceName);
-        this.receiverGranted = receiverGranted;
-        this.senderGranted = senderGranted;
-        this.browserGranted = browserGranted;
+        this.receiverGranted.set(receiverGranted);
+        this.senderGranted.set(senderGranted);
+        this.browserGranted.set(browserGranted);
     }
 
-    public synchronized void setReceiverGranted(boolean receiverGranted) {
-        this.receiverGranted = receiverGranted;
+    public void setReceiverGranted(boolean receiverGranted) {
+        this.receiverGranted.set(receiverGranted);
     }
 
-    public synchronized boolean isReceiverGranted() {
-        return (receiverGranted);
+    public boolean isReceiverGranted() {
+        return (receiverGranted.get());
     }
 
-    public synchronized void setSenderGranted(boolean senderGranted) {
-        this.senderGranted = senderGranted;
+    public void setSenderGranted(boolean senderGranted) {
+        this.senderGranted.set(senderGranted);
     }
 
-    public synchronized boolean isSenderGranted() {
-        return (senderGranted);
+    public boolean isSenderGranted() {
+        return (senderGranted.get());
     }
 
-    public synchronized void setBrowserGranted(boolean browserGranted) {
-        this.browserGranted = browserGranted;
+    public void setBrowserGranted(boolean browserGranted) {
+        this.browserGranted.set(browserGranted);
     }
 
-    public synchronized boolean isBrowserGranted() {
-        return (browserGranted);
+    public boolean isBrowserGranted() {
+        return (browserGranted.get());
     }
 
     public String toString() {
@@ -58,11 +60,11 @@ public class QueueResourceGrant extends ResourceGrant {
         s.append("[QueueResourceGrant, resourceName=");
         s.append(resourceName);
         s.append(", receiverGranted=");
-        s.append(receiverGranted);
+        s.append(receiverGranted.get());
         s.append(", senderGranted=");
-        s.append(senderGranted);
+        s.append(senderGranted.get());
         s.append(", browserGranted=");
-        s.append(browserGranted);
+        s.append(browserGranted.get());
         s.append("]");
         return s.toString();
     }

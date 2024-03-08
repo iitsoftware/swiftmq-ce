@@ -19,11 +19,8 @@ package com.swiftmq.impl.jms.standard.v750;
 
 import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.ms.MessageSelector;
-import com.swiftmq.swiftlet.topic.TopicManager;
 
 public class TopicDurableConsumer extends Consumer {
-    TopicManager topicManager = null;
-    int subscriberId = -1;
     TopicImpl topic = null;
     String queueName = null;
     String topicName = null;
@@ -40,7 +37,7 @@ public class TopicDurableConsumer extends Consumer {
         this.topic = ctx.topicManager.verifyTopic(topic);
         queueName = ctx.topicManager.subscribeDurable(durableName, topic, msel, noLocal, ctx.activeLogin);
         setQueueReceiver(ctx.queueManager.createQueueReceiver(queueName, ctx.activeLogin, null));
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/created");
     }
 
     public String getQueueName() {

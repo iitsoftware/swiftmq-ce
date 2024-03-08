@@ -22,26 +22,22 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class SenderSuite extends ActiveTestSuite
-{
+public class SenderSuite extends ActiveTestSuite {
 
-  public static Test suite()
-  {
-    TestSuite suite = new jms.func.selector.load.preload.SenderSuite();
-    suite.addTest(new Sender("send", 0));
-    suite.addTest(new Sender("send", 1));
-    suite.addTest(new Sender("send", 2));
-    suite.addTest(new Sender("send", 3));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new jms.func.selector.load.preload.SenderSuite();
+        suite.addTest(new Sender("send", 0));
+        suite.addTest(new Sender("send", 1));
+        suite.addTest(new Sender("send", 2));
+        suite.addTest(new Sender("send", 3));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "preloadsender";
-  }
+    public String toString() {
+        return "preloadsender";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.func.selector.load.preload.SenderSuite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.func.selector.load.preload.SenderSuite.suite());
+    }
 }

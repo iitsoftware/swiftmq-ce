@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class AtSchedule extends Schedule {
-    int startTimes[] = null;
+    int[] startTimes = null;
     boolean mayExpireWhileRouterDown = true;
     boolean firstScheduleAfterRouterStart = false;
 
@@ -49,10 +49,10 @@ public class AtSchedule extends Schedule {
 
     protected int getNextStart(int lastStartTime, Calendar cal) {
         int dayTime = getTimeOfTheDay(cal);
-        for (int i = 0; i < startTimes.length; i++) {
-            if (startTimes[i] >= dayTime && lastStartTime != startTimes[i]) {
+        for (int startTime : startTimes) {
+            if (startTime >= dayTime && lastStartTime != startTime) {
                 firstScheduleAfterRouterStart = false;
-                return startTimes[i];
+                return startTime;
             }
         }
         int time = -1;

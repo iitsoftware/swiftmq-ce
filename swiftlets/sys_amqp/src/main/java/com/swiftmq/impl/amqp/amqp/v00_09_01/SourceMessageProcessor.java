@@ -25,14 +25,17 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class SourceMessageProcessor extends MessageProcessor {
     private static final int MAX_BULKSIZE = 100;
     SwiftletContext ctx;
     Consumer consumer;
     MessageEntry messageEntry = null;
-    int numberMessages = 0;
+    final AtomicInteger numberMessages = new AtomicInteger();
     Exception exception = null;
-    boolean stopped = false;
+    final AtomicBoolean stopped = new AtomicBoolean(false);
     DataByteArrayOutputStream dbos = new DataByteArrayOutputStream(8192);
     OutboundTransformer outboundTransformer = new BasicOutboundTransformer();
 
@@ -42,13 +45,13 @@ public class SourceMessageProcessor extends MessageProcessor {
         setAutoCommit(false);
         setBulkMode(true);
         createBulkBuffer(MAX_BULKSIZE);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/created");
     }
 
     public void processMessages(int numberMessages) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/processMessages, numberMessages=" + numberMessages);
-        this.numberMessages = numberMessages;
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/processMessages, numberMessages=" + numberMessages);
+        this.numberMessages.set(numberMessages);
         if (isValid())
             consumer.getChannelHandler().dispatch(new POSendMessages(this));
     }
@@ -75,29 +78,29 @@ public class SourceMessageProcessor extends MessageProcessor {
 
     public Delivery[] getTransformedMessages() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/getTransformedMessages ...");
         MessageEntry[] buffer = getBulkBuffer();
-        Delivery[] deliveries = new Delivery[numberMessages];
-        for (int i = 0; i < numberMessages; i++) {
+        Delivery[] deliveries = new Delivery[numberMessages.get()];
+        for (int i = 0; i < numberMessages.get(); i++) {
             MessageEntry messageEntry = buffer[i];
             Delivery delivery = outboundTransformer.transform(messageEntry.getMessage());
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages, delivery=" + delivery);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/getTransformedMessages, delivery=" + delivery);
             delivery.setRedelivered(messageEntry.getMessageIndex().getDeliveryCount() > 1);
             delivery.setMessageIndex(messageEntry.getMessageIndex());
             deliveries[i] = delivery;
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages, deliveries.length=" + deliveries.length);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/getTransformedMessages, deliveries.length=" + deliveries.length);
         return deliveries;
     }
 
     public void setStopped(boolean stopped) {
-        this.stopped = stopped;
+        this.stopped.set(stopped);
     }
 
     public boolean isValid() {
-        return !(consumer.isClosed() || stopped);
+        return !(consumer.isClosed() || stopped.get());
     }
 
     public String toString() {

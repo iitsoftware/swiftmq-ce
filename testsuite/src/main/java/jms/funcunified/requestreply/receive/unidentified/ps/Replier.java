@@ -19,38 +19,34 @@ package jms.funcunified.requestreply.receive.unidentified.ps;
 
 import jms.base.SimpleConnectedUnifiedPSTestCase;
 
-import javax.jms.*;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TemporaryTopic;
+import javax.jms.TextMessage;
 
-public class Replier extends SimpleConnectedUnifiedPSTestCase
-{
-  MessageProducer replyProducer = null;
+public class Replier extends SimpleConnectedUnifiedPSTestCase {
+    MessageProducer replyProducer = null;
 
-  public Replier(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    replyProducer = ts.createProducer(null);
-  }
-
-  public void testReply()
-  {
-    try
-    {
-      for (int i = 0; i < 10000; i++)
-      {
-        TextMessage msg = (TextMessage) consumer.receive();
-        msg.clearBody();
-        msg.setText("Re: " + msg.getText());
-        replyProducer.send((TemporaryTopic) msg.getJMSReplyTo(), msg);
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Replier(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        replyProducer = ts.createProducer(null);
+    }
+
+    public void testReply() {
+        try {
+            for (int i = 0; i < 10000; i++) {
+                TextMessage msg = (TextMessage) consumer.receive();
+                msg.clearBody();
+                msg.setText("Re: " + msg.getText());
+                replyProducer.send((TemporaryTopic) msg.getJMSReplyTo(), msg);
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

@@ -17,28 +17,24 @@
 
 package jms.ha.persistent;
 
+import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import junit.extensions.ActiveTestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ps.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.Suite.suite());
-    return suite;
-  }
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ps.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "persistent";
-  }
+    public String toString() {
+        return "persistent";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -37,14 +37,14 @@ public class DurableConsumer extends Consumer {
         durableName = String.valueOf(subscriptionId);
         queueName = ctx.topicManager.subscribeDurable(durableName, topic, null, false, session.getMqttConnection().getActiveLogin());
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/createReceiver, queueName=" + queueName + ", durableName=" + durableName);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/createReceiver, queueName=" + queueName + ", durableName=" + durableName);
         return ctx.queueManager.createQueueReceiver(queueName, activeLogin, null);
     }
 
     @Override
     public void close() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/close");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/close");
         try {
             if (transaction != null && !transaction.isClosed())
                 transaction.rollback();

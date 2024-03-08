@@ -20,26 +20,22 @@ package jms.ha.nonpersistent.ps.nondurable;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.nonpersistent.ps.nondurable.autoack.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.ps.nondurable.clientack.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.ps.nondurable.transacted.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.ps.nondurable.requestreply.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.nonpersistent.ps.nondurable.autoack.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.ps.nondurable.clientack.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.ps.nondurable.transacted.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.ps.nondurable.requestreply.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "nondurable";
-  }
+    public String toString() {
+        return "nondurable";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

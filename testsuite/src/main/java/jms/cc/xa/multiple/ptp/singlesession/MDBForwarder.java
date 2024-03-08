@@ -24,125 +24,108 @@ import jms.base.XidImpl;
 
 import javax.jms.*;
 import javax.naming.InitialContext;
-import javax.transaction.xa.*;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class MDBForwarder extends XAPTPTestCase
-{
-  InitialContext ctx = null;
-  XAQueueConnection qc = null;
-  Queue queueListen = null;
-  Queue queueForward = null;
-  ConnectionConsumer cc = null;
-  ServerSessionPoolImpl pool = null;
-  int nMsgs = 0;
-  String listenQueue = null;
-  String forwardQueue = null;
+public class MDBForwarder extends XAPTPTestCase {
+    InitialContext ctx = null;
+    XAQueueConnection qc = null;
+    Queue queueListen = null;
+    Queue queueForward = null;
+    ConnectionConsumer cc = null;
+    ServerSessionPoolImpl pool = null;
+    int nMsgs = 0;
+    String listenQueue = null;
+    String forwardQueue = null;
 
-  public MDBForwarder(String name, String listenQueue, String forwardQueue)
-  {
-    super(name);
-    this.listenQueue = listenQueue;
-    this.forwardQueue = forwardQueue;
-  }
-
-  protected void setUp() throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createXAQueueConnection(qcfName, false);
-    queueListen = getQueue(listenQueue);
-    queueForward = getQueue(forwardQueue);
-    pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 5; i++)
-    {
-      XAQueueSession qs = qc.createXAQueueSession();
-      qs.setMessageListener(new Listener(qs, i));
-      pool.addServerSession(new ServerSessionImpl(pool, qs));
+    public MDBForwarder(String name, String listenQueue, String forwardQueue) {
+        super(name);
+        this.listenQueue = listenQueue;
+        this.forwardQueue = forwardQueue;
     }
-    cc = qc.createConnectionConsumer(queueListen, null, pool, 5);
-  }
 
-  synchronized void inc()
-  {
-    nMsgs++;
-    if (nMsgs == 1000)
-      notify();
-  }
-
-  public void test()
-  {
-    try
-    {
-      synchronized (this)
-      {
-        qc.start();
-        try
-        {
-          wait();
-        } catch (InterruptedException e)
-        {
+    protected void setUp() throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createXAQueueConnection(qcfName, false);
+        queueListen = getQueue(listenQueue);
+        queueForward = getQueue(forwardQueue);
+        pool = new ServerSessionPoolImpl();
+        for (int i = 0; i < 5; i++) {
+            XAQueueSession qs = qc.createXAQueueSession();
+            qs.setMessageListener(new Listener(qs, i));
+            pool.addServerSession(new ServerSessionImpl(pool, qs));
         }
-      }
-    } catch (Exception e)
-    {
-      failFast("Test failed: " + e.toString());
-    }
-  }
-
-  protected void tearDown() throws Exception
-  {
-    qc.close();
-    super.tearDown();
-  }
-
-  private class Listener implements MessageListener
-  {
-    XAQueueSession session;
-    XAQueueSession qs2;
-    int id;
-
-    public Listener(XAQueueSession session, int id)
-    {
-      this.session = session;
-      this.id = id;
-      try {
-        qs2 = qc.createXAQueueSession();
-      } catch (Exception e)
-      {
-        throw new RuntimeException(e.toString());
-      }
+        cc = qc.createConnectionConsumer(queueListen, null, pool, 5);
     }
 
-    public void onMessage(Message msg)
-    {
-      try
-      {
-        XAResource xares1 = session.getXAResource();  // done during JTA enlistment
-        Xid xid = new XidImpl();                      // done during JTA enlistment
-        xares1.start(xid, XAResource.TMNOFLAGS);       // done during JTA enlistment
-
-        // Start: MDB's onMessage
-        XAResource xares2 = qs2.getXAResource();       // done during JTA enlistment
-        xares2.start(xid, XAResource.TMNOFLAGS);       // done during JTA enlistment
-        System.out.println(listenQueue + " received: " + ((TextMessage) msg).getText() + " forward to: " + forwardQueue);
-        QueueSender sender = qs2.getQueueSession().createSender(queueForward);
-        sender.send(msg);
-        // End: MDB's onMessage
-
-        xares1.end(xid, XAResource.TMSUCCESS);        // done by the JTA
-        xares1.prepare(xid);                         // done by the JTA
-        xares2.end(xid, XAResource.TMSUCCESS);        // done by the JTA
-        xares2.prepare(xid);                         // done by the JTA
-        xares1.commit(xid, false);                    // done by the JTA
-        xares2.commit(xid, false);                    // done by the JTA
-
-        sender.close();
-
-      } catch (Exception e)
-      {
-        e.printStackTrace();
-      }
-      inc();
+    synchronized void inc() {
+        nMsgs++;
+        if (nMsgs == 1000)
+            notify();
     }
-  }
+
+    public void test() {
+        try {
+            synchronized (this) {
+                qc.start();
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        } catch (Exception e) {
+            failFast("Test failed: " + e.toString());
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        qc.close();
+        super.tearDown();
+    }
+
+    private class Listener implements MessageListener {
+        XAQueueSession session;
+        XAQueueSession qs2;
+        int id;
+
+        public Listener(XAQueueSession session, int id) {
+            this.session = session;
+            this.id = id;
+            try {
+                qs2 = qc.createXAQueueSession();
+            } catch (Exception e) {
+                throw new RuntimeException(e.toString());
+            }
+        }
+
+        public void onMessage(Message msg) {
+            try {
+                XAResource xares1 = session.getXAResource();  // done during JTA enlistment
+                Xid xid = new XidImpl();                      // done during JTA enlistment
+                xares1.start(xid, XAResource.TMNOFLAGS);       // done during JTA enlistment
+
+                // Start: MDB's onMessage
+                XAResource xares2 = qs2.getXAResource();       // done during JTA enlistment
+                xares2.start(xid, XAResource.TMNOFLAGS);       // done during JTA enlistment
+                System.out.println(listenQueue + " received: " + ((TextMessage) msg).getText() + " forward to: " + forwardQueue);
+                QueueSender sender = qs2.getQueueSession().createSender(queueForward);
+                sender.send(msg);
+                // End: MDB's onMessage
+
+                xares1.end(xid, XAResource.TMSUCCESS);        // done by the JTA
+                xares1.prepare(xid);                         // done by the JTA
+                xares2.end(xid, XAResource.TMSUCCESS);        // done by the JTA
+                xares2.prepare(xid);                         // done by the JTA
+                xares1.commit(xid, false);                    // done by the JTA
+                xares2.commit(xid, false);                    // done by the JTA
+
+                sender.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            inc();
+        }
+    }
 }

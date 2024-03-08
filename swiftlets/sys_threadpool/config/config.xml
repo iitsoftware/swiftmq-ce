@@ -9,74 +9,62 @@
     <property name="collect-interval"
               type="java.lang.Long"
               display="Collect Interval"
-              description="Interval for collecting the Thread Counts per Pool"
+              description="Interval for collecting the Thread Counts"
               default="1000"/>
-    <entitylist name="pools" display="Pools" description="Threadpool Definitions">
-      <entitytemplate name="pool" display="Pool" description="Threadpool Definition">
-        <property name="kernel-pool"
+    <property name="group-shutdown-order"
+              type="java.lang.String"
+              display="Shutdown Order"
+              description="The order in which the groups are being shut down"
+              default=""
+              reboot-required="true"/>
+    <entitylist name="groups" display="Groups" description="Event Loop Groups">
+      <entitytemplate name="group" display="Group" description="Event Loop Group Definition">
+        <property name="freezable"
                   type="java.lang.Boolean"
-                  display="Kernel Pool"
-                  description="Marked as a Kernel Pool or not"
-                  default="false"
-                  reboot-required="true"/>
-        <property name="min-threads"
-                  type="java.lang.Integer"
-                  display="Minimum Threads"
-                  description="Minimum Threads in this Pool"
-                  min="0"
-                  default="0"
-                  reboot-required="true"/>
-        <property name="max-threads"
-                  type="java.lang.Integer"
-                  display="Maximum Threads"
-                  description="Maximum Threads in this Pool"
-                  default="-1"
-                  reboot-required="false"/>
-        <property name="queue-length-threshold"
-                  type="java.lang.Integer"
-                  display="Queue Length Threshold"
-                  description="Starts new Threads when the Queue Length reaches this Threshold"
-                  min="1"
-                  default="1"
-                  reboot-required="false"/>
-        <property name="additional-threads"
-                  type="java.lang.Integer"
-                  display="Additional Threads"
-                  description="Number Threads to Startup after reaching Threshold"
-                  min="1"
-                  default="1"
-                  reboot-required="false"/>
-        <property name="priority"
-                  type="java.lang.Integer"
-                  display="Priority"
-                  description="Priority for Threads in this Pool"
-                  min="1"
-                  max="10"
-                  default="5"
-                  reboot-required="true"/>
-        <property name="idle-timeout"
-                  type="java.lang.Long"
-                  display="Idle Timeout"
-                  description="Timeout for idling Threads in this Pool"
-                  default="120000"
-                  reboot-required="true"/>
-        <entitylist name="threads" display="Threads" description="Thread Assignment Definitions">
-          <entitytemplate name="thread" display="Thread" description="Thread Assignment Definition"/>
+                  display="Freezable"
+                  description="If true, the groups event loops can be frozen for HA"
+                  default="true"
+                  read-only="true"/>
+        <entitylist name="eventloops" display="Event Loops" description="Event Loop Assignments">
+          <entitytemplate name="eventloop" display="Event Loop" description="Name of the Event Loop">
+            <property name="virtual"
+                      type="java.lang.Boolean"
+                      display="Virtual"
+                      description="Uses a Virtual Threads for this Event Loop, otherwise a Platform Thread"
+                      default="true"
+                      read-only="true"/>
+            <property name="bulk-mode"
+                      type="java.lang.Boolean"
+                      display="Bulk Mode"
+                      description="Consumes all available events or a single event in one iteration"
+                      default="false"
+                      read-only="true"/>
+          </entitytemplate>
         </entitylist>
       </entitytemplate>
     </entitylist>
-    <entitylist name="usage" display="Usage" description="Active Threadpools"
-                dynamic-properties="running-threads idling-threads">
-      <entitytemplate name="usage" display="Thread Pool" description="Active Threadpool">
-        <property name="running-threads"
+    <entitylist name="usage" display="Usage" description="Thread Usage"
+                dynamic-properties="platform virtual adhoc">
+      <entitytemplate name="usage" display="Threads" description="Active Threads">
+        <property name="platform"
                   type="java.lang.Integer"
-                  display="Running Threads"
-                  description="Running Threads in this Pool"
+                  display="Platform Event Loops"
+                  description="Active Platform Event Loop Threads"
                   default="0"/>
-        <property name="idling-threads"
+        <property name="virtual"
                   type="java.lang.Integer"
-                  display="Idling Threads"
-                  description="Idling Threads in this Pool"
+                  display="Virtual Event Loops"
+                  description="Active Virtual Event Loop Threads"
+                  default="0"/>
+        <property name="adhocvirtual"
+                  type="java.lang.Integer"
+                  display="Ad Hoc Virtual"
+                  description="Active Virtual Ad Hoc Threads"
+                  default="0"/>
+        <property name="adhocplatform"
+                  type="java.lang.Integer"
+                  display="Ad Hoc Platform"
+                  description="Active Platform Ad Hoc Threads"
                   default="0"/>
       </entitytemplate>
     </entitylist>

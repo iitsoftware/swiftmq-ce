@@ -21,44 +21,37 @@ import jms.base.SimpleConnectedPTPTestCase;
 
 import javax.jms.*;
 
-public class Requestor extends SimpleConnectedPTPTestCase
-{
-  int n = 0;
+public class Requestor extends SimpleConnectedPTPTestCase {
+    int n = 0;
 
-  public Requestor(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    n = Integer.parseInt(System.getProperty("load.requestreply.msgs", "1000"));
-  }
-
-  public void testRequest()
-  {
-    try
-    {
-      for (int i = 0; i < n; i++)
-      {
-        TextMessage msg = qs.createTextMessage();
-        TemporaryQueue tempQueue = qs.createTemporaryQueue();
-        QueueReceiver tempReceiver = qs.createReceiver(tempQueue);
-        msg.setJMSReplyTo(tempQueue);
-        msg.setText("Request: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, 500000);
-        TextMessage reply = (TextMessage) tempReceiver.receive(200000);
-        if (reply == null)
-          fail("timeout occured on reply");
-        tempReceiver.close();
-        tempQueue.delete();
-      }
-      pause(3000);
-    } catch (Exception e)
-    {
-      fail("test failed: " + e);
+    public Requestor(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        n = Integer.parseInt(System.getProperty("load.requestreply.msgs", "1000"));
+    }
+
+    public void testRequest() {
+        try {
+            for (int i = 0; i < n; i++) {
+                TextMessage msg = qs.createTextMessage();
+                TemporaryQueue tempQueue = qs.createTemporaryQueue();
+                QueueReceiver tempReceiver = qs.createReceiver(tempQueue);
+                msg.setJMSReplyTo(tempQueue);
+                msg.setText("Request: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, 500000);
+                TextMessage reply = (TextMessage) tempReceiver.receive(200000);
+                if (reply == null)
+                    fail("timeout occured on reply");
+                tempReceiver.close();
+                tempQueue.delete();
+            }
+            pause(3000);
+        } catch (Exception e) {
+            fail("test failed: " + e);
+        }
+    }
 }
 

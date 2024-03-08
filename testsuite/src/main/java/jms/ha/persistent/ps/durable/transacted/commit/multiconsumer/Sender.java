@@ -19,54 +19,42 @@ package jms.ha.persistent.ps.durable.transacted.commit.multiconsumer;
 
 import jms.base.SimpleConnectedPSTestCase;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.TopicPublisher;
+import javax.jms.*;
 
-public class Sender extends SimpleConnectedPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  String topicName = null;
-  TopicPublisher myPublisher = null;
+public class Sender extends SimpleConnectedPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    String topicName = null;
+    TopicPublisher myPublisher = null;
 
-  public Sender(String name, String topicName)
-  {
-    super(name);
-    this.topicName = topicName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, true, false, false);
-    pause(20000);
-    myPublisher = ts.createPublisher(getTopic(topicName));
-  }
-
-  public void send()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        msg.setIntProperty("no", i);
-        msg.setText("Msg: " + i);
-        myPublisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Sender(String name, String topicName) {
+        super(name);
+        this.topicName = topicName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    topicName = null;
-    myPublisher = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, true, false, false);
+        pause(20000);
+        myPublisher = ts.createPublisher(getTopic(topicName));
+    }
+
+    public void send() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < nMsgs; i++) {
+                msg.setIntProperty("no", i);
+                msg.setText("Msg: " + i);
+                myPublisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        topicName = null;
+        myPublisher = null;
+        super.tearDown();
+    }
 }
 

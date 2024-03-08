@@ -18,50 +18,48 @@
 package com.swiftmq.impl.amqp;
 
 import com.swiftmq.amqp.Writable;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.tools.util.DataStreamOutputStream;
 
-public class OutboundQueue extends SingleProcessorQueue {
+import java.util.List;
+
+public class OutboundQueue implements EventProcessor {
     SwiftletContext ctx;
-    ThreadPool pool;
     VersionedConnection connection;
-    QueueProcessor queueProcessor;
     DataStreamOutputStream dos = null;
     OutboundTracer outboundTracer = null;
+    EventLoop eventLoop;
 
-    OutboundQueue(SwiftletContext ctx, ThreadPool pool, VersionedConnection connection) {
-        super(100);
+    OutboundQueue(SwiftletContext ctx, VersionedConnection connection) {
         this.ctx = ctx;
-        this.pool = pool;
+        this.eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.connection.service", this);
         this.connection = connection;
         dos = new DataStreamOutputStream(connection.getConnection().getOutputStream());
-        queueProcessor = new QueueProcessor();
     }
 
     public void setOutboundTracer(OutboundTracer outboundTracer) {
         this.outboundTracer = outboundTracer;
     }
 
-    protected void startProcessor() {
-        if (!connection.closed)
-            pool.dispatchTask(queueProcessor);
+    public void enqueue(Object event) {
+        eventLoop.submit(event);
     }
 
-    protected void process(Object[] bulk, int n) {
+    @Override
+    public void process(List<Object> list) {
         try {
-            for (int i = 0; i < n; i++) {
-                ((Writable) bulk[i]).writeContent(dos);
+            for (Object event : list) {
+                ((Writable) event).writeContent(dos);
                 if (outboundTracer != null && ctx.protSpace.enabled)
-                    ctx.protSpace.trace(outboundTracer.getTraceKey(), connection.toString() + "/SND: " + outboundTracer.getTraceString(bulk[i]));
+                    ctx.protSpace.trace(outboundTracer.getTraceKey(), connection.toString() + "/SND: " + outboundTracer.getTraceString(event));
             }
             dos.flush();
         } catch (Exception e) {
             connection.close();
         } finally {
-            for (int i = 0; i < n; i++) {
-                Writable w = (Writable) bulk[i];
+            for (Object event : list) {
+                Writable w = (Writable) event;
                 if (w.getSemaphore() != null)
                     w.getSemaphore().notifySingleWaiter();
                 else if (w.getCallback() != null)
@@ -70,25 +68,7 @@ public class OutboundQueue extends SingleProcessorQueue {
         }
     }
 
-    private class QueueProcessor implements AsyncTask {
-        public boolean isValid() {
-            return !connection.closed;
-        }
-
-        public String getDispatchToken() {
-            return VersionedConnection.TP_CONNECTIONSVC;
-        }
-
-        public String getDescription() {
-            return connection.toString() + "/QueueProcessor";
-        }
-
-        public void stop() {
-        }
-
-        public void run() {
-            if (!connection.closed && dequeue())
-                pool.dispatchTask(this);
-        }
+    public void close() {
+        eventLoop.close();
     }
 }

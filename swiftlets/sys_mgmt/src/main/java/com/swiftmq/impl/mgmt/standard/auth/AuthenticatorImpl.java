@@ -23,7 +23,6 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.tools.sql.LikeComparator;
 import com.swiftmq.util.SwiftUtilities;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +36,8 @@ public class AuthenticatorImpl implements Authenticator {
     }
 
     private boolean isIncluded(String[] array, String s) {
-        for (int i = 0; i < array.length; i++) {
-            if (LikeComparator.compare(s, array[i], '\\'))
+        for (String value : array) {
+            if (LikeComparator.compare(s, value, '\\'))
                 return true;
         }
         return false;
@@ -51,8 +50,8 @@ public class AuthenticatorImpl implements Authenticator {
         boolean granted = role.isContextGranted(context, false);
         Map entities = entity.getEntities();
         if (entities != null && entities.size() > 0) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Object o : entities.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 if (contextCheck(e)) {
                     granted = true;
                     break;
@@ -61,8 +60,8 @@ public class AuthenticatorImpl implements Authenticator {
         }
         Map props = entity.getProperties();
         if (props != null && props.size() > 0) {
-            for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
-                Property prop = (Property) ((Map.Entry) iter.next()).getValue();
+            for (Object o : props.entrySet()) {
+                Property prop = (Property) ((Map.Entry<?, ?>) o).getValue();
                 if (role.isContextGranted(context + "/" + prop.getName(), false)) {
                     granted = true;
                     break;
@@ -88,8 +87,8 @@ public class AuthenticatorImpl implements Authenticator {
         boolean granted = role.isContextGranted(context, false);
         Map entities = entity.getEntities();
         if (entities != null && entities.size() > 0) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Object o : entities.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 if (!roleStrip(e)) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/roleStrip, remove entity: " + e.getName());
@@ -101,12 +100,12 @@ public class AuthenticatorImpl implements Authenticator {
         }
         Map props = entity.getProperties();
         if (props != null && props.size() > 0) {
-            for (Iterator iter = props.entrySet().iterator(); iter.hasNext(); ) {
-                Property prop = (Property) ((Map.Entry) iter.next()).getValue();
+            for (Object o : props.entrySet()) {
+                Property prop = (Property) ((Map.Entry) o).getValue();
                 if (!role.isContextGranted(context + "/" + prop.getName(), false)) {
                     entity.removeProperty(prop.getName());
                     Entity parent = entity.getParent();
-                    if (parent != null && parent instanceof EntityList) {
+                    if (parent instanceof EntityList) {
                         ((EntityList) parent).getTemplate().removeProperty(prop.getName());
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/roleStrip, remove template property: " + prop.getName());
@@ -126,8 +125,8 @@ public class AuthenticatorImpl implements Authenticator {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/roleStrip, context: " + context + ", granted commands: " + SwiftUtilities.concat(grantedCommands, ", "));
             List cmdList = commandRegistry.getCommands();
-            for (int i = 0; i < cmdList.size(); i++) {
-                Command cmd = (Command) cmdList.get(i);
+            for (Object o : cmdList) {
+                Command cmd = (Command) o;
                 boolean inc = isIncluded(grantedCommands, cmd.getName());
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/roleStrip, context: " + context + ", command: " + cmd.getName() + " included: " + inc);
@@ -170,8 +169,8 @@ public class AuthenticatorImpl implements Authenticator {
         if (!granted) {
             Map entities = e.getEntities();
             if (entities != null && entities.size() > 0) {
-                for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity sub = (Entity) ((Map.Entry) iter.next()).getValue();
+                for (Object o : entities.entrySet()) {
+                    Entity sub = (Entity) ((Map.Entry) o).getValue();
                     if (isCommandGranted(sub, cmd)) {
                         granted = true;
                         break;

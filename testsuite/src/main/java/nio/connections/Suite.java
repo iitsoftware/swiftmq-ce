@@ -18,29 +18,25 @@
 package nio.connections;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    int n = 50;
-    TestSuite suite = new Suite();
-    for (int i = 0; i < n; i++)
-    {
-      suite.addTest(new Tester("test"));
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        int n = 50;
+        TestSuite suite = new Suite();
+        for (int i = 0; i < n; i++) {
+            suite.addTest(new Tester("test"));
+        }
+        return suite;
     }
-    return suite;
-  }
 
-  public String toString()
-  {
-    return "connections";
-  }
+    public String toString() {
+        return "connections";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

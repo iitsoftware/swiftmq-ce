@@ -18,35 +18,32 @@
 package jms.funcunified.requestreply.receive.unidentified.ps;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Replier("testReply"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    suite.addTest(new Requestor("testRequest"));
-    return suite;
-  }
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Replier("testReply"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        suite.addTest(new Requestor("testRequest"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "PubSub";
-  }
+    public String toString() {
+        return "PubSub";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

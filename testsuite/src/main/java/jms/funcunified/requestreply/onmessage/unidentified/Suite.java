@@ -17,26 +17,23 @@
 
 package jms.funcunified.requestreply.onmessage.unidentified;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.funcunified.requestreply.onmessage.unidentified.ptp.Suite.suite());
-    suite.addTest(jms.funcunified.requestreply.onmessage.unidentified.ps.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.funcunified.requestreply.onmessage.unidentified.ptp.Suite.suite());
+        suite.addTest(jms.funcunified.requestreply.onmessage.unidentified.ps.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Unidentified Producer";
-  }
+    public String toString() {
+        return "Unidentified Producer";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

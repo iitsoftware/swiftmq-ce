@@ -18,6 +18,7 @@
 package com.swiftmq.impl.scheduler.standard;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,20 +39,19 @@ public class RepeatSchedule extends AtSchedule {
     }
 
     private void computeStartTimes() {
-        List list = new ArrayList();
+        List<Integer> list = new ArrayList<>();
         int fullDay = 24 * 3600;
         int actTime = startTime;
         int actEnd = endTime < actTime ? endTime + fullDay : endTime;
         int repeatCount = 0;
         do {
-            list.add(new Integer(actTime >= fullDay ? actTime - fullDay : actTime));
+            list.add(actTime >= fullDay ? actTime - fullDay : actTime);
             actTime += delay;
             repeatCount++;
         } while ((actTime <= actEnd) && (repeats == -1 || repeatCount < repeats));
         Collections.sort(list);
-        int st[] = new int[list.size()];
-        for (int i = 0; i < st.length; i++)
-            st[i] = ((Integer) list.get(i)).intValue();
+        int[] st = new int[list.size()];
+        Arrays.setAll(st, list::get);
         setStartTimes(st);
     }
 

@@ -26,6 +26,7 @@ import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.swiftlet.scheduler.Job;
 import com.swiftmq.swiftlet.scheduler.JobException;
 import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterLong;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.util.IdGenerator;
@@ -37,7 +38,7 @@ import java.util.Properties;
 
 public class MessageSenderJob implements Job {
     private static final String PREFIX = "sys$scheduler-" + IdGenerator.getInstance().nextId('-') + '-';
-    private static long msgNo = 0;
+    private static final AtomicWrappingCounterLong msgNo = new AtomicWrappingCounterLong(1);
     SwiftletContext ctx = null;
     String id = null;
 
@@ -46,10 +47,8 @@ public class MessageSenderJob implements Job {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
     }
 
-    private static synchronized String nextJMSMessageId() {
-        if (msgNo == Long.MAX_VALUE)
-            msgNo = 0;
-        return PREFIX + (++msgNo);
+    private static String nextJMSMessageId() {
+        return PREFIX + msgNo.getAndIncrement();
     }
 
     private MessageImpl copyMessage(MessageImpl msg) throws Exception {
@@ -67,9 +66,9 @@ public class MessageSenderJob implements Job {
     private MessageImpl getMessage() throws Exception {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/getMessage ...");
-        MessageSelector selector = new MessageSelector(ctx.PROP_SCHED_ID + " = '" + id + "'");
+        MessageSelector selector = new MessageSelector(SwiftletContext.PROP_SCHED_ID + " = '" + id + "'");
         selector.compile();
-        QueueReceiver receiver = ctx.queueManager.createQueueReceiver(ctx.INTERNAL_QUEUE, null, selector);
+        QueueReceiver receiver = ctx.queueManager.createQueueReceiver(SwiftletContext.INTERNAL_QUEUE, null, selector);
         QueuePullTransaction t = receiver.createTransaction(false);
         MessageEntry entry = t.getMessage(0, selector);
         t.rollback();
@@ -111,27 +110,26 @@ public class MessageSenderJob implements Job {
     }
 
     public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
-        id = properties.getProperty(ctx.PARM);
+        id = properties.getProperty(SwiftletContext.PARM);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/start ...");
         try {
             MessageImpl msg = getMessage();
-            String type = msg.getStringProperty(ctx.PROP_SCHED_DEST_TYPE).toLowerCase();
-            String dest = msg.getStringProperty(ctx.PROP_SCHED_DEST);
+            String type = msg.getStringProperty(SwiftletContext.PROP_SCHED_DEST_TYPE).toLowerCase();
+            String dest = msg.getStringProperty(SwiftletContext.PROP_SCHED_DEST);
             long expiration = 0;
-            if (msg.propertyExists(ctx.PROP_SCHED_EXPIRATION))
-                expiration = msg.getLongProperty(ctx.PROP_SCHED_EXPIRATION);
-            List list = new ArrayList();
+            if (msg.propertyExists(SwiftletContext.PROP_SCHED_EXPIRATION))
+                expiration = msg.getLongProperty(SwiftletContext.PROP_SCHED_EXPIRATION);
+            List<String> list = new ArrayList<>();
             for (Enumeration _enum = msg.getPropertyNames(); _enum.hasMoreElements(); ) {
                 String name = (String) _enum.nextElement();
                 if (name.startsWith("JMS_SWIFTMQ_SCHEDULER"))
                     list.add(name);
             }
-            for (int i = 0; i < list.size(); i++)
-                msg.removeProperty((String) list.get(i));
+            for (String s : list) msg.removeProperty((String) s);
             if (expiration > 0)
                 msg.setJMSExpiration(System.currentTimeMillis() + expiration);
             msg.setJMSReplyTo(null);
-            if (type.equals(ctx.QUEUE))
+            if (type.equals(SwiftletContext.QUEUE))
                 sendToQueue(dest, msg);
             else
                 sendToTopic(dest, msg);

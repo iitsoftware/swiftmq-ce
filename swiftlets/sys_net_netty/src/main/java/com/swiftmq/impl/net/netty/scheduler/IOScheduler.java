@@ -22,17 +22,18 @@ import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.net.SocketFactory;
 import com.swiftmq.swiftlet.net.ConnectorMetaData;
 import com.swiftmq.swiftlet.net.ListenerMetaData;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.tools.collection.ConcurrentExpandableList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 public abstract class IOScheduler {
     SwiftletContext ctx;
-    ArrayList listeners = new ArrayList();
-    ArrayList connectors = new ArrayList();
-    Map socketFactories = new HashMap();
+    ConcurrentExpandableList listeners = new ConcurrentExpandableList();
+    ConcurrentExpandableList connectors = new ConcurrentExpandableList();
+    Map<String, SocketFactory> socketFactories = new ConcurrentHashMap<>();
 
     public IOScheduler(SwiftletContext ctx) {
         this.ctx = ctx;
@@ -40,8 +41,9 @@ public abstract class IOScheduler {
 
     private SocketFactory getSocketFactory(String className)
             throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/getSocketFactory: className=" + className);
-        SocketFactory sf = (SocketFactory) socketFactories.get(className);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/getSocketFactory: className=" + className);
+        SocketFactory sf = socketFactories.get(className);
         if (sf == null) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$net", toString() + "/getSocketFactory: className=" + className + ", creating...");
@@ -51,66 +53,62 @@ public abstract class IOScheduler {
         return sf;
     }
 
-    public synchronized int createListener(ListenerMetaData metaData)
+    public int createListener(ListenerMetaData metaData)
             throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/createListener: MetaData=" + metaData);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/createListener: MetaData=" + metaData);
         TCPListener l = createListenerInstance(metaData, getSocketFactory(metaData.getSocketFactoryClass()));
-        return ArrayListTool.setFirstFreeOrExpand(listeners, l);
+        return listeners.add(l);
     }
 
-    public synchronized TCPListener getListener(int listenerId) {
+    public TCPListener getListener(int listenerId) {
         return (TCPListener) listeners.get(listenerId);
     }
 
     protected abstract TCPListener createListenerInstance(ListenerMetaData metaData, SocketFactory socketFactory)
             throws Exception;
 
-    public synchronized void removeListener(int listenerId) {
+    public void removeListener(int listenerId) {
         TCPListener l = (TCPListener) listeners.get(listenerId);
         if (l != null) {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/removeListener: id=" + listenerId);
-            listeners.set(listenerId, null);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$net", toString() + "/removeListener: id=" + listenerId);
+            listeners.remove(listenerId);
             l.close();
         }
     }
 
-    public synchronized int createConnector(ConnectorMetaData metaData)
+    public int createConnector(ConnectorMetaData metaData)
             throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/createConnector: MetaData=" + metaData);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/createConnector: MetaData=" + metaData);
         TCPConnector c = createConnectorInstance(metaData, getSocketFactory(metaData.getSocketFactoryClass()));
-        return ArrayListTool.setFirstFreeOrExpand(connectors, c);
+        return connectors.add(c);
     }
 
-    public synchronized TCPConnector getConnector(int connectorId) {
+    public TCPConnector getConnector(int connectorId) {
         return (TCPConnector) connectors.get(connectorId);
     }
 
     protected abstract TCPConnector createConnectorInstance(ConnectorMetaData metaData, SocketFactory socketFactory)
             throws Exception;
 
-    public synchronized void removeConnector(int connectorId) {
+    public void removeConnector(int connectorId) {
         TCPConnector c = (TCPConnector) connectors.get(connectorId);
         if (c != null) {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/removeConnector: id=" + connectorId);
-            connectors.set(connectorId, null);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$net", toString() + "/removeConnector: id=" + connectorId);
+            connectors.remove(connectorId);
             c.close();
         }
     }
 
-    public synchronized void close() {
+    public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/close: listeners");
-        for (int i = 0; i < listeners.size(); i++) {
-            TCPListener l = (TCPListener) listeners.get(i);
-            if (l != null)
-                l.close();
-        }
+        IntStream.range(0, listeners.size()).mapToObj(i -> (TCPListener) listeners.get(i)).filter(Objects::nonNull).forEach(TCPListener::close);
         listeners.clear();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/close: connectore");
-        for (int i = 0; i < connectors.size(); i++) {
-            TCPConnector c = (TCPConnector) connectors.get(i);
-            if (c != null)
-                c.close();
-        }
+        IntStream.range(0, connectors.size()).mapToObj(i -> (TCPConnector) connectors.get(i)).filter(Objects::nonNull).forEach(TCPConnector::close);
         connectors.clear();
         socketFactories.clear();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/close: done.");

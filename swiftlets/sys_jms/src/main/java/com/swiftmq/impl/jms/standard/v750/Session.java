@@ -28,32 +28,30 @@ import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.queue.QueueManager;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.store.StoreSwiftlet;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.requestreply.Request;
 import com.swiftmq.tools.requestreply.RequestService;
 
 import javax.jms.InvalidDestinationException;
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Session extends SessionVisitor
-        implements RequestService {
-    static final String TP_SESSIONSVC = "sys$jms.session.service";
-
-    protected ArrayList consumerList = new ArrayList();
-    protected ArrayList producerList = new ArrayList();
+        implements RequestService, EventProcessor {
+    protected ExpandableList<Consumer> consumerList = new ExpandableList<>();
+    protected ExpandableList<Producer> producerList = new ExpandableList<>();
     protected SessionContext ctx = null;
     protected int dispatchId;
-    protected ThreadPool sessionTP = null;
     protected int recoveryEpoche = 0;
     protected boolean recoveryInProgress = false;
-    protected boolean closed = false;
+    protected volatile boolean closed = false;
     protected JMSConnection myConnection = null;
 
-    public Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
+    public Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
         this.dispatchId = dispatchId;
         ctx = new SessionContext();
         ctx.queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
@@ -64,13 +62,16 @@ public abstract class Session extends SessionVisitor
         ctx.logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
         ctx.traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
         ctx.traceSpace = ctx.traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-        ctx.tracePrefix = connectionTracePrefix + "/" + toString();
+        ctx.tracePrefix = connectionTracePrefix + "/" + this;
         ctx.activeLogin = activeLogin;
         ctx.sessionEntity = sessionEntity;
-        sessionTP = ctx.threadpoolSwiftlet.getPool(TP_SESSIONSVC);
-        ctx.sessionQueue = new SessionQueue(sessionTP, this);
-        ctx.connectionOutboundQueue = connectionOutboundQueue;
-        ctx.sessionQueue.startQueue();
+        ctx.sessionLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$jms.session", this);
+        ctx.outboundLoop = outboundLoop;
+    }
+
+    protected Session(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin, int ackMode) {
+        this(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
+        ctx.ackMode = ackMode;
     }
 
     public JMSConnection getMyConnection() {
@@ -93,9 +94,10 @@ public abstract class Session extends SessionVisitor
         this.recoveryEpoche = recoveryEpoche;
     }
 
-    protected Session(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin, int ackMode) {
-        this(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
-        ctx.ackMode = ackMode;
+    @Override
+    public void process(List<Object> events) {
+        if (!closed)
+            events.forEach(e -> ((Request) e).accept(this));
     }
 
     public void visit(StartConsumerRequest req) {
@@ -103,7 +105,7 @@ public abstract class Session extends SessionVisitor
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitStartConsumerRequest");
         int qcId = req.getQueueConsumerId();
-        Consumer consumer = (Consumer) consumerList.get(qcId);
+        Consumer consumer = consumerList.get(qcId);
         if (consumer == null)
             return;
         int clientDispatchId = req.getClientDispatchId();
@@ -133,7 +135,7 @@ public abstract class Session extends SessionVisitor
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitDeliveryItem, item= " + item);
         try {
             item.request.setMessageEntry(item.messageEntry);
-            ctx.connectionOutboundQueue.enqueue(item.request);
+            ctx.outboundLoop.submit(item.request);
         } catch (Exception e) {
             if (!closed) {
                 e.printStackTrace();
@@ -169,8 +171,8 @@ public abstract class Session extends SessionVisitor
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/visitMessageDeliveredRequest ...");
         try {
-            Consumer consumer = (Consumer) consumerList.get(req.getQueueConsumerId());
-            QueuePullTransaction rt = (QueuePullTransaction) consumer.getReadTransaction();
+            Consumer consumer = consumerList.get(req.getQueueConsumerId());
+            QueuePullTransaction rt = consumer.getReadTransaction();
             // Duplicates are immediately deleted
             if (req.isDuplicate()) {
                 QueuePullTransaction t = (QueuePullTransaction) consumer.createDuplicateTransaction();
@@ -204,15 +206,17 @@ public abstract class Session extends SessionVisitor
     public void serviceRequest(Request request) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/serviceRequest, request=" + request);
-        ctx.sessionQueue.enqueue(request);
+        ctx.sessionLoop.submit(request);
     }
 
     protected void close() {
+        if (closed)
+            return;
         closed = true;
-        ctx.sessionQueue.stopQueue();
+        ctx.sessionLoop.close();
 
         for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
+            Consumer consumer = consumerList.get(i);
             if (consumer != null) {
                 try {
                     consumer.close();
@@ -222,7 +226,7 @@ public abstract class Session extends SessionVisitor
             }
         }
         for (int i = 0; i < producerList.size(); i++) {
-            Producer producer = (Producer) producerList.get(i);
+            Producer producer = producerList.get(i);
             if (producer != null) {
                 try {
                     producer.close();

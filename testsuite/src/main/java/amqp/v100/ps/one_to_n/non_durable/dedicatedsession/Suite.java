@@ -20,25 +20,21 @@ package amqp.v100.ps.one_to_n.non_durable.dedicatedsession;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(amqp.v100.ps.one_to_n.non_durable.dedicatedsession.at_most_once.Suite.suite());
-    suite.addTest(amqp.v100.ps.one_to_n.non_durable.dedicatedsession.at_least_once.Suite.suite());
-    suite.addTest(amqp.v100.ps.one_to_n.non_durable.dedicatedsession.exactly_once.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(amqp.v100.ps.one_to_n.non_durable.dedicatedsession.at_most_once.Suite.suite());
+        suite.addTest(amqp.v100.ps.one_to_n.non_durable.dedicatedsession.at_least_once.Suite.suite());
+        suite.addTest(amqp.v100.ps.one_to_n.non_durable.dedicatedsession.exactly_once.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "dedicatedsession";
-  }
+    public String toString() {
+        return "dedicatedsession";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

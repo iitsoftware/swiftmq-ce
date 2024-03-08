@@ -19,30 +19,25 @@ package amqp.v100.base;
 
 import com.swiftmq.amqp.v100.client.Session;
 
-public class AMQPConnectedSessionTestCase extends AMQPConnectedTestCase
-{
-  Session session = null;
+public class AMQPConnectedSessionTestCase extends AMQPConnectedTestCase {
+    Session session = null;
 
-  public AMQPConnectedSessionTestCase(String name)
-  {
-    super(name);
-  }
+    public AMQPConnectedSessionTestCase(String name) {
+        super(name);
+    }
 
-  public Session getSession()
-  {
-    return session;
-  }
+    public Session getSession() {
+        return session;
+    }
 
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    session = Util.createSession(getConnection());
-  }
+    protected void setUp() throws Exception {
+        super.setUp();
+        session = Util.createSession(getConnection());
+    }
 
-  protected void tearDown() throws Exception
-  {
-    if (session != null)
-      session.close();
-    super.tearDown();
-  }
+    protected void tearDown() throws Exception {
+        if (session != null)
+            session.close();
+        super.tearDown();
+    }
 }

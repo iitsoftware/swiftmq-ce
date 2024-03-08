@@ -24,104 +24,88 @@ import jms.base.XidImpl;
 
 import javax.jms.*;
 import javax.naming.InitialContext;
-import javax.transaction.xa.*;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class MDBFinalReceiver extends XAPTPTestCase
-{
-  InitialContext ctx = null;
-  XAQueueConnection qc = null;
-  Queue queueListen = null;
-  ConnectionConsumer cc = null;
-  ServerSessionPoolImpl pool = null;
-  int nMsgs = 0;
-  String listenQueue = null;
+public class MDBFinalReceiver extends XAPTPTestCase {
+    InitialContext ctx = null;
+    XAQueueConnection qc = null;
+    Queue queueListen = null;
+    ConnectionConsumer cc = null;
+    ServerSessionPoolImpl pool = null;
+    int nMsgs = 0;
+    String listenQueue = null;
 
-  public MDBFinalReceiver(String name, String listenQueue)
-  {
-    super(name);
-    this.listenQueue = listenQueue;
-  }
-
-  protected void setUp() throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createXAQueueConnection(qcfName, false);
-    queueListen = getQueue(listenQueue);
-    pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 5; i++)
-    {
-      XAQueueSession qs = qc.createXAQueueSession();
-      qs.setMessageListener(new Listener(qs, i));
-      pool.addServerSession(new ServerSessionImpl(pool, qs));
+    public MDBFinalReceiver(String name, String listenQueue) {
+        super(name);
+        this.listenQueue = listenQueue;
     }
-    cc = qc.createConnectionConsumer(queueListen, null, pool, 5);
-  }
 
-  synchronized void inc()
-  {
-    nMsgs++;
-    if (nMsgs == 1000)
-      notify();
-  }
-
-  public void test()
-  {
-    try
-    {
-      synchronized (this)
-      {
-        qc.start();
-        try
-        {
-          wait();
-        } catch (InterruptedException e)
-        {
+    protected void setUp() throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createXAQueueConnection(qcfName, false);
+        queueListen = getQueue(listenQueue);
+        pool = new ServerSessionPoolImpl();
+        for (int i = 0; i < 5; i++) {
+            XAQueueSession qs = qc.createXAQueueSession();
+            qs.setMessageListener(new Listener(qs, i));
+            pool.addServerSession(new ServerSessionImpl(pool, qs));
         }
-      }
-    } catch (Exception e)
-    {
-      failFast("Test failed: " + e.toString());
-    }
-  }
-
-  protected void tearDown() throws Exception
-  {
-    qc.close();
-    super.tearDown();
-  }
-
-  private class Listener implements MessageListener
-  {
-    XAQueueSession session;
-    int id;
-
-    public Listener(XAQueueSession session, int id)
-    {
-      this.session = session;
-      this.id = id;
+        cc = qc.createConnectionConsumer(queueListen, null, pool, 5);
     }
 
-    public void onMessage(Message msg)
-    {
-      try
-      {
-        XAResource xares1 = session.getXAResource();  // done during JTA enlistment
-        Xid xid = new XidImpl();                      // done during JTA enlistment
-        xares1.start(xid, XAResource.TMNOFLAGS);       // done during JTA enlistment
-
-        // Start: MDB's onMessage
-        System.out.println(listenQueue + " received: " + ((TextMessage) msg).getText());
-        // End: MDB's onMessage
-
-        xares1.end(xid, XAResource.TMSUCCESS);        // done by the JTA
-        xares1.prepare(xid);                         // done by the JTA
-        xares1.commit(xid, false);                    // done by the JTA
-      } catch (Exception e)
-      {
-        e.printStackTrace();
-      }
-      inc();
+    synchronized void inc() {
+        nMsgs++;
+        if (nMsgs == 1000)
+            notify();
     }
-  }
+
+    public void test() {
+        try {
+            synchronized (this) {
+                qc.start();
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        } catch (Exception e) {
+            failFast("Test failed: " + e.toString());
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        qc.close();
+        super.tearDown();
+    }
+
+    private class Listener implements MessageListener {
+        XAQueueSession session;
+        int id;
+
+        public Listener(XAQueueSession session, int id) {
+            this.session = session;
+            this.id = id;
+        }
+
+        public void onMessage(Message msg) {
+            try {
+                XAResource xares1 = session.getXAResource();  // done during JTA enlistment
+                Xid xid = new XidImpl();                      // done during JTA enlistment
+                xares1.start(xid, XAResource.TMNOFLAGS);       // done during JTA enlistment
+
+                // Start: MDB's onMessage
+                System.out.println(listenQueue + " received: " + ((TextMessage) msg).getText());
+                // End: MDB's onMessage
+
+                xares1.end(xid, XAResource.TMSUCCESS);        // done by the JTA
+                xares1.prepare(xid);                         // done by the JTA
+                xares1.commit(xid, false);                    // done by the JTA
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            inc();
+        }
+    }
 }

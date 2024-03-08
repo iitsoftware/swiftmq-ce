@@ -20,23 +20,19 @@ package jms.ha.persistent.ptp.nontransacted;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class SenderSuite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new SenderSuite();
-    suite.addTest(new Sender("send"));
-    return suite;
-  }
+public class SenderSuite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new SenderSuite();
+        suite.addTest(new Sender("send"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "sender";
-  }
+    public String toString() {
+        return "sender";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

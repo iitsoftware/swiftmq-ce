@@ -17,86 +17,66 @@
 
 package jms.base;
 
+import com.swiftmq.jms.TopicImpl;
+
 import javax.jms.Topic;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicConnectionFactory;
 import javax.naming.InitialContext;
 
-public class XAPSTestCase extends JMSTestCase
-{
-  public InitialContext ctx = null;
-  XATopicConnectionFactory tcf = null;
+public class XAPSTestCase extends JMSTestCase {
+    public InitialContext ctx = null;
+    XATopicConnectionFactory tcf = null;
 
-  public XAPSTestCase(String name)
-  {
-    super(name);
-  }
-
-  public XATopicConnection createXATopicConnection(InitialContext ctx, String lookup, String clientId)
-  {
-    return createXATopicConnection(ctx, lookup, clientId, true);
-  }
-
-  public XATopicConnection createXATopicConnection(InitialContext ctx, String lookup, String clientId, boolean start)
-  {
-    XATopicConnection tc = null;
-    try
-    {
-      if (tcf == null)
-        tcf = (XATopicConnectionFactory) ctx.lookup(lookup);
-      tc = tcf.createXATopicConnection();
-      if (clientId != null)
-        tc.setClientID(clientId);
-      if (start)
-        tc.start();
-    } catch (Exception e)
-    {
-      failFast("create xa topic connection failed: " + e);
+    public XAPSTestCase(String name) {
+        super(name);
     }
-    return tc;
-  }
 
-  public XATopicConnection createXATopicConnection(String lookup, String clientId)
-  {
-    return createXATopicConnection(lookup, clientId, true);
-  }
-
-  public XATopicConnection createXATopicConnection(String lookup, String clientId, boolean start)
-  {
-    XATopicConnection tc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      tc = createXATopicConnection(ctx, lookup, clientId, start);
-    } catch (Exception e)
-    {
-      failFast("create topic connection failed: " + e);
+    public XATopicConnection createXATopicConnection(InitialContext ctx, String lookup, String clientId) {
+        return createXATopicConnection(ctx, lookup, clientId, true);
     }
-    return tc;
-  }
 
-  public Topic getTopic(String name)
-  {
-    Topic topic = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      topic = (Topic) ctx.lookup(name);
-    } catch (Exception e)
-    {
-      failFast("get topic failed: " + e);
+    public XATopicConnection createXATopicConnection(InitialContext ctx, String lookup, String clientId, boolean start) {
+        XATopicConnection tc = null;
+        try {
+            if (tcf == null)
+                tcf = (XATopicConnectionFactory) ctx.lookup(lookup);
+            tc = tcf.createXATopicConnection();
+            if (clientId != null)
+                tc.setClientID(clientId);
+            if (start)
+                tc.start();
+        } catch (Exception e) {
+            failFast("create xa topic connection failed: " + e);
+        }
+        return tc;
     }
-    return topic;
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (ctx != null)
-      ctx.close();
-    ctx = null;
-    tcf = null;
-    super.tearDown();
-  }
+    public XATopicConnection createXATopicConnection(String lookup, String clientId) {
+        return createXATopicConnection(lookup, clientId, true);
+    }
+
+    public XATopicConnection createXATopicConnection(String lookup, String clientId, boolean start) {
+        XATopicConnection tc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            tc = createXATopicConnection(ctx, lookup, clientId, start);
+        } catch (Exception e) {
+            failFast("create topic connection failed: " + e);
+        }
+        return tc;
+    }
+
+    public Topic getTopic(String name) {
+        return new TopicImpl(name);
+    }
+
+    protected void tearDown() throws Exception {
+        if (ctx != null)
+            ctx.close();
+        ctx = null;
+        tcf = null;
+        super.tearDown();
+    }
 }

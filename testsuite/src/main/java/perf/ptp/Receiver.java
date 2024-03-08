@@ -21,59 +21,51 @@ import jms.base.PTPTestCase;
 
 import javax.jms.*;
 
-public class Receiver extends PTPTestCase
-{
-  QueueConnection qc = null;
-  Queue queue = null;
-  int n = 0;
-  int size = 0;
+public class Receiver extends PTPTestCase {
+    QueueConnection qc = null;
+    Queue queue = null;
+    int n = 0;
+    int size = 0;
 
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createQueueConnection(qcfName);
-    String queueName = System.getProperty("jndi.queue");
-    assertNotNull("missing property 'jndi.queue'", queueName);
-    queue = getQueue(queueName);
-    String s = System.getProperty("messages.number");
-    assertNotNull("missing property 'messages.number'", s);
-    n = Integer.parseInt(s);
-    s = System.getProperty("messages.size");
-    assertNotNull("missing property 'messages.size'", s);
-    size = Integer.parseInt(s);
-  }
-
-  public void testReceive()
-  {
-    try
-    {
-      QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      QueueReceiver qr = qs.createReceiver(queue);
-      for (; ;)
-      {
-        BytesMessage msg = (BytesMessage) qr.receive(2000);
-        if (msg == null)
-          break;
-      }
-      qr.close();
-      qs.close();
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      fail("testReceive failed: " + e);
+    public Receiver(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    qc.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createQueueConnection(qcfName);
+        String queueName = System.getProperty("jndi.queue");
+        assertNotNull("missing property 'jndi.queue'", queueName);
+        queue = getQueue(queueName);
+        String s = System.getProperty("messages.number");
+        assertNotNull("missing property 'messages.number'", s);
+        n = Integer.parseInt(s);
+        s = System.getProperty("messages.size");
+        assertNotNull("missing property 'messages.size'", s);
+        size = Integer.parseInt(s);
+    }
+
+    public void testReceive() {
+        try {
+            QueueSession qs = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+            QueueReceiver qr = qs.createReceiver(queue);
+            for (; ; ) {
+                BytesMessage msg = (BytesMessage) qr.receive(2000);
+                if (msg == null)
+                    break;
+            }
+            qr.close();
+            qs.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("testReceive failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        qc.close();
+        super.tearDown();
+    }
 }
 

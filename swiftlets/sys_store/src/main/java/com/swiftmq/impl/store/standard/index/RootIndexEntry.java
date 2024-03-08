@@ -26,19 +26,12 @@ public class RootIndexEntry extends IndexEntry {
         super.setKey(c);
     }
 
-    /**
-     * @return
-     */
     public int getLength() {
         if (key == null || rootPageNo == -1)
             throw new NullPointerException("key == null || rootPage == -1");
         return queueNameByte.length + 13;
     }
 
-    /**
-     * @param b
-     * @param offset
-     */
     public void writeContent(byte[] b, int offset) {
         int pos = offset;
 
@@ -57,10 +50,6 @@ public class RootIndexEntry extends IndexEntry {
         Util.writeInt(rootPageNo, b, pos);
     }
 
-    /**
-     * @param b
-     * @param offset
-     */
     public void readContent(byte[] b, int offset) {
         int pos = offset;
 

@@ -20,25 +20,21 @@ package amqp.v100.ptp.singlesession;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(amqp.v100.ptp.singlesession.at_most_once.Suite.suite());
-    suite.addTest(amqp.v100.ptp.singlesession.at_least_once.Suite.suite());
-    suite.addTest(amqp.v100.ptp.singlesession.exactly_once.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(amqp.v100.ptp.singlesession.at_most_once.Suite.suite());
+        suite.addTest(amqp.v100.ptp.singlesession.at_least_once.Suite.suite());
+        suite.addTest(amqp.v100.ptp.singlesession.exactly_once.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "singlesession";
-  }
+    public String toString() {
+        return "singlesession";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -19,25 +19,26 @@ package com.swiftmq.impl.net.netty;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CountableBufferedInputStream extends InputStream
         implements Countable {
     InputStream in = null;
-    volatile long byteCount = 0;
+    final AtomicLong byteCount = new AtomicLong();
 
     public CountableBufferedInputStream(InputStream in) {
         this.in = in;
     }
 
     public int read() throws IOException {
-        byteCount++;
+        byteCount.getAndIncrement();
         return in.read();
     }
 
     public int read(byte[] b, int offset, int len) throws IOException {
         int rc = in.read(b, offset, len);
         if (rc != -1)
-            byteCount += rc;
+            byteCount.addAndGet(rc);
         return rc;
     }
 
@@ -46,15 +47,15 @@ public class CountableBufferedInputStream extends InputStream
     }
 
     public void addByteCount(long cnt) {
-        byteCount += cnt;
+        byteCount.addAndGet(cnt);
     }
 
     public long getByteCount() {
-        return byteCount;
+        return byteCount.get();
     }
 
     public void resetByteCount() {
-        byteCount = 0;
+        byteCount.set(0);
     }
 
 }

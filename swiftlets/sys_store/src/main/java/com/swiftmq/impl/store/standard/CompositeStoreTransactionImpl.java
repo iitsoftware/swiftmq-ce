@@ -23,6 +23,7 @@ import com.swiftmq.impl.store.standard.index.QueueIndex;
 import com.swiftmq.impl.store.standard.index.QueueIndexEntry;
 import com.swiftmq.impl.store.standard.log.AbortLogRecord;
 import com.swiftmq.impl.store.standard.log.CommitLogRecord;
+import com.swiftmq.impl.store.standard.log.LogAction;
 import com.swiftmq.jms.XidImpl;
 import com.swiftmq.swiftlet.store.CompositeStoreTransaction;
 import com.swiftmq.swiftlet.store.PersistentStore;
@@ -33,20 +34,23 @@ import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class CompositeStoreTransactionImpl extends CompositeStoreTransaction implements CacheReleaseListener {
     StoreContext ctx = null;
-    PersistentStore persistentStore = null;
-    QueueIndex currentQueueIndex = null;
+    final AtomicReference<PersistentStore> persistentStore = new AtomicReference<>();
+    final AtomicReference<QueueIndex> currentQueueIndex = new AtomicReference<>();
     List<QueueIndex> queueIndexes = null;
-    long txId = -1;
+    final AtomicLong txId = new AtomicLong(-1);
     List<RemovedKeyEntry> keysRemoved = null;
     List<QueueIndexEntry> keysInserted = null;
-    List journal = null;
+    List<LogAction> journal = null;
     Semaphore sem = null;
-    boolean closed = false;
-    boolean markRedelivered = false;
-    boolean referencable = true;
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean markRedelivered = new AtomicBoolean(false);
+    final AtomicBoolean referencable = new AtomicBoolean(true);
 
     public CompositeStoreTransactionImpl(StoreContext ctx) {
         this.ctx = ctx;
@@ -56,19 +60,19 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
     }
 
     public void setReferencable(boolean referencable) {
-        this.referencable = referencable;
+        this.referencable.set(referencable);
     }
 
     public boolean isReferencable() {
-        return referencable;
+        return referencable.get();
     }
 
     public void setMarkRedelivered(boolean markRedelivered) {
-        this.markRedelivered = markRedelivered;
+        this.markRedelivered.set(markRedelivered);
     }
 
     protected void checkClosedAsync(AsyncCompletionCallback callback) {
-        if (closed) {
+        if (closed.get()) {
             callback.setException(new StoreException("Transaction is closed"));
             callback.notifyCallbackStack(false);
         }
@@ -76,7 +80,7 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
 
     protected AsyncCompletionCallback createLocalCallback(AsyncCompletionCallback callback) {
         return new AsyncCompletionCallback(callback) {
-            public synchronized void done(boolean success) {
+            public void done(boolean success) {
                 // Empty tx. May happen when duplicates where detected
                 removeTxId();
                 close();
@@ -86,10 +90,10 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
         };
     }
 
-    public synchronized void releaseCache() {
+    public void releaseCache() {
         try {
-            for (int i = 0; i < queueIndexes.size(); i++)
-                queueIndexes.get(i).unloadPages();
+            for (QueueIndex queueIndex : queueIndexes)
+                queueIndex.unloadPages();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -97,24 +101,24 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
 
     public void remove(Object key) throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/remove, key=" + key);
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
         if (keysRemoved == null)
-            keysRemoved = new ArrayList<RemovedKeyEntry>();
-        keysRemoved.add(new RemovedKeyEntry(currentQueueIndex, (QueueIndexEntry) key));
+            keysRemoved = new ArrayList<>();
+        keysRemoved.add(new RemovedKeyEntry(currentQueueIndex.get(), (QueueIndexEntry) key));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/remove done, key=" + key);
     }
 
     public void insert(StoreEntry storeEntry) throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/insert, storeEntry=" + storeEntry);
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
-        if (txId == -1)
-            txId = ctx.transactionManager.createTxId();      // to avoid a deadlock
+        if (txId.get() == -1)
+            txId.set(ctx.transactionManager.createTxId());      // to avoid a deadlock
         if (keysInserted == null)
             keysInserted = new ArrayList<QueueIndexEntry>();
         try {
-            keysInserted.add(currentQueueIndex.add(storeEntry, referencable));
+            keysInserted.add(currentQueueIndex.get().add(storeEntry, referencable.get()));
         } catch (Exception e) {
             e.printStackTrace();
             throw new StoreException(e.getMessage());
@@ -154,24 +158,23 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
     public void setPersistentStore(PersistentStore persistentStore) throws StoreException {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", toString() + "/setPersistentStore, persistentStore=" + persistentStore);
-        this.persistentStore = persistentStore;
+        this.persistentStore.set(persistentStore);
         if (persistentStore != null) {
-            currentQueueIndex = ((PersistentStoreImpl) persistentStore).getQueueIndex();
-            queueIndexes.add(currentQueueIndex);
-            currentQueueIndex.setJournal(journal);
+            currentQueueIndex.set(((PersistentStoreImpl) persistentStore).getQueueIndex());
+            queueIndexes.add(currentQueueIndex.get());
+            currentQueueIndex.get().setJournal(journal);
         }
     }
 
     private List<MessagePageReference> processRemovedKeys() throws Exception {
         List<MessagePageReference> messagePageRefs = null;
         if (keysRemoved != null) {
-            for (int i = 0; i < keysRemoved.size(); i++) {
-                RemovedKeyEntry entry = keysRemoved.get(i);
+            for (RemovedKeyEntry entry : keysRemoved) {
                 entry.queueIndex.setJournal(journal);
                 MessagePageReference ref = entry.queueIndex.remove(entry.key);
                 if (ref != null) {
                     if (messagePageRefs == null)
-                        messagePageRefs = new ArrayList<MessagePageReference>();
+                        messagePageRefs = new ArrayList<>();
                     messagePageRefs.add(ref);
                 }
             }
@@ -181,14 +184,14 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
 
     public void commitTransaction() throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/commitTransaction...");
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
-        if (txId == -1)
-            txId = ctx.transactionManager.createTxId();
+        if (txId.get() == -1)
+            txId.set(ctx.transactionManager.createTxId());
         try {
             List<MessagePageReference> messagePageRefs = processRemovedKeys();
             if (journal != null && journal.size() > 0) {
-                ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, messagePageRefs));
+                ctx.recoveryManager.commit(new CommitLogRecord(txId.get(), sem, journal, this, messagePageRefs));
                 sem.waitHere();
                 removeTxId();
             } else
@@ -201,9 +204,9 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
     }
 
     private void removeTxId() {
-        if (txId != -1) {
-            ctx.transactionManager.removeTxId(txId);
-            txId = -1;
+        if (txId.get() != -1) {
+            ctx.transactionManager.removeTxId(txId.get());
+            txId.set(-1);
         }
     }
 
@@ -216,7 +219,7 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
         try {
             List<MessagePageReference> messagePageRefs = processRemovedKeys();
             if (journal != null && journal.size() > 0)
-                ctx.recoveryManager.commit(new CommitLogRecord(txId, null, journal, this, localCallback, messagePageRefs));
+                ctx.recoveryManager.commit(new CommitLogRecord(txId.get(), null, journal, this, localCallback, messagePageRefs));
             else {
                 localCallback.notifyCallbackStack(true);
                 removeTxId();
@@ -232,26 +235,25 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
 
     public void abortTransaction() throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abortTransaction...");
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
         try {
             if (journal != null && journal.size() > 0) {
-                if (keysRemoved != null && markRedelivered)
-                    ctx.recoveryManager.abort(new AbortLogRecord(txId, null, journal, null));
+                if (keysRemoved != null && markRedelivered.get())
+                    ctx.recoveryManager.abort(new AbortLogRecord(txId.get(), null, journal, null));
                 else {
-                    ctx.recoveryManager.abort(new AbortLogRecord(txId, sem, journal, this));
+                    ctx.recoveryManager.abort(new AbortLogRecord(txId.get(), sem, journal, this));
                     sem.waitHere();
                 }
             }
-            if (keysRemoved != null && markRedelivered) {
+            if (keysRemoved != null && markRedelivered.get()) {
                 List newJournal = new ArrayList();
-                for (int i = 0; i < keysRemoved.size(); i++) {
-                    RemovedKeyEntry entry = keysRemoved.get(i);
+                for (RemovedKeyEntry entry : keysRemoved) {
                     entry.queueIndex.setJournal(newJournal);
                     entry.queueIndex.incDeliveryCount(entry.key);
                 }
                 // don't wonder, we are committing the redelivered settings
-                ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, newJournal, this, null));
+                ctx.recoveryManager.commit(new CommitLogRecord(txId.get(), sem, newJournal, this, null));
                 sem.waitHere();
             }
             removeTxId();
@@ -271,10 +273,10 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
         if (journal != null && journal.size() > 0) {
             try {
                 doNotify = false;
-                if (keysRemoved != null && markRedelivered)
-                    ctx.recoveryManager.abort(new AbortLogRecord(txId, null, journal, this, null));
+                if (keysRemoved != null && markRedelivered.get())
+                    ctx.recoveryManager.abort(new AbortLogRecord(txId.get(), null, journal, this, null));
                 else
-                    ctx.recoveryManager.abort(new AbortLogRecord(txId, null, journal, this, localCallback));
+                    ctx.recoveryManager.abort(new AbortLogRecord(txId.get(), null, journal, this, localCallback));
             } catch (Exception e) {
                 localCallback.setException(new StoreException(e.toString()));
                 localCallback.notifyCallbackStack(false);
@@ -282,17 +284,16 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
                 return;
             }
         }
-        if (keysRemoved != null && markRedelivered) {
+        if (keysRemoved != null && markRedelivered.get()) {
             List newJournal = new ArrayList();
             try {
-                for (int i = 0; i < keysRemoved.size(); i++) {
-                    RemovedKeyEntry entry = keysRemoved.get(i);
+                for (RemovedKeyEntry entry : keysRemoved) {
                     entry.queueIndex.setJournal(newJournal);
                     entry.queueIndex.incDeliveryCount(entry.key);
                 }
                 doNotify = false;
                 // don't wonder, we are committing the redelivered settings
-                ctx.recoveryManager.commit(new CommitLogRecord(txId, null, newJournal, this, localCallback, null));
+                ctx.recoveryManager.commit(new CommitLogRecord(txId.get(), null, newJournal, this, localCallback, null));
             } catch (Exception e) {
                 localCallback.setException(new StoreException(e.toString()));
                 localCallback.notifyCallbackStack(false);
@@ -313,15 +314,15 @@ public class CompositeStoreTransactionImpl extends CompositeStoreTransaction imp
             keysRemoved.clear();
         if (queueIndexes != null)
             queueIndexes.clear();
-        currentQueueIndex = null;
-        closed = true;
+        currentQueueIndex.set(null);
+        closed.set(true);
     }
 
     public String toString() {
         return "[CompositeStoreTransactionImpl, persistentStore=" + persistentStore + "]";
     }
 
-    private class RemovedKeyEntry {
+    private static class RemovedKeyEntry {
         QueueIndex queueIndex;
         QueueIndexEntry key;
 

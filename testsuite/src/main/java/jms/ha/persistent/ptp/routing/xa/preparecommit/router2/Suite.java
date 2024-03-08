@@ -17,37 +17,30 @@
 
 package jms.ha.persistent.ptp.routing.xa.preparecommit.router2;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
-    super.run(testResult);
-  }
+public class Suite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new jms.ha.persistent.ptp.routing.xa.preparecommit.router2.Suite();
-    suite.addTest(new Forwarder("forward", "testqueue@router2", "testqueue@router"));
-    suite.addTest(new Forwarder("forward", "testqueue1@router2", "testqueue1@router"));
-    suite.addTest(new Forwarder("forward", "testqueue2@router2", "testqueue2@router"));
-    suite.addTest(new Forwarder("forward", "testqueue3@router2", "testqueue3@router"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new jms.ha.persistent.ptp.routing.xa.preparecommit.router2.Suite();
+        suite.addTest(new Forwarder("forward", "testqueue@router2", "testqueue@router"));
+        suite.addTest(new Forwarder("forward", "testqueue1@router2", "testqueue1@router"));
+        suite.addTest(new Forwarder("forward", "testqueue2@router2", "testqueue2@router"));
+        suite.addTest(new Forwarder("forward", "testqueue3@router2", "testqueue3@router"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "router2";
-  }
+    public String toString() {
+        return "router2";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.ha.persistent.ptp.routing.xa.preparecommit.router2.Suite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.ha.persistent.ptp.routing.xa.preparecommit.router2.Suite.suite());
+    }
 }

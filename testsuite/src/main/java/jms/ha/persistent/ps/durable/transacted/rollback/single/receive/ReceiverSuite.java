@@ -20,23 +20,19 @@ package jms.ha.persistent.ps.durable.transacted.rollback.single.receive;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class ReceiverSuite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new ReceiverSuite();
-    suite.addTest(new Receiver("receive"));
-    return suite;
-  }
+public class ReceiverSuite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new ReceiverSuite();
+        suite.addTest(new Receiver("receive"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "receive";
-  }
+    public String toString() {
+        return "receive";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

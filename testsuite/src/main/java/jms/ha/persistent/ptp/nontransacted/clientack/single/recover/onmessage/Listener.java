@@ -17,134 +17,113 @@
 
 package jms.ha.persistent.ptp.nontransacted.clientack.single.recover.onmessage;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.MsgNoVerifier;
 import jms.base.SimpleConnectedPTPTestCase;
-import com.swiftmq.tools.concurrent.Semaphore;
 
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSession;
-import javax.jms.Session;
+import javax.jms.*;
 
-public class Listener extends SimpleConnectedPTPTestCase implements MessageListener
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  int n = 0, m = 0;
-  Exception exception = null;
-  Semaphore sem = null;
-  QueueSession s1 = null;
-  QueueSession s2 = null;
-  QueueSession s3 = null;
-  QueueReceiver receiver1 = null;
-  QueueReceiver receiver2 = null;
-  QueueReceiver receiver3 = null;
-  boolean recover = false;
+public class Listener extends SimpleConnectedPTPTestCase implements MessageListener {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    int n = 0, m = 0;
+    Exception exception = null;
+    Semaphore sem = null;
+    QueueSession s1 = null;
+    QueueSession s2 = null;
+    QueueSession s3 = null;
+    QueueReceiver receiver1 = null;
+    QueueReceiver receiver2 = null;
+    QueueReceiver receiver3 = null;
+    boolean recover = false;
 
-  public Listener(String name)
-  {
-    super(name);
-  }
+    public Listener(String name) {
+        super(name);
+    }
 
-  protected void beforeCreateSession() throws Exception
-  {
-    s1 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
-    s2 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
-    s3 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
-  }
+    protected void beforeCreateSession() throws Exception {
+        s1 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
+        s2 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
+        s3 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
+    }
 
-  protected void afterCreateSession() throws Exception
-  {
-    s1.close();
-    s2.close();
-    s3.close();
-  }
+    protected void afterCreateSession() throws Exception {
+        s1.close();
+        s2.close();
+        s3.close();
+    }
 
-  protected void beforeCreateReceiver() throws Exception
-  {
-    receiver1 = qs.createReceiver(queue);
-    receiver2 = qs.createReceiver(queue);
-    receiver3 = qs.createReceiver(queue);
-  }
+    protected void beforeCreateReceiver() throws Exception {
+        receiver1 = qs.createReceiver(queue);
+        receiver2 = qs.createReceiver(queue);
+        receiver3 = qs.createReceiver(queue);
+    }
 
-  protected void afterCreateReceiver() throws Exception
-  {
-    receiver1.close();
-    receiver2.close();
-    receiver3.close();
-  }
+    protected void afterCreateReceiver() throws Exception {
+        receiver1.close();
+        receiver2.close();
+        receiver3.close();
+    }
 
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE, false, true);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE, false, true);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+    }
 
-  public void onMessage(Message message)
-  {
-    try
-    {
-      if (recover)
-      {
-        System.out.println("during recover, ignore: " + message.getIntProperty("no"));
-        m++;
-        if (m == 10)
-        {
-          System.out.println("recover session!");
-          qs.recover();
-          recover = false;
-          m = 0;
+    public void onMessage(Message message) {
+        try {
+            if (recover) {
+                System.out.println("during recover, ignore: " + message.getIntProperty("no"));
+                m++;
+                if (m == 10) {
+                    System.out.println("recover session!");
+                    qs.recover();
+                    recover = false;
+                    m = 0;
+                }
+                return;
+            }
+            System.out.println("ok: " + message.getIntProperty("no"));
+            verifier.add(message);
+            n++;
+            if (n % 10 == 0) {
+                System.out.println("ack message!");
+                message.acknowledge();
+                recover = true;
+            }
+            if (n == nMsgs)
+                sem.notifySingleWaiter();
+        } catch (Exception e) {
+            exception = e;
+            sem.notifySingleWaiter();
         }
-        return;
-      }
-      System.out.println("ok: " + message.getIntProperty("no"));
-      verifier.add(message);
-      n++;
-      if (n % 10 == 0)
-      {
-        System.out.println("ack message!");
-        message.acknowledge();
-        recover = true;
-      }
-      if (n == nMsgs)
-        sem.notifySingleWaiter();
-    } catch (Exception e)
-    {
-      exception = e;
-      sem.notifySingleWaiter();
     }
-  }
 
-  public void receive()
-  {
-    try
-    {
-      sem = new Semaphore();
-      receiver.setMessageListener(this);
-      sem.waitHere();
-      if (exception != null)
-        throw exception;
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public void receive() {
+        try {
+            sem = new Semaphore();
+            receiver.setMessageListener(this);
+            sem.waitHere();
+            if (exception != null)
+                throw exception;
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    exception = null;
-    sem = null;
-    s1 = null;
-    s2 = null;
-    s3 = null;
-    receiver1 = null;
-    receiver2 = null;
-    receiver3 = null;
-    super.tearDown();
-  }
+    protected void tearDown() throws Exception {
+        verifier = null;
+        exception = null;
+        sem = null;
+        s1 = null;
+        s2 = null;
+        s3 = null;
+        receiver1 = null;
+        receiver2 = null;
+        receiver3 = null;
+        super.tearDown();
+    }
 
 }
 

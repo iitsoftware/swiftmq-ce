@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LogSwiftletImpl extends LogSwiftlet {
     static SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S/");
@@ -43,11 +45,12 @@ public class LogSwiftletImpl extends LogSwiftlet {
     PrintWriter errorWriter = null;
     String errorFileName = null;
     int maxSize = 0;
-    boolean infoEnabled = true;
-    boolean warningEnabled = true;
-    boolean errorEnabled = true;
+    final AtomicBoolean infoEnabled = new AtomicBoolean(true);
+    final AtomicBoolean warningEnabled = new AtomicBoolean(true);
+    final AtomicBoolean errorEnabled = new AtomicBoolean(true);
     RolloverSizeProvider rolloverSizeProvider = null;
     NumberGenerationProvider numberGenerationProvider = null;
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     private String createLogLine(String source, String type, String msg) {
         Calendar cal = Calendar.getInstance();
@@ -67,10 +70,16 @@ public class LogSwiftletImpl extends LogSwiftlet {
      * @param source  usually the swiftlet name
      * @param message the message to log
      */
-    public synchronized void logInformation(String source, String message) {
-        if (!infoEnabled)
-            return;
-        infoWriter.println(createLogLine(source, "INFORMATION", message));
+    public void logInformation(String source, String message) {
+        lock.readLock().lock();
+        try {
+            if (!infoEnabled.get())
+                return;
+            infoWriter.println(createLogLine(source, "INFORMATION", message));
+        } finally {
+            lock.readLock().unlock();
+        }
+
     }
 
     /**
@@ -79,10 +88,16 @@ public class LogSwiftletImpl extends LogSwiftlet {
      * @param source  usually the swiftlet name
      * @param message the message to log
      */
-    public synchronized void logWarning(String source, String message) {
-        if (!warningEnabled)
-            return;
-        warningWriter.println(createLogLine(source, "WARNING", message));
+    public void logWarning(String source, String message) {
+        lock.readLock().lock();
+        try {
+            if (!warningEnabled.get())
+                return;
+            warningWriter.println(createLogLine(source, "WARNING", message));
+        } finally {
+            lock.readLock().unlock();
+        }
+
     }
 
     /**
@@ -91,13 +106,19 @@ public class LogSwiftletImpl extends LogSwiftlet {
      * @param source  usually the swiftlet name
      * @param message the message to log
      */
-    public synchronized void logError(String source, String message) {
-        if (!errorEnabled)
-            return;
-        errorWriter.println(createLogLine(source, "ERROR", message));
+    public void logError(String source, String message) {
+        lock.readLock().lock();
+        try {
+            if (!errorEnabled.get())
+                return;
+            errorWriter.println(createLogLine(source, "ERROR", message));
+        } finally {
+            lock.readLock().unlock();
+        }
+
     }
 
-    public synchronized LogSink createLogSink(String s) {
+    public LogSink createLogSink(String s) {
         Property prop = config.getProperty("logsink-directory");
         String dirName = SwiftUtilities.addWorkingDir((String) prop.getValue());
         String filename = dirName + File.separatorChar + s + ".log";
@@ -113,21 +134,21 @@ public class LogSwiftletImpl extends LogSwiftlet {
     private void createLogFiles(final Entity root) throws Exception {
         rolloverSizeProvider = new RolloverSizeProvider() {
             public long getRollOverSize() {
-                return maxSize * 1024;
+                return maxSize * 1024L;
             }
         };
         numberGenerationProvider = new NumberGenerationProvider() {
             public int getNumberGenerations() {
-                return ((Integer) root.getProperty("number-old-logfile-generations").getValue()).intValue();
+                return (Integer) root.getProperty("number-old-logfile-generations").getValue();
             }
         };
         Property prop = root.getProperty("size-limit");
-        maxSize = ((Integer) prop.getValue()).intValue();
+        maxSize = (Integer) prop.getValue();
 
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                maxSize = ((Integer) newValue).intValue();
+                maxSize = (Integer) newValue;
             }
         });
 
@@ -142,7 +163,8 @@ public class LogSwiftletImpl extends LogSwiftlet {
                     throws PropertyChangeException {
                 if (newValue == null)
                     throw new PropertyChangeException("Null Value not allowed.");
-                synchronized (LogSwiftletImpl.this) {
+                lock.writeLock().lock();
+                try {
                     try {
                         String s = SwiftUtilities.addWorkingDir((String) newValue);
                         new File(s).getParentFile().mkdirs();
@@ -154,7 +176,10 @@ public class LogSwiftletImpl extends LogSwiftlet {
                     } catch (Exception e) {
                         throw new PropertyChangeException(e.getMessage());
                     }
+                } finally {
+                    lock.writeLock().unlock();
                 }
+
             }
         });
 
@@ -172,7 +197,8 @@ public class LogSwiftletImpl extends LogSwiftlet {
                     throws PropertyChangeException {
                 if (newValue == null)
                     throw new PropertyChangeException("Null Value not allowed.");
-                synchronized (LogSwiftletImpl.this) {
+                lock.writeLock().lock();
+                try {
                     try {
                         String s = SwiftUtilities.addWorkingDir((String) newValue);
                         new File(s).getParentFile().mkdirs();
@@ -184,7 +210,10 @@ public class LogSwiftletImpl extends LogSwiftlet {
                     } catch (Exception e) {
                         throw new PropertyChangeException(e.getMessage());
                     }
+                } finally {
+                    lock.writeLock().unlock();
                 }
+
             }
         });
 
@@ -204,7 +233,8 @@ public class LogSwiftletImpl extends LogSwiftlet {
                     throws PropertyChangeException {
                 if (newValue == null)
                     throw new PropertyChangeException("Null Value not allowed.");
-                synchronized (LogSwiftletImpl.this) {
+                lock.writeLock().lock();
+                try {
                     try {
                         String s = SwiftUtilities.addWorkingDir((String) newValue);
                         new File(s).getParentFile().mkdirs();
@@ -216,45 +246,48 @@ public class LogSwiftletImpl extends LogSwiftlet {
                     } catch (Exception e) {
                         throw new PropertyChangeException(e.getMessage());
                     }
+                } finally {
+                    lock.writeLock().unlock();
                 }
+
             }
         });
 
         prop = root.getProperty("logfile-info-enabled");
-        infoEnabled = ((Boolean) prop.getValue()).booleanValue();
-        if (!infoEnabled)
+        infoEnabled.set(((Boolean) prop.getValue()).booleanValue());
+        if (!infoEnabled.get())
             infoWriter.println(createLogLine(getName(), "CONFIGURATION", "Info Logfile disabled"));
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                infoEnabled = ((Boolean) newValue).booleanValue();
-                if (!infoEnabled)
+                infoEnabled.set((Boolean) newValue);
+                if (!infoEnabled.get())
                     infoWriter.println(createLogLine(getName(), "CONFIGURATION", "Info Logfile disabled"));
             }
         });
 
         prop = root.getProperty("logfile-warning-enabled");
-        warningEnabled = ((Boolean) prop.getValue()).booleanValue();
-        if (!warningEnabled)
+        warningEnabled.set((Boolean) prop.getValue());
+        if (!warningEnabled.get())
             warningWriter.println(createLogLine(getName(), "CONFIGURATION", "Warning Logfile disabled"));
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                warningEnabled = ((Boolean) newValue).booleanValue();
-                if (!warningEnabled)
+                warningEnabled.set((Boolean) newValue);
+                if (!warningEnabled.get())
                     warningWriter.println(createLogLine(getName(), "CONFIGURATION", "Warning Logfile disabled"));
             }
         });
 
         prop = root.getProperty("logfile-error-enabled");
-        errorEnabled = ((Boolean) prop.getValue()).booleanValue();
-        if (!errorEnabled)
+        errorEnabled.set((Boolean) prop.getValue());
+        if (!errorEnabled.get())
             errorWriter.println(createLogLine(getName(), "CONFIGURATION", "Error Logfile disabled"));
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                errorEnabled = ((Boolean) newValue).booleanValue();
-                if (!errorEnabled)
+                errorEnabled.set((Boolean) newValue);
+                if (!errorEnabled.get())
                     errorWriter.println(createLogLine(getName(), "CONFIGURATION", "Error Logfile disabled"));
             }
         });

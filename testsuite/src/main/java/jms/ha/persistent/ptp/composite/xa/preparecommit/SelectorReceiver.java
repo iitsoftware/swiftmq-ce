@@ -17,82 +17,72 @@
 
 package jms.ha.persistent.ptp.composite.xa.preparecommit;
 
-import jms.base.SimpleConnectedXAPTPTestCase;
-import jms.base.MsgNoVerifier;
 import jms.base.Checker;
+import jms.base.MsgNoVerifier;
+import jms.base.SimpleConnectedXAPTPTestCase;
 import jms.base.XidImpl;
 
-import javax.jms.QueueReceiver;
 import javax.jms.Message;
-import javax.transaction.xa.Xid;
+import javax.jms.QueueReceiver;
 import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class SelectorReceiver extends SimpleConnectedXAPTPTestCase
-{
-  int nMsgs = 0;
-  int maxMsgs = 0;
-  MsgNoVerifier verifier = null;
-  String myQueueName = null;
-  QueueReceiver myReceiver = null;
-  Checker checker = null;
+public class SelectorReceiver extends SimpleConnectedXAPTPTestCase {
+    int nMsgs = 0;
+    int maxMsgs = 0;
+    MsgNoVerifier verifier = null;
+    String myQueueName = null;
+    QueueReceiver myReceiver = null;
+    Checker checker = null;
 
-  public SelectorReceiver(String name, String myQueueName, int maxMsgs, int nMsgs, Checker checker)
-  {
-    super(name);
-    this.myQueueName = myQueueName;
-    this.maxMsgs = maxMsgs;
-    this.nMsgs = nMsgs;
-    this.checker = checker;
-  }
-
-  protected void setUp() throws Exception
-  {
-    createSender = false;
-    createReceiver = false;
-    super.setUp();
-    myReceiver = qs.getQueueSession().createReceiver(getQueue(myQueueName));
-    verifier = new MsgNoVerifier(this, maxMsgs, "no");
-    verifier.setCheckSequence(false);
-    verifier.setMissingOk(true);
-  }
-
-  public void receive()
-  {
-    try
-    {
-      Xid xid = new XidImpl(getClass().getName());
-      xares.start(xid, XAResource.TMNOFLAGS);
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Message msg = myReceiver.receive(120000);
-        if (msg == null)
-          throw new Exception("null message received!");
-        if (!checker.isMatch(msg))
-          throw new Exception("Message doesn't match: "+msg);
-        verifier.add(msg);
-        if ((i + 1) % 10 == 0)
-        {
-          xares.end(xid, XAResource.TMSUCCESS);
-          xares.prepare(xid);
-          xares.commit(xid, false);
-          if (i + 1 < nMsgs)
-          {
-            xid = new XidImpl(getClass().getName());
-            xares.start(xid, XAResource.TMNOFLAGS);
-          }
-        }
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public SelectorReceiver(String name, String myQueueName, int maxMsgs, int nMsgs, Checker checker) {
+        super(name);
+        this.myQueueName = myQueueName;
+        this.maxMsgs = maxMsgs;
+        this.nMsgs = nMsgs;
+        this.checker = checker;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    myReceiver.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        createSender = false;
+        createReceiver = false;
+        super.setUp();
+        myReceiver = qs.getQueueSession().createReceiver(getQueue(myQueueName));
+        verifier = new MsgNoVerifier(this, maxMsgs, "no");
+        verifier.setCheckSequence(false);
+        verifier.setMissingOk(true);
+    }
+
+    public void receive() {
+        try {
+            Xid xid = new XidImpl(getClass().getName());
+            xares.start(xid, XAResource.TMNOFLAGS);
+            for (int i = 0; i < nMsgs; i++) {
+                Message msg = myReceiver.receive(120000);
+                if (msg == null)
+                    throw new Exception("null message received!");
+                if (!checker.isMatch(msg))
+                    throw new Exception("Message doesn't match: " + msg);
+                verifier.add(msg);
+                if ((i + 1) % 10 == 0) {
+                    xares.end(xid, XAResource.TMSUCCESS);
+                    xares.prepare(xid);
+                    xares.commit(xid, false);
+                    if (i + 1 < nMsgs) {
+                        xid = new XidImpl(getClass().getName());
+                        xares.start(xid, XAResource.TMNOFLAGS);
+                    }
+                }
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        myReceiver.close();
+        super.tearDown();
+    }
 }

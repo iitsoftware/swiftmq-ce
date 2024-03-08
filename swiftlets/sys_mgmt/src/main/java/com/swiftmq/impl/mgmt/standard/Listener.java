@@ -24,35 +24,33 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Listener extends MessageProcessor {
-    static final String TP_LISTENER = "sys$mgmt.listener";
     SwiftletContext ctx = null;
-    ThreadPool myTP = null;
     QueueReceiver receiver = null;
-    QueuePullTransaction pullTransaction = null;
-    boolean closed = false;
+    final AtomicReference<QueuePullTransaction> pullTransaction = new AtomicReference<>();
+    final AtomicBoolean closed = new AtomicBoolean(false);
     MessageEntry entry = null;
 
     public Listener(SwiftletContext ctx) throws Exception {
         this.ctx = ctx;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/creating ...");
-        /*${evaltimer5}*/
-        myTP = ctx.threadpoolSwiftlet.getPool(TP_LISTENER);
-        receiver = ctx.queueManager.createQueueReceiver(ctx.MGMT_QUEUE, null, null);
-        pullTransaction = receiver.createTransaction(false);
-        pullTransaction.registerMessageProcessor(this);
+        receiver = ctx.queueManager.createQueueReceiver(SwiftletContext.MGMT_QUEUE, null, null);
+        pullTransaction.set(receiver.createTransaction(false));
+        pullTransaction.get().registerMessageProcessor(this);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/creating done");
     }
 
     public boolean isValid() {
-        return !closed;
+        return !closed.get();
     }
 
     public void processMessage(MessageEntry entry) {
         this.entry = entry;
-        myTP.dispatchTask(this);
+        ctx.threadpoolSwiftlet.runAsync(this);
     }
 
     public void processException(Exception e) {
@@ -61,11 +59,11 @@ public class Listener extends MessageProcessor {
     }
 
     public String getDispatchToken() {
-        return TP_LISTENER;
+        return "none";
     }
 
     public String getDescription() {
-        return ctx.mgmtSwiftlet.getName() + "/" + toString();
+        return ctx.mgmtSwiftlet.getName() + "/" + this;
     }
 
     public void stop() {
@@ -73,7 +71,7 @@ public class Listener extends MessageProcessor {
 
     public void run() {
         try {
-            pullTransaction.commit();
+            pullTransaction.get().commit();
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/run, exception committing tx: " + e + ", exiting");
@@ -97,11 +95,11 @@ public class Listener extends MessageProcessor {
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/run, exception during processing: " + e);
             ctx.logSwiftlet.logError(ctx.mgmtSwiftlet.getName(), toString() + "/run, exception during processing: " + e);
         }
-        if (closed)
+        if (closed.get())
             return;
         try {
-            pullTransaction = receiver.createTransaction(false);
-            pullTransaction.registerMessageProcessor(this);
+            pullTransaction.set(receiver.createTransaction(false));
+            pullTransaction.get().registerMessageProcessor(this);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/run, exception creating new tx: " + e + ", exiting");
@@ -110,7 +108,7 @@ public class Listener extends MessageProcessor {
     }
 
     public void close() {
-        closed = true;
+        closed.set(true);
         try {
             receiver.close();
         } catch (Exception ignored) {

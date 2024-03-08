@@ -20,24 +20,20 @@ package jms.ha.persistent.ps.durable.cc;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ps.durable.cc.singlesession.Suite.suite());
-    suite.addTest(jms.ha.persistent.ps.durable.cc.multisession.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ps.durable.cc.singlesession.Suite.suite());
+        suite.addTest(jms.ha.persistent.ps.durable.cc.multisession.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "jms/cc";
-  }
+    public String toString() {
+        return "jms/cc";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

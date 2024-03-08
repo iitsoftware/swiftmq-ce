@@ -24,38 +24,31 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-public class Sender extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.func.selector.load.nmsgs", "25000"));
-  int partition = -1;
+public class Sender extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.func.selector.load.nmsgs", "25000"));
+    int partition = -1;
 
-  public Sender(String name, int partition)
-  {
-    super(name);
-    this.partition = partition;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, true, false);
-  }
-
-  public void send()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        msg.setIntProperty("partition", partition);
-        msg.setIntProperty("no", i);
-        msg.setText("Partition: " + partition + " Msg: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Sender(String name, int partition) {
+        super(name);
+        this.partition = partition;
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, true, false);
+    }
+
+    public void send() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < nMsgs; i++) {
+                msg.setIntProperty("partition", partition);
+                msg.setIntProperty("no", i);
+                msg.setText("Partition: " + partition + " Msg: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 
 }

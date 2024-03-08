@@ -20,26 +20,44 @@ package com.swiftmq.impl.routing.single.connection.stage;
 import com.swiftmq.impl.routing.single.SwiftletContext;
 import com.swiftmq.impl.routing.single.smqpr.CloseStageQueueRequest;
 import com.swiftmq.impl.routing.single.smqpr.SMQRFactory;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.requestreply.Request;
 
-public class StageQueue extends SingleProcessorQueue {
-    static final String TP_SERVICE = "sys$routing.connection.service";
+import java.util.concurrent.atomic.AtomicBoolean;
 
+public class StageQueue {
     SwiftletContext ctx = null;
-    ThreadPool myTP = null;
-    boolean closed = false;
-    QueueProcessor queueProcessor = null;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     Stage stage = null;
+    EventLoop eventLoop;
 
     public StageQueue(SwiftletContext ctx) {
         this.ctx = ctx;
-        myTP = ctx.threadpoolSwiftlet.getPool(TP_SERVICE);
-        queueProcessor = new QueueProcessor();
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.connection.service", list -> {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/process, n=" + list.size());
+            list.forEach(e -> {
+                Request r = (Request) e;
+                if (r.getDumpId() == SMQRFactory.CLOSE_STAGE_QUEUE_REQ) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/receiving: " + r);
+                    close();
+                    Semaphore sem = ((CloseStageQueueRequest) r).getSemaphore();
+                    if (sem != null)
+                        sem.notifySingleWaiter();
+                    return;
+                }
+                if (stage != null)
+                    stage.process((Request) e);
+            });
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/process, done");
+        });
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue created");
+    }
+
+    public void enqueue(Object event) {
+        eventLoop.submit(event);
     }
 
     public void closePreviousStage() {
@@ -61,58 +79,13 @@ public class StageQueue extends SingleProcessorQueue {
         return stage;
     }
 
-    protected void startProcessor() {
-        myTP.dispatchTask(queueProcessor);
-    }
-
-    protected void process(Object[] bulk, int n) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/process, n=" + n);
-        for (int i = 0; i < n; i++) {
-            Request r = (Request) bulk[i];
-            if (r.getDumpId() == SMQRFactory.CLOSE_STAGE_QUEUE_REQ) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/receiving: " + r);
-                close();
-                Semaphore sem = ((CloseStageQueueRequest) r).getSemaphore();
-                if (sem != null)
-                    sem.notifySingleWaiter();
-                return;
-            }
-            if (stage != null)
-                stage.process((Request) bulk[i]);
-        }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/process, done");
-    }
-
-    public synchronized void close() {
+    public void close() {
+        if (closed.getAndSet(true))
+            return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/close...");
-        super.close();
+        eventLoop.close();
         if (stage != null)
             stage.close();
-        closed = true;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "StageQueue/close done");
-    }
-
-    private class QueueProcessor implements AsyncTask {
-
-        public boolean isValid() {
-            return !closed;
-        }
-
-        public String getDispatchToken() {
-            return TP_SERVICE;
-        }
-
-        public String getDescription() {
-            return ctx.routingSwiftlet.getName() + "/StageQueue/QueueProcessor";
-        }
-
-        public void stop() {
-        }
-
-        public void run() {
-            if (dequeue() && !closed)
-                myTP.dispatchTask(this);
-        }
     }
 }

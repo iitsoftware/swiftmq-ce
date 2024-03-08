@@ -26,6 +26,7 @@ import com.swiftmq.swiftlet.queue.UnknownQueueException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SchedulerRegistry {
     // Outbound Routing-Queue Prefix
@@ -35,81 +36,106 @@ public class SchedulerRegistry {
     static final String OUTBOUND_REDIR_PRED = "%@";
 
     SwiftletContext ctx = null;
-    Map schedulers = new HashMap();
+    Map<String, Scheduler> schedulers = new HashMap<>();
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public SchedulerRegistry(SwiftletContext ctx) {
         this.ctx = ctx;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/created");
     }
 
-    public synchronized Scheduler getScheduler(String destinationRouter) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getScheduler, destinationRouter=" + destinationRouter);
-        Scheduler scheduler = (Scheduler) schedulers.get(destinationRouter);
-        if (scheduler == null) {
+    public Scheduler getScheduler(String destinationRouter) throws Exception {
+        lock.writeLock().lock();
+        try {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getScheduler, destinationRouter=" + destinationRouter + ", creating scheduler...");
-            String queueName = QUEUE_PREFIX + destinationRouter + "@" + ctx.routerName;
-            if (!ctx.queueManager.isQueueDefined(queueName))
-                ctx.queueManager.createQueue(queueName, (ActiveLogin) null);
-            ctx.queueManager.setQueueOutboundRedirector(OUTBOUND_REDIR_PRED + destinationRouter, queueName);
-            if (ctx.roundRobinEnabled) {
-                scheduler = new RoundRobinScheduler(ctx, destinationRouter, queueName);
-            } else {
-                scheduler = new DefaultScheduler(ctx, destinationRouter, queueName);
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getScheduler, destinationRouter=" + destinationRouter);
+            Scheduler scheduler = (Scheduler) schedulers.get(destinationRouter);
+            if (scheduler == null) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getScheduler, destinationRouter=" + destinationRouter + ", creating scheduler...");
+                String queueName = QUEUE_PREFIX + destinationRouter + "@" + ctx.routerName;
+                if (!ctx.queueManager.isQueueDefined(queueName))
+                    ctx.queueManager.createQueue(queueName, (ActiveLogin) null);
+                ctx.queueManager.setQueueOutboundRedirector(OUTBOUND_REDIR_PRED + destinationRouter, queueName);
+                if (ctx.roundRobinEnabled) {
+                    scheduler = new RoundRobinScheduler(ctx, destinationRouter, queueName);
+                } else {
+                    scheduler = new DefaultScheduler(ctx, destinationRouter, queueName);
+                }
+                schedulers.put(destinationRouter, scheduler);
+                RouteImpl route = (RouteImpl) ctx.routingSwiftlet.getRoute(destinationRouter);
+                if (route == null)
+                    ctx.routingSwiftlet.addRoute(new RouteImpl(destinationRouter, queueName, true, scheduler));
+                else
+                    route.setScheduler(scheduler);
             }
-            schedulers.put(destinationRouter, scheduler);
-            RouteImpl route = (RouteImpl) ctx.routingSwiftlet.getRoute(destinationRouter);
-            if (route == null)
-                ctx.routingSwiftlet.addRoute(new RouteImpl(destinationRouter, queueName, true, scheduler));
-            else
-                route.setScheduler(scheduler);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getScheduler, destinationRouter=" + destinationRouter + ", returns " + scheduler);
+            return scheduler;
+        } finally {
+            lock.writeLock().unlock();
         }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getScheduler, destinationRouter=" + destinationRouter + ", returns " + scheduler);
-        return scheduler;
+
     }
 
-    public synchronized void removeScheduler(String destinationRouter) throws Exception {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/removeScheduler, destinationRouter=" + destinationRouter);
-        Scheduler scheduler = (Scheduler) schedulers.remove(destinationRouter);
-        if (scheduler != null) {
-            scheduler.close();
-            RouteImpl route = (RouteImpl) ctx.routingSwiftlet.getRoute(destinationRouter);
-            if (route != null) {
-                if (route.isStaticRoute())
-                    route.setScheduler(null);
-                else {
-                    ctx.queueManager.setQueueOutboundRedirector(OUTBOUND_REDIR_PRED + destinationRouter, null);
-                    ctx.routingSwiftlet.removeRoute(route);
+    public void removeScheduler(String destinationRouter) throws Exception {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/removeScheduler, destinationRouter=" + destinationRouter);
+            Scheduler scheduler = (Scheduler) schedulers.remove(destinationRouter);
+            if (scheduler != null) {
+                scheduler.close();
+                RouteImpl route = (RouteImpl) ctx.routingSwiftlet.getRoute(destinationRouter);
+                if (route != null) {
+                    if (route.isStaticRoute())
+                        route.setScheduler(null);
+                    else {
+                        ctx.queueManager.setQueueOutboundRedirector(OUTBOUND_REDIR_PRED + destinationRouter, null);
+                        ctx.routingSwiftlet.removeRoute(route);
+                    }
                 }
             }
+        } finally {
+            lock.writeLock().unlock();
         }
+
     }
 
-    public synchronized void removeRoutingConnection(RoutingConnection routingConnection) {
-        for (Iterator iter = schedulers.entrySet().iterator(); iter.hasNext(); ) {
-            Scheduler scheduler = (Scheduler) ((Map.Entry) iter.next()).getValue();
-            scheduler.removeRoutingConnection(routingConnection);
-            if (scheduler.getNumberConnections() == 0) {
+    public void removeRoutingConnection(RoutingConnection routingConnection) {
+        lock.writeLock().lock();
+        try {
+            for (Iterator iter = schedulers.entrySet().iterator(); iter.hasNext(); ) {
+                Scheduler scheduler = (Scheduler) ((Map.Entry) iter.next()).getValue();
+                scheduler.removeRoutingConnection(routingConnection);
+                if (scheduler.getNumberConnections() == 0) {
+                    scheduler.close();
+                    iter.remove();
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public void close() {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close ...");
+            for (Map.Entry<String, Scheduler> entry : schedulers.entrySet()) {
+                Scheduler scheduler = entry.getValue();
+                try {
+                    ctx.queueManager.setQueueOutboundRedirector(OUTBOUND_REDIR_PRED + scheduler.getQueueName(), null);
+                } catch (UnknownQueueException e) {
+                }
                 scheduler.close();
-                iter.remove();
             }
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close done");
+        } finally {
+            lock.writeLock().unlock();
         }
-    }
 
-    public synchronized void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close ...");
-        for (Iterator iter = schedulers.entrySet().iterator(); iter.hasNext(); ) {
-            Scheduler scheduler = (Scheduler) ((Map.Entry) iter.next()).getValue();
-            try {
-                ctx.queueManager.setQueueOutboundRedirector(OUTBOUND_REDIR_PRED + scheduler.getQueueName(), null);
-            } catch (UnknownQueueException e) {
-            }
-            scheduler.close();
-        }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close done");
     }
 
     public String toString() {
