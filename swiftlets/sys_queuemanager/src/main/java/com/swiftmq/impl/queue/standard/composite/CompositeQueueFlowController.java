@@ -20,11 +20,11 @@ package com.swiftmq.impl.queue.standard.composite;
 import com.swiftmq.swiftlet.queue.FlowController;
 
 public class CompositeQueueFlowController extends FlowController {
-    public synchronized void setLastDelay(long lastDelay) {
-        this.lastDelay = lastDelay;
+    public void setLastDelay(long lastDelay) {
+        this.lastDelay.set(lastDelay);
     }
 
-    public synchronized long getNewDelay() {
-        return lastDelay;
+    public long getNewDelay() {
+        return lastDelay.get();
     }
 }

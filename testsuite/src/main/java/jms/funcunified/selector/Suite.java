@@ -17,56 +17,53 @@
 
 package jms.funcunified.selector;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new PTP("testQR1NP"));
-    suite.addTest(new PTP("testQR2NP"));
-    suite.addTest(new PTP("testQR3NP"));
-    suite.addTest(new PTP("testQR4NP"));
-    suite.addTest(new PTP("testQR1P"));
-    suite.addTest(new PTP("testQR2P"));
-    suite.addTest(new PTP("testQR3P"));
-    suite.addTest(new PTP("testQR4P"));
-    suite.addTest(new PTPML("testQR1NP"));
-    suite.addTest(new PTPML("testQR2NP"));
-    suite.addTest(new PTPML("testQR3NP"));
-    suite.addTest(new PTPML("testQR4NP"));
-    suite.addTest(new PTPML("testQR1P"));
-    suite.addTest(new PTPML("testQR2P"));
-    suite.addTest(new PTPML("testQR3P"));
-    suite.addTest(new PTPML("testQR4P"));
-    suite.addTest(new PS("testTS1NP"));
-    suite.addTest(new PS("testTS2NP"));
-    suite.addTest(new PS("testTS3NP"));
-    suite.addTest(new PS("testTS4NP"));
-    suite.addTest(new PS("testTS1P"));
-    suite.addTest(new PS("testTS2P"));
-    suite.addTest(new PS("testTS3P"));
-    suite.addTest(new PS("testTS4P"));
-    suite.addTest(new PSML("testTS1NP"));
-    suite.addTest(new PSML("testTS2NP"));
-    suite.addTest(new PSML("testTS3NP"));
-    suite.addTest(new PSML("testTS4NP"));
-    suite.addTest(new PSML("testTS1P"));
-    suite.addTest(new PSML("testTS2P"));
-    suite.addTest(new PSML("testTS3P"));
-    suite.addTest(new PSML("testTS4P"));
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new PTP("testQR1NP"));
+        suite.addTest(new PTP("testQR2NP"));
+        suite.addTest(new PTP("testQR3NP"));
+        suite.addTest(new PTP("testQR4NP"));
+        suite.addTest(new PTP("testQR1P"));
+        suite.addTest(new PTP("testQR2P"));
+        suite.addTest(new PTP("testQR3P"));
+        suite.addTest(new PTP("testQR4P"));
+        suite.addTest(new PTPML("testQR1NP"));
+        suite.addTest(new PTPML("testQR2NP"));
+        suite.addTest(new PTPML("testQR3NP"));
+        suite.addTest(new PTPML("testQR4NP"));
+        suite.addTest(new PTPML("testQR1P"));
+        suite.addTest(new PTPML("testQR2P"));
+        suite.addTest(new PTPML("testQR3P"));
+        suite.addTest(new PTPML("testQR4P"));
+        suite.addTest(new PS("testTS1NP"));
+        suite.addTest(new PS("testTS2NP"));
+        suite.addTest(new PS("testTS3NP"));
+        suite.addTest(new PS("testTS4NP"));
+        suite.addTest(new PS("testTS1P"));
+        suite.addTest(new PS("testTS2P"));
+        suite.addTest(new PS("testTS3P"));
+        suite.addTest(new PS("testTS4P"));
+        suite.addTest(new PSML("testTS1NP"));
+        suite.addTest(new PSML("testTS2NP"));
+        suite.addTest(new PSML("testTS3NP"));
+        suite.addTest(new PSML("testTS4NP"));
+        suite.addTest(new PSML("testTS1P"));
+        suite.addTest(new PSML("testTS2P"));
+        suite.addTest(new PSML("testTS3P"));
+        suite.addTest(new PSML("testTS4P"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Message Selectors";
-  }
+    public String toString() {
+        return "Message Selectors";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

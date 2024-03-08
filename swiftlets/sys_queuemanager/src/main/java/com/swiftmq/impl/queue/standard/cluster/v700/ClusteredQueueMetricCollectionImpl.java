@@ -55,8 +55,8 @@ public class ClusteredQueueMetricCollectionImpl implements ClusteredQueueMetricC
         if (clusteredQueueMetrics != null) {
             out.writeBoolean(true);
             out.writeInt(clusteredQueueMetrics.size());
-            for (int i = 0; i < clusteredQueueMetrics.size(); i++)
-                Dumpalizer.dump(out, (ClusteredQueueMetricImpl) clusteredQueueMetrics.get(i));
+            for (Object clusteredQueueMetric : clusteredQueueMetrics)
+                Dumpalizer.dump(out, (ClusteredQueueMetricImpl) clusteredQueueMetric);
         } else
             out.writeBoolean(false);
     }

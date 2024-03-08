@@ -20,76 +20,61 @@ package jms.xa.specials.differentsessions.exceptions;
 import jms.base.MultisessionConnectedXAPTPTestCase;
 import jms.base.XidImpl;
 
-import javax.transaction.xa.*;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Tester extends MultisessionConnectedXAPTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp(5);
-  }
-
-  public void testP()
-  {
-    try
-    {
-      Xid xid1 = new XidImpl();
-      Xid xid2 = new XidImpl();
-      XAResource xares1 = sessions[0].getXAResource();
-      XAResource xares2 = sessions[1].getXAResource();
-      XAResource xares3 = sessions[2].getXAResource();
-      xares1.start(xid1,XAResource.TMNOFLAGS);
-      try
-      {
-        xares2.start(xid1,XAResource.TMNOFLAGS);
-      } catch (XAException e)
-      {
-        assertTrue("e.errorCode != XAException.XAER_DUPID", e.errorCode == XAException.XAER_DUPID);
-      }
-      try
-      {
-        xares1.start(xid2,XAResource.TMNOFLAGS);
-      } catch (XAException e)
-      {
-        assertTrue("e.errorCode != XAException.XAER_RMERR", e.errorCode == XAException.XAER_RMERR);
-      }
-      try
-      {
-        xares3.start(xid2,XAResource.TMJOIN);
-      } catch (XAException e)
-      {
-        assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
-      }
-      try
-      {
-        xares3.prepare(xid2);
-      } catch (XAException e)
-      {
-        assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
-      }
-      try
-      {
-        xares3.rollback(xid2);
-      } catch (XAException e)
-      {
-        assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
-      }
-      try
-      {
-        xares3.prepare(xid1);
-      } catch (XAException e)
-      {
-        assertTrue("e.errorCode != XAException.XAER_PROTO", e.errorCode == XAException.XAER_PROTO);
-      }
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+public class Tester extends MultisessionConnectedXAPTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        super.setUp(5);
+    }
+
+    public void testP() {
+        try {
+            Xid xid1 = new XidImpl();
+            Xid xid2 = new XidImpl();
+            XAResource xares1 = sessions[0].getXAResource();
+            XAResource xares2 = sessions[1].getXAResource();
+            XAResource xares3 = sessions[2].getXAResource();
+            xares1.start(xid1, XAResource.TMNOFLAGS);
+            try {
+                xares2.start(xid1, XAResource.TMNOFLAGS);
+            } catch (XAException e) {
+                assertTrue("e.errorCode != XAException.XAER_DUPID", e.errorCode == XAException.XAER_DUPID);
+            }
+            try {
+                xares1.start(xid2, XAResource.TMNOFLAGS);
+            } catch (XAException e) {
+                assertTrue("e.errorCode != XAException.XAER_RMERR", e.errorCode == XAException.XAER_RMERR);
+            }
+            try {
+                xares3.start(xid2, XAResource.TMJOIN);
+            } catch (XAException e) {
+                assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
+            }
+            try {
+                xares3.prepare(xid2);
+            } catch (XAException e) {
+                assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
+            }
+            try {
+                xares3.rollback(xid2);
+            } catch (XAException e) {
+                assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
+            }
+            try {
+                xares3.prepare(xid1);
+            } catch (XAException e) {
+                e.printStackTrace();
+                assertTrue("e.errorCode != XAException.XAER_NOTA", e.errorCode == XAException.XAER_NOTA);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
 }

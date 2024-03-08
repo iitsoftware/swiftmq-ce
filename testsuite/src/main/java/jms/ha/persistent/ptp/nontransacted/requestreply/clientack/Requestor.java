@@ -20,73 +20,59 @@ package jms.ha.persistent.ptp.nontransacted.requestreply.clientack;
 import jms.base.MsgNoVerifier;
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
-public class Requestor extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  String requestQueueName = null;
-  String replyQueueName = null;
-  QueueSender requestSender = null;
-  QueueReceiver replyReceiver = null;
-  Queue replyQueue = null;
+public class Requestor extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    String requestQueueName = null;
+    String replyQueueName = null;
+    QueueSender requestSender = null;
+    QueueReceiver replyReceiver = null;
+    Queue replyQueue = null;
 
-  public Requestor(String name, String requestQueueName, String replyQueueName)
-  {
-    super(name);
-    this.requestQueueName = requestQueueName;
-    this.replyQueueName = replyQueueName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE, false, false);
-    requestSender = qs.createSender(getQueue(requestQueueName));
-    replyQueue = getQueue(replyQueueName);
-    replyReceiver = qs.createReceiver(getQueue(replyQueueName));
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
-
-  public void send()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        msg.setIntProperty("no", i);
-        msg.setText("Msg: " + i);
-        msg.setJMSReplyTo(replyQueue);
-        requestSender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        Message reply = replyReceiver.receive();
-        verifier.add(reply);
-        reply.acknowledge();
-      }
-      verifier.verify();
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Requestor(String name, String requestQueueName, String replyQueueName) {
+        super(name);
+        this.requestQueueName = requestQueueName;
+        this.replyQueueName = replyQueueName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    requestQueueName = null;
-    replyQueueName = null;
-    requestSender = null;
-    replyReceiver = null;
-    replyQueue = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE, false, false);
+        requestSender = qs.createSender(getQueue(requestQueueName));
+        replyQueue = getQueue(replyQueueName);
+        replyReceiver = qs.createReceiver(getQueue(replyQueueName));
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+    }
+
+    public void send() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < nMsgs; i++) {
+                msg.setIntProperty("no", i);
+                msg.setText("Msg: " + i);
+                msg.setJMSReplyTo(replyQueue);
+                requestSender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                Message reply = replyReceiver.receive();
+                verifier.add(reply);
+                reply.acknowledge();
+            }
+            verifier.verify();
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        requestQueueName = null;
+        replyQueueName = null;
+        requestSender = null;
+        replyReceiver = null;
+        replyQueue = null;
+        super.tearDown();
+    }
 
 }
 

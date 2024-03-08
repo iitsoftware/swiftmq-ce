@@ -20,23 +20,19 @@ package jms.ha.persistent.ptp.transacted.requestreply;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ptp.transacted.requestreply.commit.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ptp.transacted.requestreply.commit.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "requestreply";
-  }
+    public String toString() {
+        return "requestreply";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

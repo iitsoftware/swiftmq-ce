@@ -21,64 +21,49 @@ import jms.base.SimpleConnectedPTPTestCase;
 
 import javax.jms.*;
 
-public class Replier extends SimpleConnectedPTPTestCase
-{
-  Object sem = new Object();
-  int cnt = 0;
-  QueueSender replySender = null;
+public class Replier extends SimpleConnectedPTPTestCase {
+    Object sem = new Object();
+    int cnt = 0;
+    QueueSender replySender = null;
 
-  public Replier(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    replySender = qs.createSender(null);
-  }
-
-  public void testReply()
-  {
-    try
-    {
-      receiver.setMessageListener(new MessageListener()
-      {
-        public void onMessage(Message message)
-        {
-          try
-          {
-            TextMessage msg = (TextMessage) message;
-            msg.clearBody();
-            msg.setText("Re: " + msg.getText());
-            replySender.send((TemporaryQueue) msg.getJMSReplyTo(), msg);
-            cnt++;
-            if (cnt == 10000)
-            {
-              synchronized (sem)
-              {
-                sem.notify();
-              }
-            }
-          } catch (Exception e1)
-          {
-            failFast("onMessage failed: " + e1);
-          }
-        }
-      });
-      try
-      {
-        synchronized (sem)
-        {
-          sem.wait();
-        }
-      } catch (Exception ignored)
-      {
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Replier(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        replySender = qs.createSender(null);
+    }
+
+    public void testReply() {
+        try {
+            receiver.setMessageListener(new MessageListener() {
+                public void onMessage(Message message) {
+                    try {
+                        TextMessage msg = (TextMessage) message;
+                        msg.clearBody();
+                        msg.setText("Re: " + msg.getText());
+                        replySender.send((TemporaryQueue) msg.getJMSReplyTo(), msg);
+                        cnt++;
+                        if (cnt == 10000) {
+                            synchronized (sem) {
+                                sem.notify();
+                            }
+                        }
+                    } catch (Exception e1) {
+                        failFast("onMessage failed: " + e1);
+                    }
+                }
+            });
+            try {
+                synchronized (sem) {
+                    sem.wait();
+                }
+            } catch (Exception ignored) {
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

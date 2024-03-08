@@ -19,10 +19,11 @@ package com.swiftmq.impl.topic.standard;
 
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
-import com.swiftmq.mgmt.PropertyChangeException;
-import com.swiftmq.mgmt.PropertyChangeListener;
 
 import javax.jms.DeliveryMode;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SlowSubscriberCondition {
     static final int PM_ALL = 0;
@@ -33,73 +34,48 @@ public class SlowSubscriberCondition {
     static final int ST_REMOTE = 2;
 
     Entity entity = null;
-    volatile long maxMessages = 0;
-    volatile int pMode = 0;
-    volatile int sMode = 0;
-    volatile boolean disconnectNonDurable = false;
-    volatile boolean disconnectDeleteDurable = false;
+    final AtomicLong maxMessages = new AtomicLong();
+    final AtomicInteger pMode = new AtomicInteger();
+    final AtomicInteger sMode = new AtomicInteger();
+    final AtomicBoolean disconnectNonDurable = new AtomicBoolean(false);
+    final AtomicBoolean disconnectDeleteDurable = new AtomicBoolean(false);
 
     public SlowSubscriberCondition(Entity entity) {
         this.entity = entity;
 
         Property prop = entity.getProperty("max-messages");
-        maxMessages = ((Long) prop.getValue()).longValue();
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                maxMessages = ((Long) newValue).longValue();
-            }
-        });
+        maxMessages.set((Long) prop.getValue());
+        prop.setPropertyChangeListener((property, oldValue, newValue) -> maxMessages.set((Long) newValue));
         prop = entity.getProperty("persistence-mode");
-        pMode = pmStringToInt((String) prop.getValue());
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                pMode = pmStringToInt((String) newValue);
-            }
-        });
+        pMode.set(pmStringToInt((String) prop.getValue()));
+        prop.setPropertyChangeListener((property, oldValue, newValue) -> pMode.set(pmStringToInt((String) newValue)));
         prop = entity.getProperty("subscription-type");
-        sMode = stStringToInt((String) prop.getValue());
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                sMode = stStringToInt((String) newValue);
-            }
-        });
+        sMode.set(stStringToInt((String) prop.getValue()));
+        prop.setPropertyChangeListener((property, oldValue, newValue) -> sMode.set(stStringToInt((String) newValue)));
         prop = entity.getProperty("disconnect-non-durable-subscriber");
-        disconnectNonDurable = ((Boolean) prop.getValue()).booleanValue();
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                disconnectNonDurable = ((Boolean) newValue).booleanValue();
-            }
-        });
+        disconnectNonDurable.set((Boolean) prop.getValue());
+        prop.setPropertyChangeListener((property, oldValue, newValue) -> disconnectNonDurable.set((Boolean) newValue));
         prop = entity.getProperty("disconnect-delete-durable-subscriber");
-        disconnectDeleteDurable = ((Boolean) prop.getValue()).booleanValue();
-        prop.setPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                disconnectDeleteDurable = ((Boolean) newValue).booleanValue();
-            }
-        });
+        disconnectDeleteDurable.set(((Boolean) prop.getValue()).booleanValue());
+        prop.setPropertyChangeListener((property, oldValue, newValue) -> disconnectDeleteDurable.set((Boolean) newValue));
     }
 
     public boolean isDisconnectNonDurable() {
-        return disconnectNonDurable;
+        return disconnectNonDurable.get();
     }
 
     public boolean isDisconnectDeleteDurable() {
-        return disconnectDeleteDurable;
+        return disconnectDeleteDurable.get();
     }
 
     public boolean isMatch(int deliveryMode, TopicSubscription topicSubscription) throws Exception {
-        return ((pMode == PM_ALL ||
-                pMode == PM_PERSISTENT && deliveryMode == DeliveryMode.PERSISTENT ||
-                pMode == PM_NONPERSISTENT && deliveryMode == DeliveryMode.NON_PERSISTENT) &&
-                (sMode == ST_ALL ||
-                        sMode == ST_LOCAL && !topicSubscription.isRemote() ||
-                        sMode == ST_REMOTE && topicSubscription.isRemote()) &&
-                (maxMessages <= topicSubscription.getNumberSubscriberQueueMessages()));
+        return ((pMode.get() == PM_ALL ||
+                pMode.get() == PM_PERSISTENT && deliveryMode == DeliveryMode.PERSISTENT ||
+                pMode.get() == PM_NONPERSISTENT && deliveryMode == DeliveryMode.NON_PERSISTENT) &&
+                (sMode.get() == ST_ALL ||
+                        sMode.get() == ST_LOCAL && !topicSubscription.isRemote() ||
+                        sMode.get() == ST_REMOTE && topicSubscription.isRemote()) &&
+                (maxMessages.get() <= topicSubscription.getNumberSubscriberQueueMessages()));
     }
 
     private int pmStringToInt(String pmString) {
@@ -147,14 +123,13 @@ public class SlowSubscriberCondition {
     }
 
     public String toString() {
-        StringBuffer b = new StringBuffer("[SlowSubscriberCondition, ");
-        b.append("maxMessage=");
-        b.append(maxMessages);
-        b.append(", pMode=");
-        b.append(pmIntToString(pMode));
-        b.append(", sMode=");
-        b.append(stIntToString(sMode));
-        b.append("]");
-        return b.toString();
+        String b = "[SlowSubscriberCondition, " + "maxMessage=" +
+                maxMessages.get() +
+                ", pMode=" +
+                pmIntToString(pMode.get()) +
+                ", sMode=" +
+                stIntToString(sMode.get()) +
+                "]";
+        return b;
     }
 }

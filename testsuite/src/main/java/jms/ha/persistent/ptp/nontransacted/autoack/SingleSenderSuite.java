@@ -22,23 +22,19 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class SingleSenderSuite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new SingleSenderSuite();
-    suite.addTest(new Sender("send", "testqueue@router"));
-    return suite;
-  }
+public class SingleSenderSuite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new SingleSenderSuite();
+        suite.addTest(new Sender("send", "testqueue@router"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "autoack";
-  }
+    public String toString() {
+        return "autoack";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

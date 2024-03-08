@@ -17,11 +17,6 @@
 
 package com.swiftmq.impl.store.standard;
 
-import com.swiftmq.impl.store.standard.backup.BackupProcessor;
-import com.swiftmq.impl.store.standard.backup.po.ChangeGenerations;
-import com.swiftmq.impl.store.standard.backup.po.ChangePath;
-import com.swiftmq.impl.store.standard.backup.po.ScanSaveSets;
-import com.swiftmq.impl.store.standard.backup.po.StartBackup;
 import com.swiftmq.impl.store.standard.cache.CacheManager;
 import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.QueueIndex;
@@ -29,10 +24,15 @@ import com.swiftmq.impl.store.standard.index.RootIndex;
 import com.swiftmq.impl.store.standard.jobs.JobRegistrar;
 import com.swiftmq.impl.store.standard.log.*;
 import com.swiftmq.impl.store.standard.pagedb.StoreConverter;
-import com.swiftmq.impl.store.standard.pagedb.scan.ScanProcessor;
-import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
-import com.swiftmq.impl.store.standard.pagedb.shrink.ShrinkProcessor;
-import com.swiftmq.impl.store.standard.pagedb.shrink.po.StartShrink;
+import com.swiftmq.impl.store.standard.processor.backup.BackupProcessor;
+import com.swiftmq.impl.store.standard.processor.backup.po.ChangeGenerations;
+import com.swiftmq.impl.store.standard.processor.backup.po.ChangePath;
+import com.swiftmq.impl.store.standard.processor.backup.po.ScanSaveSets;
+import com.swiftmq.impl.store.standard.processor.backup.po.StartBackup;
+import com.swiftmq.impl.store.standard.processor.scan.ScanProcessor;
+import com.swiftmq.impl.store.standard.processor.scan.po.StartScan;
+import com.swiftmq.impl.store.standard.processor.shrink.ShrinkProcessor;
+import com.swiftmq.impl.store.standard.processor.shrink.po.StartShrink;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactoryImpl;
@@ -56,13 +56,13 @@ import java.util.List;
 
 public class StoreSwiftletImpl extends StoreSwiftlet {
     private static final String PREPARED_LOG_QUEUE = "sys$prepared";
-    private static boolean PRECREATE = Boolean.valueOf(System.getProperty("swiftmq.store.txlog.precreate", "true")).booleanValue();
+    private static final boolean PRECREATE = Boolean.parseBoolean(System.getProperty("swiftmq.store.txlog.precreate", "true"));
     StoreContext ctx = null;
     RootIndex rootIndex = null;
     long swapMaxLength = 0;
     JobRegistrar jobRegistrar = null;
 
-    public synchronized PersistentStore getPersistentStore(String queueName)
+    public PersistentStore getPersistentStore(String queueName)
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getPersistentStore, queueName=" + queueName);
         QueueIndex queueIndex = null;
@@ -77,7 +77,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return ps;
     }
 
-    public synchronized NonPersistentStore getNonPersistentStore(String queueName)
+    public NonPersistentStore getNonPersistentStore(String queueName)
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getNonPersistentStore, queueName=" + queueName);
         NonPersistentStore nps = createNonPersistentStore(ctx, queueName, ctx.swapPath, swapMaxLength);
@@ -86,7 +86,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return nps;
     }
 
-    public synchronized DurableSubscriberStore getDurableSubscriberStore()
+    public DurableSubscriberStore getDurableSubscriberStore()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "getDurableSubscriberStore...");
         DurableSubscriberStore ds = ctx.durableStore;
@@ -94,7 +94,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return (ds);
     }
 
-    public synchronized List getPrepareLogRecords() throws StoreException {
+    public List getPrepareLogRecords() throws StoreException {
         List list = null;
         try {
             list = ctx.preparedLog.getAll();
@@ -104,7 +104,7 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
         return list;
     }
 
-    public synchronized void removePrepareLogRecord(PrepareLogRecord record) throws StoreException {
+    public void removePrepareLogRecord(PrepareLogRecord record) throws StoreException {
         try {
             ctx.preparedLog.remove((PrepareLogRecordImpl) record);
         } catch (IOException e) {
@@ -273,10 +273,10 @@ public class StoreSwiftletImpl extends StoreSwiftlet {
     public void stopStore() throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...");
         Semaphore sem = new Semaphore();
-        ctx.logManager.enqueue(new CloseLogOperation(sem));
+        ctx.logManagerEventLoop.submit(new CloseLogOperation(sem));
         sem.waitHere();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", "shutdown, stopping log manager...done");
-        ctx.logManager.stopQueue();
+        ctx.logManagerEventLoop.close();
         ctx.cacheManager.flush();
         ctx.cacheManager.close();
     }

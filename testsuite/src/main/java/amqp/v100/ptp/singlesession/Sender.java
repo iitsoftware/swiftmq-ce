@@ -17,56 +17,48 @@
 
 package amqp.v100.ptp.singlesession;
 
+import amqp.v100.base.AMQPSettableConnectionTestCase;
+import amqp.v100.base.MessageFactory;
 import com.swiftmq.amqp.v100.client.Connection;
 import com.swiftmq.amqp.v100.client.Producer;
 import com.swiftmq.amqp.v100.client.Session;
-import amqp.v100.base.AMQPSettableConnectionTestCase;
-import amqp.v100.base.MessageFactory;
 
-public class Sender extends AMQPSettableConnectionTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "100000"));
-  boolean persistent = Boolean.parseBoolean(System.getProperty("persistent", "true"));
+public class Sender extends AMQPSettableConnectionTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "100000"));
+    boolean persistent = Boolean.parseBoolean(System.getProperty("persistent", "true"));
 
-  MessageFactory messageFactory;
-  int qos;
-  String address = null;
-  Producer producer = null;
+    MessageFactory messageFactory;
+    int qos;
+    String address = null;
+    Producer producer = null;
 
-  public Sender(String name, int qos, String address, Connection connection, Session session)
-  {
-    super(name);
-    this.qos = qos;
-    this.address = address;
-    setConnection(connection);
-    setSession(session);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    producer = getSession().createProducer(address, qos);
-    messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
-  }
-
-  public void send()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        producer.send(messageFactory.create(i), persistent, 5, -1);
-      }
-    } catch (Exception e)
-    {
-      fail("test failed: " + e);
+    public Sender(String name, int qos, String address, Connection connection, Session session) {
+        super(name);
+        this.qos = qos;
+        this.address = address;
+        setConnection(connection);
+        setSession(session);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (producer != null)
-      producer.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp();
+        producer = getSession().createProducer(address, qos);
+        messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
+    }
+
+    public void send() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                producer.send(messageFactory.create(i), persistent, 5, -1);
+            }
+        } catch (Exception e) {
+            fail("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        if (producer != null)
+            producer.close();
+        super.tearDown();
+    }
 }

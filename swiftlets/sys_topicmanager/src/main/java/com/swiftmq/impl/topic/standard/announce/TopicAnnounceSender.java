@@ -32,7 +32,8 @@ import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.swiftlet.routing.Route;
 import com.swiftmq.swiftlet.routing.event.RoutingEvent;
 import com.swiftmq.swiftlet.routing.event.RoutingListener;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.versioning.*;
 import com.swiftmq.tools.versioning.event.VersionedListener;
@@ -40,25 +41,27 @@ import com.swiftmq.tools.versioning.event.VersionedListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TopicAnnounceSender
         implements POAnnounceSenderVisitor, RoutingListener, EntityWatchListener {
-    static final String TP_TOPICANNOUNCER = "sys$topicmanager.topic.announcer";
     TopicManagerContext ctx = null;
-    boolean closed = false;
-    PipelineQueue pipelineQueue = null;
-    HashMap rtmList = new HashMap();
-    HashMap announceSubs = new HashMap();
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    Map<String, RemoteTopicManager> rtmList = new HashMap<>();
+    Map<String, AnnounceSubscription> announceSubs = new HashMap<>();
     DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
     TopicInfoFactory factory = new TopicInfoFactory();
     TopicInfoConverter converter = new TopicInfoConverter();
     AnnounceFilters announceFilters = null;
+    EventLoop eventLoop;
 
     public TopicAnnounceSender(TopicManagerContext ctx) {
         this.ctx = ctx;
         this.announceFilters = new AnnounceFilters(ctx);
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_TOPICANNOUNCER), TP_TOPICANNOUNCER, this);
-        pipelineQueue.stopQueue();
+        this.eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$topicmanager.announce", list -> {
+            for (Object event : list)
+                ((POObject) event).accept(TopicAnnounceSender.this);
+        });
         ctx.activeSubscriberList.addEntityWatchListener(this);
         ctx.announceSender = this;
     }
@@ -66,100 +69,96 @@ public class TopicAnnounceSender
     // --> RoutingListener
     public void destinationAdded(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/destinationAdded: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationAdded(ctx.routingSwiftlet.getRoute(event.getDestination())));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationAdded: " + event.getDestination());
+        eventLoop.submit(new PODestinationAdded(ctx.routingSwiftlet.getRoute(event.getDestination())));
     }
 
     public void destinationActivated(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/destinationActivated: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationActivated(event.getDestination()));
-        pipelineQueue.enqueue(new POVersionNoteToSend(event.getDestination()));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationActivated: " + event.getDestination());
+        eventLoop.submit(new PODestinationActivated(event.getDestination()));
+        eventLoop.submit(new POVersionNoteToSend(event.getDestination()));
     }
 
     public void destinationDeactivated(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/destinationDeactivated: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationDeactivated(event.getDestination()));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationDeactivated: " + event.getDestination());
+        eventLoop.submit(new PODestinationDeactivated(event.getDestination()));
     }
 
     public void destinationRemoved(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/destinationRemoved: " + event.getDestination());
-        pipelineQueue.enqueue(new PODestinationRemoved(event.getDestination()));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationRemoved: " + event.getDestination());
+        eventLoop.submit(new PODestinationRemoved(event.getDestination()));
     }
     // <-- RoutingListener
 
     // --> EntityWatchListener
     public void entityAdded(Entity parent, Entity newEntity) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/entityAdded: " + newEntity);
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/entityAdded: " + newEntity);
         Property prop = newEntity.getProperty("topic");
         String[] tokenized = ctx.topicManager.tokenizeTopicName((String) prop.getValue());
-        pipelineQueue.enqueue(new POSubscriptionAdded(tokenized[0]));
+        eventLoop.submit(new POSubscriptionAdded(tokenized[0]));
     }
 
     public void entityRemoved(Entity parent, Entity delEntity) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/entityRemoved: " + delEntity);
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/entityRemoved: " + delEntity);
         Property prop = delEntity.getProperty("topic");
         String[] tokenized = ctx.topicManager.tokenizeTopicName((String) prop.getValue());
-        pipelineQueue.enqueue(new POSubscriptionRemoved(tokenized[0]));
+        eventLoop.submit(new POSubscriptionRemoved(tokenized[0]));
     }
     // <-- EntityWatchListener
 
     // --> Exposed Methods
-    public void start() {
-        pipelineQueue.startQueue();
-    }
-
     public void versionNoteReceived(VersionNotification vn) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/versionNoteReceived: " + vn);
-        pipelineQueue.enqueue(new POVersionNoteReceived(vn));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/versionNoteReceived: " + vn);
+        eventLoop.submit(new POVersionNoteReceived(vn));
     }
 
     public void destinationAdded(Route route) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/destinationAdded: " + route.getDestination());
-        pipelineQueue.enqueue(new PODestinationAdded(route));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationAdded: " + route.getDestination());
+        eventLoop.submit(new PODestinationAdded(route));
         if (route.isActive()) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/destinationAdded, activate: " + route.getDestination());
-            pipelineQueue.enqueue(new PODestinationActivated(route.getDestination()));
-            pipelineQueue.enqueue(new POVersionNoteToSend(route.getDestination()));
+                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/destinationAdded, activate: " + route.getDestination());
+            eventLoop.submit(new PODestinationActivated(route.getDestination()));
+            eventLoop.submit(new POVersionNoteToSend(route.getDestination()));
         }
     }
 
     public void routerRemoved(String routername) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/topicCreated: " + routername);
-        pipelineQueue.enqueue(new PODestinationRemoved(routername));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/topicCreated: " + routername);
+        eventLoop.submit(new PODestinationRemoved(routername));
     }
 
     public void topicCreated(String topicName) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/topicCreated: " + topicName);
-        pipelineQueue.enqueue(new POTopicCreated(topicName));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/topicCreated: " + topicName);
+        eventLoop.submit(new POTopicCreated(topicName));
     }
 
     public void topicRemoved(String topicName) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/topicRemoved: " + topicName);
-        pipelineQueue.enqueue(new POTopicRemoved(topicName));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/topicRemoved: " + topicName);
+        eventLoop.submit(new POTopicRemoved(topicName));
     }
 
     public void announceSubscriptions(TopicInfo remoteTI) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/announceSubscriptions: " + remoteTI);
-        pipelineQueue.enqueue(new POAnnounceSubscriptions(remoteTI));
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/announceSubscriptions: " + remoteTI);
+        eventLoop.submit(new POAnnounceSubscriptions(remoteTI));
     }
     // <-- Exposed Methods
 
 
     private void send(String dest, QueueSender sender, VersionObject vo) throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/send, dest: " + dest + ", vo: " + vo);
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/send, dest: " + dest + ", vo: " + vo);
         dos.rewind();
         dos.writeInt(vo.getDumpId());
         vo.writeContent(dos);
@@ -181,22 +180,22 @@ public class TopicAnnounceSender
 
     // --> Visitor methods
     public void visit(POVersionNoteToSend po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
-        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.get(po.getDestination());
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
+        RemoteTopicManager rtm = rtmList.get(po.getDestination());
         if (rtm != null) {
             try {
                 VersionNotification vn = new VersionNotification(SwiftletManager.getInstance().getRouterName(), TopicInfoFactory.getSupportedVersions());
                 send(po.getDestination(), rtm.getSender(), vn);
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", Exception: " + e);
+                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", Exception: " + e);
             }
         }
     }
 
     public void visit(POVersionNoteReceived po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
-        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.get(po.getVersionNotification().getIdentifier());
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
+        RemoteTopicManager rtm = rtmList.get(po.getVersionNotification().getIdentifier());
         if (rtm == null) {
             rtm = new RemoteTopicManager(po.getVersionNotification().getIdentifier(), null);
             rtmList.put(po.getVersionNotification().getIdentifier(), rtm);
@@ -206,22 +205,22 @@ public class TopicAnnounceSender
             rtm.processBuffer();
         if (!rtm.isValid()) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM invalid after processBuffer, removing!");
+                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM invalid after processBuffer, removing!");
             rtm.close();
             rtmList.remove(po.getVersionNotification().getIdentifier());
         }
     }
 
     public void visit(PODestinationAdded po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
-        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.get(po.getRoute().getDestination());
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
+        RemoteTopicManager rtm = rtmList.get(po.getRoute().getDestination());
         if (rtm == null) {
             try {
                 QueueSender sender = ctx.queueManager.createQueueSender(po.getRoute().getOutboundQueueName(), null);
                 rtmList.put(po.getRoute().getDestination(), new RemoteTopicManager(po.getRoute().getDestination(), sender));
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", Exception: " + e);
+                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", Exception: " + e);
             }
         } else {
             if (rtm.getSender() == null) {
@@ -231,21 +230,21 @@ public class TopicAnnounceSender
                     rtm.processBuffer();
                     if (!rtm.isValid()) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                         rtm.close();
                         rtmList.remove(po.getRoute().getDestination());
                     }
                 } catch (Exception e) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", Exception: " + e);
+                        ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", Exception: " + e);
                 }
             }
         }
     }
 
     public void visit(PODestinationRemoved po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
-        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.remove(po.getDestination());
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
+        RemoteTopicManager rtm = rtmList.remove(po.getDestination());
         if (rtm != null) {
             rtm.close();
         }
@@ -253,8 +252,8 @@ public class TopicAnnounceSender
     }
 
     public void visit(PODestinationActivated po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/ " + po);
-        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.get(po.getDestination());
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/ " + po);
+        RemoteTopicManager rtm = rtmList.get(po.getDestination());
         if (rtm != null) {
             try {
                 for (Iterator iter = announceSubs.entrySet().iterator(); iter.hasNext(); ) {
@@ -270,7 +269,7 @@ public class TopicAnnounceSender
                         }
                         if (!rtm.isValid()) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                             rtm.close();
                             rtmList.remove(po.getDestination());
                         }
@@ -278,51 +277,51 @@ public class TopicAnnounceSender
                 }
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", exception: " + e);
                 if (!rtm.isValid()) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                        ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                     rtm.close();
                     rtmList.remove(po.getDestination());
                 }
             }
         } else if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", no rtm object found!");
+            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", no rtm object found!");
     }
 
     public void visit(PODestinationDeactivated po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
     }
 
     public void visit(POTopicCreated po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
         String[] tt = ctx.topicManager.tokenizeTopicName(po.getTopicName());
-        AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(tt[0]);
+        AnnounceSubscription as = announceSubs.get(tt[0]);
         if (as == null) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", announce all (createInfo)");
+                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", announce all (createInfo)");
             announceSubs.put(tt[0], new AnnounceSubscription(tt[0], 0));
             // AnnounceAll: CREATIONINFO!
-            for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) iter.next();
+            for (Iterator<Map.Entry<String, RemoteTopicManager>> iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
+                Map.Entry<String, RemoteTopicManager> entry = iter.next();
                 String dest = (String) entry.getKey();
                 if (announceFilters.isAnnounceEnabled(dest, tt[0])) {
-                    RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
+                    RemoteTopicManager rtm = entry.getValue();
                     VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, true);
                     try {
                         rtm.process(vd);
                         if (!rtm.isValid()) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                             rtm.close();
                             iter.remove();
                         }
                     } catch (Exception e) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", exception: " + e);
                         if (!rtm.isValid()) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                             rtm.close();
                             iter.remove();
                         }
@@ -333,33 +332,33 @@ public class TopicAnnounceSender
     }
 
     public void visit(POTopicRemoved po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
         String[] tt = ctx.topicManager.tokenizeTopicName(po.getTopicName());
-        AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(tt[0]);
+        AnnounceSubscription as = announceSubs.get(tt[0]);
         if (as != null) {
             as.cnt = Math.max(0, as.cnt - 1);
             if (as.cnt == 0) {
                 // Announce all
-                for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry) iter.next();
+                for (Iterator<Map.Entry<String, RemoteTopicManager>> iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
+                    Map.Entry<String, RemoteTopicManager> entry = (Map.Entry) iter.next();
                     String dest = (String) entry.getKey();
                     if (announceFilters.isAnnounceEnabled(dest, as.topicName)) {
-                        RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
+                        RemoteTopicManager rtm = entry.getValue();
                         VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
                         try {
                             rtm.process(vd);
                             if (!rtm.isValid()) {
                                 if (ctx.traceSpace.enabled)
-                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                                 rtm.close();
                                 iter.remove();
                             }
                         } catch (Exception e) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", exception: " + e);
                             if (!rtm.isValid()) {
                                 if (ctx.traceSpace.enabled)
-                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                                 rtm.close();
                                 iter.remove();
                             }
@@ -371,19 +370,15 @@ public class TopicAnnounceSender
     }
 
     public void visit(POSubscriptionAdded po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
         String[] tt = ctx.topicManager.tokenizeTopicName(po.getTopicName());
-        AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(tt[0]);
-        if (as == null) {
-            as = new AnnounceSubscription(tt[0], 0);
-            announceSubs.put(tt[0], as);
-        }
+        AnnounceSubscription as = announceSubs.computeIfAbsent(tt[0], k -> new AnnounceSubscription(tt[0], 0));
         as.cnt++;
         if (as.cnt == 1) {
             // Announce all
-            for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) iter.next();
-                String dest = (String) entry.getKey();
+            for (Iterator<Map.Entry<String, RemoteTopicManager>> iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
+                Map.Entry<String, RemoteTopicManager> entry = iter.next();
+                String dest = entry.getKey();
                 if (announceFilters.isAnnounceEnabled(dest, as.topicName)) {
                     RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
                     VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
@@ -391,16 +386,16 @@ public class TopicAnnounceSender
                         rtm.process(vd);
                         if (!rtm.isValid()) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                             rtm.close();
                             iter.remove();
                         }
                     } catch (Exception e) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", exception: " + e);
                         if (!rtm.isValid()) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                             rtm.close();
                             iter.remove();
                         }
@@ -411,16 +406,16 @@ public class TopicAnnounceSender
     }
 
     public void visit(POSubscriptionRemoved po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
         String[] tt = ctx.topicManager.tokenizeTopicName(po.getTopicName());
-        AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(tt[0]);
+        AnnounceSubscription as = announceSubs.get(tt[0]);
         if (as != null) {
             as.cnt = Math.max(0, as.cnt - 1);
             if (as.cnt == 0) {
                 // Announce all
-                for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry) iter.next();
-                    String dest = (String) entry.getKey();
+                for (Iterator<Map.Entry<String, RemoteTopicManager>> iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
+                    Map.Entry<String, RemoteTopicManager> entry = iter.next();
+                    String dest = entry.getKey();
                     if (announceFilters.isAnnounceEnabled(dest, as.topicName)) {
                         RemoteTopicManager rtm = (RemoteTopicManager) entry.getValue();
                         VersionedDumpable vd = TopicInfoFactory.createTopicInfo(dest, SwiftletManager.getInstance().getRouterName(), tt[0], tt, as.cnt);
@@ -428,16 +423,16 @@ public class TopicAnnounceSender
                             rtm.process(vd);
                             if (!rtm.isValid()) {
                                 if (ctx.traceSpace.enabled)
-                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                                 rtm.close();
                                 iter.remove();
                             }
                         } catch (Exception e) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", exception: " + e);
                             if (!rtm.isValid()) {
                                 if (ctx.traceSpace.enabled)
-                                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                                 rtm.close();
                                 iter.remove();
                             }
@@ -449,51 +444,52 @@ public class TopicAnnounceSender
     }
 
     public void visit(POAnnounceSubscriptions po) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po);
         TopicInfo remoteTI = po.getTopicInfo();
-        RemoteTopicManager rtm = (RemoteTopicManager) rtmList.get(remoteTI.getRouterName());
+        RemoteTopicManager rtm = rtmList.get(remoteTI.getRouterName());
         if (announceFilters.isAnnounceEnabled(remoteTI.getRouterName(), remoteTI.getTopicName())) {
             if (rtm != null) {
-                AnnounceSubscription as = (AnnounceSubscription) announceSubs.get(remoteTI.getTopicName());
+                AnnounceSubscription as = announceSubs.get(remoteTI.getTopicName());
                 if (as != null && as.cnt > 0) {
                     VersionedDumpable vd = TopicInfoFactory.createTopicInfo(remoteTI.getRouterName(), SwiftletManager.getInstance().getRouterName(), as.topicName, ctx.topicManager.tokenizeTopicName(as.topicName), as.cnt);
                     try {
                         rtm.process(vd);
                         if (!rtm.isValid()) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                             rtm.close();
                             rtmList.remove(remoteTI.getRouterName());
                         }
                     } catch (Exception e) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", exception: " + e);
+                            ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", exception: " + e);
                         if (!rtm.isValid()) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + ", RTM object invalid, close!");
+                                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + ", RTM object invalid, close!");
                             rtm.close();
                             rtmList.remove(remoteTI.getRouterName());
                         }
                     }
                 }
             } else if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/" + po + " no RTM object found!");
+                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/" + po + " no RTM object found!");
         }
     }
     // <-- Visitor methods
 
-    public synchronized void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/close...");
-        pipelineQueue.close();
+    public void close() {
+        if (closed.getAndSet(true))
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/close...");
+        eventLoop.close();
         ctx.activeSubscriberList.removeEntityWatchListener(this);
-        for (Iterator iter = rtmList.entrySet().iterator(); iter.hasNext(); ) {
-            RemoteTopicManager rtm = (RemoteTopicManager) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, RemoteTopicManager> entry : rtmList.entrySet()) {
+            RemoteTopicManager rtm = entry.getValue();
             rtm.close();
         }
         rtmList.clear();
         announceSubs.clear();
-        closed = true;
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/close...done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/close...done");
     }
 
     public String toString() {
@@ -504,13 +500,13 @@ public class TopicAnnounceSender
             implements VersionedListener {
         String destination = null;
         QueueSender sender = null;
-        boolean valid = true;
+        final AtomicBoolean valid = new AtomicBoolean(true);
 
         public RemoteTopicManager(String destination, QueueSender sender) {
             super(null, null, converter, factory, true);
             this.destination = destination;
             this.sender = sender;
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/created");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/created");
         }
 
         public QueueSender getSender() {
@@ -526,30 +522,30 @@ public class TopicAnnounceSender
         }
 
         public boolean isValid() {
-            return valid;
+            return valid.get();
         }
 
         public void onAccept(VersionedDumpable vd) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/onAccept, vd=" + vd);
+                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/onAccept, vd=" + vd);
             try {
                 send(destination, sender, toVersioned(vd));
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/onAccept, vd=" + vd + ", exception=" + e);
-                valid = false;
+                    ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/onAccept, vd=" + vd + ", exception=" + e);
+                valid.set(false);
             }
         }
 
         public void onException(Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/onException, exception=" + e);
-            ctx.logSwiftlet.logError(ctx.topicManager.getName(), toString() + "/onException, exception=" + e);
+                ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/onException, exception=" + e);
+            ctx.logSwiftlet.logError(ctx.topicManager.getName(), this + "/onException, exception=" + e);
         }
 
         public void close() {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/created");
-            valid = false;
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), this + "/created");
+            valid.set(false);
             try {
                 sender.close();
             } catch (Exception ignored) {
@@ -557,11 +553,11 @@ public class TopicAnnounceSender
         }
 
         public String toString() {
-            return TopicAnnounceSender.this.toString() + "/[RemoteTopicManager, destination=" + destination + ", valid=" + valid + "]";
+            return TopicAnnounceSender.this + "/[RemoteTopicManager, destination=" + destination + ", valid=" + valid + "]";
         }
     }
 
-    private class AnnounceSubscription {
+    private static class AnnounceSubscription {
         String topicName = null;
         int cnt = 0;
 

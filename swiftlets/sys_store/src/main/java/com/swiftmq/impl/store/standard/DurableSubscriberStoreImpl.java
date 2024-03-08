@@ -25,9 +25,11 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class DurableSubscriberStoreImpl
-        implements DurableSubscriberStore, Iterator {
+        implements DurableSubscriberStore, Iterator<DurableStoreEntry> {
     static final String DELIMITER = "$";
     static final String EXTENSION = ".durable";
 
@@ -35,9 +37,10 @@ public class DurableSubscriberStoreImpl
     String path;
     File dir = null;
     String[] iterFiles = null;
-    int iterPos = 0;
+    final AtomicInteger iterPos = new AtomicInteger();
     String iterClientId = null;
     String iterDurableName = null;
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     protected DurableSubscriberStoreImpl(StoreContext ctx, String path) throws StoreException {
         this.ctx = ctx;
@@ -54,23 +57,18 @@ public class DurableSubscriberStoreImpl
         return new DurableSubscriberStoreImpl(ctx, path);
     }
 
-    public synchronized Iterator iterator()
-            throws StoreException {
-        iterFiles = dir.list(new FilenameFilter() {
-            public boolean accept(File d, String name) {
-                return name.endsWith(EXTENSION);
-            }
-        });
-        iterPos = 0;
+    public Iterator<DurableStoreEntry> iterator() {
+        iterFiles = dir.list((d, name) -> name.endsWith(EXTENSION));
+        iterPos.set(0);
         return this;
     }
 
-    public synchronized boolean hasNext() {
-        return iterFiles != null && iterPos < iterFiles.length;
+    public boolean hasNext() {
+        return iterFiles != null && iterPos.get() < iterFiles.length;
     }
 
-    public synchronized Object next() {
-        String name = iterFiles[iterPos];
+    public DurableStoreEntry next() {
+        String name = iterFiles[iterPos.get()];
         iterClientId = name.substring(0, name.indexOf(DELIMITER));
         iterDurableName = name.substring(name.indexOf(DELIMITER) + 1, name.indexOf(EXTENSION));
         DurableStoreEntry entry = null;
@@ -79,11 +77,11 @@ public class DurableSubscriberStoreImpl
         } catch (Exception e) {
             throw new RuntimeException(e.toString());
         }
-        iterPos++;
+        iterPos.getAndIncrement();
         return entry;
     }
 
-    public synchronized void remove() {
+    public void remove() {
         try {
             deleteDurableStoreEntry(iterClientId, iterDurableName);
         } catch (Exception e) {
@@ -91,7 +89,7 @@ public class DurableSubscriberStoreImpl
         }
     }
 
-    public synchronized DurableStoreEntry getDurableStoreEntry(String clientId, String durableName)
+    public DurableStoreEntry getDurableStoreEntry(String clientId, String durableName)
             throws StoreException {
         String filename = getDurableFilename(clientId, durableName);
         File f = new File(dir, filename);
@@ -114,7 +112,7 @@ public class DurableSubscriberStoreImpl
         return entry;
     }
 
-    public synchronized void insertDurableStoreEntry(DurableStoreEntry durableStoreEntry)
+    public void insertDurableStoreEntry(DurableStoreEntry durableStoreEntry)
             throws StoreException {
         Map map = new HashMap();
         map.put("topicName", durableStoreEntry.getTopicName());
@@ -134,7 +132,7 @@ public class DurableSubscriberStoreImpl
         }
     }
 
-    public synchronized void deleteDurableStoreEntry(String clientId, String durableName)
+    public void deleteDurableStoreEntry(String clientId, String durableName)
             throws StoreException {
         String filename = getDurableFilename(clientId, durableName);
         File f = new File(dir, filename);
@@ -154,7 +152,7 @@ public class DurableSubscriberStoreImpl
         in.close();
     }
 
-    public synchronized void copy(String newPath) throws Exception {
+    public void copy(String newPath) throws Exception {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/copy ...");
         String[] files = dir.list(new FilenameFilter() {
             public boolean accept(File d, String name) {
@@ -162,11 +160,11 @@ public class DurableSubscriberStoreImpl
             }
         });
         if (files != null) {
-            for (int i = 0; i < files.length; i++) {
+            for (String file : files) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/copy, file=" + files[i]);
-                File source = new File(dir, files[i]);
-                File dest = new File(newPath + File.separatorChar + files[i]);
+                    ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/copy, file=" + file);
+                File source = new File(dir, file);
+                File dest = new File(newPath + File.separatorChar + file);
                 copyFile(source, dest);
             }
         }

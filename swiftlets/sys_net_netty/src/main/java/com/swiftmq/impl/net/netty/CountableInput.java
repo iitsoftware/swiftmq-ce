@@ -19,9 +19,10 @@ package com.swiftmq.impl.net.netty;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CountableInput extends InputStream implements Countable {
-    long count = 0;
+    final AtomicLong count = new AtomicLong();
 
     @Override
     public int read() throws IOException {
@@ -30,16 +31,16 @@ public class CountableInput extends InputStream implements Countable {
 
     @Override
     public void addByteCount(long cnt) {
-        count += cnt;
+        count.addAndGet(cnt);
     }
 
     @Override
     public long getByteCount() {
-        return count;
+        return count.get();
     }
 
     @Override
     public void resetByteCount() {
-        count = 0;
+        count.set(0);
     }
 }

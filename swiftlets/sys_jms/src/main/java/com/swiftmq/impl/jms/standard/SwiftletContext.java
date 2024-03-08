@@ -67,10 +67,10 @@ public class SwiftletContext {
         authSwiftlet = (AuthenticationSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$authentication");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
         Property prop = root.getProperty("consumer-cache-low-water-mark");
-        consumerCacheLowWaterMark = ((Integer) prop.getValue()).intValue();
+        consumerCacheLowWaterMark = (Integer) prop.getValue();
         prop.setPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                consumerCacheLowWaterMark = ((Integer) newValue).intValue();
+                consumerCacheLowWaterMark = (Integer) newValue;
             }
         });
     }

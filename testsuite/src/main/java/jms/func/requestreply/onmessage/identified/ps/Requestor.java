@@ -21,42 +21,35 @@ import jms.base.SimpleConnectedPSTestCase;
 
 import javax.jms.*;
 
-public class Requestor extends SimpleConnectedPSTestCase
-{
-  TopicSubscriber tempSubscriber = null;
-  TemporaryTopic tempTopic = null;
+public class Requestor extends SimpleConnectedPSTestCase {
+    TopicSubscriber tempSubscriber = null;
+    TemporaryTopic tempTopic = null;
 
-  public Requestor(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    subscriber.close();
-    tempTopic = ts.createTemporaryTopic();
-    tempSubscriber = ts.createSubscriber(tempTopic);
-    pause(3000);
-  }
-
-  public void testRequest()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      msg.setJMSReplyTo(tempTopic);
-      for (int i = 0; i < 1000; i++)
-      {
-        msg.setText("Request: " + i);
-        publisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        TextMessage reply = (TextMessage) tempSubscriber.receive();
-      }
-      pause(3000);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Requestor(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        subscriber.close();
+        tempTopic = ts.createTemporaryTopic();
+        tempSubscriber = ts.createSubscriber(tempTopic);
+        pause(3000);
+    }
+
+    public void testRequest() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            msg.setJMSReplyTo(tempTopic);
+            for (int i = 0; i < 1000; i++) {
+                msg.setText("Request: " + i);
+                publisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                TextMessage reply = (TextMessage) tempSubscriber.receive();
+            }
+            pause(3000);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

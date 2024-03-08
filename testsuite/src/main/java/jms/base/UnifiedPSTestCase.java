@@ -17,112 +17,87 @@
 
 package jms.base;
 
+import com.swiftmq.jms.TopicImpl;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-public class UnifiedPSTestCase extends JMSTestCase
-{
-  public InitialContext ctx = null;
-  ConnectionFactory cf = null;
+public class UnifiedPSTestCase extends JMSTestCase {
+    public InitialContext ctx = null;
+    ConnectionFactory cf = null;
 
-  public UnifiedPSTestCase(String name)
-  {
-    super(name);
-  }
-
-  public Connection createConnection(InitialContext ctx, String lookup)
-  {
-    return createConnection(ctx, lookup, null);
-  }
-
-  public Connection createConnection(InitialContext ctx, String lookup, String clientId, boolean start)
-  {
-    Connection tc = null;
-    try
-    {
-      if (cf == null)
-        cf = (ConnectionFactory) ctx.lookup(lookup);
-      tc = cf.createConnection();
-      if (clientId != null)
-        tc.setClientID(clientId);
-      if (start)
-        tc.start();
-    } catch (Exception e)
-    {
-      failFast("create topic connection failed: " + e);
+    public UnifiedPSTestCase(String name) {
+        super(name);
     }
-    return tc;
-  }
 
-  public Connection createConnection(InitialContext ctx, String lookup, String clientId)
-  {
-    return createConnection(ctx, lookup, clientId, true);
-  }
-
-  public Connection createConnection(String lookup, String clientId, boolean start)
-  {
-    Connection tc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      tc = createConnection(ctx, lookup, clientId, start);
-    } catch (Exception e)
-    {
-      failFast("create topic connection failed: " + e);
+    public Connection createConnection(InitialContext ctx, String lookup) {
+        return createConnection(ctx, lookup, null);
     }
-    return tc;
-  }
 
-  public Connection createConnection(String lookup, String clientId)
-  {
-    Connection tc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      tc = createConnection(ctx, lookup, clientId, true);
-    } catch (Exception e)
-    {
-      failFast("create topic connection failed: " + e);
+    public Connection createConnection(InitialContext ctx, String lookup, String clientId, boolean start) {
+        Connection tc = null;
+        try {
+            if (cf == null)
+                cf = (ConnectionFactory) ctx.lookup(lookup);
+            tc = cf.createConnection();
+            if (clientId != null)
+                tc.setClientID(clientId);
+            if (start)
+                tc.start();
+        } catch (Exception e) {
+            failFast("create topic connection failed: " + e);
+        }
+        return tc;
     }
-    return tc;
-  }
 
-  public Connection createConnection(String lookup, boolean start)
-  {
-    return createConnection(lookup, null, start);
-  }
-
-  public Connection createConnection(String lookup)
-  {
-    return createConnection(lookup, null, true);
-  }
-
-  public Topic getTopic(String name)
-  {
-    Topic topic = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      topic = (Topic) ctx.lookup(name);
-    } catch (Exception e)
-    {
-      failFast("get topic failed: " + e);
+    public Connection createConnection(InitialContext ctx, String lookup, String clientId) {
+        return createConnection(ctx, lookup, clientId, true);
     }
-    return topic;
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (ctx != null)
-      ctx.close();
-    ctx = null;
-    cf = null;
-    super.tearDown();
-  }
+    public Connection createConnection(String lookup, String clientId, boolean start) {
+        Connection tc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            tc = createConnection(ctx, lookup, clientId, start);
+        } catch (Exception e) {
+            failFast("create topic connection failed: " + e);
+        }
+        return tc;
+    }
+
+    public Connection createConnection(String lookup, String clientId) {
+        Connection tc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            tc = createConnection(ctx, lookup, clientId, true);
+        } catch (Exception e) {
+            failFast("create topic connection failed: " + e);
+        }
+        return tc;
+    }
+
+    public Connection createConnection(String lookup, boolean start) {
+        return createConnection(lookup, null, start);
+    }
+
+    public Connection createConnection(String lookup) {
+        return createConnection(lookup, null, true);
+    }
+
+    public Topic getTopic(String name) {
+        return new TopicImpl(name);
+    }
+
+    protected void tearDown() throws Exception {
+        if (ctx != null)
+            ctx.close();
+        ctx = null;
+        cf = null;
+        super.tearDown();
+    }
 }
 

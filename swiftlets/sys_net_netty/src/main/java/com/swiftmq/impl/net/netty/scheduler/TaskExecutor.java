@@ -18,33 +18,16 @@
 package com.swiftmq.impl.net.netty.scheduler;
 
 import com.swiftmq.impl.net.netty.SwiftletContext;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
-import com.swiftmq.tools.gc.Recyclable;
-import com.swiftmq.tools.gc.Recycler;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class TaskExecutor implements Executor {
-    private static final String TP_CONNHANDLER = "sys$net.connection.handler";
     SwiftletContext ctx;
-    Recycler recycler;
-    Lock lock = new ReentrantLock();
-    ThreadPool threadPool;
     int numberThreads;
 
     public TaskExecutor(SwiftletContext ctx) {
         this.ctx = ctx;
         numberThreads = (int)ctx.root.getProperty("number-selector-tasks").getValue();
-        recycler = new Recycler(numberThreads) {
-            @Override
-            protected Recyclable createRecyclable() {
-                return new Runner();
-            }
-        };
-        threadPool = ctx.threadpoolSwiftlet.getPool(TP_CONNHANDLER);
     }
 
     public int getNumberThreads() {
@@ -53,74 +36,7 @@ public class TaskExecutor implements Executor {
 
     @Override
     public void execute(Runnable task) {
-        lock.lock();
-        try {
-            Runner runner = (Runner)recycler.checkOut();
-            runner.setTask(task);
-            threadPool.dispatchTask(runner);
-        } finally {
-            lock.unlock();
-        }
+        ctx.threadpoolSwiftlet.runAsync(task);
     }
 
-    private void checkIn(Runner runner) {
-        lock.lock();
-        try {
-            recycler.checkIn(runner);
-        } finally {
-            lock.unlock();
-        }
-
-    }
-
-    private class Runner implements AsyncTask, Recyclable {
-        boolean stopped = false;
-        int recycleIndex = -1;
-        Runnable task;
-
-        public void setTask(Runnable task) {
-            this.task = task;
-        }
-
-        @Override
-        public boolean isValid() {
-            return !stopped;
-        }
-
-        @Override
-        public String getDispatchToken() {
-            return TP_CONNHANDLER;
-        }
-
-        @Override
-        public String getDescription() {
-            return "Netty Runner";
-        }
-
-        @Override
-        public void run() {
-            task.run();
-            checkIn(this);
-        }
-
-        @Override
-        public void stop() {
-            stopped = true;
-        }
-
-        @Override
-        public void setRecycleIndex(int recycleIndex) {
-            this.recycleIndex = recycleIndex;
-        }
-
-        @Override
-        public int getRecycleIndex() {
-            return recycleIndex;
-        }
-
-        @Override
-        public void reset() {
-            stopped = false;
-        }
-    }
 }

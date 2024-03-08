@@ -17,36 +17,31 @@
 
 package amqp.v100.ptp.transacted.retirement.commit.exactly_once;
 
-import com.swiftmq.amqp.v100.client.QoS;
 import amqp.v100.base.Util;
 import amqp.v100.ptp.transacted.retirement.commit.Receiver;
 import amqp.v100.ptp.transacted.retirement.commit.Sender;
+import com.swiftmq.amqp.v100.client.QoS;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
-    TestSuite suite = new Suite();
-    for (int i = 0; i < nPairs; i++)
-    {
-      suite.addTest(new Receiver("receive", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1)));
-      suite.addTest(new Sender("send", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1)));
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
+        TestSuite suite = new Suite();
+        for (int i = 0; i < nPairs; i++) {
+            suite.addTest(new Receiver("receive", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1)));
+            suite.addTest(new Sender("send", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1)));
+        }
+        return suite;
     }
-    return suite;
-  }
 
-  public String toString()
-  {
-    return "exactly_once";
-  }
+    public String toString() {
+        return "exactly_once";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

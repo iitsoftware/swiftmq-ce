@@ -22,37 +22,33 @@ import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 
 import java.util.List;
 
-public class DataMessageFactory implements MessageFactory
-{
-  static byte[] b = new byte[1024];
+public class DataMessageFactory implements MessageFactory {
+    static byte[] b = new byte[1024];
 
-  public AMQPMessage create(int sequenceNo) throws Exception
-  {
-    AMQPMessage msg = new AMQPMessage();
-    msg.addData(new Data(b));
-    msg.addData(new Data(b));
-    msg.addData(new Data(b));
-    return msg;
-  }
+    public AMQPMessage create(int sequenceNo) throws Exception {
+        AMQPMessage msg = new AMQPMessage();
+        msg.addData(new Data(b));
+        msg.addData(new Data(b));
+        msg.addData(new Data(b));
+        return msg;
+    }
 
-  public void verify(AMQPMessage message) throws Exception
-  {
-    List data = message.getData();
-    if (data == null)
-      throw new Exception(("verify - no Data section found!"));
-    int total = 0;
-    for (int i = 0; i < data.size(); i++)
-      total += ((Data) data.get(i)).getValue().length;
-    if (total != 1024 * 3)
-      throw new Exception("verify - expected " + (3 * 1024) + " but got " + total);
-  }
+    public void verify(AMQPMessage message) throws Exception {
+        List data = message.getData();
+        if (data == null)
+            throw new Exception(("verify - no Data section found!"));
+        int total = 0;
+        for (int i = 0; i < data.size(); i++)
+            total += ((Data) data.get(i)).getValue().length;
+        if (total != 1024 * 3)
+            throw new Exception("verify - expected " + (3 * 1024) + " but got " + total);
+    }
 
-  public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception
-  {
-    AMQPMessage reply = new AMQPMessage();
-    List data = request.getData();
-    for (int i = 0; i < data.size(); i++)
-      reply.addData((Data) data.get(i));
-    return reply;
-  }
+    public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception {
+        AMQPMessage reply = new AMQPMessage();
+        List data = request.getData();
+        for (int i = 0; i < data.size(); i++)
+            reply.addData((Data) data.get(i));
+        return reply;
+    }
 }

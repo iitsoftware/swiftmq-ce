@@ -20,13 +20,15 @@ package com.swiftmq.impl.mqtt.pubsub;
 import com.swiftmq.impl.mqtt.SwiftletContext;
 import com.swiftmq.impl.mqtt.po.POSendMessage;
 import com.swiftmq.impl.mqtt.session.MQTTSession;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttQoS;
 import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.mgmt.Entity;
-import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttQoS;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Subscription extends MessageProcessor {
     SwiftletContext ctx;
@@ -40,8 +42,8 @@ public class Subscription extends MessageProcessor {
     int subscriptionId;
     Entity usageRegistry = null;
     Entity usageConnection = null;
-    volatile int msgsReceived = 0;
-    volatile int totalMsgsReceived = 0;
+    final AtomicInteger msgsReceived = new AtomicInteger();
+    final AtomicInteger totalMsgsReceived = new AtomicInteger();
 
     public Subscription(SwiftletContext ctx, MQTTSession session, String topicName, String topicNameTranslated, MqttQoS qos) {
         this.ctx = ctx;
@@ -90,22 +92,20 @@ public class Subscription extends MessageProcessor {
     }
 
     public int getMsgsReceived() {
-        int n = msgsReceived;
-        msgsReceived = 0;
-        return n;
+        return msgsReceived.getAndSet(0);
     }
 
     public int getTotalMsgsReceived() {
-        return totalMsgsReceived;
+        return totalMsgsReceived.get();
     }
 
     private void incMsgsReceived(int n) {
-        if (msgsReceived == Integer.MAX_VALUE)
-            msgsReceived = 0;
-        msgsReceived += n;
-        if (totalMsgsReceived == Integer.MAX_VALUE)
-            totalMsgsReceived = 0;
-        totalMsgsReceived += n;
+        if (msgsReceived.get() == Integer.MAX_VALUE)
+            msgsReceived.set(0);
+        msgsReceived.addAndGet(n);
+        if (totalMsgsReceived.get() == Integer.MAX_VALUE)
+            totalMsgsReceived.set(0);
+        totalMsgsReceived.addAndGet(n);
     }
 
     public void start() throws Exception {
@@ -143,7 +143,7 @@ public class Subscription extends MessageProcessor {
                 if (sqos > pqos)
                     mqos = MqttQoS.valueOf(pqos);
             }
-            session.getMqttConnection().getConnectionQueue().enqueue(new POSendMessage(jmsTopicName, messageEntry.getMessage(), mqos, tx, this));
+            session.getMqttConnection().dispatch(new POSendMessage(jmsTopicName, messageEntry.getMessage(), mqos, tx, this));
             incMsgsReceived(1);
         } catch (Exception e) {
             e.printStackTrace();

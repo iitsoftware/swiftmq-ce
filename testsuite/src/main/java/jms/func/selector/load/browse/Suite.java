@@ -21,24 +21,20 @@ import jms.func.selector.load.preload.ReceiverSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new jms.func.selector.load.browse.Suite();
-    suite.addTest(SenderSuite.suite());
-    suite.addTest(BrowserSuite.suite());
-    suite.addTest(ReceiverSuite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new jms.func.selector.load.browse.Suite();
+        suite.addTest(SenderSuite.suite());
+        suite.addTest(BrowserSuite.suite());
+        suite.addTest(ReceiverSuite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "browse";
-  }
+    public String toString() {
+        return "browse";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.func.selector.load.browse.Suite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.func.selector.load.browse.Suite.suite());
+    }
 }

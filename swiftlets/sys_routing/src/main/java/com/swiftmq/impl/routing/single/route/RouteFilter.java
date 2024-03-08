@@ -17,9 +17,8 @@
 
 package com.swiftmq.impl.routing.single.route;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RouteFilter {
     static final int INCLUDE_BY_HOP = 0;
@@ -28,21 +27,21 @@ public class RouteFilter {
     static final int EXCLUDE_BY_DEST = 3;
 
     int type;
-    Set routerNames = new HashSet();
+    Set<String> routerNames = ConcurrentHashMap.newKeySet();
 
     public RouteFilter(int type) {
         this.type = type;
     }
 
-    public synchronized void addRouterName(String routerName) {
+    public void addRouterName(String routerName) {
         routerNames.add(routerName);
     }
 
-    public synchronized void removeRouterName(String routerName) {
+    public void removeRouterName(String routerName) {
         routerNames.remove(routerName);
     }
 
-    public synchronized boolean isSendable(Route route) {
+    public boolean isSendable(Route route) {
         boolean rc = false;
         switch (type) {
             case INCLUDE_BY_HOP:
@@ -77,17 +76,15 @@ public class RouteFilter {
                 s = "EXCLUDE_BY_DEST";
                 break;
         }
-        StringBuffer a = new StringBuffer();
+        StringBuilder a = new StringBuilder();
         boolean first = true;
         a.append("[");
-        synchronized (routerNames) {
-            for (Iterator iter = routerNames.iterator(); iter.hasNext(); ) {
-                if (first)
-                    first = false;
-                else
-                    a.append(", ");
-                a.append(iter.next());
-            }
+        for (String routerName : routerNames) {
+            if (first)
+                first = false;
+            else
+                a.append(", ");
+            a.append(routerName);
         }
         a.append("]");
 

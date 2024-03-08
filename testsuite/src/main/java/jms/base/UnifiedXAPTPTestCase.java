@@ -22,80 +22,66 @@ import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.naming.InitialContext;
 
-public class UnifiedXAPTPTestCase extends JMSTestCase
-{
-  public InitialContext ctx = null;
-  XAConnectionFactory qcf = null;
+public class UnifiedXAPTPTestCase extends JMSTestCase {
+    public InitialContext ctx = null;
+    XAConnectionFactory qcf = null;
 
-  public UnifiedXAPTPTestCase(String name)
-  {
-    super(name);
-  }
-
-  public XAConnection createXAConnection(InitialContext ctx, String lookup)
-  {
-    return createXAConnection(ctx, lookup, true);
-  }
-
-  public XAConnection createXAConnection(InitialContext ctx, String lookup, boolean start)
-  {
-    XAConnection qc = null;
-    try
-    {
-      if (qcf == null)
-        qcf = (XAConnectionFactory) ctx.lookup(lookup);
-      qc = qcf.createXAConnection();
-      if (start)
-        qc.start();
-    } catch (Exception e)
-    {
-      failFast("create xa queue connection failed: " + e);
+    public UnifiedXAPTPTestCase(String name) {
+        super(name);
     }
-    return qc;
-  }
 
-  public XAConnection createXAConnection(String lookup)
-  {
-
-    return createXAConnection(lookup, true);
-  }
-
-  public XAConnection createXAConnection(String lookup, boolean start)
-  {
-    XAConnection qc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      qc = createXAConnection(ctx, lookup, start);
-    } catch (Exception e)
-    {
-      failFast("create queue connection failed: " + e);
+    public XAConnection createXAConnection(InitialContext ctx, String lookup) {
+        return createXAConnection(ctx, lookup, true);
     }
-    return qc;
-  }
 
-  public Queue getQueue(String name)
-  {
-    Queue queue = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      queue = (Queue) ctx.lookup(name);
-    } catch (Exception e)
-    {
-      failFast("get queue failed: " + e);
+    public XAConnection createXAConnection(InitialContext ctx, String lookup, boolean start) {
+        XAConnection qc = null;
+        try {
+            if (qcf == null)
+                qcf = (XAConnectionFactory) ctx.lookup(lookup);
+            qc = qcf.createXAConnection();
+            if (start)
+                qc.start();
+        } catch (Exception e) {
+            failFast("create xa queue connection failed: " + e);
+        }
+        return qc;
     }
-    return queue;
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (ctx != null)
-      ctx.close();
-    ctx = null;
-    qcf = null;
-    super.tearDown();
-  }
+    public XAConnection createXAConnection(String lookup) {
+
+        return createXAConnection(lookup, true);
+    }
+
+    public XAConnection createXAConnection(String lookup, boolean start) {
+        XAConnection qc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            qc = createXAConnection(ctx, lookup, start);
+        } catch (Exception e) {
+            failFast("create queue connection failed: " + e);
+        }
+        return qc;
+    }
+
+    public Queue getQueue(String name) {
+        Queue queue = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            queue = (Queue) ctx.lookup(name);
+        } catch (Exception e) {
+            failFast("get queue failed: " + e);
+        }
+        return queue;
+    }
+
+    protected void tearDown() throws Exception {
+        if (ctx != null)
+            ctx.close();
+        ctx = null;
+        qcf = null;
+        super.tearDown();
+    }
 }

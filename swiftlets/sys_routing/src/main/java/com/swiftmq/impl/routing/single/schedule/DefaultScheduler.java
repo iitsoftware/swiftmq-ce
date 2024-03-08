@@ -22,68 +22,75 @@ import com.swiftmq.impl.routing.single.connection.RoutingConnection;
 import com.swiftmq.impl.routing.single.route.Route;
 import com.swiftmq.impl.routing.single.schedule.po.POCloseObject;
 import com.swiftmq.swiftlet.routing.event.RoutingEvent;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class DefaultScheduler extends Scheduler {
-    List connections = new ArrayList();
+    List<ConnectionEntry> connections = new ConcurrentList<>(new ArrayList<>());
 
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     public DefaultScheduler(SwiftletContext ctx, String destinationRouter, String queueName) {
         super(ctx, destinationRouter, queueName);
     }
 
-    protected synchronized RoutingConnection getNextConnection() {
-        RoutingConnection rc = null;
-        if (connections.size() == 0) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, connections.size() == 0, rc=" + rc);
-            return null;
-        }
-        if (connections.size() == 1) {
-            rc = ((ConnectionEntry) connections.get(0)).getRoutingConnection();
-            if (rc.isClosed()) {
+    protected RoutingConnection getNextConnection() {
+        lock.writeLock().lock();
+        try {
+            RoutingConnection rc = null;
+            if (connections.isEmpty()) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, connections.size() == 1, rc is closed");
-                connections.clear();
-                rc = null;
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == 0, rc=" + rc);
+                return null;
             }
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, connections.size() == 1, rc=" + rc);
-        } else {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, connections.size() == " + connections.size() + " ...");
-            for (Iterator iter = connections.iterator(); iter.hasNext(); ) {
-                rc = ((ConnectionEntry) iter.next()).getRoutingConnection();
+            if (connections.size() == 1) {
+                rc = connections.get(0).getRoutingConnection();
                 if (rc.isClosed()) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, connections.size() == " + connections.size() + ", rc is closed");
-                    iter.remove();
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == 1, rc is closed");
+                    connections.clear();
                     rc = null;
-                } else
-                    break;
+                }
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == 1, rc=" + rc);
+            } else {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == " + connections.size() + " ...");
+                List<ConnectionEntry> toRemove = new ArrayList<>();
+                for (ConnectionEntry entry : connections) {
+                    rc = entry.getRoutingConnection();
+                    if (rc.isClosed()) {
+                        if (ctx.traceSpace.enabled)
+                            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == " + connections.size() + ", rc is closed");
+                        toRemove.add(entry);
+                        rc = null;
+                    } else {
+                        break;
+                    }
+                }
+                connections.removeAll(toRemove);
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == " + connections.size() + ", rc=" + rc);
             }
+            if (rc == null && connections.isEmpty()) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, connections.size() == 0, rc=" + rc + ", destinationDeactivated");
+                ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
+            }
+
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, connections.size() == " + connections.size() + ", rc=" + rc);
-        }
-        if (rc == null && connections.size() == 0) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, connections.size() == 0, rc=" + rc + ", destinationDeactivated");
-            ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, rc=" + rc);
+            return rc;
+        } finally {
+            lock.writeLock().unlock();
         }
 
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/getNextConnection, rc=" + rc);
-        return rc;
     }
 
     private ConnectionEntry getConnectionEntry(RoutingConnection rc) {
-        for (int i = 0; i < connections.size(); i++) {
-            ConnectionEntry ce = (ConnectionEntry) connections.get(i);
-            if (ce.getRoutingConnection() == rc)
-                return ce;
-        }
-        return null;
+        return connections.stream().filter(connection -> connection.getRoutingConnection() == rc).findFirst().orElse(null);
     }
 
     private void requeue(ConnectionEntry ce) {
@@ -92,8 +99,8 @@ public class DefaultScheduler extends Scheduler {
     }
 
     private void remove(ConnectionEntry ce) {
-        for (Iterator iter = connections.iterator(); iter.hasNext(); ) {
-            ConnectionEntry entry = (ConnectionEntry) iter.next();
+        for (Iterator<ConnectionEntry> iter = connections.iterator(); iter.hasNext(); ) {
+            ConnectionEntry entry = iter.next();
             if (ce.getRoutingConnection() == entry.getRoutingConnection()) {
                 iter.remove();
                 break;
@@ -104,7 +111,7 @@ public class DefaultScheduler extends Scheduler {
     private void insert(ConnectionEntry ce) {
         int idx = -1;
         for (int i = 0; i < connections.size(); i++) {
-            ConnectionEntry entry = (ConnectionEntry) connections.get(i);
+            ConnectionEntry entry = connections.get(i);
             if (ce.getMinHopCount() <= entry.getMinHopCount()) {
                 idx = i;
                 break;
@@ -116,93 +123,108 @@ public class DefaultScheduler extends Scheduler {
             connections.add(ce);
     }
 
-    public synchronized void addRoute(Route route) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/addRoute, route=" + route);
-        ConnectionEntry ce = getConnectionEntry(route.getRoutingConnection());
-        if (ce == null) {
-            ce = new ConnectionEntry(route.getRoutingConnection());
-            ce.addRoute(route);
-            insert(ce);
-            connectionAdded(route.getRoutingConnection());
-        } else {
-            ce.addRoute(route);
-            requeue(ce);
-        }
-        if (connections.size() == 1 && ce.getNumberRoutes() == 1)
-            ctx.routingSwiftlet.fireRoutingEvent("destinationActivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
-    }
-
-    public synchronized void removeRoute(Route route) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/removeRoute, route=" + route);
-        ConnectionEntry ce = getConnectionEntry(route.getRoutingConnection());
-        if (ce != null) {
-            ce.removeRoute(route);
-            if (ce.getNumberRoutes() == 0) {
-                remove(ce);
-                if (connections.size() == 0)
-                    ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
+    public void addRoute(Route route) {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/addRoute, route=" + route);
+            ConnectionEntry ce = getConnectionEntry(route.getRoutingConnection());
+            if (ce == null) {
+                ce = new ConnectionEntry(route.getRoutingConnection());
+                ce.addRoute(route);
+                insert(ce);
+                connectionAdded(route.getRoutingConnection());
             } else {
+                ce.addRoute(route);
                 requeue(ce);
             }
+            if (connections.size() == 1 && ce.getNumberRoutes() == 1)
+                ctx.routingSwiftlet.fireRoutingEvent("destinationActivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
+        } finally {
+            lock.writeLock().unlock();
         }
+
     }
 
-    private synchronized boolean _removeRoutingConnection(RoutingConnection routingConnection) {
+    public void removeRoute(Route route) {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, route=" + route);
+            ConnectionEntry ce = getConnectionEntry(route.getRoutingConnection());
+            if (ce != null) {
+                ce.removeRoute(route);
+                if (ce.getNumberRoutes() == 0) {
+                    remove(ce);
+                    if (connections.isEmpty())
+                        ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
+                } else {
+                    requeue(ce);
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    private boolean _removeRoutingConnection(RoutingConnection routingConnection) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/_removeRoutingConnection, routingConnection=" + routingConnection);
+            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/_removeRoutingConnection, routingConnection=" + routingConnection);
         ConnectionEntry ce = getConnectionEntry(routingConnection);
         if (ce != null) {
             remove(ce);
-            return connections.size() == 0;
+            return connections.isEmpty();
         }
         return false;
     }
 
     public void removeRoutingConnection(RoutingConnection routingConnection) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/removeRoutingConnection, routingConnection=" + routingConnection);
-        if (_removeRoutingConnection(routingConnection))
-            ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoutingConnection, routingConnection=" + routingConnection);
+            if (_removeRoutingConnection(routingConnection))
+                ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
-    public synchronized int getNumberConnections() {
+    public int getNumberConnections() {
         return connections.size();
     }
 
     public void close() {
-//debug    ctx.timerSwiftlet.removeTimerListener(tl);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close ...");
-        synchronized (this) {
-            if (closed)
-                return;
-            for (Iterator iter = connections.iterator(); iter.hasNext(); ) {
-                ConnectionEntry entry = (ConnectionEntry) iter.next();
-                iter.remove();
-                connectionRemoved(entry.getRoutingConnection());
-            }
+        if (closed.getAndSet(true))
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/close ...");
+        for (Iterator<ConnectionEntry> iter = connections.iterator(); iter.hasNext(); ) {
+            ConnectionEntry entry = iter.next();
+            iter.remove();
+            connectionRemoved(entry.getRoutingConnection());
         }
         Semaphore sem = new Semaphore();
         enqueueClose(new POCloseObject(null, sem));
         sem.waitHere();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), toString() + "/close done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/close done");
     }
 
     public String toString() {
         return "[DefaultScheduler " + super.toString() + ", n=" + connections.size() + "]";
     }
 
-    protected class ConnectionEntry {
+    protected static class ConnectionEntry {
         RoutingConnection routingConnection = null;
-        List routes = null;
-        Set content = null;
+        List<Route> routes = null;
+        Set<String> content = null;
         int minHopCount = Integer.MAX_VALUE;
 
         public ConnectionEntry(RoutingConnection routingConnection) {
             this.routingConnection = routingConnection;
-            routes = new ArrayList();
-            content = new HashSet();
+            routes = new ArrayList<>();
+            content = new HashSet<>();
         }
 
         public RoutingConnection getRoutingConnection() {
@@ -211,23 +233,18 @@ public class DefaultScheduler extends Scheduler {
 
         public int getMinHopCount() {
             if (minHopCount == Integer.MAX_VALUE) {
-                for (int i = 0; i < routes.size(); i++) {
-                    Route r = (Route) routes.get(i);
-                    minHopCount = Math.min(minHopCount, r.getHopCount());
-                }
+                routes.forEach(route -> minHopCount = Math.min(minHopCount, route.getHopCount()));
             }
             return minHopCount;
         }
 
         public void addRoute(Route route) {
             if (content.contains(route.getKey())) // Route already defined
-            {
                 return;
-            }
             content.add(route.getKey());
             int idx = -1;
             for (int i = 0; i < routes.size(); i++) {
-                Route r = (Route) routes.get(i);
+                Route r = routes.get(i);
                 if (route.getHopCount() <= r.getHopCount()) {
                     idx = i;
                     break;
@@ -241,8 +258,8 @@ public class DefaultScheduler extends Scheduler {
         }
 
         public void removeRoute(Route route) {
-            for (Iterator iter = routes.iterator(); iter.hasNext(); ) {
-                Route r = (Route) iter.next();
+            for (Iterator<Route> iter = routes.iterator(); iter.hasNext(); ) {
+                Route r = iter.next();
                 if (r.getKey().equals(route.getKey())) {
                     iter.remove();
                     content.remove(route.getKey());

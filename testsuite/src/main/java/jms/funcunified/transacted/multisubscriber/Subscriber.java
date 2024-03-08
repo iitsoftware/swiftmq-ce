@@ -19,69 +19,56 @@ package jms.funcunified.transacted.multisubscriber;
 
 import jms.base.SimpleConnectedUnifiedPSTestCase;
 
-import javax.jms.*;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class Subscriber extends SimpleConnectedUnifiedPSTestCase
-{
-  Object sem = new Object();
-  int cnt = 0;
+public class Subscriber extends SimpleConnectedUnifiedPSTestCase {
+    Object sem = new Object();
+    int cnt = 0;
 
-  public Subscriber(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  public void testSubscribe()
-  {
-    try
-    {
-      consumer.setMessageListener(null);
-      consumer.setMessageListener(new MessageListener()
-      {
-        public void onMessage(Message message)
-        {
-          synchronized (sem)
-          {
-            cnt++;
-            TextMessage tm = (TextMessage) message;
-            if (cnt == 20)
-            {
-              try
-              {
-                ts.commit();
-              } catch (Exception jmse)
-              {
-                failFast(jmse.toString());
-              }
-              sem.notify();
-            }
-          }
-        }
-      });
-      synchronized (sem)
-      {
-        if (cnt != 10)
-        {
-          try
-          {
-            sem.wait();
-          } catch (Exception ignored)
-          {
-          }
-        }
-      }
-      consumer.setMessageListener(null);
-      TextMessage msg = (TextMessage) consumer.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Subscriber(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE);
+    }
+
+    public void testSubscribe() {
+        try {
+            consumer.setMessageListener(null);
+            consumer.setMessageListener(new MessageListener() {
+                public void onMessage(Message message) {
+                    synchronized (sem) {
+                        cnt++;
+                        TextMessage tm = (TextMessage) message;
+                        if (cnt == 20) {
+                            try {
+                                ts.commit();
+                            } catch (Exception jmse) {
+                                failFast(jmse.toString());
+                            }
+                            sem.notify();
+                        }
+                    }
+                }
+            });
+            synchronized (sem) {
+                if (cnt != 10) {
+                    try {
+                        sem.wait();
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            consumer.setMessageListener(null);
+            TextMessage msg = (TextMessage) consumer.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

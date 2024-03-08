@@ -19,6 +19,9 @@ package com.swiftmq.impl.queue.standard;
 
 import com.swiftmq.impl.queue.standard.cluster.*;
 import com.swiftmq.impl.queue.standard.composite.CompositeQueueFactory;
+import com.swiftmq.impl.queue.standard.queue.CacheTableFactory;
+import com.swiftmq.impl.queue.standard.queue.MessageQueue;
+import com.swiftmq.impl.queue.standard.queue.MessageQueueFactory;
 import com.swiftmq.mgmt.Configuration;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;

@@ -26,85 +26,73 @@ import javax.jms.QueueReceiver;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-public class Consumer extends SimpleConnectedXAPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  String sourceQueueName = null;
-  QueueReceiver myReceiver = null;
+public class Consumer extends SimpleConnectedXAPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    String sourceQueueName = null;
+    QueueReceiver myReceiver = null;
 
-  public Consumer(String name, String sourceQueueName)
-  {
-    super(name);
-    this.sourceQueueName = sourceQueueName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    sender.close();
-    receiver.close();
-    myReceiver = qs.getQueueSession().createReceiver(getQueue(sourceQueueName));
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-//    verifier.setCheckSequence(false);
-  }
-
-  public void consume()
-  {
-    try
-    {
-      boolean rollback = false;
-      int n = 0, m = 0;
-      Xid xid = new XidImpl(getClass().getName());
-      xares.start(xid, XAResource.TMNOFLAGS);
-      while (n < nMsgs)
-      {
-        Message msg = myReceiver.receive(120000);
-        if (msg == null)
-          break;
-        if (rollback)
-        {
-          m++;
-          if (m == 10)
-          {
-            xares.end(xid, XAResource.TMSUCCESS);
-            xares.rollback(xid);
-            xid = new XidImpl(getClass().getName());
-            xares.start(xid, XAResource.TMNOFLAGS);
-            rollback = false;
-            m = 0;
-          }
-          continue;
-        }
-        verifier.add(msg);
-        n++;
-        if (n % 10 == 0)
-        {
-          xares.end(xid, XAResource.TMSUCCESS);
-          xares.commit(xid, true);
-          if (n < nMsgs)
-          {
-            xid = new XidImpl(getClass().getName());
-            xares.start(xid, XAResource.TMNOFLAGS);
-          }
-          rollback = true;
-        }
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public Consumer(String name, String sourceQueueName) {
+        super(name);
+        this.sourceQueueName = sourceQueueName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    sourceQueueName = null;
-    myReceiver = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp();
+        sender.close();
+        receiver.close();
+        myReceiver = qs.getQueueSession().createReceiver(getQueue(sourceQueueName));
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+//    verifier.setCheckSequence(false);
+    }
+
+    public void consume() {
+        try {
+            boolean rollback = false;
+            int n = 0, m = 0;
+            Xid xid = new XidImpl(getClass().getName());
+            xares.start(xid, XAResource.TMNOFLAGS);
+            while (n < nMsgs) {
+                Message msg = myReceiver.receive(120000);
+                if (msg == null)
+                    break;
+                if (rollback) {
+                    m++;
+                    if (m == 10) {
+                        xares.end(xid, XAResource.TMSUCCESS);
+                        xares.rollback(xid);
+                        xid = new XidImpl(getClass().getName());
+                        xares.start(xid, XAResource.TMNOFLAGS);
+                        rollback = false;
+                        m = 0;
+                    }
+                    continue;
+                }
+                verifier.add(msg);
+                n++;
+                if (n % 10 == 0) {
+                    xares.end(xid, XAResource.TMSUCCESS);
+                    xares.commit(xid, true);
+                    if (n < nMsgs) {
+                        xid = new XidImpl(getClass().getName());
+                        xares.start(xid, XAResource.TMNOFLAGS);
+                    }
+                    rollback = true;
+                }
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        sourceQueueName = null;
+        myReceiver = null;
+        super.tearDown();
+    }
 
 }
 

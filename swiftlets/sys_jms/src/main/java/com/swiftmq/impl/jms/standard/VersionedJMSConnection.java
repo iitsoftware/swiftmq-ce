@@ -21,11 +21,11 @@ import com.swiftmq.swiftlet.net.InboundHandler;
 import com.swiftmq.tools.requestreply.Reply;
 
 public interface VersionedJMSConnection {
-    public InboundHandler getInboundHandler();
+    InboundHandler getInboundHandler();
 
-    public void sendReply(Reply reply);
+    void sendReply(Reply reply);
 
-    public void collect(long lastCollectTime);
+    void collect(long lastCollectTime);
 
-    public void close();
+    void close();
 }

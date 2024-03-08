@@ -72,11 +72,11 @@ public class BasicOutboundTransformer extends OutboundTransformer {
                 bytesMessage.readBytes(body);
             }
         } else
-            throw new Exception("Unable to tranform (only Text/BytesMessages supported): " + jmsMessage);
+            throw new Exception("Unable to transform (only Text/BytesMessages supported): " + jmsMessage);
 
         // Fill props
         prop.setWeight(0);
-        prop.setBodySize(Long.valueOf(body.length));
+        prop.setBodySize((long) body.length);
         prop.setContentType(jmsMessage.getStringProperty(prefixVendor + "ContentType"));
         prop.setContentEncoding(jmsMessage.getStringProperty(prefixVendor + "ContentEncoding"));
         prop.setDeliveryMode(jmsMessage.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT ? 1 : 2);
@@ -103,7 +103,7 @@ public class BasicOutboundTransformer extends OutboundTransformer {
                 headers.put(nameTranslator.translate(name), new Field(type, value));
             }
         }
-        if (headers.size() > 0)
+        if (!headers.isEmpty())
             prop.setHeaders(headers);
         return new Delivery(prop, body);
     }

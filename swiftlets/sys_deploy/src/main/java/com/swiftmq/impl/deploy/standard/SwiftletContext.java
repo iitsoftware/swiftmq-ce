@@ -22,13 +22,11 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
-import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 
 public class SwiftletContext {
-    public ThreadpoolSwiftlet threadpoolSwiftlet = null;
     public LogSwiftlet logSwiftlet = null;
     public MgmtSwiftlet mgmtSwiftlet = null;
     public TimerSwiftlet timerSwiftlet = null;
@@ -49,6 +47,5 @@ public class SwiftletContext {
         logSwiftlet = (LogSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$log");
         mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");
         timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
-        threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
     }
 }

@@ -18,5 +18,5 @@
 package com.swiftmq.impl.amqp.amqp.v00_09_01;
 
 public interface ExchangeFactory {
-    public Exchange create() throws Exception;
+    Exchange create() throws Exception;
 }

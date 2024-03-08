@@ -21,33 +21,27 @@ import com.swiftmq.amqp.v100.client.Connection;
 import com.swiftmq.amqp.v100.client.Session;
 import junit.framework.TestCase;
 
-public class AMQPSettableConnectionTestCase extends TestCase
-{
-  Connection connection = null;
-  Session session = null;
+public class AMQPSettableConnectionTestCase extends TestCase {
+    Connection connection = null;
+    Session session = null;
 
-  public AMQPSettableConnectionTestCase(String name)
-  {
-    super(name);
-  }
+    public AMQPSettableConnectionTestCase(String name) {
+        super(name);
+    }
 
-  public void setConnection(Connection connection)
-  {
-    this.connection = connection;
-  }
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
-  public void setSession(Session session)
-  {
-    this.session = session;
-  }
+    public void setSession(Session session) {
+        this.session = session;
+    }
 
-  public Connection getConnection()
-  {
-    return connection;
-  }
+    public Connection getConnection() {
+        return connection;
+    }
 
-  public Session getSession()
-  {
-    return session;
-  }
+    public Session getSession() {
+        return session;
+    }
 }

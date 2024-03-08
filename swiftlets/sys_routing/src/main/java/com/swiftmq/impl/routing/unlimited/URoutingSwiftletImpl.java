@@ -24,8 +24,6 @@ import com.swiftmq.swiftlet.SwiftletException;
 
 public class URoutingSwiftletImpl extends RoutingSwiftletImpl {
     protected SwiftletContext createSwiftletContext(RoutingSwiftletImpl routingSwiftletImpl, Entity rootEntity) throws SwiftletException {
-        /*${evalstartupmark}*/
-        /*${evaltimer}*/
         return new USwiftletContext(routingSwiftletImpl, rootEntity);
     }
 }

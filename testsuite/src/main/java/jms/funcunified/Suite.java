@@ -17,32 +17,29 @@
 
 package jms.funcunified;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.funcunified.msg.Suite.suite());
-    suite.addTest(jms.funcunified.prio.Suite.suite());
-    suite.addTest(jms.funcunified.nontransacted.Suite.suite());
-    suite.addTest(jms.funcunified.transacted.Suite.suite());
-    suite.addTest(jms.funcunified.redelivered.Suite.suite());
-    suite.addTest(jms.funcunified.selector.Suite.suite());
-    suite.addTest(jms.funcunified.requestreply.Suite.suite());
-    suite.addTest(jms.funcunified.browser.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.funcunified.msg.Suite.suite());
+        suite.addTest(jms.funcunified.prio.Suite.suite());
+        suite.addTest(jms.funcunified.nontransacted.Suite.suite());
+        suite.addTest(jms.funcunified.transacted.Suite.suite());
+        suite.addTest(jms.funcunified.redelivered.Suite.suite());
+        suite.addTest(jms.funcunified.selector.Suite.suite());
+        suite.addTest(jms.funcunified.requestreply.Suite.suite());
+        suite.addTest(jms.funcunified.browser.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Functionality (Unified)";
-  }
+    public String toString() {
+        return "Functionality (Unified)";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

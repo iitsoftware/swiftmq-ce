@@ -19,53 +19,40 @@ package jms.ha.persistent.ptp.cluster.nontransacted;
 
 import jms.base.SimpleConnectedPTPClusterTestCase;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
-public class SenderNewSession extends SimpleConnectedPTPClusterTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
+public class SenderNewSession extends SimpleConnectedPTPClusterTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
 
-  public SenderNewSession(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, true, false);
-    qs.close();
-  }
-
-  public void send()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        QueueSession mySession = qc.createQueueSession(false, 0);
-        QueueSender mySender = mySession.createSender(queue);
-        TextMessage msg = mySession.createTextMessage();
-        msg.setIntProperty("no", i);
-        msg.setText("Msg: " + i);
-        mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        mySender.close();
-        mySession.close();
-      }
-
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public SenderNewSession(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, true, false);
+        qs.close();
+    }
+
+    public void send() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                QueueSession mySession = qc.createQueueSession(false, 0);
+                QueueSender mySender = mySession.createSender(queue);
+                TextMessage msg = mySession.createTextMessage();
+                msg.setIntProperty("no", i);
+                msg.setText("Msg: " + i);
+                mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                mySender.close();
+                mySession.close();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 }

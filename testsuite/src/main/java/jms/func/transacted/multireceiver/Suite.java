@@ -18,36 +18,33 @@
 package jms.func.transacted.multireceiver;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Sender("testSendNP"));
-    suite.addTest(new Sender("testSendP"));
-    return suite;
-  }
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Sender("testSendNP"));
+        suite.addTest(new Sender("testSendP"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Multiple Receiver";
-  }
+    public String toString() {
+        return "Multiple Receiver";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

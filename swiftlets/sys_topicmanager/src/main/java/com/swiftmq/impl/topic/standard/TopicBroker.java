@@ -32,7 +32,7 @@ import com.swiftmq.swiftlet.queue.QueueTransactionClosedException;
 import com.swiftmq.swiftlet.queue.Selector;
 import com.swiftmq.swiftlet.store.CompositeStoreTransaction;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.sql.LikeComparator;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
@@ -49,12 +49,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class TopicBroker extends AbstractQueue {
     TopicManagerContext ctx = null;
     String tracePrefix = null;
-    List topicEntries = new ArrayList();
-
-    HashMap subscriptions = new HashMap();
+    List<TopicEntry> topicEntries = new ArrayList<>();
+    Map<String, PredicateNode> subscriptions = new HashMap<>();
     String rootTopic;
     String[] rootTokenized = null;
-    ArrayList transactions = new ArrayList();
+    ExpandableList<TopicTransaction> transactions = new ExpandableList<>();
     BitSet brokerSubscriberIds = null;
     DataByteArrayOutputStream dbos = null;
     DataByteArrayInputStream dbis = null;
@@ -273,7 +272,7 @@ public class TopicBroker extends AbstractQueue {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "removeStaticSubscription " + routerName);
             TopicInfo topicInfo = TopicInfoFactory.createTopicInfo(routerName, rootTopic, new String[]{rootTopic}, 0);
-            PredicateNode node = (PredicateNode) subscriptions.get(topicInfo.getTopicName());
+            PredicateNode node = subscriptions.get(topicInfo.getTopicName());
             if (node != null) {
                 TopicSubscription topicSubscription = new TopicSubscription(topicInfo, this);
                 TopicSubscription ts = node.getSubscription(topicSubscription);
@@ -450,10 +449,8 @@ public class TopicBroker extends AbstractQueue {
             throws QueueException {
         lockAndWaitAsyncFinished();
         try {
-            TopicTransaction transaction = null;
-            int transactionId = ArrayListTool.setFirstFreeOrExpand(transactions, null);
-            transaction = new TopicTransaction(ctx, transactionId);
-            transactions.set(transactionId, transaction);
+            TopicTransaction transaction = new TopicTransaction(ctx);
+            transaction.setTransactionId(transactions.add(transaction));
             return transaction;
         } finally {
             lock.unlock();
@@ -478,7 +475,7 @@ public class TopicBroker extends AbstractQueue {
                 ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "prepare, globalTxId=" + globalTransactionId);
             TopicTransaction transaction = (TopicTransaction) localTransactionId;
             transaction.prepare(globalTransactionId);
-            transactions.set(transaction.getTransactionId(), null);
+            transactions.remove(transaction.getTransactionId());
         } catch (Exception e) {
             throw new QueueException(e.getMessage());
         } finally {
@@ -496,7 +493,7 @@ public class TopicBroker extends AbstractQueue {
             TopicFlowController fc = (TopicFlowController) getFlowController();
             if (fc != null)
                 fc.setLastDelay(delay);
-            transactions.set(transaction.getTransactionId(), null);
+            transactions.remove(transaction.getTransactionId());
         } catch (Exception e) {
             throw new QueueException(e.getMessage());
         } finally {
@@ -521,7 +518,7 @@ public class TopicBroker extends AbstractQueue {
             TopicFlowController fc = (TopicFlowController) getFlowController();
             if (fc != null)
                 fc.setLastDelay(delay);
-            transactions.set(transaction.getTransactionId(), null);
+            transactions.remove(transaction.getTransactionId());
         } catch (Exception e) {
             throw new QueueException(e.getMessage());
         } finally {
@@ -545,10 +542,10 @@ public class TopicBroker extends AbstractQueue {
                                 TopicFlowController fc = (TopicFlowController) getFlowController();
                                 if (fc != null) {
                                     next.setResult(delay);
-                                    fc.setLastDelay(delay.longValue());
+                                    fc.setLastDelay(delay);
                                 }
                             }
-                            transactions.set(transaction.getTransactionId(), null);
+                            transactions.remove(transaction.getTransactionId());
                         } else
                             next.setException(getException());
                     } finally {
@@ -571,7 +568,7 @@ public class TopicBroker extends AbstractQueue {
                 ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "rollback, globalTxId=" + globalTransactionId);
             TopicTransaction transaction = (TopicTransaction) localTransactionId;
             transaction.rollback(globalTransactionId);
-            transactions.set(transaction.getTransactionId(), null);
+            transactions.remove(transaction.getTransactionId());
         } catch (Exception e) {
             throw new QueueException(e.getMessage());
         } finally {
@@ -597,7 +594,7 @@ public class TopicBroker extends AbstractQueue {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "rollback");
             TopicTransaction transaction = (TopicTransaction) transactionId;
             transaction.rollback();
-            transactions.set(transaction.getTransactionId(), null);
+            transactions.remove(transaction.getTransactionId());
         } catch (Exception e) {
             throw new QueueException(e.getMessage());
         } finally {
@@ -615,7 +612,7 @@ public class TopicBroker extends AbstractQueue {
                 public void done(boolean success) {
                     lock.lock();
                     try {
-                        transactions.set(transaction.getTransactionId(), null);
+                        transactions.remove(transaction.getTransactionId());
                         if (!success)
                             next.setException(getException());
                     } finally {
@@ -625,7 +622,7 @@ public class TopicBroker extends AbstractQueue {
                     }
                 }
             });
-            transactions.set(transaction.getTransactionId(), null);
+            transactions.remove(transaction.getTransactionId());
         } finally {
             lock.unlock();
         }
@@ -761,18 +758,17 @@ public class TopicBroker extends AbstractQueue {
         }
     }
 
-    private List getMatchedNodes(List matchedTopics) {
+    private List<PredicateNode> getMatchedNodes(List matchedTopics) {
         if (matchedTopics == null)
             return null;
-        List r = null;
-        Iterator iter = subscriptions.entrySet().iterator();
-        while (iter.hasNext()) {
-            PredicateNode node = (PredicateNode) ((Map.Entry) iter.next()).getValue();
-            for (int i = 0; i < matchedTopics.size(); i++) {
-                String[] tokenizedName = (String[]) matchedTopics.get(i);
+        List<PredicateNode> r = null;
+        for (Map.Entry<String, PredicateNode> entry : subscriptions.entrySet()) {
+            PredicateNode node = (PredicateNode) ((Map.Entry<?, ?>) entry).getValue();
+            for (Object matchedTopic : matchedTopics) {
+                String[] tokenizedName = (String[]) matchedTopic;
                 if (node.isMatch(tokenizedName)) {
                     if (r == null)
-                        r = new ArrayList();
+                        r = new ArrayList<>();
                     r.add(node);
                     break;
                 }
@@ -781,16 +777,15 @@ public class TopicBroker extends AbstractQueue {
         return r;
     }
 
-    private List getMatchedNodes(String[] publisherTopic) {
-        List r = null;
-        Iterator iter = subscriptions.entrySet().iterator();
-        while (iter.hasNext()) {
-            PredicateNode node = (PredicateNode) ((Map.Entry) iter.next()).getValue();
+    private List<PredicateNode> getMatchedNodes(String[] publisherTopic) {
+        List<PredicateNode> r = null;
+        for (Map.Entry<String, PredicateNode> entry : subscriptions.entrySet()) {
+            PredicateNode node = (PredicateNode) ((Map.Entry<?, ?>) entry).getValue();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "getMatchedNodes: '" + TopicManagerImpl.concatName(publisherTopic) + "' checks '" + node + "'");
             if (node.isMatch(publisherTopic)) {
                 if (r == null)
-                    r = new ArrayList();
+                    r = new ArrayList<>();
                 r.add(node);
             }
         }
@@ -800,9 +795,8 @@ public class TopicBroker extends AbstractQueue {
     public void removeRemoteSubscriptions(String destination) {
         lockAndWaitAsyncFinished();
         try {
-            Iterator iter = subscriptions.entrySet().iterator();
-            while (iter.hasNext()) {
-                PredicateNode node = (PredicateNode) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, PredicateNode> entry : subscriptions.entrySet()) {
+                PredicateNode node = (PredicateNode) ((Map.Entry<?, ?>) entry).getValue();
                 node.removeRemoteSubscriptions(destination);
             }
         } finally {
@@ -814,7 +808,7 @@ public class TopicBroker extends AbstractQueue {
             throws QueueException {
         lockAndWaitAsyncFinished();
         try {
-            if (subscriptions.size() == 0)
+            if (subscriptions.isEmpty())
                 return;
             TopicTransaction transaction = (TopicTransaction) transactionId;
             if (ctx.traceSpace.enabled)
@@ -833,14 +827,13 @@ public class TopicBroker extends AbstractQueue {
             } catch (Exception ignored) {
             }
             String[] tokenizedPubTopic = topicName.indexOf(TopicManagerImpl.TOPIC_DELIMITER_CHAR) == -1 ? rootTokenized : ctx.topicManager.tokenizeTopicName(topicName);
-            List matchedNodes = null;
+            List<PredicateNode> matchedNodes = null;
             if (ctx.topicManager.isDirectSubscriberSelection())
                 matchedNodes = getMatchedNodes(tokenizedPubTopic);
             else
                 matchedNodes = getMatchedNodes(getMatchedTopics(tokenizedPubTopic));
             if (matchedNodes != null) {
-                for (int i = 0; i < matchedNodes.size(); i++) {
-                    PredicateNode node = (PredicateNode) matchedNodes.get(i);
+                for (PredicateNode node : matchedNodes) {
                     if (ctx.traceSpace.enabled)
                         ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "putMessage, node: " + node + " does match");
                     publishToNode(transaction, msg, node, publishedLocal);
@@ -855,7 +848,7 @@ public class TopicBroker extends AbstractQueue {
         return tracePrefix;
     }
 
-    private class TopicEntry {
+    private static class TopicEntry {
         String topicName;
         String[] tokenizedName;
 
@@ -890,7 +883,7 @@ public class TopicBroker extends AbstractQueue {
     private class PredicateNode {
         String topicName;
         String[] tokenizedPredicate;
-        List subscribers = new ArrayList();
+        List<TopicSubscription> subscribers = new ArrayList<>();
         int localCount = 0;
 
         PredicateNode(String topicName, String[] tokenizedPredicate) {
@@ -898,14 +891,6 @@ public class TopicBroker extends AbstractQueue {
             this.tokenizedPredicate = tokenizedPredicate;
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "PredicateNode '" + toString() + "' created");
-        }
-
-        String getTopicName() {
-            return topicName;
-        }
-
-        String[] getTokenizedPredicate() {
-            return tokenizedPredicate;
         }
 
         void addSubscription(TopicSubscription subscriber) {
@@ -931,7 +916,7 @@ public class TopicBroker extends AbstractQueue {
 
         void removeRemoteSubscriptions(String destination) {
             for (int i = subscribers.size() - 1; i >= 0; i--) {
-                TopicSubscription subscriber = (TopicSubscription) subscribers.get(i);
+                TopicSubscription subscriber = subscribers.get(i);
                 if (subscriber.isRemote() && subscriber.getDestination().equals(destination)) {
                     if (subscriber.isStaticSubscription() && subscriber.isKeepOnUnsubscribe()) {
                         if (ctx.traceSpace.enabled)
@@ -946,36 +931,16 @@ public class TopicBroker extends AbstractQueue {
 
         TopicSubscription getSubscription(TopicSubscription subscriber) {
             for (int i = subscribers.size() - 1; i >= 0; i--) {
-                TopicSubscription ts = (TopicSubscription) subscribers.get(i);
+                TopicSubscription ts = subscribers.get(i);
                 if (subscriber.equals(ts))
                     return ts;
             }
             return null;
         }
 
-        boolean hasSubscription(TopicSubscription subscriber) {
-            return subscribers.contains(subscriber);
-        }
 
-        boolean hasLocalSubscription() {
-            for (int i = 0; i < subscribers.size(); i++) {
-                TopicSubscription subscriber = (TopicSubscription) subscribers.get(i);
-                if (!subscriber.isRemote())
-                    return true;
-            }
-            return false;
-        }
-
-        List getSubscriptions() {
+        List<TopicSubscription> getSubscriptions() {
             return subscribers;
-        }
-
-        int getSubscriptionCount() {
-            return subscribers.size();
-        }
-
-        int getLocalSubscriptionCount() {
-            return localCount;
         }
 
         boolean isMatch(String[] tokenizedName) {
@@ -995,8 +960,8 @@ public class TopicBroker extends AbstractQueue {
 
         boolean isEmpty() {
             boolean empty = true;
-            for (int i = 0; i < subscribers.size(); i++) {
-                if (subscribers.get(i) != null) {
+            for (TopicSubscription subscriber : subscribers) {
+                if (subscriber != null) {
                     empty = false;
                     break;
                 }
@@ -1025,9 +990,9 @@ public class TopicBroker extends AbstractQueue {
         private String getClientId() {
             String clientId = null;
             Map entities = ctx.activeSubscriberList.getEntities();
-            if (entities != null && entities.size() > 0) {
-                for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity subEntity = (Entity) ((Map.Entry) iter.next()).getValue();
+            if (entities != null && !entities.isEmpty()) {
+                for (Object o : entities.entrySet()) {
+                    Entity subEntity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                     if (subEntity.getProperty("boundto").getValue().equals(subscriberQueueName)) {
                         clientId = (String) subEntity.getProperty("clientid").getValue();
                         break;
@@ -1039,9 +1004,9 @@ public class TopicBroker extends AbstractQueue {
 
         private Entity getJMSEntity(EntityList jmsUsageList, String clientId) {
             Map entities = jmsUsageList.getEntities();
-            if (entities != null && entities.size() > 0) {
-                for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+            if (entities != null && !entities.isEmpty()) {
+                for (Object o : entities.entrySet()) {
+                    Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                     if (entity.getProperty("clientid").getValue().equals(clientId))
                         return entity;
                 }
@@ -1097,9 +1062,9 @@ public class TopicBroker extends AbstractQueue {
 
         private Entity getDurableEntity(EntityList durableUsageList) {
             Map entities = durableUsageList.getEntities();
-            if (entities != null && entities.size() > 0) {
-                for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity entity = (Entity) ((Map.Entry) iter.next()).getValue();
+            if (entities != null && !entities.isEmpty()) {
+                for (Object o : entities.entrySet()) {
+                    Entity entity = (Entity) ((Map.Entry<?, ?>) o).getValue();
                     if (entity.getProperty("boundto").getValue().equals(subscriberQueueName))
                         return entity;
                 }
@@ -1144,6 +1109,11 @@ public class TopicBroker extends AbstractQueue {
 
         public int nextClearBit(int i) {
             int idx = super.nextClearBit(i);
+            if (idx == super.size()) {
+                // Extend the BitSet by setting the next bit.
+                super.set(idx);
+                super.clear(idx); // Ensure the bit is clear for use.
+            }
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace("sys$topicmanager", tracePrefix + "TraceableBitSet.nextClearBit(" + i + ")=" + idx);
             return idx;

@@ -36,6 +36,8 @@ import com.swiftmq.tools.util.DataStreamInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
 public class InboundReader extends RequestServiceRegistry
@@ -49,23 +51,23 @@ public class InboundReader extends RequestServiceRegistry
     DataByteArrayOutputStream dbos = new DataByteArrayOutputStream();
     byte[] buffer = new byte[1024];
     TraceSpace traceSpace = null;
-    volatile int keepaliveCount = 5;
-    boolean compression = false;
+    final AtomicInteger keepaliveCount = new AtomicInteger(5);
+    final AtomicBoolean compression = new AtomicBoolean(false);
 
     InboundReader(SwiftletContext ctx, RoutingConnection routingConnection, DumpableFactory dumpableFactory, boolean compression) {
         this.ctx = ctx;
         this.routingConnection = routingConnection;
         this.connection = routingConnection.getConnection();
         this.dumpableFactory = dumpableFactory;
-        this.compression = compression;
+        this.compression.set(compression);
         traceSpace = ctx.traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_PROTOCOL);
     }
 
     public void performTimeAction() {
-        keepaliveCount--;
+        keepaliveCount.getAndDecrement();
         if (traceSpace.enabled)
-            traceSpace.trace("smqr", toString() + ": decrementing keepaliveCount to: " + keepaliveCount);
-        if (keepaliveCount == 0) {
+            traceSpace.trace("smqr", toString() + ": decrementing keepaliveCount to: " + keepaliveCount.get());
+        if (keepaliveCount.get() == 0) {
             if (traceSpace.enabled) traceSpace.trace("smqr", toString() + ": keepalive counter reaching 0, exiting!");
             ctx.logSwiftlet.logWarning("smqr", toString() + ": keepalive counter reaching 0, exiting!");
             ctx.networkSwiftlet.getConnectionManager().removeConnection(connection); // closes the connection
@@ -81,7 +83,7 @@ public class InboundReader extends RequestServiceRegistry
 
     public void dataAvailable(Connection c, InputStream inputStream)
             throws IOException {
-        if (compression) {
+        if (compression.get()) {
             dbis.reset();
             dbos.rewind();
             dis.setInputStream(inputStream);
@@ -104,7 +106,7 @@ public class InboundReader extends RequestServiceRegistry
                     if (req.getDumpId() != SMQRFactory.KEEPALIVE_REQ) {
                         dispatch(req);
                     } else {
-                        keepaliveCount++;
+                        keepaliveCount.getAndIncrement();
                         if (traceSpace.enabled)
                             traceSpace.trace("smqr", toString() + ": incrementing keepaliveCount to: " + keepaliveCount);
                     }
@@ -113,7 +115,7 @@ public class InboundReader extends RequestServiceRegistry
                 dispatch((Request) obj);
             }
         } else {
-            keepaliveCount = 5;
+            keepaliveCount.set(5);
             if (traceSpace.enabled)
                 traceSpace.trace("smqr", toString() + ": setting keepaliveCount to: " + keepaliveCount);
         }

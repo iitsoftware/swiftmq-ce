@@ -20,23 +20,19 @@ package jms.ha.persistent.ptp.nontransacted.clientack.single.recover.onmessage;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class ListenerSuite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new ListenerSuite();
-    suite.addTest(new Listener("receive"));
-    return suite;
-  }
+public class ListenerSuite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new ListenerSuite();
+        suite.addTest(new Listener("receive"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "listener";
-  }
+    public String toString() {
+        return "listener";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

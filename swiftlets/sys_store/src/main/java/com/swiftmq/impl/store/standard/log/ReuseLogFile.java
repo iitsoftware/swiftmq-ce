@@ -18,23 +18,19 @@
 package com.swiftmq.impl.store.standard.log;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.tools.util.DataByteBufferOutputStream;
+import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
 public class ReuseLogFile implements LogFile {
     static final String PROP_VERBOSE = "swiftmq.store.checkpoint.verbose";
     static final int BUFFER_SIZE = 1024 * 1024 * 10;
-    private static boolean DIRECT_BUFFERS = Boolean.valueOf(System.getProperty("swiftmq.store.usedirectbuffers", "true")).booleanValue();
     boolean checkPointVerbose = Boolean.getBoolean(PROP_VERBOSE);
     StoreContext ctx;
     RandomAccessFile file = null;
-    DataByteBufferOutputStream outStream = null;
-    FileChannel fileChannel = null;
+    DataByteArrayOutputStream outStream = null;
     long position = 0;
     long magic = System.currentTimeMillis();
     int nFlushes = 0;
@@ -46,7 +42,6 @@ public class ReuseLogFile implements LogFile {
     public ReuseLogFile(StoreContext ctx, RandomAccessFile file) {
         this.ctx = ctx;
         this.file = file;
-        fileChannel = file.getChannel();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/created");
     }
 
@@ -75,15 +70,11 @@ public class ReuseLogFile implements LogFile {
     public void init(long maxSize) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/init...");
         try {
-            boolean direct = DIRECT_BUFFERS;
-            outStream = new DataByteBufferOutputStream(BUFFER_SIZE, BUFFER_SIZE, direct);
-            outStream.setTrace(ctx.traceSpace, "sys$store");
+            outStream = new DataByteArrayOutputStream(BUFFER_SIZE, BUFFER_SIZE);
             if (file.length() < maxSize) {
                 file.setLength(maxSize);
                 file.seek(0);
                 byte[] b = new byte[BUFFER_SIZE];
-                for (int i = 0; i < b.length; i++)
-                    b[i] = 0;
                 position = 0;
                 while (position < maxSize) {
                     int len = Math.min((int) (maxSize - position), b.length);
@@ -126,13 +117,11 @@ public class ReuseLogFile implements LogFile {
             nFlushes++;
             totalWriteSize += outStream.getCount();
             position += outStream.getCount();
-            ByteBuffer byteBuffer = outStream.getBuffer();
-            byteBuffer.flip();
-            fileChannel.write(byteBuffer);
+            file.write(outStream.getBuffer(), 0, outStream.getCount());
             outStream.rewind();
             if (sync) {
                 long s1 = System.currentTimeMillis();
-                fileChannel.force(false);
+                file.getFD().sync();
                 msSync += (System.currentTimeMillis() - s1);
             }
             if (ctx.traceSpace.enabled)

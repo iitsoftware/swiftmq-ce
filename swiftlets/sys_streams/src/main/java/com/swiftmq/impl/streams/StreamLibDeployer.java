@@ -22,7 +22,6 @@ import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.*;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.tools.security.Store;
 
 import javax.jms.BytesMessage;
@@ -31,10 +30,8 @@ import java.io.*;
 import java.util.Arrays;
 
 public class StreamLibDeployer extends MessageProcessor {
-    static final String TP_LISTENER = "sys$streams.stream.processor";
     private static final String STREAMLIB_QUEUE = "streamlib";
     SwiftletContext ctx = null;
-    ThreadPool myTP = null;
     QueueReceiver receiver = null;
     QueuePullTransaction pullTransaction = null;
     boolean closed = false;
@@ -44,12 +41,11 @@ public class StreamLibDeployer extends MessageProcessor {
         this.ctx = ctx;
         if (!ctx.queueManager.isQueueDefined(STREAMLIB_QUEUE))
             ctx.queueManager.createQueue(STREAMLIB_QUEUE, (ActiveLogin) null);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/creating ...");
-        myTP = ctx.threadpoolSwiftlet.getPool(TP_LISTENER);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/creating ...");
         receiver = ctx.queueManager.createQueueReceiver(STREAMLIB_QUEUE, null, null);
         pullTransaction = receiver.createTransaction(false);
         pullTransaction.registerMessageProcessor(this);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/creating done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/creating done");
     }
 
     public boolean isValid() {
@@ -58,20 +54,20 @@ public class StreamLibDeployer extends MessageProcessor {
 
     public void processMessage(MessageEntry entry) {
         this.entry = entry;
-        myTP.dispatchTask(this);
+        ctx.threadpoolSwiftlet.runAsync(this);
     }
 
     public void processException(Exception e) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/processException: " + e);
+            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/processException: " + e);
     }
 
     public String getDispatchToken() {
-        return TP_LISTENER;
+        return "none";
     }
 
     public String getDescription() {
-        return ctx.streamsSwiftlet.getName() + "/" + toString();
+        return ctx.streamsSwiftlet.getName() + "/" + this;
     }
 
     public static String loadAsString(File f) throws Exception {
@@ -93,7 +89,7 @@ public class StreamLibDeployer extends MessageProcessor {
             Store store = new Store();
             for (int i = 0; i < certs.length; i++) {
                 File cert = certs[i];
-                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), toString() + "/addCert: " + fqn + "." + cert.getName());
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), this + "/addCert: " + fqn + "." + cert.getName());
                 try {
                     store.removeCert(fqn + "." + cert.getName());
                 } catch (Exception e) {
@@ -115,7 +111,7 @@ public class StreamLibDeployer extends MessageProcessor {
             Store store = new Store();
             for (int i = 0; i < certs.length; i++) {
                 File cert = certs[i];
-                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), toString() + "/removeCert: " + fqn + "." + cert.getName());
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), this + "/removeCert: " + fqn + "." + cert.getName());
                 store.removeCert(fqn + "." + cert.getName());
             }
             store.save();
@@ -128,7 +124,7 @@ public class StreamLibDeployer extends MessageProcessor {
             try {
                 removeCerts(fqn, folder);
             } catch (Exception e) {
-                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), toString() + "/error removeCerts: " + e);
+                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), this + "/error removeCerts: " + e);
             }
             Arrays.stream(folder.listFiles()).forEach(File::delete);
             folder.delete();
@@ -155,7 +151,7 @@ public class StreamLibDeployer extends MessageProcessor {
             file.createNewFile();
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/appendChunk, libname=" + libname + ", chunk=" + chunk);
+            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/appendChunk, libname=" + libname + ", chunk=" + chunk);
         FileOutputStream fos = new FileOutputStream(file, true);
         fos.write(buffer);
         fos.flush();
@@ -163,7 +159,7 @@ public class StreamLibDeployer extends MessageProcessor {
     }
 
     private void sendReply(QueueImpl replyTo, boolean rc) throws JMSException {
-        QueueSender sender = ctx.queueManager.createQueueSender(replyTo.getQueueName(), (ActiveLogin) null);
+        QueueSender sender = ctx.queueManager.createQueueSender(replyTo.getQueueName(), null);
         QueuePushTransaction pushTx = sender.createTransaction();
         MessageImpl reply = new MessageImpl();
         reply.setBooleanProperty("success", rc);
@@ -185,7 +181,7 @@ public class StreamLibDeployer extends MessageProcessor {
         byte[] buffer = new byte[len];
         msg.readBytes(buffer);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/processChunk, domain=" + domain + ", package=" + pkg + ", stream=" + stream + ", libname=" + libname + ", chunk=" + chunk + ", last=" + last);
+            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/processChunk, domain=" + domain + ", package=" + pkg + ", stream=" + stream + ", libname=" + libname + ", chunk=" + chunk + ", last=" + last);
         File dir = getOrCreateDeployDir(domain, pkg, stream);
         appendChunk(dir, libname, chunk, buffer);
         if (last) {
@@ -193,7 +189,7 @@ public class StreamLibDeployer extends MessageProcessor {
                 addCerts(domain + "." + pkg + "." + stream, dir);
                 sendReply(replyTo, true);
             } catch (Exception e) {
-                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), toString() + "/Exception during addCert: " + e);
+                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), this + "/Exception during addCert: " + e);
                 removeStreamLibs(domain + "." + pkg + "." + stream);
                 sendReply(replyTo, false);
             }
@@ -205,18 +201,18 @@ public class StreamLibDeployer extends MessageProcessor {
             pullTransaction.commit();
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/run, exception committing tx: " + e + ", exiting");
+                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/run, exception committing tx: " + e + ", exiting");
             return;
         }
         try {
             BytesMessageImpl msg = (BytesMessageImpl) entry.getMessage();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/run, new message: " + msg);
+                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/run, new message: " + msg);
             processChunk(msg);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/run, exception during processing: " + e);
-            ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), toString() + "/run, exception during processing: " + e);
+                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/run, exception during processing: " + e);
+            ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), this + "/run, exception during processing: " + e);
         }
         if (closed)
             return;
@@ -225,8 +221,7 @@ public class StreamLibDeployer extends MessageProcessor {
             pullTransaction.registerMessageProcessor(this);
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), toString() + "/run, exception creating new tx: " + e + ", exiting");
-            return;
+                ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/run, exception creating new tx: " + e + ", exiting");
         }
     }
 

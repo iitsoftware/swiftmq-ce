@@ -32,15 +32,15 @@ public abstract class PreparedLog {
 
     public abstract void remove(PrepareLogRecordImpl logRecord) throws IOException;
 
-    public List getPreparedXids() throws IOException {
-        List lrList = getAll();
-        List xidList = new ArrayList();
-        for (int i = 0; i < lrList.size(); i++) {
-            PrepareLogRecordImpl rec = (PrepareLogRecordImpl) lrList.get(i);
+    public List<XidImpl> getPreparedXids() throws IOException {
+        List<PrepareLogRecordImpl> lrList = getAll();
+        List<XidImpl> xidList = new ArrayList<>();
+        for (PrepareLogRecordImpl o : lrList) {
+            PrepareLogRecordImpl rec = o;
             XidImpl xid = rec.getGlobalTxId();
             boolean isNew = true;
-            for (int j = 0; j < xidList.size(); j++) {
-                if (xid.equals(xidList.get(j))) {
+            for (XidImpl value : xidList) {
+                if (xid.equals(value)) {
                     isNew = false;
                     break;
                 }
@@ -51,16 +51,16 @@ public abstract class PreparedLog {
         return xidList;
     }
 
-    public List getQueuesForXid(byte[] xid) throws IOException {
-        List lrList = getAll();
-        List queueList = new ArrayList();
-        for (int i = 0; i < lrList.size(); i++) {
-            PrepareLogRecordImpl rec = (PrepareLogRecordImpl) lrList.get(i);
+    public List<String> getQueuesForXid(byte[] xid) throws IOException {
+        List<PrepareLogRecordImpl> lrList = getAll();
+        List<String> queueList = new ArrayList<>();
+        for (PrepareLogRecordImpl prepareLogRecord : lrList) {
+            PrepareLogRecordImpl rec = prepareLogRecord;
             if (xid.equals(rec.getGlobalTxId())) {
                 String queueName = rec.getQueueName();
                 boolean isNew = true;
-                for (int j = 0; j < queueList.size(); j++) {
-                    if (queueName.equals(queueList.get(j))) {
+                for (String s : queueList) {
+                    if (queueName.equals(s)) {
                         isNew = false;
                         break;
                     }

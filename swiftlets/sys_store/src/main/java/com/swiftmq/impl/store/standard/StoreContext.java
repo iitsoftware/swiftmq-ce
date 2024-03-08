@@ -17,15 +17,15 @@
 
 package com.swiftmq.impl.store.standard;
 
-import com.swiftmq.impl.store.standard.backup.BackupProcessor;
 import com.swiftmq.impl.store.standard.cache.CacheManager;
 import com.swiftmq.impl.store.standard.cache.StableStore;
 import com.swiftmq.impl.store.standard.index.ReferenceMap;
 import com.swiftmq.impl.store.standard.log.LogManager;
 import com.swiftmq.impl.store.standard.pagedb.PageSize;
 import com.swiftmq.impl.store.standard.pagedb.StoreConverter;
-import com.swiftmq.impl.store.standard.pagedb.scan.ScanProcessor;
-import com.swiftmq.impl.store.standard.pagedb.shrink.ShrinkProcessor;
+import com.swiftmq.impl.store.standard.processor.backup.BackupProcessor;
+import com.swiftmq.impl.store.standard.processor.scan.ScanProcessor;
+import com.swiftmq.impl.store.standard.processor.shrink.ShrinkProcessor;
 import com.swiftmq.impl.store.standard.recover.RecoveryManager;
 import com.swiftmq.impl.store.standard.swap.SwapFileFactory;
 import com.swiftmq.impl.store.standard.transaction.TransactionManager;
@@ -36,6 +36,7 @@ import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.scheduler.SchedulerSwiftlet;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.trace.TraceSpace;
@@ -47,6 +48,7 @@ public class StoreContext {
     public PreparedLog preparedLog = null;
     public DurableSubscriberStoreImpl durableStore = null;
     public LogManager logManager = null;
+    public EventLoop logManagerEventLoop = null;
     public TransactionManager transactionManager = null;
     public RecoveryManager recoveryManager = null;
     public BackupProcessor backupProcessor = null;

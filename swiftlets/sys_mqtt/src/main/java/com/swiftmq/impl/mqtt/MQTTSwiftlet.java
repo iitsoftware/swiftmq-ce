@@ -18,8 +18,8 @@
 package com.swiftmq.impl.mqtt;
 
 import com.swiftmq.impl.mqtt.connection.MQTTConnection;
-import com.swiftmq.mgmt.*;
 import com.swiftmq.impl.mqtt.v311.PacketDecoder;
+import com.swiftmq.mgmt.*;
 import com.swiftmq.net.protocol.raw.RawInputHandler;
 import com.swiftmq.net.protocol.raw.RawOutputHandler;
 import com.swiftmq.swiftlet.Swiftlet;
@@ -34,19 +34,26 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListener {
     SwiftletContext ctx = null;
     EntityListEventAdapter listenerAdapter = null;
-    Semaphore shutdownSem = null;
-    Set connections = Collections.synchronizedSet(new HashSet());
-    boolean collectOn = false;
-    long collectInterval = -1;
-    long lastCollect = System.currentTimeMillis();
+    final AtomicReference<Semaphore> shutdownSem = new AtomicReference<>();
+    Set<Connection> connections = ConcurrentHashMap.newKeySet();
+    final AtomicBoolean collectOn = new AtomicBoolean(false);
+    final AtomicLong collectInterval = new AtomicLong(-1);
+    final AtomicLong lastCollect = new AtomicLong(System.currentTimeMillis());
 
     private void collectChanged(long oldInterval, long newInterval) {
-        if (!collectOn)
+        if (!collectOn.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "collectChanged: old interval: " + oldInterval + " new interval: " + newInterval);
@@ -63,26 +70,26 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
     }
 
     public void performTimeAction() {
-        Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
-        for (int i = 0; i < c.length; i++) {
-            MQTTConnection vc = (MQTTConnection) c[i].getUserObject();
-            vc.collect(lastCollect);
+        Connection[] c = connections.toArray(new Connection[0]);
+        for (Connection connection : c) {
+            MQTTConnection vc = (MQTTConnection) connection.getUserObject();
+            vc.collect(lastCollect.get());
         }
-        lastCollect = System.currentTimeMillis();
+        lastCollect.set(System.currentTimeMillis());
     }
 
     public void adminToolActivated() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "adminToolActivated");
-        collectOn = true;
-        collectChanged(-1, collectInterval);
+        collectOn.set(true);
+        collectChanged(-1, collectInterval.get());
     }
 
     public void adminToolDeactivated() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "adminToolDeactivated");
-        collectChanged(collectInterval, -1);
-        collectOn = false;
+        collectChanged(collectInterval.get(), -1);
+        collectOn.set(false);
     }
 
     private void createListenerAdapter(EntityList listenerList) throws SwiftletException {
@@ -123,21 +130,21 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
     private void createListener(Entity listenerEntity) throws SwiftletException {
         Entity connectionTemplate = getConnectionTemplate((String) listenerEntity.getProperty("connection-template").getValue());
         String listenerName = listenerEntity.getName();
-        int port = ((Integer) listenerEntity.getProperty("port").getValue()).intValue();
+        int port = (Integer) listenerEntity.getProperty("port").getValue();
         InetAddress bindAddress = null;
         try {
             String s = (String) listenerEntity.getProperty("bindaddress").getValue();
-            if (s != null && s.trim().length() > 0)
+            if (s != null && !s.trim().isEmpty())
                 bindAddress = InetAddress.getByName(s);
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
 
-        int inputBufferSize = ((Integer) connectionTemplate.getProperty("router-input-buffer-size").getValue()).intValue();
-        int inputExtendSize = ((Integer) connectionTemplate.getProperty("router-input-extend-size").getValue()).intValue();
-        int outputBufferSize = ((Integer) connectionTemplate.getProperty("router-output-buffer-size").getValue()).intValue();
-        int outputExtendSize = ((Integer) connectionTemplate.getProperty("router-output-extend-size").getValue()).intValue();
-        boolean useTCPNoDelay = ((Boolean) connectionTemplate.getProperty("use-tcp-no-delay").getValue()).booleanValue();
+        int inputBufferSize = (Integer) connectionTemplate.getProperty("router-input-buffer-size").getValue();
+        int inputExtendSize = (Integer) connectionTemplate.getProperty("router-input-extend-size").getValue();
+        int outputBufferSize = (Integer) connectionTemplate.getProperty("router-output-buffer-size").getValue();
+        int outputExtendSize = (Integer) connectionTemplate.getProperty("router-output-extend-size").getValue();
+        boolean useTCPNoDelay = (Boolean) connectionTemplate.getProperty("use-tcp-no-delay").getValue();
         ListenerMetaData meta = new ListenerMetaData(bindAddress, port, this, -1, (String) connectionTemplate.getProperty("socketfactory-class").getValue(), new Acceptor(listenerName, listenerEntity.getProperty("max-connections"), listenerEntity.getProperty("connection-template")),
                 inputBufferSize, inputExtendSize, outputBufferSize, outputExtendSize, useTCPNoDelay, new RawInputHandler(), new RawOutputHandler());
         listenerEntity.setUserObject(meta);
@@ -152,9 +159,9 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
 
     private void createHostAccessList(ListenerMetaData meta, EntityList haEntitiy) {
         Map h = haEntitiy.getEntities();
-        if (h.size() > 0) {
-            for (Iterator hIter = h.keySet().iterator(); hIter.hasNext(); ) {
-                String predicate = (String) hIter.next();
+        if (!h.isEmpty()) {
+            for (Object o : h.keySet()) {
+                String predicate = (String) o;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "Listener '" + meta + "': inbound host restrictions to: " + predicate);
                 meta.addToHostAccessList(predicate);
@@ -191,17 +198,19 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         return entity;
     }
 
-    protected synchronized Semaphore getShutdownSemaphore() {
-        shutdownSem = null;
-        if (connections.size() > 0)
-            shutdownSem = new Semaphore();
-        return shutdownSem;
+    protected Semaphore getShutdownSemaphore() {
+        if (!connections.isEmpty()) {
+            shutdownSem.set(new Semaphore());
+        } else {
+            shutdownSem.set(null);
+        }
+        return shutdownSem.get();
     }
 
     private void doConnect(Connection connection, Entity connectionTemplate) {
         Entity ce = ctx.usageListConnections.createEntity();
         MQTTConnection mqttConnection = new MQTTConnection(ctx, connection, ce, connectionTemplate);
-        PacketDecoder packetDecoder = new PacketDecoder(mqttConnection, ctx.protSpace, ((Integer) connectionTemplate.getProperty("max-message-size").getValue()).intValue());
+        PacketDecoder packetDecoder = new PacketDecoder(mqttConnection, ctx.protSpace, (Integer) connectionTemplate.getProperty("max-message-size").getValue());
         connection.setInboundHandler(packetDecoder);
         connection.setUserObject(mqttConnection);
         connections.add(connection);
@@ -226,8 +235,8 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
             myCtx.usageListConnections.removeDynamicEntity(connection);
             mqttConnection.close();
             connections.remove(connection);
-            if (shutdownSem != null && connections.size() == 0)
-                shutdownSem.notifySingleWaiter();
+            if (shutdownSem.get() != null && connections.size() == 0)
+                shutdownSem.get().notifySingleWaiter();
         }
         if (myCtx.traceSpace.enabled) myCtx.traceSpace.trace(getName(), "doDisconnect: " + connection + ", DONE.");
     }
@@ -249,16 +258,16 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                collectInterval = ((Long) newValue).longValue();
-                collectChanged(((Long) oldValue).longValue(), collectInterval);
+                collectInterval.set((Long) newValue);
+                collectChanged((Long) oldValue, collectInterval.get());
             }
         });
-        collectInterval = ((Long) prop.getValue()).longValue();
-        if (collectOn) {
-            if (collectInterval > 0) {
+        collectInterval.set((Long) prop.getValue());
+        if (collectOn.get()) {
+            if (collectInterval.get() > 0) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "startup: registering msg/s count collector");
-                ctx.timerSwiftlet.addTimerListener(collectInterval, this);
+                ctx.timerSwiftlet.addTimerListener(collectInterval.get(), this);
             } else if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "startup: collect interval <= 0; no msg/s count collector");
         }
@@ -287,15 +296,15 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
         try {
-            collectChanged(collectInterval, -1);
+            collectChanged(collectInterval.get(), -1);
             listenerAdapter.close();
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: shutdown all MQTT connections");
             Semaphore sem = getShutdownSemaphore();
             ConnectionManager connectionManager = ctx.networkSwiftlet.getConnectionManager();
-            Connection[] c = (Connection[]) connections.toArray(new Connection[connections.size()]);
+            Connection[] c = connections.toArray(new Connection[0]);
             connections.clear();
-            for (int i = 0; i < c.length; i++) {
-                connectionManager.removeConnection(c[i]);
+            for (Connection connection : c) {
+                connectionManager.removeConnection(connection);
             }
             if (sem != null) {
                 System.out.println("+++ waiting for connection shutdown ...");
@@ -318,42 +327,33 @@ public class MQTTSwiftlet extends Swiftlet implements TimerListener, MgmtListene
     private class Acceptor implements ConnectionListener {
         String name = null;
         Entity connectionTemplate = null;
-        int localMax = -1;
-        int currentCount = 0;
+        final AtomicInteger localMax = new AtomicInteger(-1);
+        final AtomicInteger currentCount = new AtomicInteger();
 
         Acceptor(String name, Property maxConnProp, Property connectionTemplateProp) {
             this.name = name;
             this.connectionTemplate = getConnectionTemplate((String) connectionTemplateProp.getValue());
-            connectionTemplateProp.setPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                    connectionTemplate = getConnectionTemplate((String) newValue);
-                }
-            });
+            connectionTemplateProp.setPropertyChangeListener((property, oldValue, newValue) -> connectionTemplate = getConnectionTemplate((String) newValue));
             if (maxConnProp != null) {
-                localMax = ((Integer) maxConnProp.getValue()).intValue();
-                maxConnProp.setPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                        synchronized (Acceptor.this) {
-                            localMax = ((Integer) newValue).intValue();
-                        }
-                    }
+                localMax.set((Integer) maxConnProp.getValue());
+                maxConnProp.setPropertyChangeListener((property, oldValue, newValue) -> {
+                    localMax.set((Integer) newValue);
                 });
             }
         }
 
-        public synchronized void connected(Connection connection) throws ConnectionVetoException {
-            if (localMax != -1) {
-                currentCount++;
-                if (currentCount > localMax)
-                    throw new ConnectionVetoException("Maximum connections (" + localMax + ") for this listener '" + name + "' reached!");
+        public void connected(Connection connection) throws ConnectionVetoException {
+            if (localMax.get() != -1 && currentCount.incrementAndGet() > localMax.get()) {
+                currentCount.decrementAndGet();
+                throw new ConnectionVetoException("Maximum connections (" + localMax.get() + ") for this listener '" + name + "' reached!");
             }
             doConnect(connection, connectionTemplate);
         }
 
-        public synchronized void disconnected(Connection connection) {
+        public void disconnected(Connection connection) {
             doDisconnect(connection);
-            if (localMax != -1) {
-                currentCount--;
+            if (localMax.get() != -1) {
+                currentCount.decrementAndGet();
             }
         }
     }

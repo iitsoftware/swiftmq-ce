@@ -5,6 +5,11 @@ delete cqueue
 cc /sys$queuemanager/composite-queues
 delete compqueue
 cc /sys$queuemanager/queues
+delete t0
+delete t1
+delete t2
+delete t3
+delete t4
 delete testqueue1
 delete testqueue2
 delete testqueue3

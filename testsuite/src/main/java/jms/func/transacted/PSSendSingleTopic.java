@@ -19,84 +19,72 @@ package jms.func.transacted;
 
 import jms.base.SimpleConnectedPSTestCase;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class PSSendSingleTopic extends SimpleConnectedPSTestCase
-{
-  public PSSendSingleTopic(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  public void testPSSendSingleTopicNP()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        publisher.publish(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      ts.commit();
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) subscriber.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      ts.commit();
-      msg.clearBody();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        publisher.publish(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      ts.rollback();
-      msg = (TextMessage) subscriber.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class PSSendSingleTopic extends SimpleConnectedPSTestCase {
+    public PSSendSingleTopic(String name) {
+        super(name);
     }
-  }
 
-  public void testPSSendSingleTopicP()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        publisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      ts.commit();
-
-      for (int i = 0; i < 10; i++)
-      {
-        msg = (TextMessage) subscriber.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      ts.commit();
-      msg.clearBody();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        publisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      ts.rollback();
-      msg = (TextMessage) subscriber.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE);
     }
-  }
+
+    public void testPSSendSingleTopicNP() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                publisher.publish(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            ts.commit();
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) subscriber.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            ts.commit();
+            msg.clearBody();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                publisher.publish(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            ts.rollback();
+            msg = (TextMessage) subscriber.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    public void testPSSendSingleTopicP() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                publisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            ts.commit();
+
+            for (int i = 0; i < 10; i++) {
+                msg = (TextMessage) subscriber.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            ts.commit();
+            msg.clearBody();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                publisher.publish(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            ts.rollback();
+            msg = (TextMessage) subscriber.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

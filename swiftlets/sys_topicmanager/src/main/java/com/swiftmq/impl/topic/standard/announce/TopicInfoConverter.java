@@ -29,8 +29,8 @@ public class TopicInfoConverter implements VersionedConverter {
 
     public void convert(VersionedDumpable vd, int[] acceptedVersions) throws VersionedException {
         boolean found = false;
-        for (int i = 0; i < acceptedVersions.length; i++) {
-            if (acceptedVersions[i] == 400) {
+        for (int acceptedVersion : acceptedVersions) {
+            if (acceptedVersion == 400) {
                 found = true;
                 break;
             }

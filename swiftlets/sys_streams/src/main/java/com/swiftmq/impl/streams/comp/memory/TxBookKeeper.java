@@ -21,7 +21,6 @@ import com.swiftmq.impl.streams.StreamContext;
 import com.swiftmq.impl.streams.TransactionFinishListener;
 import com.swiftmq.impl.streams.TransactionFlushListener;
 import com.swiftmq.impl.streams.comp.message.Message;
-import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.ms.MessageSelector;
 import com.swiftmq.swiftlet.queue.*;
 
@@ -29,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TxBookKeeper implements TransactionFlushListener {
     final static int OP_ADD = 0;
@@ -68,7 +68,7 @@ public class TxBookKeeper implements TransactionFlushListener {
         for (ListIterator<Entry> iter = txLog.listIterator(txLog.size()); iter.hasPrevious(); ) {
             Entry entry = iter.previous();
             if (entry.op == OP_ADD && entry.key.equals(key))
-                return entry.message;
+                return entry.message.get();
         }
         return null;
     }
@@ -83,10 +83,9 @@ public class TxBookKeeper implements TransactionFlushListener {
     }
 
     void getSelected(MessageSelector selector, Memory result) throws Exception {
-        for (Iterator<Entry> iter = txLog.iterator(); iter.hasNext(); ) {
-            Entry entry = iter.next();
-            if (entry.op == OP_ADD && entry.message.isSelected(selector)) {
-                result.add(entry.message);
+        for (Entry entry : txLog) {
+            if (entry.op == OP_ADD && entry.message.get().isSelected(selector)) {
+                result.add(entry.message.get());
             }
         }
     }
@@ -94,7 +93,7 @@ public class TxBookKeeper implements TransactionFlushListener {
     void remove(MessageSelector selector) throws Exception {
         for (Iterator<Entry> iter = txLog.iterator(); iter.hasNext(); ) {
             Entry entry = iter.next();
-            if (entry.op == OP_ADD && entry.message.isSelected(selector)) {
+            if (entry.op == OP_ADD && entry.message.get().isSelected(selector)) {
                 iter.remove();
             }
         }
@@ -103,20 +102,19 @@ public class TxBookKeeper implements TransactionFlushListener {
     @Override
     public void flush() {
         List<MessageIndex> toRemove = null;
-        for (Iterator<Entry> iter = txLog.iterator(); iter.hasNext(); ) {
-            Entry entry = iter.next();
+        for (Entry entry : txLog) {
             if (entry.op == OP_ADD) {
                 try {
                     QueuePushTransaction transaction = sender.createTransaction();
-                    transaction.putMessage(entry.message.getImpl());
-                    ctx.addTransaction(transaction, new TxFinisher(entry.message.getImpl(), entry.keyEntry));
+                    transaction.putMessage(entry.message.get().getImpl());
+                    ctx.addTransaction(transaction, new TxFinisher(entry.message, entry.keyEntry));
                 } catch (QueueException e) {
                     e.printStackTrace();
                 }
             } else {
                 if (toRemove == null)
-                    toRemove = new ArrayList<MessageIndex>();
-                toRemove.add(entry.keyEntry.messageIndex);
+                    toRemove = new ArrayList<>();
+                toRemove.add(entry.keyEntry.get().messageIndex);
             }
         }
         txLog.clear();
@@ -151,41 +149,33 @@ public class TxBookKeeper implements TransactionFlushListener {
                 '}';
     }
 
-    private class Entry {
+    private static class Entry {
         String key;
         int op;
-        Message message;
-        QueueMemory.KeyEntry keyEntry;
+        final AtomicReference<Message> message = new AtomicReference<>();
+        final AtomicReference<QueueMemory.KeyEntry> keyEntry = new AtomicReference<>();
 
         public Entry(String key, int op, Message message, QueueMemory.KeyEntry keyEntry) {
             this.key = key;
             this.op = op;
-            this.message = message;
-            this.keyEntry = keyEntry;
-        }
-
-        public Entry(String key, int op) {
-            this.key = key;
-            this.op = op;
+            this.message.set(message);
+            this.keyEntry.set(keyEntry);
         }
     }
 
-    private class TxFinisher implements TransactionFinishListener {
-        MessageImpl impl;
-        QueueMemory.KeyEntry keyEntry;
+    private static class TxFinisher implements TransactionFinishListener {
+        AtomicReference<Message> message;
+        AtomicReference<QueueMemory.KeyEntry> keyEntry;
 
-        public TxFinisher(MessageImpl impl, QueueMemory.KeyEntry keyEntry) {
-            this.impl = impl;
+        public TxFinisher(AtomicReference<Message> message, AtomicReference<QueueMemory.KeyEntry> keyEntry) {
+            this.message = message;
             this.keyEntry = keyEntry;
         }
 
         @Override
         public void transactionFinished() {
-            if (impl != null) {
-                // To keep the data sync
-                synchronized (this) {
-                    keyEntry.messageIndex = (MessageIndex) impl.getStreamPKey();
-                }
+            if (message != null) {
+                keyEntry.get().messageIndex = (MessageIndex) message.get().getImpl().getStreamPKey();
             }
         }
     }

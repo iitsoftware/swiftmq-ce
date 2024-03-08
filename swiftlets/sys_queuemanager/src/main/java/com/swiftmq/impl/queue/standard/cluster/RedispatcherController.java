@@ -20,58 +20,74 @@ package com.swiftmq.impl.queue.standard.cluster;
 import com.swiftmq.impl.queue.standard.SwiftletContext;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class RedispatcherController {
     SwiftletContext ctx = null;
-    Map redispatchers = new HashMap();
+    Map<String, Redispatcher> redispatchers = new HashMap<>();
+    ReentrantLock lock = new ReentrantLock();
 
     public RedispatcherController(SwiftletContext ctx) {
         this.ctx = ctx;
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/stop");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), this + "/stop");
     }
 
-    public synchronized void redispatch(String sourceQueueName, String targetQueueName) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + " ...");
-        if (redispatchers.get(sourceQueueName) != null) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + ", already running, do nothing!");
-            return;
-        }
+    public void redispatch(String sourceQueueName, String targetQueueName) {
+        lock.lock();
         try {
-            Redispatcher rdp = new Redispatcher(ctx, sourceQueueName, targetQueueName);
-            redispatchers.put(sourceQueueName, rdp);
-            rdp.start();
-        } catch (Exception e) {
-            e.printStackTrace();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + ", exception=" + e);
+                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + " ...");
+            if (redispatchers.get(sourceQueueName) != null) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + ", already running, do nothing!");
+                return;
+            }
+            try {
+                Redispatcher rdp = new Redispatcher(ctx, sourceQueueName, targetQueueName);
+                redispatchers.put(sourceQueueName, rdp);
+                rdp.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + ", exception=" + e);
+            }
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + " done");
+        } finally {
+            lock.unlock();
         }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatch, source=" + sourceQueueName + ", target=" + targetQueueName + " done");
+
     }
 
-    public synchronized void redispatcherFinished(String sourceQueueName) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/redispatcherFinished, source=" + sourceQueueName);
-        redispatchers.remove(sourceQueueName);
+    public void redispatcherFinished(String sourceQueueName) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.queueManager.getName(), this + "/redispatcherFinished, source=" + sourceQueueName);
+            redispatchers.remove(sourceQueueName);
+        } finally {
+            lock.unlock();
+        }
+
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/close ...");
-        Map cloned = null;
-        synchronized (this) {
-            cloned = (Map) ((HashMap) redispatchers).clone();
-            redispatchers.clear();
-        }
-        for (Iterator iter = cloned.entrySet().iterator(); iter.hasNext(); ) {
-            ((Redispatcher) ((Map.Entry) iter.next()).getValue()).stop();
-        }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), toString() + "/close done");
-    }
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), this + "/close ...");
 
+            for (Map.Entry<String, Redispatcher> entry : redispatchers.entrySet()) {
+                entry.getValue().stop();
+            }
+            redispatchers.clear();
+
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.queueManager.getName(), this + "/close done");
+        } finally {
+            lock.unlock();
+        }
+
+    }
     public String toString() {
         return "RedispatcherController";
     }

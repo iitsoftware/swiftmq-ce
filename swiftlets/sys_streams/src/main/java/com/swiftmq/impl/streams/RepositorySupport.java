@@ -17,23 +17,23 @@
 
 package com.swiftmq.impl.streams;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RepositorySupport {
-    Map<String, String> registry = new HashMap<String, String>();
+    Map<String, String> registry = new ConcurrentHashMap<>();
 
-    public synchronized RepositorySupport put(String name, String script) {
+    public RepositorySupport put(String name, String script) {
         registry.put(name, script);
         return this;
     }
 
-    public synchronized RepositorySupport remove(String name) {
+    public RepositorySupport remove(String name) {
         registry.remove(name);
         return this;
     }
 
-    public synchronized String get(String name) {
+    public String get(String name) {
         return registry.get(name);
     }
 }

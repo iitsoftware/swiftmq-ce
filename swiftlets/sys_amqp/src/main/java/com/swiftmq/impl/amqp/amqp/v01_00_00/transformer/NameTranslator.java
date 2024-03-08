@@ -18,5 +18,5 @@
 package com.swiftmq.impl.amqp.amqp.v01_00_00.transformer;
 
 public interface NameTranslator {
-    public String translate(String source);
+    String translate(String source);
 }

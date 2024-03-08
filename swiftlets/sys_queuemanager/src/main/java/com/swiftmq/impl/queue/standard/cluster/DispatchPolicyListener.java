@@ -18,5 +18,5 @@
 package com.swiftmq.impl.queue.standard.cluster;
 
 public interface DispatchPolicyListener {
-    public void dispatchQueueRemoved(String queueName);
+    void dispatchQueueRemoved(String queueName);
 }

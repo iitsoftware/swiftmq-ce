@@ -21,42 +21,35 @@ import jms.base.SimpleConnectedUnifiedPSTestCase;
 
 import javax.jms.*;
 
-public class Requestor extends SimpleConnectedUnifiedPSTestCase
-{
-  MessageConsumer tempConsumer = null;
-  TemporaryTopic tempTopic = null;
+public class Requestor extends SimpleConnectedUnifiedPSTestCase {
+    MessageConsumer tempConsumer = null;
+    TemporaryTopic tempTopic = null;
 
-  public Requestor(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    consumer.close();
-    tempTopic = ts.createTemporaryTopic();
-    tempConsumer = ts.createConsumer(tempTopic);
-    pause(3000);
-  }
-
-  public void testRequest()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      msg.setJMSReplyTo(tempTopic);
-      for (int i = 0; i < 1000; i++)
-      {
-        msg.setText("Request: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        TextMessage reply = (TextMessage) tempConsumer.receive();
-      }
-      pause(3000);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Requestor(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        consumer.close();
+        tempTopic = ts.createTemporaryTopic();
+        tempConsumer = ts.createConsumer(tempTopic);
+        pause(3000);
+    }
+
+    public void testRequest() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            msg.setJMSReplyTo(tempTopic);
+            for (int i = 0; i < 1000; i++) {
+                msg.setText("Request: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                TextMessage reply = (TextMessage) tempConsumer.receive();
+            }
+            pause(3000);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

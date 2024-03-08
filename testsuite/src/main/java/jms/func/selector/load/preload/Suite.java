@@ -20,23 +20,19 @@ package jms.func.selector.load.preload;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new jms.func.selector.load.preload.Suite();
-    suite.addTest(SenderSuite.suite());
-    suite.addTest(ReceiverSuite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new jms.func.selector.load.preload.Suite();
+        suite.addTest(SenderSuite.suite());
+        suite.addTest(ReceiverSuite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "preload";
-  }
+    public String toString() {
+        return "preload";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.func.selector.load.preload.Suite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.func.selector.load.preload.Suite.suite());
+    }
 }

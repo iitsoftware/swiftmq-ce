@@ -20,26 +20,22 @@ package jms.ha.nonpersistent.ptp;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.nonpersistent.ptp.autoack.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.ptp.clientack.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.ptp.transacted.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.ptp.requestreply.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.nonpersistent.ptp.autoack.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.ptp.clientack.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.ptp.transacted.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.ptp.requestreply.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "ptp";
-  }
+    public String toString() {
+        return "ptp";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

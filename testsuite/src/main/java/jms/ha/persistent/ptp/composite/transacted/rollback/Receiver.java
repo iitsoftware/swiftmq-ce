@@ -24,74 +24,63 @@ import javax.jms.Message;
 import javax.jms.QueueReceiver;
 import javax.jms.Session;
 
-public class Receiver extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = 0;
-  MsgNoVerifier verifier = null;
-  String myQueueName = null;
-  QueueReceiver myReceiver = null;
+public class Receiver extends SimpleConnectedPTPTestCase {
+    int nMsgs = 0;
+    MsgNoVerifier verifier = null;
+    String myQueueName = null;
+    QueueReceiver myReceiver = null;
 
-  public Receiver(String name, String myQueueName, int nMsgs)
-  {
-    super(name);
-    this.myQueueName = myQueueName;
-    this.nMsgs = nMsgs;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.AUTO_ACKNOWLEDGE, false, false);
-    myReceiver = qs.createReceiver(getQueue(myQueueName));
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-    verifier.setCheckSequence(true);
-  }
-
-  public void receive()
-  {
-    try
-    {
-      boolean rollback = false;
-      int n = 0, m = 0;
-      while (n < nMsgs)
-      {
-        Message msg = myReceiver.receive();
-        if (msg == null)
-          throw new Exception("null message received!");
-        if (rollback)
-        {
-          System.out.println("during rollback, ignore: " + msg.getIntProperty("no"));
-          m++;
-          if (m == 10)
-          {
-            System.out.println("rollback session!");
-            qs.rollback();
-            rollback = false;
-            m = 0;
-          }
-          continue;
-        }
-        System.out.println("accepted: " + msg.getIntProperty("no"));
-        verifier.add(msg);
-        n++;
-        if (n % 10 == 0)
-        {
-          System.out.println("commit session!");
-          qs.commit();
-          rollback = true;
-        }
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Receiver(String name, String myQueueName, int nMsgs) {
+        super(name);
+        this.myQueueName = myQueueName;
+        this.nMsgs = nMsgs;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    myReceiver.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(true, Session.AUTO_ACKNOWLEDGE, false, false);
+        myReceiver = qs.createReceiver(getQueue(myQueueName));
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+        verifier.setCheckSequence(true);
+    }
+
+    public void receive() {
+        try {
+            boolean rollback = false;
+            int n = 0, m = 0;
+            while (n < nMsgs) {
+                Message msg = myReceiver.receive();
+                if (msg == null)
+                    throw new Exception("null message received!");
+                if (rollback) {
+                    System.out.println("during rollback, ignore: " + msg.getIntProperty("no"));
+                    m++;
+                    if (m == 10) {
+                        System.out.println("rollback session!");
+                        qs.rollback();
+                        rollback = false;
+                        m = 0;
+                    }
+                    continue;
+                }
+                System.out.println("accepted: " + msg.getIntProperty("no"));
+                verifier.add(msg);
+                n++;
+                if (n % 10 == 0) {
+                    System.out.println("commit session!");
+                    qs.commit();
+                    rollback = true;
+                }
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        myReceiver.close();
+        super.tearDown();
+    }
 }
 

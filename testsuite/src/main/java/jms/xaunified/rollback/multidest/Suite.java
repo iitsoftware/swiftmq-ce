@@ -17,27 +17,24 @@
 
 package jms.xaunified.rollback.multidest;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xaunified.rollback.multidest.ptp.Suite.suite());
-    suite.addTest(jms.xaunified.rollback.multidest.ps.Suite.suite());
-    suite.addTest(jms.xaunified.rollback.multidest.mixed.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xaunified.rollback.multidest.ptp.Suite.suite());
+        suite.addTest(jms.xaunified.rollback.multidest.ps.Suite.suite());
+        suite.addTest(jms.xaunified.rollback.multidest.mixed.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "multidest";
-  }
+    public String toString() {
+        return "multidest";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

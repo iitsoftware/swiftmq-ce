@@ -36,26 +36,30 @@ import com.swiftmq.tools.versioning.Versioned;
 import com.swiftmq.util.SwiftUtilities;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class JNDISwiftletImpl extends JNDISwiftlet {
-    static final String TP_LISTENER = "sys$jndi.listener";
     static final int[] VERSIONS = {400};
 
     SwiftletContext ctx = null;
 
-    Map aliases = Collections.synchronizedMap(new HashMap());
-    Map objects = Collections.synchronizedMap(new HashMap());
+    Map<String, String> aliases = new ConcurrentHashMap<>();
+    Map<String, Serializable> objects = new ConcurrentHashMap<>();
+    Map<String, JNDIReplication> replications = new ConcurrentHashMap<>();
 
     QueueJNDIProcessor queueJNDIProcessor = null;
     TopicJNDIProcessor topicJNDIProcessor = null;
-    HashMap replications = new HashMap();
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     private String findAlias(String name) {
         String alias = null;
-        for (Iterator iter = aliases.keySet().iterator(); iter.hasNext(); ) {
-            String key = (String) iter.next();
-            String value = (String) aliases.get(key);
+        for (String key : aliases.keySet()) {
+            String value = aliases.get(key);
             if (value.equals(name)) {
                 alias = key;
                 break;
@@ -65,84 +69,89 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
     }
 
     private String[] findAliasesForObject(String name) {
-        ArrayList al = new ArrayList();
-        for (Iterator iter = aliases.keySet().iterator(); iter.hasNext(); ) {
-            String key = (String) iter.next();
-            String value = (String) aliases.get(key);
+        List<String> al = new ArrayList<>();
+        for (String key : aliases.keySet()) {
+            String value = aliases.get(key);
             if (value.equals(name)) {
                 al.add(key);
             }
         }
-        return (String[]) al.toArray(new String[al.size()]);
+        return al.toArray(new String[0]);
     }
 
-    public synchronized void registerJNDIObject(String name, Serializable object) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "registerJNDIObject, name=" + name + ", object=" + object);
-        objects.put(name, object);
-
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "registerJNDIObject, registering on external JNDI server");
+    public void registerJNDIObject(String name, Serializable object) {
+        lock.writeLock().lock();
         try {
-            bindReplications(name, object);
-            String[] aliases = findAliasesForObject(name);
-            if (aliases != null && aliases.length > 0) {
-                for (int i = 0; i < aliases.length; i++) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "registerJNDIObject, registering on external JNDI server, alias=" + aliases[i]);
-                    bindReplications(aliases[i], object);
-                }
-            }
-        } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "registerJNDIObject, registering on external JNDI server, exception=" + e);
-            ctx.logSwiftlet.logError(getName(), "registerJNDIObject, registering on external JNDI server, exception=" + e);
-        }
+                ctx.traceSpace.trace(getName(), "registerJNDIObject, name=" + name + ", object=" + object);
+            objects.put(name, object);
 
-        try {
-            Entity entity = ctx.usageList.createEntity();
-            entity.setName(name);
-            Property prop = entity.getProperty("classname");
-            prop.setValue(object.getClass().getName());
-            prop.setReadOnly(true);
-            entity.createCommands();
-            ctx.usageList.addEntity(entity);
-        } catch (Exception e) {
-        }
-    }
-
-    public synchronized void deregisterJNDIObject(String name) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "deregisterJNDIObject, name=" + name);
-        objects.remove(name);
-
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(getName(), "deregisterJNDIObject, deregistering from external JNDI server");
-        try {
-            unbindReplications(name);
-            String[] aliases = findAliasesForObject(name);
-            if (aliases != null && aliases.length > 0) {
-                for (int i = 0; i < aliases.length; i++) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "deregisterJNDIObject, deregistering on external JNDI server, alias=" + aliases[i]);
-                    unbindReplications(aliases[i]);
-                }
-            }
-        } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "deregisterJNDIObject, deregistering from external JNDI server, exception=" + e);
-            ctx.logSwiftlet.logError(getName(), "deregisterJNDIObject, deregistering from external JNDI server, exception=" + e);
+                ctx.traceSpace.trace(getName(), "registerJNDIObject, registering on external JNDI server");
+            try {
+                bindReplications(name, object);
+                String[] aliases = findAliasesForObject(name);
+                for (String alias : aliases) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(getName(), "registerJNDIObject, registering on external JNDI server, alias=" + alias);
+                    bindReplications(alias, object);
+                }
+            } catch (Exception e) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "registerJNDIObject, registering on external JNDI server, exception=" + e);
+                ctx.logSwiftlet.logError(getName(), "registerJNDIObject, registering on external JNDI server, exception=" + e);
+            }
+
+            try {
+                Entity entity = ctx.usageList.createEntity();
+                entity.setName(name);
+                Property prop = entity.getProperty("classname");
+                prop.setValue(object.getClass().getName());
+                prop.setReadOnly(true);
+                entity.createCommands();
+                ctx.usageList.addEntity(entity);
+            } catch (Exception ignored) {
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
-        try {
-            ctx.usageList.removeEntity(ctx.usageList.getEntity(name));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 
-    public synchronized void deregisterJNDIQueueObject(String queueName) {
+    public void deregisterJNDIObject(String name) {
+        lock.writeLock().lock();
         try {
-            for (Iterator iter = objects.keySet().iterator(); iter.hasNext(); ) {
-                String key = (String) iter.next();
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "deregisterJNDIObject, name=" + name);
+            objects.remove(name);
+
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "deregisterJNDIObject, deregistering from external JNDI server");
+            try {
+                unbindReplications(name);
+                String[] aliases = findAliasesForObject(name);
+                for (String alias : aliases) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(getName(), "deregisterJNDIObject, deregistering on external JNDI server, alias=" + alias);
+                    unbindReplications(alias);
+                }
+            } catch (Exception e) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "deregisterJNDIObject, deregistering from external JNDI server, exception=" + e);
+                ctx.logSwiftlet.logError(getName(), "deregisterJNDIObject, deregistering from external JNDI server, exception=" + e);
+            }
+            try {
+                ctx.usageList.removeEntity(ctx.usageList.getEntity(name));
+            } catch (Exception ignored) {
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public void deregisterJNDIQueueObject(String queueName) {
+        try {
+            for (String key : objects.keySet()) {
                 Object registered = objects.get(key);
                 if (registered instanceof QueueImpl) {
                     String regQueueName = ((QueueImpl) registered).getQueueName();
@@ -152,90 +161,100 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
     }
 
-    public synchronized void deregisterJNDIObjects(Comparable comparable) {
+    public void deregisterJNDIObjects(Comparable comparable) {
         try {
-            List keys = new ArrayList();
-            for (Iterator iter = objects.entrySet().iterator(); iter.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) iter.next();
-                String key = (String) entry.getKey();
-                Object registered = entry.getValue();
+            List<String> keys = new ArrayList<>();
+            for (Map.Entry<String, Serializable> stringSerializableEntry : objects.entrySet()) {
+                String key = (String) ((Map.Entry<?, ?>) stringSerializableEntry).getKey();
+                Object registered = ((Map.Entry<?, ?>) stringSerializableEntry).getValue();
                 if (comparable.compareTo(registered) == 0)
                     keys.add(key);
             }
-            for (int i = 0; i < keys.size(); i++)
-                deregisterJNDIObject((String) keys.get(i));
-        } catch (Exception e) {
-            e.printStackTrace();
+            for (String key : keys)
+                deregisterJNDIObject(key);
+        } catch (Exception ignored) {
         }
     }
 
-    public synchronized Serializable getJNDIObject(String name) {
-        String alias = (String) aliases.get(name);
-        if (alias != null)
-            name = alias;
-        return (Serializable) objects.get(name);
+    public Serializable getJNDIObject(String name) {
+        lock.readLock().lock();
+        try {
+            String alias = aliases.get(name);
+            if (alias != null)
+                name = alias;
+            return objects.get(name);
+        } finally {
+            lock.readLock().unlock();
+        }
+
     }
 
-    public synchronized String getJNDIObjectName(QueueImpl queue) {
-        String name = null;
+    public String getJNDIObjectName(QueueImpl queue) {
+        lock.readLock().lock();
         try {
-            for (Iterator iter = objects.keySet().iterator(); iter.hasNext(); ) {
-                String key = (String) iter.next();
-                Object registered = objects.get(key);
-                if (registered instanceof QueueImpl) {
-                    String queueName = ((QueueImpl) registered).getQueueName();
-                    if (queueName != null && queueName.equals(queue.getQueueName())) {
-                        name = key;
-                        break;
+            String name = null;
+            try {
+                for (String key : objects.keySet()) {
+                    Object registered = objects.get(key);
+                    if (registered instanceof QueueImpl) {
+                        String queueName = ((QueueImpl) registered).getQueueName();
+                        if (queueName != null && queueName.equals(queue.getQueueName())) {
+                            name = key;
+                            break;
+                        }
                     }
                 }
+            } catch (Exception ignored) {
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return name;
+        } finally {
+            lock.readLock().unlock();
         }
-        return name;
+
     }
 
-    synchronized void replicate(JNDIReplication replication) {
-        for (Iterator iter = objects.keySet().iterator(); iter.hasNext(); ) {
-            String key = (String) iter.next();
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(getName(), "replicate: name=" + key + " to " + replication);
-            Object value = objects.get(key);
-            replication.bind(key, value);
-            String[] aliases = findAliasesForObject(key);
-            if (aliases != null && aliases.length > 0) {
-                for (int i = 0; i < aliases.length; i++) {
+    void replicate(JNDIReplication replication) {
+        lock.readLock().lock();
+        try {
+            for (String key : objects.keySet()) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "replicate: name=" + key + " to " + replication);
+                Serializable value = objects.get(key);
+                replication.bind(key, value);
+                String[] aliases = findAliasesForObject(key);
+                for (String alias : aliases) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "replicate: name=" + aliases[i] + " to " + replication);
-                    replication.bind(aliases[i], value);
+                        ctx.traceSpace.trace(getName(), "replicate: name=" + alias + " to " + replication);
+                    replication.bind(alias, value);
                 }
             }
+        } finally {
+            lock.readLock().unlock();
         }
+
     }
 
-    private synchronized void bindReplications(String name, Object object) {
-        for (Iterator iter = replications.entrySet().iterator(); iter.hasNext(); ) {
-            JNDIReplication replication = (JNDIReplication) ((Map.Entry) iter.next()).getValue();
+    private void bindReplications(String name, Serializable object) {
+        for (Map.Entry<String, JNDIReplication> constableJNDIReplicationEntry : replications.entrySet()) {
+            JNDIReplication replication = constableJNDIReplicationEntry.getValue();
             if (replication.isEnabled() && replication.isConnected())
                 replication.bind(name, object);
         }
     }
 
-    private synchronized void unbindReplications(String name) {
-        for (Iterator iter = replications.entrySet().iterator(); iter.hasNext(); ) {
-            JNDIReplication replication = (JNDIReplication) ((Map.Entry) iter.next()).getValue();
+    private void unbindReplications(String name) {
+        for (Map.Entry<String, JNDIReplication> stringJNDIReplicationEntry : replications.entrySet()) {
+            JNDIReplication replication = stringJNDIReplicationEntry.getValue();
             if (replication.isEnabled() && replication.isConnected())
                 replication.unbind(name);
         }
     }
 
-    private synchronized void createReplication(Entity replicationEntity) {
+    private void createReplication(Entity replicationEntity) {
         String name = replicationEntity.getName();
         Property propEnabled = replicationEntity.getProperty("enabled");
         Property propKeepaliveInterval = replicationEntity.getProperty("keepalive-interval");
@@ -256,10 +275,8 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
                 String myName = (String) configObject;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (enabled): name=" + myName + ", oldValue=" + oldValue + ", newValue=" + newValue);
-                synchronized (JNDISwiftletImpl.this) {
-                    JNDIReplication myReplication = (JNDIReplication) replications.get(myName);
-                    myReplication.setEnabled(((Boolean) newValue).booleanValue());
-                }
+                JNDIReplication myReplication = replications.get(myName);
+                myReplication.setEnabled(((Boolean) newValue).booleanValue());
             }
         });
 
@@ -269,10 +286,8 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
                 String myName = (String) configObject;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (keepalive-interval): name=" + myName + ", oldValue=" + oldValue + ", newValue=" + newValue);
-                synchronized (JNDISwiftletImpl.this) {
-                    JNDIReplication myReplication = (JNDIReplication) replications.get(myName);
-                    myReplication.setKeepaliveInterval(((Long) newValue).longValue());
-                }
+                JNDIReplication myReplication = replications.get(myName);
+                myReplication.setKeepaliveInterval(((Long) newValue).longValue());
             }
         });
 
@@ -282,10 +297,8 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
                 String myName = (String) configObject;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (keepalive-name): name=" + myName + ", oldValue=" + oldValue + ", newValue=" + newValue);
-                synchronized (JNDISwiftletImpl.this) {
-                    JNDIReplication myReplication = (JNDIReplication) replications.get(myName);
-                    myReplication.setKeepaliveName((String) newValue);
-                }
+                JNDIReplication myReplication = replications.get(myName);
+                myReplication.setKeepaliveName((String) newValue);
             }
         });
 
@@ -295,14 +308,12 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
                 String myName = (String) configObject;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (destination-context): name=" + myName + ", oldValue=" + oldValue + ", newValue=" + newValue);
-                synchronized (JNDISwiftletImpl.this) {
-                    JNDIReplication myReplication = (JNDIReplication) replications.get(myName);
-                    myReplication.setDestinationContext((String) newValue);
-                    if (myReplication.isEnabled()) {
-                        if (myReplication.isConnected())
-                            myReplication.disconnect();
-                        myReplication.connect();
-                    }
+                JNDIReplication myReplication = replications.get(myName);
+                myReplication.setDestinationContext((String) newValue);
+                if (myReplication.isEnabled()) {
+                    if (myReplication.isConnected())
+                        myReplication.disconnect();
+                    myReplication.connect();
                 }
             }
         });
@@ -313,14 +324,12 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
                 String myName = (String) configObject;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (name-prefix): name=" + myName + ", oldValue=" + oldValue + ", newValue=" + newValue);
-                synchronized (JNDISwiftletImpl.this) {
-                    JNDIReplication myReplication = (JNDIReplication) replications.get(myName);
-                    myReplication.setNamePrefix((String) newValue);
-                    if (myReplication.isEnabled()) {
-                        if (myReplication.isConnected())
-                            myReplication.disconnect();
-                        myReplication.connect();
-                    }
+                JNDIReplication myReplication = replications.get(myName);
+                myReplication.setNamePrefix((String) newValue);
+                if (myReplication.isEnabled()) {
+                    if (myReplication.isConnected())
+                        myReplication.disconnect();
+                    myReplication.connect();
                 }
             }
         });
@@ -330,8 +339,8 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "create replications ...");
         String[] s = replicationList.getEntityNames();
         if (s != null) {
-            for (int i = 0; i < s.length; i++) {
-                createReplication(replicationList.getEntity(s[i]));
+            for (String value : s) {
+                createReplication(replicationList.getEntity(value));
             }
         } else if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "no replications defined");
 
@@ -348,24 +357,22 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
             public void onEntityRemove(Entity parent, Entity delEntity)
                     throws EntityRemoveException {
                 String name = delEntity.getName();
-                synchronized (JNDISwiftletImpl.this) {
-                    JNDIReplication replication = (JNDIReplication) replications.remove(name);
-                    replication.close();
-                }
+                JNDIReplication replication = replications.remove(name);
+                replication.close();
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "onEntityRemove (replication): replication=" + name);
             }
         });
     }
 
-    private synchronized void createAlias(Entity aliasEntity) {
+    private void createAlias(Entity aliasEntity) {
         String name = aliasEntity.getName();
         Property prop = aliasEntity.getProperty("map-to");
         String mapto = (String) prop.getValue();
         aliases.put(name, mapto);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "alias: map '" + name + "' to '" + mapto + "'");
 
-        Object object = getJNDIObject(mapto);
+        Serializable object = getJNDIObject(mapto);
         if (object != null) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "createAlias, registering on external JNDI server");
@@ -384,23 +391,21 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
                 String myName = (String) configObject;
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(getName(), "propertyChanged (alias): alias=" + myName + ", oldValue=" + oldValue + ", newValue=" + newValue);
-                synchronized (JNDISwiftletImpl.this) {
-                    aliases.put(myName, newValue);
-                    if (oldValue != null) {
+                aliases.put(myName, (String) newValue);
+                if (oldValue != null) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(getName(), "propertyChanged (alias): deregistering from external JNDI server");
+                    try {
+                        unbindReplications(myName);
+                    } catch (Exception ignored) {
+                    }
+                    Serializable o = getJNDIObject(myName);
+                    if (o != null) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(getName(), "propertyChanged (alias): deregistering from external JNDI server");
+                            ctx.traceSpace.trace(getName(), "propertyChanged (alias): registering on external JNDI server");
                         try {
-                            unbindReplications(myName);
+                            bindReplications(myName, o);
                         } catch (Exception ignored) {
-                        }
-                        Object o = getJNDIObject(myName);
-                        if (o != null) {
-                            if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(getName(), "propertyChanged (alias): registering on external JNDI server");
-                            try {
-                                bindReplications(myName, o);
-                            } catch (Exception ignored) {
-                            }
                         }
                     }
                 }
@@ -413,8 +418,8 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "create aliases ...");
         String[] s = aliasList.getEntityNames();
         if (s != null) {
-            for (int i = 0; i < s.length; i++) {
-                createAlias(aliasList.getEntity(s[i]));
+            for (String value : s) {
+                createAlias(aliasList.getEntity(value));
             }
         } else if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "no aliases defined");
 
@@ -430,14 +435,12 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
             public void onEntityRemove(Entity parent, Entity delEntity)
                     throws EntityRemoveException {
                 String name = delEntity.getName();
-                synchronized (JNDISwiftletImpl.this) {
-                    aliases.remove(name);
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "onEntityRemove (alias): deregistering from external JNDI server");
-                    try {
-                        unbindReplications(name);
-                    } catch (Exception ignored) {
-                    }
+                aliases.remove(name);
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "onEntityRemove (alias): deregistering from external JNDI server");
+                try {
+                    unbindReplications(name);
+                } catch (Exception ignored) {
                 }
                 if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "onEntityRemove (aliases): alias=" + name);
             }
@@ -501,32 +504,29 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
     }
 
     private void bindExternal() {
-        for (Iterator iter = objects.keySet().iterator(); iter.hasNext(); ) {
-            String key = (String) iter.next();
+        for (String key : objects.keySet()) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "bindExternal: registering generic name on external JNDI server, name=" + key);
-            Object value = objects.get(key);
+            Serializable value = objects.get(key);
             bindReplications(key, value);
             String[] aliases = findAliasesForObject(key);
-            if (aliases != null && aliases.length > 0) {
-                for (int i = 0; i < aliases.length; i++) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "bindExternal, registering on external JNDI server, alias=" + aliases[i]);
-                    bindReplications(aliases[i], value);
-                }
+            for (String alias : aliases) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "bindExternal, registering on external JNDI server, alias=" + alias);
+                bindReplications(alias, value);
             }
         }
     }
 
     private void unbindExternal() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "unbinding aliases from external JNDI server");
-        for (Iterator iter = aliases.keySet().iterator(); iter.hasNext(); ) {
-            unbindReplications((String) iter.next());
+        for (String s : aliases.keySet()) {
+            unbindReplications(s);
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "unbinding generic names from external JNDI server");
-        for (Iterator iter = objects.keySet().iterator(); iter.hasNext(); ) {
-            unbindReplications((String) iter.next());
+        for (String s : objects.keySet()) {
+            unbindReplications(s);
         }
     }
 
@@ -551,7 +551,6 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
 
         ctx.timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
         ctx.threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        ctx.myTP = ctx.threadpoolSwiftlet.getPool(TP_LISTENER);
         ctx.queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
         ctx.topicManager = (TopicManager) SwiftletManager.getInstance().getSwiftlet("sys$topicmanager");
         ctx.jndiSwiftlet = this;
@@ -580,8 +579,8 @@ public class JNDISwiftletImpl extends JNDISwiftlet {
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
         unbindExternal();
-        for (Iterator iter = replications.entrySet().iterator(); iter.hasNext(); ) {
-            ((JNDIReplication) ((Map.Entry) iter.next()).getValue()).close();
+        for (Map.Entry<String, JNDIReplication> stringJNDIReplicationEntry : replications.entrySet()) {
+            stringJNDIReplicationEntry.getValue().close();
         }
         try {
             queueJNDIProcessor.close();

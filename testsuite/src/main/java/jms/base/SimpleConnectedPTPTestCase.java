@@ -17,96 +17,77 @@
 
 package jms.base;
 
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.Session;
+import javax.jms.*;
 
-public class SimpleConnectedPTPTestCase extends PTPTestCase
-{
-  public QueueConnection qc = null;
-  public QueueSession qs = null;
-  public QueueSender sender = null;
-  public QueueReceiver receiver = null;
-  public Queue queue = null;
+public class SimpleConnectedPTPTestCase extends PTPTestCase {
+    public QueueConnection qc = null;
+    public QueueSession qs = null;
+    public QueueSender sender = null;
+    public QueueReceiver receiver = null;
+    public Queue queue = null;
 
-  public SimpleConnectedPTPTestCase(String name)
-  {
-    super(name);
-  }
-
-  protected void beforeCreateSession() throws Exception
-  {
-  }
-
-  protected void beforeCreateSender() throws Exception
-  {
-  }
-
-  protected void beforeCreateReceiver() throws Exception
-  {
-  }
-
-  protected void afterCreateSession() throws Exception
-  {
-  }
-
-  protected void afterCreateSender() throws Exception
-  {
-  }
-
-  protected void afterCreateReceiver() throws Exception
-  {
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-  }
-
-  protected void setUp(boolean transacted, int ackMode) throws Exception
-  {
-    setUp(transacted, ackMode, true, true);
-  }
-
-  protected void setUp(boolean transacted, int ackMode, boolean createSender, boolean createReceiver) throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createQueueConnection(qcfName);
-    String queueName = System.getProperty("jndi.queue");
-    assertNotNull("missing property 'jndi.queue'", queueName);
-    queue = getQueue(queueName);
-    beforeCreateSession();
-    qs = qc.createQueueSession(transacted, ackMode);
-    afterCreateSession();
-    if (createSender)
-    {
-      beforeCreateSender();
-      sender = qs.createSender(queue);
-      afterCreateSender();
+    public SimpleConnectedPTPTestCase(String name) {
+        super(name);
     }
-    if (createReceiver)
-    {
-      beforeCreateReceiver();
-      receiver = qs.createReceiver(queue);
-      afterCreateReceiver();
-    }
-    qc.start();
-  }
 
-  protected void tearDown() throws Exception
-  {
-    qc.close();
-    qc = null;
-    qs = null;
-    sender = null;
-    receiver = null;
-    queue = null;
-    super.tearDown();
-  }
+    protected void beforeCreateSession() throws Exception {
+    }
+
+    protected void beforeCreateSender() throws Exception {
+    }
+
+    protected void beforeCreateReceiver() throws Exception {
+    }
+
+    protected void afterCreateSession() throws Exception {
+    }
+
+    protected void afterCreateSender() throws Exception {
+    }
+
+    protected void afterCreateReceiver() throws Exception {
+    }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+    }
+
+    protected void setUp(boolean transacted, int ackMode) throws Exception {
+        setUp(transacted, ackMode, true, true);
+    }
+
+    protected void setUp(boolean transacted, int ackMode, boolean createSender, boolean createReceiver) throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createQueueConnection(qcfName);
+        String queueName = System.getProperty("jndi.queue");
+        assertNotNull("missing property 'jndi.queue'", queueName);
+        queue = getQueue(queueName);
+        beforeCreateSession();
+        qs = qc.createQueueSession(transacted, ackMode);
+        afterCreateSession();
+        if (createSender) {
+            beforeCreateSender();
+            sender = qs.createSender(queue);
+            afterCreateSender();
+        }
+        if (createReceiver) {
+            beforeCreateReceiver();
+            receiver = qs.createReceiver(queue);
+            afterCreateReceiver();
+        }
+        qc.start();
+    }
+
+    protected void tearDown() throws Exception {
+        qc.close();
+        qc = null;
+        qs = null;
+        sender = null;
+        receiver = null;
+        queue = null;
+        super.tearDown();
+    }
 
 }
 

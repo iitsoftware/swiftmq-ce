@@ -21,29 +21,25 @@ import com.swiftmq.amqp.v100.generated.messaging.message_format.AmqpValue;
 import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 import com.swiftmq.amqp.v100.types.AMQPString;
 
-public class AMQPValueStringMessageFactory implements MessageFactory
-{
-  public AMQPMessage create(int sequenceNo) throws Exception
-  {
-    AMQPMessage msg = new AMQPMessage();
-    msg.setAmqpValue(new AmqpValue(new AMQPString("Message #" + sequenceNo)));
-    return msg;
-  }
+public class AMQPValueStringMessageFactory implements MessageFactory {
+    public AMQPMessage create(int sequenceNo) throws Exception {
+        AMQPMessage msg = new AMQPMessage();
+        msg.setAmqpValue(new AmqpValue(new AMQPString("Message #" + sequenceNo)));
+        return msg;
+    }
 
-  public void verify(AMQPMessage message) throws Exception
-  {
-    AmqpValue value = message.getAmqpValue();
-    if (value == null)
-      throw new Exception(("verify - no AmqpValue section found!"));
-    AMQPString s = (AMQPString) value.getValue();
-    if (!s.getValue().startsWith("Message #"))
-      throw new Exception("verify - invalid value detected: " + s.getValue());
-  }
+    public void verify(AMQPMessage message) throws Exception {
+        AmqpValue value = message.getAmqpValue();
+        if (value == null)
+            throw new Exception(("verify - no AmqpValue section found!"));
+        AMQPString s = (AMQPString) value.getValue();
+        if (!s.getValue().startsWith("Message #"))
+            throw new Exception("verify - invalid value detected: " + s.getValue());
+    }
 
-  public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception
-  {
-    AMQPMessage reply = new AMQPMessage();
-    reply.setAmqpValue(new AmqpValue(new AMQPString("RE: " + ((AMQPString) request.getAmqpValue().getValue()).getValue())));
-    return reply;
-  }
+    public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception {
+        AMQPMessage reply = new AMQPMessage();
+        reply.setAmqpValue(new AmqpValue(new AMQPString("RE: " + ((AMQPString) request.getAmqpValue().getValue()).getValue())));
+        return reply;
+    }
 }

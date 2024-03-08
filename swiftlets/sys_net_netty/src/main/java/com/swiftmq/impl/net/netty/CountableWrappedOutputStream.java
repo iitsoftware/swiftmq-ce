@@ -19,23 +19,24 @@ package com.swiftmq.impl.net.netty;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CountableWrappedOutputStream extends OutputStream
         implements Countable {
     OutputStream out = null;
-    volatile long byteCount = 0;
+    final AtomicLong byteCount = new AtomicLong();
 
     public CountableWrappedOutputStream(OutputStream out) {
         this.out = out;
     }
 
     public void write(byte[] b, int offset, int len) throws IOException {
-        byteCount += len;
+        byteCount.addAndGet(len);
         out.write(b, offset, len);
     }
 
     public void write(int b) throws IOException {
-        byteCount++;
+        byteCount.getAndIncrement();
         out.write(b);
     }
 
@@ -44,14 +45,14 @@ public class CountableWrappedOutputStream extends OutputStream
     }
 
     public void addByteCount(long cnt) {
-        byteCount += cnt;
+        byteCount.addAndGet(cnt);
     }
 
     public long getByteCount() {
-        return byteCount;
+        return byteCount.get();
     }
 
     public void resetByteCount() {
-        byteCount = 0;
+        byteCount.set(0);
     }
 }

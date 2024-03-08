@@ -23,30 +23,26 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
+public class Suite extends ActiveTestSuite {
 
-  public static Test suite()
-  {
-    TestSuite suite = new jms.func.selector.load.concurrent.Suite();
-    suite.addTest(new Sender("send", 0));
-    suite.addTest(new Sender("send", 1));
-    suite.addTest(new Sender("send", 2));
-    suite.addTest(new Sender("send", 3));
-    suite.addTest(new Receiver("receive", 0));
-    suite.addTest(new Receiver("receive", 1));
-    suite.addTest(new Receiver("receive", 2));
-    suite.addTest(new Receiver("receive", 3));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new jms.func.selector.load.concurrent.Suite();
+        suite.addTest(new Sender("send", 0));
+        suite.addTest(new Sender("send", 1));
+        suite.addTest(new Sender("send", 2));
+        suite.addTest(new Sender("send", 3));
+        suite.addTest(new Receiver("receive", 0));
+        suite.addTest(new Receiver("receive", 1));
+        suite.addTest(new Receiver("receive", 2));
+        suite.addTest(new Receiver("receive", 3));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "concurrent";
-  }
+    public String toString() {
+        return "concurrent";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.func.selector.load.concurrent.Suite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.func.selector.load.concurrent.Suite.suite());
+    }
 }

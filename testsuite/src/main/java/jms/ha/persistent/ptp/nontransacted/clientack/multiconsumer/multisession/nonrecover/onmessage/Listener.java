@@ -17,101 +17,85 @@
 
 package jms.ha.persistent.ptp.nontransacted.clientack.multiconsumer.multisession.nonrecover.onmessage;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.MsgNoVerifier;
 import jms.base.SimpleConnectedPTPTestCase;
-import com.swiftmq.tools.concurrent.Semaphore;
 
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.QueueReceiver;
-import javax.jms.QueueSession;
-import javax.jms.Session;
+import javax.jms.*;
 
-public class Listener extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  Exception exception = null;
-  QueueSession session1 = null;
-  QueueSession session2 = null;
-  QueueReceiver receiver1 = null;
-  QueueReceiver receiver2 = null;
+public class Listener extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    Exception exception = null;
+    QueueSession session1 = null;
+    QueueSession session2 = null;
+    QueueReceiver receiver1 = null;
+    QueueReceiver receiver2 = null;
 
-  public Listener(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE, false, true);
-    session1 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
-    session2 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
-    receiver1 = session1.createReceiver(getQueue("testqueue1@router"));
-    receiver2 = session2.createReceiver(getQueue("testqueue2@router"));
-  }
-
-  public void receive()
-  {
-    try
-    {
-      Semaphore sem1 = new Semaphore();
-      receiver.setMessageListener(new MyListener("testqueue", new MsgNoVerifier(this, nMsgs, "no"), sem1));
-      Semaphore sem2 = new Semaphore();
-      receiver1.setMessageListener(new MyListener("testqueue1", new MsgNoVerifier(this, nMsgs, "no"), sem2));
-      Semaphore sem3 = new Semaphore();
-      receiver2.setMessageListener(new MyListener("testqueue2", new MsgNoVerifier(this, nMsgs, "no"), sem3));
-      sem1.waitHere();
-      sem2.waitHere();
-      sem3.waitHere();
-      if (exception != null)
-        throw exception;
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
-    }
-  }
-
-  protected void tearDown() throws Exception
-  {
-    exception = null;
-    session1 = null;
-    session2 = null;
-    receiver1 = null;
-    receiver2 = null;
-    super.tearDown();
-  }
-
-  private class MyListener implements MessageListener
-  {
-    String name = null;
-    MsgNoVerifier verifier = null;
-    Semaphore sem = null;
-    int n = 0;
-
-    public MyListener(String name, MsgNoVerifier verifier, Semaphore sem)
-    {
-      this.name = name;
-      this.verifier = verifier;
-      this.sem = sem;
+    public Listener(String name) {
+        super(name);
     }
 
-    public void onMessage(Message message)
-    {
-      try
-      {
-        System.out.println(name + "/onMessage: " + message.getIntProperty("no"));
-        verifier.add(message);
-        n++;
-        if (n % 10 == 0)
-          message.acknowledge();
-        if (n == nMsgs)
-          sem.notifySingleWaiter();
-      } catch (Exception e)
-      {
-        exception = e;
-        sem.notifySingleWaiter();
-      }
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE, false, true);
+        session1 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
+        session2 = qc.createQueueSession(false, Session.CLIENT_ACKNOWLEDGE);
+        receiver1 = session1.createReceiver(getQueue("testqueue1@router"));
+        receiver2 = session2.createReceiver(getQueue("testqueue2@router"));
     }
-  }
+
+    public void receive() {
+        try {
+            Semaphore sem1 = new Semaphore();
+            receiver.setMessageListener(new MyListener("testqueue", new MsgNoVerifier(this, nMsgs, "no"), sem1));
+            Semaphore sem2 = new Semaphore();
+            receiver1.setMessageListener(new MyListener("testqueue1", new MsgNoVerifier(this, nMsgs, "no"), sem2));
+            Semaphore sem3 = new Semaphore();
+            receiver2.setMessageListener(new MyListener("testqueue2", new MsgNoVerifier(this, nMsgs, "no"), sem3));
+            sem1.waitHere();
+            sem2.waitHere();
+            sem3.waitHere();
+            if (exception != null)
+                throw exception;
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        exception = null;
+        session1 = null;
+        session2 = null;
+        receiver1 = null;
+        receiver2 = null;
+        super.tearDown();
+    }
+
+    private class MyListener implements MessageListener {
+        String name = null;
+        MsgNoVerifier verifier = null;
+        Semaphore sem = null;
+        int n = 0;
+
+        public MyListener(String name, MsgNoVerifier verifier, Semaphore sem) {
+            this.name = name;
+            this.verifier = verifier;
+            this.sem = sem;
+        }
+
+        public void onMessage(Message message) {
+            try {
+                System.out.println(name + "/onMessage: " + message.getIntProperty("no"));
+                verifier.add(message);
+                n++;
+                if (n % 10 == 0)
+                    message.acknowledge();
+                if (n == nMsgs)
+                    sem.notifySingleWaiter();
+            } catch (Exception e) {
+                exception = e;
+                sem.notifySingleWaiter();
+            }
+        }
+    }
 }
 

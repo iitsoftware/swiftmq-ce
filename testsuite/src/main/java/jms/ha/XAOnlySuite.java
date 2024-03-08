@@ -17,27 +17,23 @@
 
 package jms.ha;
 
+import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import junit.extensions.ActiveTestSuite;
 
-public class XAOnlySuite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new XAOnlySuite();
-    suite.addTest(jms.ha.persistent.ps.durable.xa.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.xa.Suite.suite());
-    return suite;
-  }
+public class XAOnlySuite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new XAOnlySuite();
+        suite.addTest(jms.ha.persistent.ps.durable.xa.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.xa.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "jms/ha";
-  }
+    public String toString() {
+        return "jms/ha";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }

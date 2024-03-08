@@ -17,35 +17,32 @@
 
 package jms.xa;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xa.onephasecommit.Suite.suite());
-    suite.addTest(jms.xa.preparecommit.Suite.suite());
-    suite.addTest(jms.xa.preparerollback.Suite.suite());
-    suite.addTest(jms.xa.rollback.Suite.suite());
-    suite.addTest(jms.xa.endfailonephasecommit.Suite.suite());
-    suite.addTest(jms.xa.endfailprepare.Suite.suite());
-    suite.addTest(jms.xa.endfailrollback.Suite.suite());
-    suite.addTest(jms.xa.noendrollback.Suite.suite());
-    suite.addTest(jms.xa.suspendresume.Suite.suite());
-    suite.addTest(jms.xa.recover.Suite.suite());
-    suite.addTest(jms.xa.specials.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xa.onephasecommit.Suite.suite());
+        suite.addTest(jms.xa.preparecommit.Suite.suite());
+        suite.addTest(jms.xa.preparerollback.Suite.suite());
+        suite.addTest(jms.xa.rollback.Suite.suite());
+        suite.addTest(jms.xa.endfailonephasecommit.Suite.suite());
+        suite.addTest(jms.xa.endfailprepare.Suite.suite());
+        suite.addTest(jms.xa.endfailrollback.Suite.suite());
+        suite.addTest(jms.xa.noendrollback.Suite.suite());
+        suite.addTest(jms.xa.suspendresume.Suite.suite());
+        suite.addTest(jms.xa.recover.Suite.suite());
+        suite.addTest(jms.xa.specials.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "xa";
-  }
+    public String toString() {
+        return "xa";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

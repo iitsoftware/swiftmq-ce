@@ -17,26 +17,23 @@
 
 package jms.xaunified.suspendresume.singletx.multidest.ptp;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Tester("testNP"));
-    suite.addTest(new Tester("testP"));
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Tester("testNP"));
+        suite.addTest(new Tester("testP"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "ptp";
-  }
+    public String toString() {
+        return "ptp";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

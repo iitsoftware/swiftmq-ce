@@ -19,40 +19,43 @@ package com.swiftmq.impl.scheduler.standard;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SchedulerCalendar implements Serializable {
     public static int LAST_DAY_OF_MONTH = 32;
     static final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-    static Map months = new HashMap();
+    static final Map<String, Integer> months = new HashMap<>();
 
     static {
-        months.put("January", new Integer(Calendar.JANUARY));
-        months.put("February", new Integer(Calendar.FEBRUARY));
-        months.put("March", new Integer(Calendar.MARCH));
-        months.put("April", new Integer(Calendar.APRIL));
-        months.put("May", new Integer(Calendar.MAY));
-        months.put("June", new Integer(Calendar.JUNE));
-        months.put("July", new Integer(Calendar.JULY));
-        months.put("August", new Integer(Calendar.AUGUST));
-        months.put("September", new Integer(Calendar.SEPTEMBER));
-        months.put("October", new Integer(Calendar.OCTOBER));
-        months.put("November", new Integer(Calendar.NOVEMBER));
-        months.put("December", new Integer(Calendar.DECEMBER));
+        months.put("January", Calendar.JANUARY);
+        months.put("February", Calendar.FEBRUARY);
+        months.put("March", Calendar.MARCH);
+        months.put("April", Calendar.APRIL);
+        months.put("May", Calendar.MAY);
+        months.put("June", Calendar.JUNE);
+        months.put("July", Calendar.JULY);
+        months.put("August", Calendar.AUGUST);
+        months.put("September", Calendar.SEPTEMBER);
+        months.put("October", Calendar.OCTOBER);
+        months.put("November", Calendar.NOVEMBER);
+        months.put("December", Calendar.DECEMBER);
     }
 
     String name = null;
     boolean exclude = true;
     String baseCalendarName = null;
-    boolean weekDays[] = new boolean[7];
-    boolean monthDays[] = new boolean[32];
-    Map annualDays = new HashMap();
-    Map dateRanges = new HashMap();
-    boolean enableWeekDays = false;
-    boolean enableMonthDays = false;
-    boolean enableMonthDayLast = false;
-    boolean enableAnnualDays = false;
-    boolean enableDateRanges = false;
+    boolean[] weekDays = new boolean[7];
+    boolean[] monthDays = new boolean[32];
+    Map<String, Object> annualDays = new HashMap<>();
+    Map<String, DateRange> dateRanges = new HashMap<>();
+    boolean enableWeekDays;
+    boolean enableMonthDays;
+    boolean enableMonthDayLast;
+    boolean enableAnnualDays;
+    boolean enableDateRanges;
 
     public SchedulerCalendar(String name, boolean exclude, String baseCalendarName,
                              boolean enableWeekDays, boolean enableMonthDays, boolean enableMonthDayLast, boolean enableAnnualDays, boolean enableDateRanges) {
@@ -107,7 +110,7 @@ public class SchedulerCalendar implements Serializable {
     }
 
     public void addAnnualDay(String name, int day, String month) {
-        addAnnualDay(name, day, ((Integer) months.get(month)).intValue());
+        addAnnualDay(name, day, months.get(month));
     }
 
     public void addAnnualDay(String name, int day, int month) {
@@ -128,8 +131,8 @@ public class SchedulerCalendar implements Serializable {
 
     private boolean isValidAnnualDays(boolean prevValid, Calendar cal) {
         boolean valid = prevValid;
-        for (Iterator iter = annualDays.entrySet().iterator(); iter.hasNext(); ) {
-            AnnualDay ad = (AnnualDay) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, Object> stringObjectEntry : annualDays.entrySet()) {
+            AnnualDay ad = (AnnualDay) stringObjectEntry.getValue();
             if (ad.day == cal.get(Calendar.DAY_OF_MONTH) && ad.month == cal.get(Calendar.MONTH)) {
                 valid = !exclude;
                 break;
@@ -141,8 +144,8 @@ public class SchedulerCalendar implements Serializable {
     private boolean isValidDateRanges(boolean prevValid, Calendar cal) {
         String s = fmt.format(cal.getTime());
         boolean valid = prevValid;
-        for (Iterator iter = dateRanges.entrySet().iterator(); iter.hasNext(); ) {
-            DateRange dr = (DateRange) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, DateRange> stringDateRangeEntry : dateRanges.entrySet()) {
+            DateRange dr = stringDateRangeEntry.getValue();
             if (dr.from.compareTo(s) <= 0 && dr.to.compareTo(s) >= 0) {
                 valid = !exclude;
                 break;
@@ -224,7 +227,7 @@ public class SchedulerCalendar implements Serializable {
                 "]";
     }
 
-    private class AnnualDay implements Serializable {
+    private static class AnnualDay implements Serializable {
         int day = 0;
         int month = 0;
 
@@ -238,7 +241,7 @@ public class SchedulerCalendar implements Serializable {
         }
     }
 
-    private class DateRange implements Serializable {
+    private static class DateRange implements Serializable {
         String from = null;
         String to = null;
 

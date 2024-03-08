@@ -25,11 +25,17 @@ import com.swiftmq.swiftlet.log.LogSwiftlet;
 import com.swiftmq.swiftlet.queue.QueueManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.util.SwiftUtilities;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
-import org.magicwerk.brownies.collections.GapList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
     static final String ANONYMOUS_USER = "anonymous";
@@ -42,17 +48,17 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
     TraceSpace traceSpace = null;
     LogSwiftlet logSwiftlet = null;
     QueueManager queueManager = null;
-    long actLoginId = 0;
+    final AtomicLong actLoginId = new AtomicLong();
     ResourceLimitGroup publicRLGroup = null;
     Group publicGroup = null;
-    Map rlgroups = Collections.synchronizedMap(new HashMap());
-    Map groups = Collections.synchronizedMap(new HashMap());
-    Map users = Collections.synchronizedMap(new HashMap());
-    boolean authenticationOff = true;
-    boolean passwordCheckOnly = false;
+    Map<String, ResourceLimitGroup> rlgroups = new ConcurrentHashMap<>();
+    Map<String, Group> groups = new ConcurrentHashMap<>();
+    Map<String, User> users = new ConcurrentHashMap<>();
+    final AtomicBoolean authenticationOff = new AtomicBoolean(true);
+    final AtomicBoolean passwordCheckOnly = new AtomicBoolean(false);
     String masterPassword = null;
     boolean useEncryption = false;
-    List<AuthenticationDelegate> delegates = new GapList<AuthenticationDelegate>();
+    List<AuthenticationDelegate> delegates = new ConcurrentList<>(new ArrayList<>());
 
     private void logMessage(String message) {
         if (traceSpace.enabled) traceSpace.trace(getName(), message);
@@ -70,7 +76,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public String getPassword(String userName)
             throws AuthenticationException {
-        if (!authenticationOff) {
+        if (!authenticationOff.get()) {
             if (userName == null || userName.equals(ANONYMOUS_USER))
                 throw new AuthenticationException("Login as anonymous user is disabled!");
         }
@@ -86,7 +92,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyHostLogin(String userName, String hostname)
             throws AuthenticationException, ResourceLimitException {
-        if (authenticationOff)
+        if (authenticationOff.get())
             return;
         if (userName == null)
             userName = ANONYMOUS_USER;
@@ -103,7 +109,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
     }
 
     public void logout(String userName, Object loginId) {
-        if (authenticationOff)
+        if (authenticationOff.get())
             return;
         if (userName == null)
             userName = ANONYMOUS_USER;
@@ -122,7 +128,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyQueueSenderSubscription(String queueName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff || passwordCheckOnly)
+        if (authenticationOff.get() || passwordCheckOnly.get())
             return;
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -143,7 +149,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyQueueReceiverSubscription(String queueName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff || passwordCheckOnly)
+        if (authenticationOff.get() || passwordCheckOnly.get())
             return;
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -164,7 +170,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyQueueBrowserCreation(String queueName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff || passwordCheckOnly)
+        if (authenticationOff.get() || passwordCheckOnly.get())
             return;
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -185,13 +191,11 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyTopicSenderSubscription(String topicName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff || passwordCheckOnly)
+        if (authenticationOff.get() || passwordCheckOnly.get())
             return;
-        synchronized (delegates) {
-            for (AuthenticationDelegate delegate : delegates) {
-                if (delegate.isSendGranted(topicName))
-                    return;
-            }
+        for (AuthenticationDelegate delegate : delegates) {
+            if (delegate.isSendGranted(topicName))
+                return;
         }
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -212,13 +216,11 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyTopicReceiverSubscription(String topicName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff || passwordCheckOnly)
+        if (authenticationOff.get() || passwordCheckOnly.get())
             return;
-        synchronized (delegates) {
-            for (AuthenticationDelegate delegate : delegates) {
-                if (delegate.isReceiveGranted(topicName))
-                    return;
-            }
+        for (AuthenticationDelegate delegate : delegates) {
+            if (delegate.isReceiveGranted(topicName))
+                return;
         }
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -239,13 +241,11 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     public void verifyTopicDurableSubscriberCreation(String topicName, Object loginId)
             throws AuthenticationException {
-        if (authenticationOff || passwordCheckOnly)
+        if (authenticationOff.get() || passwordCheckOnly.get())
             return;
-        synchronized (delegates) {
-            for (AuthenticationDelegate delegate : delegates) {
-                if (delegate.isDurableGranted(topicName))
-                    return;
-            }
+        for (AuthenticationDelegate delegate : delegates) {
+            if (delegate.isDurableGranted(topicName))
+                return;
         }
         LoginId id = (LoginId) loginId;
         User user = (User) users.get(id.getUserName());
@@ -266,22 +266,18 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
 
     @Override
     public void addTopicAuthenticationDelegate(AuthenticationDelegate authenticationDelegate) {
-        synchronized (delegates) {
-            delegates.add(authenticationDelegate);
-        }
+        delegates.add(authenticationDelegate);
     }
 
     @Override
     public void removeTopicAuthenticationDelegate(AuthenticationDelegate authenticationDelegate) {
-        synchronized (delegates) {
-            delegates.remove(authenticationDelegate);
-        }
+        delegates.remove(authenticationDelegate);
     }
 
     protected Object createLoginId(String userName) {
         if (queueManager == null)
             queueManager = (QueueManager) SwiftletManager.getInstance().getSwiftlet("sys$queuemanager");
-        String id = queueManager != null ? SwiftletManager.getInstance().getRouterName() + (actLoginId++) : String.valueOf(actLoginId++);
+        String id = queueManager != null ? SwiftletManager.getInstance().getRouterName() + (actLoginId.getAndIncrement()) : String.valueOf(actLoginId.getAndIncrement());
         return new LoginId(id, userName == null ? ANONYMOUS_USER : userName);
     }
 
@@ -842,19 +838,19 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
         createUsers((EntityList) config.getEntity("users"));
 
         Property authProp = config.getProperty("authentication-enabled");
-        authenticationOff = !((Boolean) authProp.getValue()).booleanValue();
+        authenticationOff.set(!((Boolean) authProp.getValue()).booleanValue());
         Property pwOnlyProp = config.getProperty("password-check-only");
-        passwordCheckOnly = ((Boolean) pwOnlyProp.getValue()).booleanValue();
+        passwordCheckOnly.set(((Boolean) pwOnlyProp.getValue()).booleanValue());
         if (traceSpace.enabled)
-            traceSpace.trace(getName(), "startup, authentication is " + (authenticationOff ? "OFF" : "ON"));
+            traceSpace.trace(getName(), "startup, authentication is " + (authenticationOff.get() ? "OFF" : "ON"));
         authProp.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 if (traceSpace.enabled)
                     traceSpace.trace(getName(), "propertyChanged (authentication.enabled): oldValue=" + oldValue + ", newValue=" + newValue);
-                authenticationOff = !((Boolean) newValue).booleanValue();
+                authenticationOff.set(!((Boolean) newValue).booleanValue());
                 if (traceSpace.enabled)
-                    traceSpace.trace(getName(), "authentication is " + (authenticationOff ? "OFF" : "ON"));
+                    traceSpace.trace(getName(), "authentication is " + (authenticationOff.get() ? "OFF" : "ON"));
             }
         });
         if (traceSpace.enabled) traceSpace.trace(getName(), "startup: done.");
@@ -871,7 +867,7 @@ public class AuthenticationSwiftletImpl extends AuthenticationSwiftlet {
         users.clear();
         publicRLGroup = null;
         publicGroup = null;
-        authenticationOff = true;
+        authenticationOff.set(true);
         config = null;
         if (traceSpace.enabled) traceSpace.trace(getName(), "shutdown: done.");
     }

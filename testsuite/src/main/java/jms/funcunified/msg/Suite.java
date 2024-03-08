@@ -17,31 +17,28 @@
 
 package jms.funcunified.msg;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Messages("testMessageImpl"));
-    suite.addTest(new Messages("testBytesMessageImpl"));
-    suite.addTest(new Messages("testStreamMessageImpl"));
-    suite.addTest(new Messages("testMapMessageImpl"));
-    suite.addTest(new Messages("testObjectMessageImpl"));
-    suite.addTest(new Messages("testTextMessageImpl"));
-    suite.addTest(new Messages("testTextMessageImplLargeText"));
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Messages("testMessageImpl"));
+        suite.addTest(new Messages("testBytesMessageImpl"));
+        suite.addTest(new Messages("testStreamMessageImpl"));
+        suite.addTest(new Messages("testMapMessageImpl"));
+        suite.addTest(new Messages("testObjectMessageImpl"));
+        suite.addTest(new Messages("testTextMessageImpl"));
+        suite.addTest(new Messages("testTextMessageImplLargeText"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Message Properties/Values";
-  }
+    public String toString() {
+        return "Message Properties/Values";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

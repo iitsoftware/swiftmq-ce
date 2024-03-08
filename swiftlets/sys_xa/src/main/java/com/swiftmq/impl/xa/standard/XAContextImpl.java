@@ -21,16 +21,17 @@ import com.swiftmq.jms.XidImpl;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityRemoveException;
 import com.swiftmq.swiftlet.xa.XAContext;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 
-import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class XAContextImpl implements XAContext {
-    static int cnt = 1;
+    static final AtomicWrappingCounterInteger cnt = new AtomicWrappingCounterInteger(1);
     SwiftletContext ctx = null;
     XidImpl xid = null;
     String signature = null;
-    boolean recovered = false;
+    final AtomicBoolean recovered = new AtomicBoolean(false);
 
     public XAContextImpl(SwiftletContext ctx, XidImpl xid) {
         this.ctx = ctx;
@@ -38,19 +39,14 @@ public abstract class XAContextImpl implements XAContext {
         signature = xid.toString();
     }
 
-    protected static synchronized int incCount() {
-        int i = cnt;
-        if (cnt == Integer.MAX_VALUE)
-            cnt = 1;
-        else
-            cnt++;
-        return i;
+    protected static int incCount() {
+        return cnt.getAndIncrement();
     }
 
     private Entity lookupEntity(String signature) {
         Map entities = ctx.preparedUsageList.getEntities();
-        for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-            Entity xidEntity = (Entity) ((Map.Entry) iter.next()).getValue();
+        for (Object o : entities.entrySet()) {
+            Entity xidEntity = (Entity) ((Map.Entry<?, ?>) o).getValue();
             if ((xidEntity.getProperty("xid").getValue()).equals(signature))
                 return xidEntity;
         }
@@ -67,11 +63,11 @@ public abstract class XAContextImpl implements XAContext {
     }
 
     public void setRecovered(boolean recovered) {
-        this.recovered = recovered;
+        this.recovered.set(recovered);
     }
 
     public boolean isRecovered() {
-        return recovered;
+        return recovered.get();
     }
 
     public XidImpl getXid() {

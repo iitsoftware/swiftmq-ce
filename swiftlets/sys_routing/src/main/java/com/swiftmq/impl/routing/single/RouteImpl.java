@@ -20,17 +20,19 @@ package com.swiftmq.impl.routing.single;
 import com.swiftmq.impl.routing.single.schedule.Scheduler;
 import com.swiftmq.swiftlet.routing.Route;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class RouteImpl extends Route {
-    String destination = null;
-    String outboundQueueName = null;
-    boolean staticRoute = false;
-    Scheduler scheduler = null;
+    private String destination = null;
+    private String outboundQueueName = null;
+    private boolean staticRoute = false;
+    private final AtomicReference<Scheduler> scheduler = new AtomicReference<>();
 
     public RouteImpl(String destination, String outboundQueueName, boolean staticRoute, Scheduler scheduler) {
         this.destination = destination;
         this.outboundQueueName = outboundQueueName;
         this.staticRoute = staticRoute;
-        this.scheduler = scheduler;
+        this.scheduler.set(scheduler);
     }
 
     public String getDestination() {
@@ -49,16 +51,17 @@ public class RouteImpl extends Route {
         this.staticRoute = staticRoute;
     }
 
-    public synchronized Scheduler getScheduler() {
-        return scheduler;
+    public Scheduler getScheduler() {
+        return scheduler.get();
     }
 
-    public synchronized void setScheduler(Scheduler scheduler) {
-        this.scheduler = scheduler;
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler.set(scheduler);
     }
 
-    public synchronized boolean isActive() {
-        return scheduler == null ? false : scheduler.getNumberConnections() > 0;
+    public boolean isActive() {
+        Scheduler s = scheduler.get();
+        return s != null && s.getNumberConnections() > 0;
     }
 
     public String toString() {

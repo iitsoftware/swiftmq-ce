@@ -27,54 +27,46 @@ import javax.jms.TopicPublisher;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-public class Sender extends SimpleConnectedXAPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  String topicName = null;
-  TopicPublisher myPublisher = null;
+public class Sender extends SimpleConnectedXAPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    String topicName = null;
+    TopicPublisher myPublisher = null;
 
-  public Sender(String name, String topicName)
-  {
-    super(name);
-    this.topicName = topicName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp(false, false);
-    myPublisher = ts.getTopicSession().createPublisher(getTopic(topicName));
-    pause(20000);
-  }
-
-  public void send()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Xid xid = new XidImpl(getClass().getName());
-        xares.start(xid, XAResource.TMNOFLAGS);
-        msg.setIntProperty("no", i);
-        msg.setText("Msg: " + i);
-        myPublisher.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        xares.end(xid, XAResource.TMSUCCESS);
-        xares.prepare(xid);
-        xares.commit(xid, false);
-      }
-
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public Sender(String name, String topicName) {
+        super(name);
+        this.topicName = topicName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    topicName = null;
-    myPublisher = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp(false, false);
+        myPublisher = ts.getTopicSession().createPublisher(getTopic(topicName));
+        pause(20000);
+    }
+
+    public void send() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < nMsgs; i++) {
+                Xid xid = new XidImpl(getClass().getName());
+                xares.start(xid, XAResource.TMNOFLAGS);
+                msg.setIntProperty("no", i);
+                msg.setText("Msg: " + i);
+                myPublisher.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                xares.end(xid, XAResource.TMSUCCESS);
+                xares.prepare(xid);
+                xares.commit(xid, false);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        topicName = null;
+        myPublisher = null;
+        super.tearDown();
+    }
 }
 

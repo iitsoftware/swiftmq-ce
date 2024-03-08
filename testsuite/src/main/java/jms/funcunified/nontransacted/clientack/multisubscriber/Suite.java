@@ -18,36 +18,33 @@
 package jms.funcunified.nontransacted.clientack.multisubscriber;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Subscriber("testSubscribe"));
-    suite.addTest(new Publisher("testPublishNP"));
-    suite.addTest(new Publisher("testPublishP"));
-    return suite;
-  }
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Subscriber("testSubscribe"));
+        suite.addTest(new Publisher("testPublishNP"));
+        suite.addTest(new Publisher("testPublishP"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "Multiple Consumer";
-  }
+    public String toString() {
+        return "Multiple Consumer";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

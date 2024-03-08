@@ -19,12 +19,12 @@ package com.swiftmq.impl.mqtt.pubsub;
 
 import com.swiftmq.impl.mqtt.SwiftletContext;
 import com.swiftmq.impl.mqtt.session.MQTTSession;
-import com.swiftmq.jms.BytesMessageImpl;
-import com.swiftmq.jms.MessageImpl;
-import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.impl.mqtt.v311.netty.buffer.ByteBuf;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttFixedHeader;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttPublishMessage;
+import com.swiftmq.jms.BytesMessageImpl;
+import com.swiftmq.jms.MessageImpl;
+import com.swiftmq.jms.TopicImpl;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 
@@ -47,7 +47,7 @@ public class Producer {
         ctx.topicManager.verifyTopic(topic);
         sender = ctx.queueManager.createQueueSender(topic.getQueueName(), session.getMqttConnection().getActiveLogin());
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", created");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", created");
     }
 
     public void send(MqttPublishMessage mqttPublishMessage) throws Exception {
@@ -70,12 +70,12 @@ public class Producer {
         transaction = sender.createTransaction();
         transaction.putMessage(bytesMessage);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", sent: " + bytesMessage);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", sent: " + bytesMessage);
     }
 
     public void commit() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", commit");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", commit");
         if (transaction != null)
             transaction.commit();
         sender.close();

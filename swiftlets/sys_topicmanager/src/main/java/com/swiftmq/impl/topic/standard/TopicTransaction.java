@@ -29,13 +29,12 @@ import java.util.List;
 
 public class TopicTransaction {
     TopicManagerContext ctx = null;
-    int transactionId;
+    int transactionId = -1;
     TopicSubscriberTransaction[] subscriberTransactions = null;
     CompositeStoreTransaction parentTx = null;
 
-    protected TopicTransaction(TopicManagerContext ctx, int transactionId) {
+    protected TopicTransaction(TopicManagerContext ctx) {
         this.ctx = ctx;
-        this.transactionId = transactionId;
     }
 
     public void setParentTx(CompositeStoreTransaction parentTx) {
@@ -44,8 +43,7 @@ public class TopicTransaction {
 
     public void lockQueues() {
         if (subscriberTransactions != null) {
-            for (int i = 0; i < subscriberTransactions.length; i++) {
-                TopicSubscriberTransaction sub = subscriberTransactions[i];
+            for (TopicSubscriberTransaction sub : subscriberTransactions) {
                 if (sub != null)
                     sub.getTransaction().lockQueue();
             }
@@ -54,13 +52,16 @@ public class TopicTransaction {
 
     public void unlockQueues() {
         if (subscriberTransactions != null) {
-            for (int i = 0; i < subscriberTransactions.length; i++) {
-                TopicSubscriberTransaction sub = subscriberTransactions[i];
+            for (TopicSubscriberTransaction sub : subscriberTransactions) {
                 if (sub != null)
-                    sub.getTransaction().unlockQueue(false);   // is is never called async
+                    sub.getTransaction().unlockQueue(false);   // it is never called async
             }
             subscriberTransactions = null;
         }
+    }
+
+    public void setTransactionId(int transactionId) {
+        this.transactionId = transactionId;
     }
 
     protected int getTransactionId() {
@@ -86,8 +87,7 @@ public class TopicTransaction {
     protected void prepare(XidImpl globalTxId) throws Exception {
         if (subscriberTransactions == null)
             return;
-        for (int i = 0; i < subscriberTransactions.length; i++) {
-            TopicSubscriberTransaction sub = subscriberTransactions[i];
+        for (TopicSubscriberTransaction sub : subscriberTransactions) {
             if (sub != null) {
                 try {
                     sub.prepare(globalTxId);
@@ -101,8 +101,7 @@ public class TopicTransaction {
         if (subscriberTransactions == null)
             return 0;
         long delay = 0;
-        for (int i = 0; i < subscriberTransactions.length; i++) {
-            TopicSubscriberTransaction sub = subscriberTransactions[i];
+        for (TopicSubscriberTransaction sub : subscriberTransactions) {
             if (sub != null) {
                 try {
                     delay = Math.max(delay, sub.commit(globalTxId));
@@ -117,8 +116,7 @@ public class TopicTransaction {
     protected void rollback(XidImpl globalTxId) throws Exception {
         if (subscriberTransactions == null)
             return;
-        for (int i = 0; i < subscriberTransactions.length; i++) {
-            TopicSubscriberTransaction sub = subscriberTransactions[i];
+        for (TopicSubscriberTransaction sub : subscriberTransactions) {
             if (sub != null)
                 try {
                     sub.rollback(globalTxId);
@@ -136,9 +134,8 @@ public class TopicTransaction {
 
     private long noParentTxCommit() throws Exception {
         long delay = 0;
-        List durPersSubs = new ArrayList(subscriberTransactions.length);
-        for (int i = 0; i < subscriberTransactions.length; i++) {
-            TopicSubscriberTransaction sub = subscriberTransactions[i];
+        List<TopicSubscriberTransaction> durPersSubs = new ArrayList<>(subscriberTransactions.length);
+        for (TopicSubscriberTransaction sub : subscriberTransactions) {
             if (sub != null) {
                 TopicSubscription subscription = sub.getTopicSubscription();
                 if (subscription.isRemote() || !subscription.isDurable() || !sub.isPersistentMessageIncluded()) {
@@ -153,7 +150,7 @@ public class TopicTransaction {
         int size = durPersSubs.size();
         if (size > 0) {
             if (size == 1) {
-                TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(0);
+                TopicSubscriberTransaction sub = durPersSubs.get(0);
                 try {
                     delay = Math.max(delay, sub.commit());
                 } catch (QueueTransactionClosedException ignored) {
@@ -162,7 +159,7 @@ public class TopicTransaction {
                 int lastLocked = -1;
                 boolean spaceLeft = true;
                 for (int i = 0; i < size; i++) {
-                    TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                    TopicSubscriberTransaction sub = durPersSubs.get(i);
                     sub.getTransaction().lockQueue();
                     lastLocked = i;
                     if (!sub.getTransaction().hasSpaceLeft()) {
@@ -172,7 +169,7 @@ public class TopicTransaction {
                 }
                 if (!spaceLeft) {
                     for (int i = 0; i <= lastLocked; i++) {
-                        TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                        TopicSubscriberTransaction sub = durPersSubs.get(i);
                         sub.getTransaction().unlockQueue(false);
                     }
                     throw new QueueLimitException("Maximum Messages in at least one Durable Subscriber Queue reached!");
@@ -180,7 +177,7 @@ public class TopicTransaction {
                 CompositeStoreTransaction compositeTx = ctx.storeSwiftlet.createCompositeStoreTransaction();
                 try {
                     for (int i = 0; i < size; i++) {
-                        TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                        TopicSubscriberTransaction sub = durPersSubs.get(i);
                         try {
                             sub.getTransaction().setCompositeStoreTransaction(compositeTx);
                             delay = Math.max(delay, sub.commit());
@@ -206,8 +203,7 @@ public class TopicTransaction {
         boolean wasReferencable = parentTx.isReferencable();
         parentTx.setReferencable(true);
         long delay = 0;
-        for (int i = 0; i < subscriberTransactions.length; i++) {
-            TopicSubscriberTransaction sub = subscriberTransactions[i];
+        for (TopicSubscriberTransaction sub : subscriberTransactions) {
             if (sub != null) {
                 try {
                     sub.getTransaction().setCompositeStoreTransaction(parentTx);
@@ -225,9 +221,8 @@ public class TopicTransaction {
     protected void commit(AsyncCompletionCallback callback) {
         final DelayCollector delayCollector = new DelayCollector(callback);
         if (subscriberTransactions != null) {
-            final List durPersSubs = new ArrayList(subscriberTransactions.length);
-            for (int i = 0; i < subscriberTransactions.length; i++) {
-                TopicSubscriberTransaction sub = subscriberTransactions[i];
+            final List<TopicSubscriberTransaction> durPersSubs = new ArrayList<>(subscriberTransactions.length);
+            for (TopicSubscriberTransaction sub : subscriberTransactions) {
                 if (sub != null) {
                     TopicSubscription subscription = sub.getTopicSubscription();
                     if (subscription.isRemote() || !subscription.isDurable() || !sub.isPersistentMessageIncluded()) {
@@ -246,7 +241,7 @@ public class TopicTransaction {
             if (size > 0) {
                 // Only 1 subscriber, direct commit
                 if (size == 1) {
-                    TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(0);
+                    TopicSubscriberTransaction sub = durPersSubs.get(0);
                     delayCollector.incNumberCallbacks();
                     sub.commit(new AsyncCompletionCallback() {
                         public void done(boolean success) {
@@ -258,7 +253,7 @@ public class TopicTransaction {
                     int lastLocked = -1;
                     boolean spaceLeft = true;
                     for (int i = 0; i < size; i++) {
-                        TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                        TopicSubscriberTransaction sub = durPersSubs.get(i);
                         sub.getTransaction().lockQueue();
                         lastLocked = i;
                         if (!sub.getTransaction().hasSpaceLeft()) {
@@ -268,7 +263,7 @@ public class TopicTransaction {
                     }
                     if (!spaceLeft) {
                         for (int i = 0; i <= lastLocked; i++) {
-                            TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                            TopicSubscriberTransaction sub = durPersSubs.get(i);
                             sub.getTransaction().unlockQueue(false);
                         }
                         callback.setException(new QueueLimitException("Maximum Messages in at least one Durable Subscriber Queue reached!"));
@@ -277,7 +272,7 @@ public class TopicTransaction {
                     }
                     CompositeStoreTransaction compositeTx = ctx.storeSwiftlet.createCompositeStoreTransaction();
                     for (int i = 0; i < size; i++) {
-                        TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                        TopicSubscriberTransaction sub = durPersSubs.get(i);
                         sub.getTransaction().setCompositeStoreTransaction(compositeTx);
                         try {
                             delay = Math.max(delay, sub.commit());
@@ -291,7 +286,7 @@ public class TopicTransaction {
                     AsyncCompletionCallback cb = new AsyncCompletionCallback() {
                         public void done(boolean success) {
                             for (int i = 0; i < size; i++) {
-                                TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                                TopicSubscriberTransaction sub = durPersSubs.get(i);
                                 sub.getTransaction().unmarkAsyncActive();
                             }
                             delayCollector.done(this, success);
@@ -309,9 +304,8 @@ public class TopicTransaction {
     protected void rollback() throws Exception {
         if (subscriberTransactions == null)
             return;
-        List durPersSubs = new ArrayList(subscriberTransactions.length);
-        for (int i = 0; i < subscriberTransactions.length; i++) {
-            TopicSubscriberTransaction sub = subscriberTransactions[i];
+        List<TopicSubscriberTransaction> durPersSubs = new ArrayList<>(subscriberTransactions.length);
+        for (TopicSubscriberTransaction sub : subscriberTransactions) {
             if (sub != null) {
                 TopicSubscription subscription = sub.getTopicSubscription();
                 if (subscription.isRemote() || !subscription.isDurable() || !sub.isPersistentMessageIncluded()) {
@@ -326,19 +320,19 @@ public class TopicTransaction {
         int size = durPersSubs.size();
         if (size > 0) {
             if (size == 1) {
-                TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(0);
+                TopicSubscriberTransaction sub = durPersSubs.get(0);
                 try {
                     sub.rollback();
                 } catch (QueueTransactionClosedException ignored) {
                 }
             } else {
                 for (int i = 0; i < size; i++) {
-                    TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                    TopicSubscriberTransaction sub = durPersSubs.get(i);
                     sub.getTransaction().lockQueue();
                 }
                 CompositeStoreTransaction compositeTx = ctx.storeSwiftlet.createCompositeStoreTransaction();
                 for (int i = 0; i < size; i++) {
-                    TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                    TopicSubscriberTransaction sub = durPersSubs.get(i);
                     try {
                         sub.getTransaction().setCompositeStoreTransaction(compositeTx);
                         sub.rollback();
@@ -348,7 +342,7 @@ public class TopicTransaction {
                 }
                 compositeTx.commitTransaction();
                 for (int i = 0; i < size; i++) {
-                    TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                    TopicSubscriberTransaction sub = durPersSubs.get(i);
                     sub.getTransaction().unlockQueue(false);
                 }
             }
@@ -359,9 +353,8 @@ public class TopicTransaction {
     protected void rollback(AsyncCompletionCallback callback) {
         final RollbackJoin join = new RollbackJoin(callback);
         if (subscriberTransactions != null) {
-            final List durPersSubs = new ArrayList(subscriberTransactions.length);
-            for (int i = 0; i < subscriberTransactions.length; i++) {
-                TopicSubscriberTransaction sub = subscriberTransactions[i];
+            final List<TopicSubscriberTransaction> durPersSubs = new ArrayList<>(subscriberTransactions.length);
+            for (TopicSubscriberTransaction sub : subscriberTransactions) {
                 if (sub != null) {
                     TopicSubscription subscription = sub.getTopicSubscription();
                     if (subscription.isRemote() || !subscription.isDurable() || !sub.isPersistentMessageIncluded()) {
@@ -374,17 +367,17 @@ public class TopicTransaction {
             final int size = durPersSubs.size();
             if (size > 0) {
                 if (size == 1) {
-                    TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(0);
+                    TopicSubscriberTransaction sub = durPersSubs.get(0);
                     join.incNumberCallbacks();
                     sub.rollback(new RollbackCallback(join));
                 } else {
                     for (int i = 0; i < size; i++) {
-                        TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                        TopicSubscriberTransaction sub = durPersSubs.get(i);
                         sub.getTransaction().lockQueue();
                     }
                     CompositeStoreTransaction compositeTx = ctx.storeSwiftlet.createCompositeStoreTransaction();
                     for (int i = 0; i < size; i++) {
-                        TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                        TopicSubscriberTransaction sub = durPersSubs.get(i);
                         try {
                             sub.getTransaction().setCompositeStoreTransaction(compositeTx);
                             sub.rollback();
@@ -397,7 +390,7 @@ public class TopicTransaction {
                     compositeTx.commitTransaction(new AsyncCompletionCallback() {
                         public void done(boolean success) {
                             for (int i = 0; i < size; i++) {
-                                TopicSubscriberTransaction sub = (TopicSubscriberTransaction) durPersSubs.get(i);
+                                TopicSubscriberTransaction sub = durPersSubs.get(i);
                                 sub.getTransaction().unmarkAsyncActive();
                             }
                             join.done(this, success);
@@ -414,7 +407,7 @@ public class TopicTransaction {
         return "[TopicTransaction, id=" + transactionId + "]";
     }
 
-    private class DelayCollector extends CallbackJoin {
+    private static class DelayCollector extends CallbackJoin {
         long delay = 0;
 
         protected DelayCollector(AsyncCompletionCallback asyncCompletionCallback) {
@@ -425,9 +418,9 @@ public class TopicTransaction {
             if (success) {
                 Long res = (Long) callback.getResult();
                 if (res != null)
-                    delay = Math.max(delay, res.longValue());
+                    delay = Math.max(delay, res);
                 if (last) {
-                    finalResult = Long.valueOf(delay);
+                    finalResult = delay;
                 }
             } else {
                 finalSuccess = false;
@@ -436,7 +429,7 @@ public class TopicTransaction {
         }
     }
 
-    private class RollbackJoin extends CallbackJoin {
+    private static class RollbackJoin extends CallbackJoin {
         protected RollbackJoin(AsyncCompletionCallback asyncCompletionCallback) {
             super(asyncCompletionCallback);
         }
@@ -449,7 +442,7 @@ public class TopicTransaction {
         }
     }
 
-    private class RollbackCallback extends AsyncCompletionCallback {
+    private static class RollbackCallback extends AsyncCompletionCallback {
         RollbackJoin join = null;
 
         private RollbackCallback(RollbackJoin join) {

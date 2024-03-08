@@ -19,65 +19,54 @@ package jms.funcunified.prio;
 
 import jms.base.SimpleConnectedUnifiedPTPTestCase;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.TextMessage;
 
-public class Priority extends SimpleConnectedUnifiedPTPTestCase
-{
-  public Priority(String name)
-  {
-    super(name);
-  }
-
-  public void test_9_to_0()
-  {
-    try
-    {
-      consumer.close(); // to ensure prio order in the queue
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 9; i >= 0; i--)
-      {
-        msg.setIntProperty("id", i);
-        msg.setText("Prio: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, i, 0);
-      }
-      consumer = qs.createConsumer(queue);
-      for (int i = 9; i >= 0; i--)
-      {
-        msg = (TextMessage) consumer.receive();
-        int id = msg.getIntProperty("id");
-        assertTrue("Does not receive right msg, expected: " + i + ", received: " + id, id == i);
-      }
-    } catch (Exception e)
-    {
-      failFast("test_9_to_0 failed: " + e);
+public class Priority extends SimpleConnectedUnifiedPTPTestCase {
+    public Priority(String name) {
+        super(name);
     }
-  }
 
-  public void test_0_to_9()
-  {
-    try
-    {
-      consumer.close(); // to ensure prio order in the queue
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setIntProperty("id", i);
-        msg.setText("Prio: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, i, 0);
-      }
-
-      consumer = qs.createConsumer(queue);
-      for (int i = 9; i >= 0; i--)
-      {
-        msg = (TextMessage) consumer.receive();
-        int id = msg.getIntProperty("id");
-        assertTrue("Does not receive right msg, expected: " + i + ", received: " + id, id == i);
-      }
-    } catch (Exception e)
-    {
-      failFast("test_0_to_9 failed: " + e);
+    public void test_9_to_0() {
+        try {
+            consumer.close(); // to ensure prio order in the queue
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 9; i >= 0; i--) {
+                msg.setIntProperty("id", i);
+                msg.setText("Prio: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, i, 0);
+            }
+            consumer = qs.createConsumer(queue);
+            for (int i = 9; i >= 0; i--) {
+                msg = (TextMessage) consumer.receive();
+                int id = msg.getIntProperty("id");
+                assertTrue("Does not receive right msg, expected: " + i + ", received: " + id, id == i);
+            }
+        } catch (Exception e) {
+            failFast("test_9_to_0 failed: " + e);
+        }
     }
-  }
+
+    public void test_0_to_9() {
+        try {
+            consumer.close(); // to ensure prio order in the queue
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setIntProperty("id", i);
+                msg.setText("Prio: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, i, 0);
+            }
+
+            consumer = qs.createConsumer(queue);
+            for (int i = 9; i >= 0; i--) {
+                msg = (TextMessage) consumer.receive();
+                int id = msg.getIntProperty("id");
+                assertTrue("Does not receive right msg, expected: " + i + ", received: " + id, id == i);
+            }
+        } catch (Exception e) {
+            failFast("test_0_to_9 failed: " + e);
+        }
+    }
 
 }
 

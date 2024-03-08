@@ -30,6 +30,7 @@ import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class StoreTransactionImpl implements StoreTransaction, CacheReleaseListener {
     StoreContext ctx = null;
@@ -37,9 +38,9 @@ public abstract class StoreTransactionImpl implements StoreTransaction, CacheRel
     QueueIndex queueIndex = null;
     Semaphore sem = null;
     List journal = null;
-    List keys = null;
-    List messagePageRefs = null;
-    boolean closed = false;
+    List<Object> keys = null;
+    List<MessagePageReference> messagePageRefs = null;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     PrepareLogRecordImpl prepareLogRecord = null;
     long txId = -1;
 
@@ -54,22 +55,22 @@ public abstract class StoreTransactionImpl implements StoreTransaction, CacheRel
     protected void addMessagePageReference(MessagePageReference ref) {
         if (ref != null) {
             if (messagePageRefs == null)
-                messagePageRefs = new ArrayList();
+                messagePageRefs = new ArrayList<>();
             messagePageRefs.add(ref);
         }
     }
 
     protected boolean checkClosedAsync(AsyncCompletionCallback callback) {
-        if (closed) {
+        if (closed.get()) {
             callback.setException(new StoreException("Transaction is closed"));
             callback.notifyCallbackStack(false);
         }
-        return closed;
+        return closed.get();
     }
 
     protected AsyncCompletionCallback createLocalCallback(AsyncCompletionCallback callback) {
         return new AsyncCompletionCallback(callback) {
-            public synchronized void done(boolean success) {
+            public void done(boolean success) {
                 ctx.transactionManager.removeTxId(txId);
                 close();
                 if (!success)
@@ -78,7 +79,7 @@ public abstract class StoreTransactionImpl implements StoreTransaction, CacheRel
         };
     }
 
-    public synchronized void releaseCache() {
+    public void releaseCache() {
         try {
             queueIndex.unloadPages();
         } catch (Exception e) {
@@ -89,7 +90,7 @@ public abstract class StoreTransactionImpl implements StoreTransaction, CacheRel
     public void commit()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/commit...");
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
         try {
             if (journal != null && journal.size() > 0) {
@@ -125,7 +126,7 @@ public abstract class StoreTransactionImpl implements StoreTransaction, CacheRel
     public void abort()
             throws StoreException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/abort...");
-        if (closed)
+        if (closed.get())
             throw new StoreException("Transaction is closed");
         try {
             if (journal != null && journal.size() > 0) {
@@ -162,7 +163,7 @@ public abstract class StoreTransactionImpl implements StoreTransaction, CacheRel
             journal.clear(); // GC
         if (keys != null)
             keys.clear();
-        closed = true;
+        closed.set(true);
     }
 
     public String toString() {

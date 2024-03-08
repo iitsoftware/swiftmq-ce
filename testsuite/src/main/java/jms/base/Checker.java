@@ -19,7 +19,6 @@ package jms.base;
 
 import javax.jms.Message;
 
-public interface Checker
-{
-  public boolean isMatch(Message msg);
+public interface Checker {
+    public boolean isMatch(Message msg);
 }

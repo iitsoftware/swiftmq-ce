@@ -28,29 +28,29 @@ import java.util.Map;
 
 public class MessageSenderJobFactory implements JobFactory {
     SwiftletContext ctx = null;
-    Map parms = new HashMap();
+    Map<String, JobParameter> parms = new HashMap<>();
 
     public MessageSenderJobFactory(SwiftletContext ctx) {
         this.ctx = ctx;
-        JobParameter p = new JobParameter(ctx.PARM, "Schedule ID", null, true, null);
+        JobParameter p = new JobParameter(SwiftletContext.PARM, "Schedule ID", null, true, null);
         parms.put(p.getName(), p);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.schedulerSwiftlet.getName(), toString() + "/created");
     }
 
     public String getName() {
-        return ctx.JOBNAME;
+        return SwiftletContext.JOBNAME;
     }
 
     public String getDescription() {
-        return ctx.JOBNAME;
+        return SwiftletContext.JOBNAME;
     }
 
-    public Map getJobParameters() {
+    public Map<String, JobParameter> getJobParameters() {
         return parms;
     }
 
     public JobParameter getJobParameter(String s) {
-        return (JobParameter) parms.get(s);
+        return parms.get(s);
     }
 
     public Job getJobInstance() {

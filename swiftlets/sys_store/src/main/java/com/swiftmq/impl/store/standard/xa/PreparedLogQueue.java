@@ -22,9 +22,10 @@ import com.swiftmq.impl.store.standard.cache.CacheReleaseListener;
 import com.swiftmq.impl.store.standard.index.QueueIndex;
 import com.swiftmq.impl.store.standard.index.QueueIndexEntry;
 import com.swiftmq.impl.store.standard.log.CommitLogRecord;
+import com.swiftmq.impl.store.standard.log.LogAction;
 import com.swiftmq.jms.BytesMessageImpl;
 import com.swiftmq.swiftlet.store.StoreEntry;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
@@ -33,20 +34,22 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class PreparedLogQueue extends PreparedLog implements CacheReleaseListener {
     StoreContext ctx = null;
     DataByteArrayInputStream inStream = null;
     DataByteArrayOutputStream outStream = null;
     volatile QueueIndex queueIndex = null;
-    ArrayList cache = null;
+    ExpandableList<CacheEntry> cache;
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public PreparedLogQueue(StoreContext ctx, QueueIndex queueIndex) throws Exception {
         this.ctx = ctx;
         this.queueIndex = queueIndex;
         inStream = new DataByteArrayInputStream();
         outStream = new DataByteArrayOutputStream(1024);
-        cache = new ArrayList();
+        cache = new ExpandableList<>();
         preload();
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/created, " + cache.size() + " prepared transactions");
     }
@@ -60,92 +63,123 @@ public class PreparedLogQueue extends PreparedLog implements CacheReleaseListene
     }
 
     private void preload() throws Exception {
-        List qiEntries = queueIndex.getEntries();
-        queueIndex.unloadPages();
-        for (int i = 0; i < qiEntries.size(); i++) {
-            QueueIndexEntry entry = (QueueIndexEntry) qiEntries.get(i);
-            StoreEntry storeEntry = queueIndex.get(entry);
-            BytesMessageImpl msg = (BytesMessageImpl) storeEntry.message;
-            byte[] b = new byte[(int) msg.getBodyLength()];
-            msg.readBytes(b);
-            inStream.setBuffer(b, 0, b.length);
-            PrepareLogRecordImpl logRecord = new PrepareLogRecordImpl(0);
-            logRecord.readContent(inStream);
+        lock.writeLock().lock();
+        try {
+            List<QueueIndexEntry> qiEntries = queueIndex.getEntries();
+            queueIndex.unloadPages();
+            for (QueueIndexEntry qiEntry : qiEntries) {
+                QueueIndexEntry entry = qiEntry;
+                StoreEntry storeEntry = queueIndex.get(entry);
+                BytesMessageImpl msg = (BytesMessageImpl) storeEntry.message;
+                byte[] b = new byte[(int) msg.getBodyLength()];
+                msg.readBytes(b);
+                inStream.setBuffer(b, 0, b.length);
+                PrepareLogRecordImpl logRecord = new PrepareLogRecordImpl(0);
+                logRecord.readContent(inStream);
+                CacheEntry cacheEntry = new CacheEntry();
+                cacheEntry.logRecord = logRecord;
+                long address = cache.add(cacheEntry);
+                logRecord.setAddress(address);
+                cacheEntry.indexEntry = entry;
+            }
+            queueIndex.unloadPages();
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public long add(PrepareLogRecordImpl logRecord) throws IOException {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/add, logRecord: " + logRecord);
             CacheEntry cacheEntry = new CacheEntry();
             cacheEntry.logRecord = logRecord;
-            long address = (long) ArrayListTool.setFirstFreeOrExpand(cache, cacheEntry);
+            long address = cache.add(cacheEntry);
             logRecord.setAddress(address);
-            cacheEntry.indexEntry = entry;
+            outStream.rewind();
+            logRecord.writeContent(outStream);
+            try {
+                BytesMessageImpl msg = new BytesMessageImpl();
+                msg.writeBytes(outStream.getBuffer(), 0, outStream.getCount());
+                StoreEntry storeEntry = new StoreEntry();
+                storeEntry.message = msg;
+                long txId = ctx.transactionManager.createTxId(false);
+                List journal = new ArrayList();
+                queueIndex.setJournal(journal);
+                cacheEntry.indexEntry = queueIndex.add(storeEntry);
+                Semaphore sem = new Semaphore();
+                ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, null));
+                sem.waitHere();
+                ctx.transactionManager.removeTxId(txId);
+            } catch (Exception e) {
+                throw new IOException(e.toString());
+            }
+            return address;
+        } finally {
+            lock.writeLock().unlock();
         }
-        queueIndex.unloadPages();
+
     }
 
-    public synchronized long add(PrepareLogRecordImpl logRecord) throws IOException {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/add, logRecord: " + logRecord);
-        CacheEntry cacheEntry = new CacheEntry();
-        cacheEntry.logRecord = logRecord;
-        long address = (long) ArrayListTool.setFirstFreeOrExpand(cache, cacheEntry);
-        logRecord.setAddress(address);
-        outStream.rewind();
-        logRecord.writeContent(outStream);
+    public PrepareLogRecordImpl get(long address) throws IOException {
+        lock.readLock().lock();
         try {
-            BytesMessageImpl msg = new BytesMessageImpl();
-            msg.writeBytes(outStream.getBuffer(), 0, outStream.getCount());
-            StoreEntry storeEntry = new StoreEntry();
-            storeEntry.message = msg;
+            CacheEntry cacheEntry = cache.get((int) address);
+            if (cacheEntry == null)
+                throw new EOFException("No CacheEntry found at index: " + address);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$store", toString() + "/get, logRecord: " + cacheEntry.logRecord);
+            return cacheEntry.logRecord;
+        } finally {
+            lock.readLock().unlock();
+        }
+
+    }
+
+    public List getAll() throws IOException {
+        lock.readLock().lock();
+        try {
+            List<PrepareLogRecordImpl> al = new ArrayList();
+            for (int i = 0; i < cache.size(); i++) {
+                CacheEntry cacheEntry = cache.get(i);
+                if (cacheEntry != null)
+                    al.add(cacheEntry.logRecord);
+            }
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/getAll, logRecords: " + al);
+            return al;
+        } finally {
+            lock.readLock().unlock();
+        }
+
+    }
+
+    public void remove(PrepareLogRecordImpl logRecord) throws IOException {
+        lock.writeLock().lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$store", toString() + "/remove, logRecord: " + logRecord);
+            int address = (int) logRecord.getAddress();
+            CacheEntry cacheEntry = cache.get(address);
+            if (cacheEntry == null)
+                throw new EOFException("No CacheEntry found at index: " + address);
+            cache.remove(address);
             long txId = ctx.transactionManager.createTxId(false);
-            List journal = new ArrayList();
+            List<LogAction> journal = new ArrayList();
             queueIndex.setJournal(journal);
-            cacheEntry.indexEntry = queueIndex.add(storeEntry);
             Semaphore sem = new Semaphore();
-            ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, null));
+            try {
+                queueIndex.remove(cacheEntry.indexEntry);
+                ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, null));
+            } catch (Exception e) {
+                throw new IOException(e.toString());
+            }
             sem.waitHere();
             ctx.transactionManager.removeTxId(txId);
-        } catch (Exception e) {
-            throw new IOException(e.toString());
+        } finally {
+            lock.writeLock().unlock();
         }
-        return address;
-    }
 
-    public synchronized PrepareLogRecordImpl get(long address) throws IOException {
-        CacheEntry cacheEntry = (CacheEntry) cache.get((int) address);
-        if (cacheEntry == null)
-            throw new EOFException("No CacheEntry found at index: " + address);
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$store", toString() + "/get, logRecord: " + cacheEntry.logRecord);
-        return cacheEntry.logRecord;
-    }
-
-    public synchronized List getAll() throws IOException {
-        List al = new ArrayList();
-        for (int i = 0; i < cache.size(); i++) {
-            CacheEntry cacheEntry = (CacheEntry) cache.get(i);
-            if (cacheEntry != null)
-                al.add(cacheEntry.logRecord);
-        }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/getAll, logRecords: " + al);
-        return al;
-    }
-
-    public synchronized void remove(PrepareLogRecordImpl logRecord) throws IOException {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/remove, logRecord: " + logRecord);
-        int address = (int) logRecord.getAddress();
-        CacheEntry cacheEntry = (CacheEntry) cache.get(address);
-        if (cacheEntry == null)
-            throw new EOFException("No CacheEntry found at index: " + address);
-        cache.set(address, null);
-        long txId = ctx.transactionManager.createTxId(false);
-        List journal = new ArrayList();
-        queueIndex.setJournal(journal);
-        Semaphore sem = new Semaphore();
-        try {
-            queueIndex.remove(cacheEntry.indexEntry);
-            ctx.recoveryManager.commit(new CommitLogRecord(txId, sem, journal, this, null));
-        } catch (Exception e) {
-            throw new IOException(e.toString());
-        }
-        sem.waitHere();
-        ctx.transactionManager.removeTxId(txId);
     }
 
     public boolean backupRequired() {
@@ -160,7 +194,7 @@ public class PreparedLogQueue extends PreparedLog implements CacheReleaseListene
         return "PreparedLogQueue, queueIndex=" + queueIndex;
     }
 
-    private class CacheEntry {
+    private static class CacheEntry {
         PrepareLogRecordImpl logRecord = null;
         QueueIndexEntry indexEntry = null;
 

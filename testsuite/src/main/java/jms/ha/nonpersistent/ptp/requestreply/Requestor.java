@@ -20,66 +20,52 @@ package jms.ha.nonpersistent.ptp.requestreply;
 import jms.base.MsgNoVerifier;
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.QueueReceiver;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
-public class Requestor extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  QueueReceiver tempReceiver = null;
-  TemporaryQueue tempQueue = null;
-  MsgNoVerifier verifier = null;
+public class Requestor extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    QueueReceiver tempReceiver = null;
+    TemporaryQueue tempQueue = null;
+    MsgNoVerifier verifier = null;
 
-  public Requestor(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    receiver.close();
-    tempQueue = qs.createTemporaryQueue();
-    tempReceiver = qs.createReceiver(tempQueue);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
-
-  public void request()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        TextMessage reply = null;
-        do
-        {
-          msg.setIntProperty("no", i);
-          msg.setJMSReplyTo(tempQueue);
-          msg.setText("Request: " + i);
-          sender.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-          reply = (TextMessage) tempReceiver.receive(60000);
-        } while (reply == null);
-      }
-      msg.setIntProperty("no", nMsgs + 1);
-      msg.setBooleanProperty("finished", true);
-      sender.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Requestor(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    tempReceiver = null;
-    tempQueue = null;
-    verifier = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        receiver.close();
+        tempQueue = qs.createTemporaryQueue();
+        tempReceiver = qs.createReceiver(tempQueue);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+    }
+
+    public void request() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < nMsgs; i++) {
+                TextMessage reply = null;
+                do {
+                    msg.setIntProperty("no", i);
+                    msg.setJMSReplyTo(tempQueue);
+                    msg.setText("Request: " + i);
+                    sender.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                    reply = (TextMessage) tempReceiver.receive(60000);
+                } while (reply == null);
+            }
+            msg.setIntProperty("no", nMsgs + 1);
+            msg.setBooleanProperty("finished", true);
+            sender.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        tempReceiver = null;
+        tempQueue = null;
+        verifier = null;
+        super.tearDown();
+    }
 }
 

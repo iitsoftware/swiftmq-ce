@@ -17,49 +17,42 @@
 
 package amqp.v100.ptp.singlesession.exactly_once;
 
-import com.swiftmq.amqp.v100.client.Connection;
-import com.swiftmq.amqp.v100.client.QoS;
-import com.swiftmq.amqp.v100.client.Session;
 import amqp.v100.base.Util;
 import amqp.v100.ptp.singlesession.Receiver;
 import amqp.v100.ptp.singlesession.Sender;
+import com.swiftmq.amqp.v100.client.Connection;
+import com.swiftmq.amqp.v100.client.QoS;
+import com.swiftmq.amqp.v100.client.Session;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import java.util.concurrent.CountDownLatch;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
-    TestSuite suite = new Suite();
-    try
-    {
-      Connection connection = Util.createConnection();
-      Session session = Util.createSession(connection);
-      CountDownLatch countDownLatch = new CountDownLatch(nPairs);
-      for (int i = 0; i < nPairs; i++)
-      {
-        suite.addTest(new Receiver("receive", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1), connection, session, countDownLatch));
-        suite.addTest(new Sender("send", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1), connection, session));
-      }
-    } catch (Exception e)
-    {
-      e.printStackTrace();
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
+        TestSuite suite = new Suite();
+        try {
+            Connection connection = Util.createConnection();
+            Session session = Util.createSession(connection);
+            CountDownLatch countDownLatch = new CountDownLatch(nPairs);
+            for (int i = 0; i < nPairs; i++) {
+                suite.addTest(new Receiver("receive", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1), connection, session, countDownLatch));
+                suite.addTest(new Sender("send", QoS.EXACTLY_ONCE, Util.getQueueNamePrefix() + (i + 1), connection, session));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return suite;
     }
-    return suite;
-  }
 
-  public String toString()
-  {
-    return "exactly_once";
-  }
+    public String toString() {
+        return "exactly_once";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -19,42 +19,35 @@ package nio.connections;
 
 import jms.base.PTPTestCase;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.QueueConnection;
 
-public class Tester extends PTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-  }
-
-  public void test()
-  {
-    try
-    {
-      for (int j = 0; j < 10; j++)
-      {
-        QueueConnection[] qc = new QueueConnection[5];
-        for (int i = 0; i < qc.length; i++)
-          qc[i] = createQueueConnection("plainsocket@router");
-        for (int i = 0; i < qc.length; i++)
-          qc[i].start();
-        for (int i = 0; i < qc.length; i++)
-          qc[i].close();
-      }
-    } catch (JMSException e)
-    {
-      fail("test failed: " + e);
+public class Tester extends PTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    public void test() {
+        try {
+            for (int j = 0; j < 10; j++) {
+                QueueConnection[] qc = new QueueConnection[5];
+                for (int i = 0; i < qc.length; i++)
+                    qc[i] = createQueueConnection("plainsocket@router");
+                for (int i = 0; i < qc.length; i++)
+                    qc[i].start();
+                for (int i = 0; i < qc.length; i++)
+                    qc[i].close();
+            }
+        } catch (JMSException e) {
+            fail("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 }

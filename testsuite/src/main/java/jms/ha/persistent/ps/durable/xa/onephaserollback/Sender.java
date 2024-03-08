@@ -27,71 +27,60 @@ import javax.jms.TopicPublisher;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-public class Sender extends SimpleConnectedXAPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  String topicName = null;
-  TopicPublisher myPublisher = null;
+public class Sender extends SimpleConnectedXAPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    String topicName = null;
+    TopicPublisher myPublisher = null;
 
-  public Sender(String name, String topicName)
-  {
-    super(name);
-    this.topicName = topicName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp(false, false);
-    myPublisher = ts.getTopicSession().createPublisher(getTopic(topicName));
-    pause(20000);
-  }
-
-  public void send()
-  {
-    try
-    {
-      boolean rollback = false;
-      int n = 0;
-      TextMessage msg = ts.createTextMessage();
-      Xid xid = new XidImpl(getClass().getName());
-      xares.start(xid, XAResource.TMNOFLAGS);
-      while (n < nMsgs)
-      {
-        msg.setIntProperty("no", n);
-        msg.setText("Msg: " + n);
-        myPublisher.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        if ((n + 1) % 10 == 0)
-        {
-          if (rollback)
-          {
-            rollback = false;
-            n -= 10;
-            xares.end(xid, XAResource.TMSUCCESS);
-            xares.rollback(xid);
-          } else
-          {
-            xares.end(xid, XAResource.TMSUCCESS);
-            xares.commit(xid, true);
-            rollback = true;
-          }
-          xid = new XidImpl(getClass().getName());
-          xares.start(xid, XAResource.TMNOFLAGS);
-        }
-        n++;
-      }
-
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public Sender(String name, String topicName) {
+        super(name);
+        this.topicName = topicName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    topicName = null;
-    myPublisher = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp(false, false);
+        myPublisher = ts.getTopicSession().createPublisher(getTopic(topicName));
+        pause(20000);
+    }
+
+    public void send() {
+        try {
+            boolean rollback = false;
+            int n = 0;
+            TextMessage msg = ts.createTextMessage();
+            Xid xid = new XidImpl(getClass().getName());
+            xares.start(xid, XAResource.TMNOFLAGS);
+            while (n < nMsgs) {
+                msg.setIntProperty("no", n);
+                msg.setText("Msg: " + n);
+                myPublisher.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                if ((n + 1) % 10 == 0) {
+                    if (rollback) {
+                        rollback = false;
+                        n -= 10;
+                        xares.end(xid, XAResource.TMSUCCESS);
+                        xares.rollback(xid);
+                    } else {
+                        xares.end(xid, XAResource.TMSUCCESS);
+                        xares.commit(xid, true);
+                        rollback = true;
+                    }
+                    xid = new XidImpl(getClass().getName());
+                    xares.start(xid, XAResource.TMNOFLAGS);
+                }
+                n++;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        topicName = null;
+        myPublisher = null;
+        super.tearDown();
+    }
 }
 

@@ -17,65 +17,55 @@
 
 package amqp.v100.ps.one_to_n.durable.dedicatedsession;
 
-import com.swiftmq.amqp.v100.client.DurableConsumer;
-import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 import amqp.v100.base.AMQPConnectedSessionTestCase;
 import amqp.v100.base.MessageFactory;
+import com.swiftmq.amqp.v100.client.DurableConsumer;
+import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 
-public class Receiver extends AMQPConnectedSessionTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "100000"));
-  int linkCredit = Integer.parseInt(System.getProperty("linkcredit", "500"));
+public class Receiver extends AMQPConnectedSessionTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "100000"));
+    int linkCredit = Integer.parseInt(System.getProperty("linkcredit", "500"));
 
-  MessageFactory messageFactory;
-  int qos;
-  String address = null;
-  DurableConsumer consumer = null;
+    MessageFactory messageFactory;
+    int qos;
+    String address = null;
+    DurableConsumer consumer = null;
 
-  public Receiver(String name, int qos, String address, String containerId)
-  {
-    super(name);
-    this.qos = qos;
-    this.address = address;
-    setContainerId(containerId);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    consumer = getSession().createDurableConsumer("testdurable", address, linkCredit, qos, true, null);
-    messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
-  }
-
-  public void receive()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        AMQPMessage msg = consumer.receive();
-        if (msg != null)
-        {
-          messageFactory.verify(msg);
-          if (!msg.isSettled())
-            msg.accept();
-        } else
-          throw new Exception("Msg == null at i=" + i);
-      }
-    } catch (Exception e)
-    {
-      fail("test failed: " + e);
+    public Receiver(String name, int qos, String address, String containerId) {
+        super(name);
+        this.qos = qos;
+        this.address = address;
+        setContainerId(containerId);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (consumer != null)
-    {
-      consumer.close();
-      consumer.unsubscribe();
+    protected void setUp() throws Exception {
+        super.setUp();
+        consumer = getSession().createDurableConsumer("testdurable", address, linkCredit, qos, true, null);
+        messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
     }
-    super.tearDown();
-  }
+
+    public void receive() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                AMQPMessage msg = consumer.receive();
+                if (msg != null) {
+                    messageFactory.verify(msg);
+                    if (!msg.isSettled())
+                        msg.accept();
+                } else
+                    throw new Exception("Msg == null at i=" + i);
+            }
+        } catch (Exception e) {
+            fail("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        if (consumer != null) {
+            consumer.close();
+            consumer.unsubscribe();
+        }
+        super.tearDown();
+    }
 
 }

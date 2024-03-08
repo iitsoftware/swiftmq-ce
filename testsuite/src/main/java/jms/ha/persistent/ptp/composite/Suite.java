@@ -17,27 +17,23 @@
 
 package jms.ha.persistent.ptp.composite;
 
-import junit.framework.TestSuite;
 import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ptp.composite.nontransacted.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.composite.transacted.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.composite.xa.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ptp.composite.nontransacted.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.composite.transacted.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.composite.xa.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "composite";
-  }
+    public String toString() {
+        return "composite";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }

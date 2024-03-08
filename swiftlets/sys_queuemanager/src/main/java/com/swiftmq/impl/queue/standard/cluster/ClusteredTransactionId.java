@@ -29,7 +29,6 @@ import com.swiftmq.tools.concurrent.AsyncCompletionCallback;
 import com.swiftmq.tools.concurrent.CallbackJoin;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class ClusteredTransactionId {
@@ -92,8 +91,8 @@ public class ClusteredTransactionId {
 
     public void lockQueue() {
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.lockQueue(entry.transaction);
             }
         } else {
@@ -105,8 +104,8 @@ public class ClusteredTransactionId {
 
     public void unlockQueue(boolean markAsyncActive) {
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.unlockQueue(entry.transaction, markAsyncActive);
             }
         } else {
@@ -118,8 +117,8 @@ public class ClusteredTransactionId {
 
     public void unmarkAsyncActive() {
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.unmarkAsyncActive(entry.transaction);
             }
         } else {
@@ -142,8 +141,8 @@ public class ClusteredTransactionId {
     public CompositeStoreTransaction getCompositeStoreTransaction() {
         CompositeStoreTransaction ct = null;
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 ct = entry.abstractQueue.getCompositeStoreTransaction(entry.transaction);
                 break;
             }
@@ -157,8 +156,8 @@ public class ClusteredTransactionId {
 
     public void prepare(XidImpl xid) throws QueueException {
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.prepare(entry.transaction, xid);
             }
         } else {
@@ -171,8 +170,8 @@ public class ClusteredTransactionId {
     public long commit(XidImpl xid) throws QueueException {
         long fcDelay = 0;
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.commit(entry.transaction, xid);
                 FlowController flowController = entry.abstractQueue.getFlowController();
                 if (flowController != null)
@@ -192,8 +191,8 @@ public class ClusteredTransactionId {
     public long commit() throws QueueException {
         long fcDelay = 0;
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.setCompositeStoreTransaction(entry.transaction, currentCT);
                 entry.abstractQueue.commit(entry.transaction);
                 entry.abstractQueue.setCompositeStoreTransaction(entry.transaction, null);
@@ -214,13 +213,13 @@ public class ClusteredTransactionId {
 
     public void commit(AsyncCompletionCallback callback) {
         if (messageBasedDispatch) {
-            if (queueMap.size() == 0) {
+            if (queueMap.isEmpty()) {
                 callback.notifyCallbackStack(true);
                 return;
             }
             final DelayCollector delayCollector = new DelayCollector(callback);
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 delayCollector.incNumberCallbacks();
                 entry.abstractQueue.commit(entry.transaction, new AsyncCompletionCallback() {
                     public void done(boolean success) {
@@ -238,8 +237,8 @@ public class ClusteredTransactionId {
 
     public void rollback(XidImpl xid, boolean b) throws QueueException {
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.rollback(entry.transaction, xid, b);
             }
         } else {
@@ -251,8 +250,8 @@ public class ClusteredTransactionId {
 
     public void rollback(boolean b) throws QueueException {
         if (messageBasedDispatch) {
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 entry.abstractQueue.rollback(entry.transaction, b);
             }
         } else {
@@ -264,13 +263,13 @@ public class ClusteredTransactionId {
 
     public void rollback(boolean b, AsyncCompletionCallback callback) {
         if (messageBasedDispatch) {
-            if (queueMap.size() == 0) {
+            if (queueMap.isEmpty()) {
                 callback.notifyCallbackStack(true);
                 return;
             }
             final RollbackJoin join = new RollbackJoin(callback);
-            for (Iterator iter = queueMap.entrySet().iterator(); iter.hasNext(); ) {
-                Entry entry = (Entry) ((Map.Entry) iter.next()).getValue();
+            for (Map.Entry<String, Entry> stringEntryEntry : queueMap.entrySet()) {
+                Entry entry = (Entry) ((Map.Entry<?, ?>) stringEntryEntry).getValue();
                 join.incNumberCallbacks();
                 entry.abstractQueue.rollback(entry.transaction, b, new RollbackCallback(join));
             }
@@ -304,7 +303,7 @@ public class ClusteredTransactionId {
         }
     }
 
-    private class DelayCollector extends CallbackJoin {
+    private static class DelayCollector extends CallbackJoin {
         long delay = 0;
 
         protected DelayCollector(AsyncCompletionCallback asyncCompletionCallback) {
@@ -326,7 +325,7 @@ public class ClusteredTransactionId {
         }
     }
 
-    private class RollbackJoin extends CallbackJoin {
+    private static class RollbackJoin extends CallbackJoin {
         protected RollbackJoin(AsyncCompletionCallback asyncCompletionCallback) {
             super(asyncCompletionCallback);
         }
@@ -339,7 +338,7 @@ public class ClusteredTransactionId {
         }
     }
 
-    private class RollbackCallback extends AsyncCompletionCallback {
+    private static class RollbackCallback extends AsyncCompletionCallback {
         RollbackJoin join = null;
 
         private RollbackCallback(RollbackJoin join) {

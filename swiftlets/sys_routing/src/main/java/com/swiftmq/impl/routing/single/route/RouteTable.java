@@ -23,17 +23,20 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.EntityRemoveException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RouteTable {
     SwiftletContext ctx = null;
-    Map connections = null;
+    Map<RoutingConnection, ConnectionEntry> connections = null;
     EntityList dynRoutes = null;
 
     public RouteTable(SwiftletContext ctx) {
         this.ctx = ctx;
         dynRoutes = (EntityList) ctx.usageList.getEntity("routing-table");
-        connections = new HashMap();
+        connections = new ConcurrentHashMap<>();
     }
 
     private void addUsageEntity(Route route) {
@@ -65,7 +68,7 @@ public class RouteTable {
                     routes.removeEntity(re);
                 }
                 Map map = routes.getEntities();
-                if (map == null || map.size() == 0)
+                if (map == null || map.isEmpty())
                     dynRoutes.removeEntity(destEntity);
             }
         } catch (EntityRemoveException e) {
@@ -74,7 +77,7 @@ public class RouteTable {
     }
 
     public void addRoute(Route route) {
-        ConnectionEntry ce = (ConnectionEntry) connections.get(route.getRoutingConnection());
+        ConnectionEntry ce = connections.get(route.getRoutingConnection());
         if (ce == null) {
             ce = new ConnectionEntry(route.getRoutingConnection());
             connections.put(route.getRoutingConnection(), ce);
@@ -84,7 +87,7 @@ public class RouteTable {
     }
 
     public void removeRoute(Route route) {
-        ConnectionEntry ce = (ConnectionEntry) connections.get(route.getRoutingConnection());
+        ConnectionEntry ce = connections.get(route.getRoutingConnection());
         if (ce != null) {
             ce.removeRoute(route);
             if (ce.getNumberRoutes() == 0)
@@ -93,45 +96,40 @@ public class RouteTable {
         }
     }
 
-    public List getConnectionRoutes(RoutingConnection routingConnection) {
-        ConnectionEntry ce = (ConnectionEntry) connections.get(routingConnection);
+    public List<Route> getConnectionRoutes(RoutingConnection routingConnection) {
+        ConnectionEntry ce = connections.get(routingConnection);
         if (ce != null) {
-            return new ArrayList(ce.getRoutes().values());
+            return new ArrayList<>(ce.getRoutes().values());
         }
         return null;
     }
 
-    public List removeConnectionRoutes(RoutingConnection routingConnection) {
+    public List<Route> removeConnectionRoutes(RoutingConnection routingConnection) {
         ConnectionEntry ce = (ConnectionEntry) connections.remove(routingConnection);
         if (ce != null) {
-            List al = new ArrayList(ce.getRoutes().values());
-            for (int i = 0; i < al.size(); i++) {
-                Route route = (Route) al.get(i);
+            List<Route> al = new ArrayList<>(ce.getRoutes().values());
+            al.forEach(route -> {
                 route.setType(Route.REMOVE);
-                removeUsageEntity((Route) al.get(i));
-            }
+                removeUsageEntity(route);
+            });
             return al;
         }
         return null;
     }
 
-    public List getRoutingConnections() {
-        if (connections.size() == 0)
+    public List<RoutingConnection> getRoutingConnections() {
+        if (connections.isEmpty())
             return null;
-        List al = new ArrayList();
-        for (Iterator iter = connections.keySet().iterator(); iter.hasNext(); ) {
-            al.add(iter.next());
-        }
-        return al;
+        return (List<RoutingConnection>) new ArrayList(connections.keySet());
     }
 
-    private class ConnectionEntry {
+    private static class ConnectionEntry {
         RoutingConnection routingConnection = null;
-        Map routes = null;
+        Map<String, Route> routes = null;
 
         public ConnectionEntry(RoutingConnection routingConnection) {
             this.routingConnection = routingConnection;
-            routes = new HashMap();
+            routes = new ConcurrentHashMap<>();
         }
 
         public RoutingConnection getRoutingConnection() {
@@ -146,7 +144,7 @@ public class RouteTable {
             routes.remove(route.getKey());
         }
 
-        public Map getRoutes() {
+        public Map<String, Route> getRoutes() {
             return routes;
         }
 

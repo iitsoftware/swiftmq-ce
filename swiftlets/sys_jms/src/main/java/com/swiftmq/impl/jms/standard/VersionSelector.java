@@ -43,7 +43,7 @@ public class VersionSelector implements InboundHandler {
     public VersionSelector(SwiftletContext ctx, Entity connectionEntity) {
         this.ctx = ctx;
         this.connectionEntity = connectionEntity;
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", this + "/created");
     }
 
     public VersionedJMSConnection getJmsConnection() {
@@ -51,23 +51,23 @@ public class VersionSelector implements InboundHandler {
     }
 
     public void dataAvailable(Connection connection, InputStream in) throws IOException {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", toString() + "/dataAvailable...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", this + "/dataAvailable...");
         if (delegated == null) {
             this.connection = connection;
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$jms", toString() + "/dataAvailable/reading version request...");
+                ctx.traceSpace.trace("sys$jms", this + "/dataAvailable/reading version request...");
             dis.setInputStream(in);
             SMQPVersionRequest request = (SMQPVersionRequest) factory.createDumpable(dis.readInt());
             request.readContent(dis);
             SMQPVersionReply reply = (SMQPVersionReply) request.createReply();
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$jms", toString() + "/dataAvailable/version request: " + request);
+                ctx.traceSpace.trace("sys$jms", this + "/dataAvailable/version request: " + request);
             jmsConnection = ctx.jmsSwiftlet.createJMSConnection(request.getVersion(), connectionEntity, connection);
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$jms", toString() + "/dataAvailable/jmsConnection: " + jmsConnection);
+                ctx.traceSpace.trace("sys$jms", this + "/dataAvailable/jmsConnection: " + jmsConnection);
             if (jmsConnection != null) {
                 try {
-                    connectionEntity.getProperty("version").setValue(new Integer(request.getVersion()));
+                    connectionEntity.getProperty("version").setValue(Integer.valueOf(request.getVersion()));
                 } catch (Exception e) {
                 }
                 delegated = jmsConnection.getInboundHandler();
@@ -77,15 +77,15 @@ public class VersionSelector implements InboundHandler {
                 reply.setOk(false);
                 reply.setException(new Exception("Invalid version: " + request.getVersion() + ", connection rejected!"));
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace("sys$jms", toString() + "/dataAvailable/invalid version: " + request.getVersion());
-                ctx.logSwiftlet.logError("sys$jms", toString() + "/JMS Client requests invalid Version: " + request.getVersion());
+                    ctx.traceSpace.trace("sys$jms", this + "/dataAvailable/invalid version: " + request.getVersion());
+                ctx.logSwiftlet.logError("sys$jms", this + "/JMS Client requests invalid Version: " + request.getVersion());
                 sendReply(reply);
             }
         } else {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", toString() + "/dataAvailable/delegate");
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", this + "/dataAvailable/delegate");
             delegated.dataAvailable(connection, in);
         }
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", toString() + "/dataAvailable done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", this + "/dataAvailable done");
     }
 
     private void sendReply(SMQPVersionReply reply) throws IOException {

@@ -22,134 +22,110 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.naming.InitialContext;
 
-public class UnifiedMixedTestCase extends JMSTestCase
-{
-  public InitialContext ctx = null;
-  ConnectionFactory cf = null;
+public class UnifiedMixedTestCase extends JMSTestCase {
+    public InitialContext ctx = null;
+    ConnectionFactory cf = null;
 
-  public UnifiedMixedTestCase(String name)
-  {
-    super(name);
-  }
-
-  public Connection createConnection(InitialContext ctx, String lookup, boolean start)
-  {
-    Connection qc = null;
-    try
-    {
-      if (cf == null)
-        cf = (ConnectionFactory) ctx.lookup(lookup);
-      qc = cf.createConnection();
-      if (start)
-        qc.start();
-    } catch (Exception e)
-    {
-      failFast("create connection failed: " + e);
+    public UnifiedMixedTestCase(String name) {
+        super(name);
     }
-    return qc;
-  }
 
-  public Connection createConnection(InitialContext ctx, String lookup)
-  {
-    Connection qc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      qc = createConnection(ctx, lookup, false);
-    } catch (Exception e)
-    {
-      failFast("create connection failed: " + e);
+    public Connection createConnection(InitialContext ctx, String lookup, boolean start) {
+        Connection qc = null;
+        try {
+            if (cf == null)
+                cf = (ConnectionFactory) ctx.lookup(lookup);
+            qc = cf.createConnection();
+            if (start)
+                qc.start();
+        } catch (Exception e) {
+            failFast("create connection failed: " + e);
+        }
+        return qc;
     }
-    return qc;
-  }
 
-  public Connection createConnection(String lookup)
-  {
-    Connection qc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      qc = createConnection(ctx, lookup);
-    } catch (Exception e)
-    {
-      failFast("create connection failed: " + e);
+    public Connection createConnection(InitialContext ctx, String lookup) {
+        Connection qc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            qc = createConnection(ctx, lookup, false);
+        } catch (Exception e) {
+            failFast("create connection failed: " + e);
+        }
+        return qc;
     }
-    return qc;
-  }
 
-  public Connection createConnection(String lookup, boolean start)
-  {
-    Connection qc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      qc = createConnection(ctx, lookup, start);
-    } catch (Exception e)
-    {
-      failFast("create connection failed: " + e);
+    public Connection createConnection(String lookup) {
+        Connection qc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            qc = createConnection(ctx, lookup);
+        } catch (Exception e) {
+            failFast("create connection failed: " + e);
+        }
+        return qc;
     }
-    return qc;
-  }
 
-  public Connection createConnection(InitialContext ctx, String lookup, String clientId, boolean start)
-  {
-    Connection tc = null;
-    try
-    {
-      if (cf == null)
-        cf = (ConnectionFactory) ctx.lookup(lookup);
-      tc = cf.createConnection();
-      if (clientId != null)
-        tc.setClientID(clientId);
-      if (start)
-        tc.start();
-    } catch (Exception e)
-    {
-      failFast("create connection failed: " + e);
+    public Connection createConnection(String lookup, boolean start) {
+        Connection qc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            qc = createConnection(ctx, lookup, start);
+        } catch (Exception e) {
+            failFast("create connection failed: " + e);
+        }
+        return qc;
     }
-    return tc;
-  }
 
-  public Connection createConnection(String lookup, String clientId)
-  {
-    Connection tc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      tc = createConnection(ctx, lookup, clientId, true);
-    } catch (Exception e)
-    {
-      failFast("create connection failed: " + e);
+    public Connection createConnection(InitialContext ctx, String lookup, String clientId, boolean start) {
+        Connection tc = null;
+        try {
+            if (cf == null)
+                cf = (ConnectionFactory) ctx.lookup(lookup);
+            tc = cf.createConnection();
+            if (clientId != null)
+                tc.setClientID(clientId);
+            if (start)
+                tc.start();
+        } catch (Exception e) {
+            failFast("create connection failed: " + e);
+        }
+        return tc;
     }
-    return tc;
-  }
 
-  public Destination getDestination(String name)
-  {
-    Destination dest = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      dest = (Destination) ctx.lookup(name);
-    } catch (Exception e)
-    {
-      failFast("get topic failed: " + e);
+    public Connection createConnection(String lookup, String clientId) {
+        Connection tc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            tc = createConnection(ctx, lookup, clientId, true);
+        } catch (Exception e) {
+            failFast("create connection failed: " + e);
+        }
+        return tc;
     }
-    return dest;
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (ctx != null)
-      ctx.close();
-    ctx = null;
-    cf = null;
-    super.tearDown();
-  }
+    public Destination getDestination(String name) {
+        Destination dest = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            dest = (Destination) ctx.lookup(name);
+        } catch (Exception e) {
+            failFast("get topic failed: " + e);
+        }
+        return dest;
+    }
+
+    protected void tearDown() throws Exception {
+        if (ctx != null)
+            ctx.close();
+        ctx = null;
+        cf = null;
+        super.tearDown();
+    }
 }
 

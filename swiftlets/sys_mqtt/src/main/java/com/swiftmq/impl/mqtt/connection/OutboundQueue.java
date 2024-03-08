@@ -20,64 +20,40 @@ package com.swiftmq.impl.mqtt.connection;
 import com.swiftmq.impl.mqtt.SwiftletContext;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttEncoder;
 import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.MqttMessage;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.util.DataStreamOutputStream;
 
-public class OutboundQueue extends SingleProcessorQueue {
+public class OutboundQueue {
     SwiftletContext ctx;
-    ThreadPool pool;
     MQTTConnection connection;
-    QueueProcessor queueProcessor;
     DataStreamOutputStream dos = null;
+    EventLoop eventLoop;
 
-    OutboundQueue(SwiftletContext ctx, ThreadPool pool, MQTTConnection connection) {
-        super(100);
+    public OutboundQueue(SwiftletContext ctx, MQTTConnection connection) {
         this.ctx = ctx;
-        this.pool = pool;
         this.connection = connection;
         dos = new DataStreamOutputStream(connection.getConnection().getOutputStream());
-        queueProcessor = new QueueProcessor();
-    }
-
-    protected void startProcessor() {
-        if (!connection.closed)
-            pool.dispatchTask(queueProcessor);
-    }
-
-    protected void process(Object[] bulk, int n) {
-        try {
-            for (int i = 0; i < n; i++) {
-                MqttEncoder.doEncode((MqttMessage) bulk[i]).flushTo(dos);
-                if (ctx.protSpace.enabled)
-                    ctx.protSpace.trace("mqtt", connection.toString() + "/SND: " + bulk[i]);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$mqtt.connection.outbound", list -> {
+            try {
+                for (Object event : list) {
+                    MqttEncoder.doEncode((MqttMessage) event).flushTo(dos);
+                    if (ctx.protSpace.enabled)
+                        ctx.protSpace.trace("mqtt", connection.toString() + "/SND: " + event);
+                }
+                dos.flush();
+            } catch (Exception e) {
+                connection.close();
             }
-            dos.flush();
-        } catch (Exception e) {
-            connection.close();
-        }
+        });
     }
 
-    private class QueueProcessor implements AsyncTask {
-        public boolean isValid() {
-            return !connection.closed;
-        }
-
-        public String getDispatchToken() {
-            return MQTTConnection.TP_CONNECTIONSVC;
-        }
-
-        public String getDescription() {
-            return connection.toString() + "/QueueProcessor";
-        }
-
-        public void stop() {
-        }
-
-        public void run() {
-            if (!connection.closed && dequeue())
-                pool.dispatchTask(this);
-        }
+    public void submit(Object event) {
+        eventLoop.submit(event);
     }
+
+    void close() {
+        eventLoop.close();
+    }
+
+
 }

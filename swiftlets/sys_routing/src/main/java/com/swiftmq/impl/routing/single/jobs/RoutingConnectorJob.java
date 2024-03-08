@@ -40,10 +40,10 @@ public class RoutingConnectorJob implements Job {
         if (entity == null)
             throw new JobException("Routing Connector '" + name + "' is undefined!", null, false);
         Property prop = entity.getProperty("enabled");
-        boolean enabled = ((Boolean) prop.getValue()).booleanValue();
+        boolean enabled = (Boolean) prop.getValue();
         try {
             if (enabled != b)
-                prop.setValue(new Boolean(b));
+                prop.setValue(b);
         } catch (Exception e) {
             throw new JobException(e.getMessage(), e, false);
         }

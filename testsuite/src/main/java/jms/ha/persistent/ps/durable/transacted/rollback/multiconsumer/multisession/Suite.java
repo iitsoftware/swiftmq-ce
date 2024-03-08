@@ -20,24 +20,20 @@ package jms.ha.persistent.ps.durable.transacted.rollback.multiconsumer.multisess
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ps.durable.transacted.rollback.multiconsumer.multisession.onmessage.Suite.suite());
-    suite.addTest(jms.ha.persistent.ps.durable.transacted.rollback.multiconsumer.multisession.singletopic.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ps.durable.transacted.rollback.multiconsumer.multisession.onmessage.Suite.suite());
+        suite.addTest(jms.ha.persistent.ps.durable.transacted.rollback.multiconsumer.multisession.singletopic.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "multisession";
-  }
+    public String toString() {
+        return "multisession";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

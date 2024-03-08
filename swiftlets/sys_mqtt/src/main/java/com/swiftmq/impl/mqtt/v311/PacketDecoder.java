@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PacketDecoder implements InboundHandler {
 
@@ -42,11 +43,11 @@ public class PacketDecoder implements InboundHandler {
     int maxPacketSize;
     MqttDecoder mqttDecoder;
     byte[] buffer = new byte[INITIAL_SIZE];
-    int writePos = 0;
-    int readPos = 0;
-    int remainingLength = -1;
-    int packetSize = 1;
-    int maxFixedHeaderSize = -1;
+    final AtomicInteger writePos = new AtomicInteger();
+    final AtomicInteger readPos = new AtomicInteger();
+    final AtomicInteger remainingLength = new AtomicInteger(-1);
+    final AtomicInteger packetSize = new AtomicInteger(1);
+    final AtomicInteger maxFixedHeaderSize = new AtomicInteger(-1);
     DataStreamInputStream dis = new DataStreamInputStream();
     List<MqttMessage> decoded = new ArrayList<MqttMessage>();
 
@@ -59,9 +60,9 @@ public class PacketDecoder implements InboundHandler {
     }
 
     public void ensureBuffer(int ensureSize) {
-        if (buffer.length - writePos < ensureSize) {
+        if (buffer.length - writePos.get() < ensureSize) {
             byte[] b = new byte[buffer.length + Math.max(ensureSize, EXTEND_SIZE)];
-            System.arraycopy(buffer, 0, b, 0, writePos);
+            System.arraycopy(buffer, 0, b, 0, writePos.get());
             buffer = b;
             if (traceSpace.enabled)
                 trace("PacketDecoder/ensureBuffer: ensureSize=" + ensureSize + ", buffer.length=" + buffer.length);
@@ -91,50 +92,50 @@ public class PacketDecoder implements InboundHandler {
     }
 
     private void decodeFixedHeader() throws Exception {
-        remainingLength = 0;
+        remainingLength.set(0);
         int multiplier = 1;
         short digit;
         int loops = 0;
-        int bpos = readPos + 1;
+        int bpos = readPos.get() + 1;
         do {
             digit = (short) (buffer[bpos++] & 0xff);
-            remainingLength += (digit & 127) * multiplier;
+            remainingLength.addAndGet((digit & 127) * multiplier);
             multiplier *= 128;
             loops++;
-            packetSize++;
+            packetSize.getAndIncrement();
         } while ((digit & 128) != 0 && loops < 4);
 
         // MQTT protocol limits Remaining Length to 4 bytes
         if (loops == 4 && (digit & 128) != 0) {
             throw new Exception("remaining length exceeds 4 digits");
         }
-        packetSize += remainingLength;
+        packetSize.addAndGet(remainingLength.get());
         if (traceSpace.enabled)
             trace("PacketDecoder/decodeFixedHeader");
     }
 
     private void reset() {
-        writePos = 0;
-        readPos = 0;
-        remainingLength = -1;
-        packetSize = 1;
-        maxFixedHeaderSize = -1;
+        writePos.set(0);
+        readPos.set(0);
+        remainingLength.set(-1);
+        packetSize.set(1);
+        maxFixedHeaderSize.set(-1);
         if (traceSpace.enabled)
             trace("PacketDecoder/reset");
     }
 
     private void nextPacket() {
-        remainingLength = -1;
-        packetSize = 1;
-        maxFixedHeaderSize = -1;
+        remainingLength.set(-1);
+        packetSize.set(1);
+        maxFixedHeaderSize.set(-1);
         if (traceSpace.enabled)
             trace("PacketDecoder/nextPacket");
     }
 
     private int available() {
         if (traceSpace.enabled)
-            trace("available=" + (writePos - readPos));
-        return writePos - readPos;
+            trace("available=" + (writePos.get() - readPos.get()));
+        return writePos.get() - readPos.get();
     }
 
     private void packetCompleted(Connection connection) throws IOException {
@@ -149,9 +150,9 @@ public class PacketDecoder implements InboundHandler {
     private void finishPacket(Connection connection) throws IOException {
         if (traceSpace.enabled)
             trace("PacketDecoder/finishPacket");
-        if (available() >= packetSize) {
-            ByteBuf byteBuf = new ByteBuf(packetSize);
-            byteBuf.writeBytes(buffer, readPos, packetSize);
+        if (available() >= packetSize.get()) {
+            ByteBuf byteBuf = new ByteBuf(packetSize.get());
+            byteBuf.writeBytes(buffer, readPos.get(), packetSize.get());
             byteBuf.reset();
             try {
                 mqttDecoder.decode(byteBuf, decoded);
@@ -162,34 +163,34 @@ public class PacketDecoder implements InboundHandler {
                     trace("PacketDecoder/finishPacket: exception=" + e);
                 mqttListener.onException(e);
             }
-            readPos += packetSize;
+            readPos.addAndGet(packetSize.get());
             packetCompleted(connection);
         }
     }
 
     private void trace(String func) {
-        traceSpace.trace("mqtt", func + ": readPos=" + readPos + ", writePos=" + writePos + ", packetSize=" + packetSize + ", maxFixedHeaderSize=" + maxFixedHeaderSize + ", remainingLength=" + remainingLength);
+        traceSpace.trace("mqtt", func + ": readPos=" + readPos.get() + ", writePos=" + writePos.get() + ", packetSize=" + packetSize.get() + ", maxFixedHeaderSize=" + maxFixedHeaderSize.get() + ", remainingLength=" + remainingLength.get());
     }
 
     @Override
-    public synchronized void dataAvailable(Connection connection, InputStream inputStream) throws IOException {
+    public void dataAvailable(Connection connection, InputStream inputStream) throws IOException {
         dis.setInputStream(inputStream);
         int length = dis.available();
         if (traceSpace.enabled)
             trace("PacketDecoder/dataAvailable, length=" + length);
         ensureBuffer(length);
-        dis.readFully(buffer, writePos, length);
-        writePos += length;
+        dis.readFully(buffer, writePos.get(), length);
+        writePos.addAndGet(length);
         int avail;
         do {
-            if (remainingLength == -1) {
-                if (maxFixedHeaderSize == -1)
-                    maxFixedHeaderSize = getFixedHeaderSize((buffer[readPos] & 0xff) >> 4);
-                if (maxFixedHeaderSize != -1 && available() >= maxFixedHeaderSize) {
+            if (remainingLength.get() == -1) {
+                if (maxFixedHeaderSize.get() == -1)
+                    maxFixedHeaderSize.set(getFixedHeaderSize((buffer[readPos.get()] & 0xff) >> 4));
+                if (maxFixedHeaderSize.get() != -1 && available() >= maxFixedHeaderSize.get()) {
                     try {
                         decodeFixedHeader();
-                        if (packetSize > maxPacketSize)
-                            throw new Exception("packet size of " + packetSize + " bytes exceeds max packet size of " + maxPacketSize + " bytes");
+                        if (packetSize.get() > maxPacketSize)
+                            throw new Exception("packet size of " + packetSize.get() + " bytes exceeds max packet size of " + maxPacketSize + " bytes");
                         finishPacket(connection);
                     } catch (Exception e) {
                         if (traceSpace.enabled)
@@ -201,7 +202,7 @@ public class PacketDecoder implements InboundHandler {
             } else
                 finishPacket(connection);
             avail = available();
-        } while (avail > 0 && avail > packetSize);
+        } while (avail > 0 && avail > packetSize.get());
         if (available() == 0)
             reset();
     }

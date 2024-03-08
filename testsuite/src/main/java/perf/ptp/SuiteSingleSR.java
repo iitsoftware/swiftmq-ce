@@ -18,21 +18,19 @@
 package perf.ptp;
 
 import junit.extensions.ActiveTestSuite;
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class SuiteSingleSR extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new SuiteSingleSR();
-    suite.addTest(new Receiver("testReceive"));
-    suite.addTest(new Sender("testSend"));
-    return suite;
-  }
+public class SuiteSingleSR extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new SuiteSingleSR();
+        suite.addTest(new Receiver("testReceive"));
+        suite.addTest(new Sender("testSend"));
+        return suite;
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

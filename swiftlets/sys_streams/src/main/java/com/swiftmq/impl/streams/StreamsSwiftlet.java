@@ -27,8 +27,6 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.sql.LikeComparator;
 import com.swiftmq.util.SwiftUtilities;
 
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -357,23 +355,9 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
 
     protected void startup(Configuration config) throws SwiftletException {
         ctx = new SwiftletContext(config, this);
-        if (!ctx.HASENGINE) {
-            ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "You are using Java " + ctx.JAVAVERSION + " but not GraalVM. Cannot start Streams Swiftlet. Please use GraalVM: https://graalvm.org");
-            ctx.logSwiftlet.logWarning(ctx.streamsSwiftlet.getName(), "You are using Java " + ctx.JAVAVERSION + " but not GraalVM. Cannot start Streams Swiftlet. Please use GraalVM: https://graalvm.org");
-            return;
-        }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
         isStartup = true;
-        ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "starting, available Scripting Engines:");
-        ScriptEngineManager manager = new ScriptEngineManager();
-        List<ScriptEngineFactory> factories = manager.getEngineFactories();
-        for (int i = 0; i < factories.size(); i++) {
-            ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "name=" + factories.get(i).getEngineName() +
-                    ", version=" + factories.get(i).getEngineVersion() + ", language name=" + factories.get(i).getLanguageName() +
-                    ", language version=" + factories.get(i).getLanguageVersion() +
-                    ", names=" + factories.get(i).getNames());
-        }
-
+        ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "starting, running scripts directly on GraalVM Contexts");
         ctx.authenticationSwiftlet.addTopicAuthenticationDelegate(this);
 
         createDomainAdapter((EntityList) config.getEntity("domains"));
@@ -382,8 +366,6 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
-        /*${evalstartupmark}*/
-
         jobRegistrar = new JobRegistrar(ctx);
         jobRegistrar.register();
         Property prop = ctx.root.getProperty("collect-interval");
@@ -421,7 +403,7 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
     }
 
     protected void shutdown() throws SwiftletException {
-        if (ctx == null || !ctx.HASENGINE)
+        if (ctx == null)
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown ...");
         isShutdown = true;
@@ -436,6 +418,7 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
             domainAdapter.close();
         } catch (Exception e) {
         }
+        ctx.eventLoopMUX.close();
         isShutdown = false;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown done.");
     }

@@ -21,122 +21,95 @@ import jms.base.SimpleConnectedUnifiedPSTestCase;
 
 import javax.jms.*;
 
-public class PSSendSingleTopicOM extends SimpleConnectedUnifiedPSTestCase
-{
-  Session ts2 = null;
-  MessageConsumer consumer2 = null;
-  Object sem = new Object();
-  int cnt = 0;
+public class PSSendSingleTopicOM extends SimpleConnectedUnifiedPSTestCase {
+    Session ts2 = null;
+    MessageConsumer consumer2 = null;
+    Object sem = new Object();
+    int cnt = 0;
 
-  public PSSendSingleTopicOM(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    consumer.close();
-    ts2 = tc.createSession(false, Session.AUTO_ACKNOWLEDGE);
-    consumer2 = ts2.createConsumer(topic);
-  }
-
-  public void testPSSendSingleTopicOMNP()
-  {
-    try
-    {
-      consumer2.setMessageListener(null);
-      consumer2.setMessageListener(new MessageListener()
-      {
-        public void onMessage(Message message)
-        {
-          synchronized (sem)
-          {
-            cnt++;
-            TextMessage tm = (TextMessage) message;
-            if (cnt == 10)
-            {
-              sem.notify();
-            }
-          }
-        }
-      });
-
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-      synchronized (sem)
-      {
-        if (cnt != 10)
-        {
-          try
-          {
-            sem.wait();
-          } catch (Exception ignored)
-          {
-          }
-        }
-      }
-      consumer2.setMessageListener(null);
-      msg = (TextMessage) consumer2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public PSSendSingleTopicOM(String name) {
+        super(name);
     }
-  }
 
-  public void testPSSendSingleTopicOMP()
-  {
-    try
-    {
-      consumer2.setMessageListener(null);
-      consumer2.setMessageListener(new MessageListener()
-      {
-        public void onMessage(Message message)
-        {
-          synchronized (sem)
-          {
-            cnt++;
-            TextMessage tm = (TextMessage) message;
-            if (cnt == 10)
-            {
-              sem.notify();
-            }
-          }
-        }
-      });
-
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-      synchronized (sem)
-      {
-        if (cnt != 10)
-        {
-          try
-          {
-            sem.wait();
-          } catch (Exception ignored)
-          {
-          }
-        }
-      }
-      consumer2.setMessageListener(null);
-      msg = (TextMessage) consumer2.receive(2000);
-      assertTrue("Received msg!=null", msg == null);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        consumer.close();
+        ts2 = tc.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        consumer2 = ts2.createConsumer(topic);
     }
-  }
+
+    public void testPSSendSingleTopicOMNP() {
+        try {
+            consumer2.setMessageListener(null);
+            consumer2.setMessageListener(new MessageListener() {
+                public void onMessage(Message message) {
+                    synchronized (sem) {
+                        cnt++;
+                        TextMessage tm = (TextMessage) message;
+                        if (cnt == 10) {
+                            sem.notify();
+                        }
+                    }
+                }
+            });
+
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+            synchronized (sem) {
+                if (cnt != 10) {
+                    try {
+                        sem.wait();
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            consumer2.setMessageListener(null);
+            msg = (TextMessage) consumer2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    public void testPSSendSingleTopicOMP() {
+        try {
+            consumer2.setMessageListener(null);
+            consumer2.setMessageListener(new MessageListener() {
+                public void onMessage(Message message) {
+                    synchronized (sem) {
+                        cnt++;
+                        TextMessage tm = (TextMessage) message;
+                        if (cnt == 10) {
+                            sem.notify();
+                        }
+                    }
+                }
+            });
+
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+            synchronized (sem) {
+                if (cnt != 10) {
+                    try {
+                        sem.wait();
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            consumer2.setMessageListener(null);
+            msg = (TextMessage) consumer2.receive(2000);
+            assertTrue("Received msg!=null", msg == null);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 
