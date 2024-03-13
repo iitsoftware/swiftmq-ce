@@ -17,7 +17,6 @@
 
 package com.swiftmq.impl.streams;
 
-import com.swiftmq.impl.streams.processor.EventLoopMUX;
 import com.swiftmq.mgmt.Configuration;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
@@ -57,7 +56,6 @@ public class SwiftletContext {
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
     public String streamLibDir = SwiftUtilities.addWorkingDir("../data/streamlib");
-    public EventLoopMUX eventLoopMUX;
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
@@ -80,6 +78,5 @@ public class SwiftletContext {
         storeSwiftlet = (StoreSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$store");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
         logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", GraalVM Version: " + Version.getCurrent() + ", available Processors: " + Runtime.getRuntime().availableProcessors());
-        eventLoopMUX = new EventLoopMUX(this, "sys$streams.processor", (int) config.getProperty("shared-event-loops").getValue());
     }
 }
