@@ -30,7 +30,6 @@ import com.swiftmq.tools.pipeline.POObject;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,35 +40,32 @@ public class StreamProcessor implements POStreamVisitor {
     int msgsProcessed = 0;
     int totalMsg = 0;
     int timeOnMessage = 0;
-    AtomicInteger muxId = new AtomicInteger();
-    Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
 
     public StreamProcessor(StreamContext ctx, StreamController controller) {
         this.ctx = ctx;
         this.controller = controller;
-        this.muxId.set(ctx.ctx.eventLoopMUX.register(event ->
-                {
-                    // Unfortunately required because auf the Java Memory Model - evalScript is done from another thread
-                    lock.lock();
-                    try {
-                        ((POObject) event).accept(StreamProcessor.this);
-                    } finally {
-                        lock.unlock();
-                    }
-                }
-        ));
     }
 
     public void dispatch(POObject po) {
         if (closed.get()) {
             if (po.getSemaphore() != null)
                 po.getSemaphore().notifySingleWaiter();
-        } else
-            ctx.ctx.eventLoopMUX.submit(this.muxId.get(), po);
+        } else {
+            ctx.ctx.threadpoolSwiftlet.runAsync(() -> {
+                // Locking required due to Java Memory Mpdel
+                lock.lock();
+                try {
+                    po.accept(StreamProcessor.this);
+                } finally {
+                    lock.unlock();
+                }
+
+            }, false);
+        }
     }
 
     public void close() {
-        ctx.ctx.eventLoopMUX.unregister(muxId.get());
     }
 
     private void handleException(POObject po, Exception e) {
