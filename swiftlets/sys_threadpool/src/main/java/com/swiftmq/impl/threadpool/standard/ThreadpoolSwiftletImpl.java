@@ -20,9 +20,11 @@ package com.swiftmq.impl.threadpool.standard;
 import com.swiftmq.impl.threadpool.standard.group.EventLoopImpl;
 import com.swiftmq.impl.threadpool.standard.group.GroupRegistry;
 import com.swiftmq.impl.threadpool.standard.group.pool.PlatformThreadRunner;
+import com.swiftmq.impl.threadpool.standard.group.pool.RejectionHandler;
 import com.swiftmq.impl.threadpool.standard.group.pool.ThreadRunner;
 import com.swiftmq.impl.threadpool.standard.group.pool.VirtualThreadRunner;
 import com.swiftmq.mgmt.Configuration;
+import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.mgmt.PropertyChangeAdapter;
 import com.swiftmq.swiftlet.SwiftletException;
@@ -54,6 +56,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
     GroupRegistry groupRegistry = null;
     ThreadRunner adHocVirtualThreadRunner = null;
     ThreadRunner adHocPlatformThreadRunner = null;
+    RejectionHandler rejectionHandler = null;
 
     final AtomicBoolean collectOn = new AtomicBoolean(false);
     final AtomicLong collectInterval = new AtomicLong(-1);
@@ -156,7 +159,20 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
 
         groupRegistry = new GroupRegistry(ctx);
         adHocVirtualThreadRunner = new VirtualThreadRunner();
-        adHocPlatformThreadRunner = new PlatformThreadRunner((ThreadPoolExecutor) Executors.newCachedThreadPool());
+        Entity adHocPlatformEntity = ctx.config.getEntity("adhocplatform");
+        int corePoolSize = (Integer) adHocPlatformEntity.getProperty("core-pool-size").getValue();
+        int maxPoolSize = (Integer) adHocPlatformEntity.getProperty("max-pool-size").getValue();
+        long keepalive = (Long) adHocPlatformEntity.getProperty("keepalive").getValue();
+        rejectionHandler = new RejectionHandler(ctx);
+        ctx.logSwiftlet.logInformation(getName(), "Creating the AdHocPlatformThreadRunner with core-pool-size=" + corePoolSize + ", max-pool-size=" + maxPoolSize + ", keepalive=" + keepalive);
+        adHocPlatformThreadRunner = new PlatformThreadRunner(new ThreadPoolExecutor(
+                corePoolSize,
+                maxPoolSize,
+                keepalive,
+                TimeUnit.MILLISECONDS,
+                new SynchronousQueue<>(),
+                rejectionHandler
+        ));
 
         try {
             SwiftletManager.getInstance().addSwiftletManagerListener("sys$mgmt", new SwiftletManagerAdapter() {
@@ -212,6 +228,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown done");
         ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocPlatformThreadRunner shutdown");
         adHocPlatformThreadRunner.shutdown(10, TimeUnit.SECONDS);
+        rejectionHandler.stopTimer();
         ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocPlatformThreadRunner shutdown done");
         groupRegistry.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: done.");

@@ -17,6 +17,26 @@
               description="The order in which the groups are being shut down"
               default=""
               reboot-required="true"/>
+    <entity name="adhocplatform" display="Ad Hoc Platform" description="Configures the Ad Hoc Platform Thread Factory">
+      <property name="core-pool-size"
+                type="java.lang.Integer"
+                display="Core Pool Size"
+                description="Minimum number of threads to keep in the pool"
+                min="0"
+                default="5"/>
+      <property name="max-pool-size"
+                type="java.lang.Integer"
+                display="Max Pool Size"
+                description="Maximum number of threads in the pool"
+                min="20"
+                default="30"/>
+      <property name="keepalive"
+                type="java.lang.Long"
+                display="Keepalive Time (ms)"
+                description="Keep alive time for idle threads in milliseconds"
+                min="1000"
+                default="1000"/>
+    </entity>
     <entitylist name="groups" display="Groups" description="Event Loop Groups">
       <entitytemplate name="group" display="Group" description="Event Loop Group Definition">
         <property name="freezable"
