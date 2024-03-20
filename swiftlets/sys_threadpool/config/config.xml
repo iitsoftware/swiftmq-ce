@@ -23,7 +23,7 @@
                 display="Core Pool Size"
                 description="Minimum number of threads to keep in the pool"
                 min="0"
-                default="5"/>
+                default="30"/>
       <property name="max-pool-size"
                 type="java.lang.Integer"
                 display="Max Pool Size"

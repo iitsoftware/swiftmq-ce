@@ -170,7 +170,7 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
                 maxPoolSize,
                 keepalive,
                 TimeUnit.MILLISECONDS,
-                new SynchronousQueue<>(),
+                new LinkedBlockingQueue<>(),
                 rejectionHandler
         ));
 
