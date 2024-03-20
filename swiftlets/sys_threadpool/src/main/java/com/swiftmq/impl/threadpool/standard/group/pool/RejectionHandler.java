@@ -35,15 +35,17 @@ public class RejectionHandler implements RejectedExecutionHandler {
 
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-//        ctx.logSwiftlet.logInformation(ctx.threadpoolSwiftlet.getName(), this + "/rejectedExecution, retryDeque.size=" + retryDeque.size());
-//        logUsage(executor);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), this + "/rejectedExecution, retryDeque.size=" + retryDeque.size());
+        if (ctx.traceSpace.enabled) logUsage(executor);
         retryDeque.offer(r); // Rejected tasks are enqueued here
         scheduleDrainQueue(executor);
     }
 
     private void scheduleDrainQueue(ThreadPoolExecutor executor) {
         if (timerActive.compareAndSet(false, true)) {
-//            ctx.logSwiftlet.logInformation(ctx.threadpoolSwiftlet.getName(), this + "/scheduleDrainQueue");
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), this + "/scheduleDrainQueue");
             timer.schedule(() -> drainQueueToExecutor(executor), 1, TimeUnit.SECONDS);
         }
     }
@@ -58,18 +60,19 @@ public class RejectionHandler implements RejectedExecutionHandler {
     private void drainQueueToExecutor(ThreadPoolExecutor executor) {
         Runnable task;
         while ((task = retryDeque.poll()) != null) {
-//            ctx.logSwiftlet.logInformation(ctx.threadpoolSwiftlet.getName(), this + "/drainQueueToExecutor, queue.size=" + retryDeque.size());
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), this + "/drainQueueToExecutor, queue.size=" + retryDeque.size());
             executor.execute(task);
         }
         timerActive.set(false); // Set to false when retryDeque is empty
         if (!retryDeque.isEmpty()) {
             scheduleDrainQueue(executor); // Reschedule if there are more tasks
         }
-//        logUsage(executor);
+        if (ctx.traceSpace.enabled) logUsage(executor);
     }
 
     public void stopTimer() {
-//        ctx.logSwiftlet.logInformation(ctx.threadpoolSwiftlet.getName(), this + "/stopTimer");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.threadpoolSwiftlet.getName(), this + "/stopTimer");
         timer.shutdownNow();
     }
 
