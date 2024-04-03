@@ -19,38 +19,32 @@ package jms.funcunified.transacted.multireceiver;
 
 import jms.base.SimpleConnectedUnifiedPTPTestCase;
 
-import javax.jms.*;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class Receiver extends SimpleConnectedUnifiedPTPTestCase
-{
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  public void testReceive()
-  {
-    try
-    {
-      TextMessage msg = null;
-      int cnt = 0;
-      do
-      {
-        msg = (TextMessage) consumer.receive(2000);
-        if (msg != null)
-          cnt++;
-      } while (msg != null);
-      qs.commit();
-      System.out.println("got " + cnt + " messages");
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class Receiver extends SimpleConnectedUnifiedPTPTestCase {
+    public Receiver(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE);
+    }
+
+    public void testReceive() {
+        try {
+            TextMessage msg = null;
+            int cnt = 0;
+            do {
+                msg = (TextMessage) consumer.receive(2000);
+                if (msg != null)
+                    cnt++;
+            } while (msg != null);
+            qs.commit();
+            System.out.println("got " + cnt + " messages");
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

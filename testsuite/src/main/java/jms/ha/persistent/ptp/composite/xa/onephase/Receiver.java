@@ -23,68 +23,58 @@ import jms.base.XidImpl;
 
 import javax.jms.Message;
 import javax.jms.QueueReceiver;
-import javax.transaction.xa.Xid;
 import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Receiver extends SimpleConnectedXAPTPTestCase
-{
-  int nMsgs = 0;
-  MsgNoVerifier verifier = null;
-  String myQueueName = null;
-  QueueReceiver myReceiver = null;
+public class Receiver extends SimpleConnectedXAPTPTestCase {
+    int nMsgs = 0;
+    MsgNoVerifier verifier = null;
+    String myQueueName = null;
+    QueueReceiver myReceiver = null;
 
-  public Receiver(String name, String myQueueName, int nMsgs)
-  {
-    super(name);
-    this.myQueueName = myQueueName;
-    this.nMsgs = nMsgs;
-  }
-
-  protected void setUp() throws Exception
-  {
-    createSender = false;
-    createReceiver = false;
-    super.setUp();
-    myReceiver = qs.getQueueSession().createReceiver(getQueue(myQueueName));
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-    verifier.setCheckSequence(true);
-  }
-
-  public void receive()
-  {
-    try
-    {
-      Xid xid = new XidImpl(getClass().getName());
-      xares.start(xid, XAResource.TMNOFLAGS);
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Message msg = myReceiver.receive(120000);
-        if (msg == null)
-          throw new Exception("null message received!");
-        verifier.add(msg);
-        if ((i + 1) % 10 == 0)
-        {
-          xares.end(xid, XAResource.TMSUCCESS);
-          xares.commit(xid, true);
-          if (i + 1 < nMsgs)
-          {
-            xid = new XidImpl(getClass().getName());
-            xares.start(xid, XAResource.TMNOFLAGS);
-          }
-        }
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Receiver(String name, String myQueueName, int nMsgs) {
+        super(name);
+        this.myQueueName = myQueueName;
+        this.nMsgs = nMsgs;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    myReceiver.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        createSender = false;
+        createReceiver = false;
+        super.setUp();
+        myReceiver = qs.getQueueSession().createReceiver(getQueue(myQueueName));
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+        verifier.setCheckSequence(true);
+    }
+
+    public void receive() {
+        try {
+            Xid xid = new XidImpl(getClass().getName());
+            xares.start(xid, XAResource.TMNOFLAGS);
+            for (int i = 0; i < nMsgs; i++) {
+                Message msg = myReceiver.receive(120000);
+                if (msg == null)
+                    throw new Exception("null message received!");
+                verifier.add(msg);
+                if ((i + 1) % 10 == 0) {
+                    xares.end(xid, XAResource.TMSUCCESS);
+                    xares.commit(xid, true);
+                    if (i + 1 < nMsgs) {
+                        xid = new XidImpl(getClass().getName());
+                        xares.start(xid, XAResource.TMNOFLAGS);
+                    }
+                }
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        myReceiver.close();
+        super.tearDown();
+    }
 }
 

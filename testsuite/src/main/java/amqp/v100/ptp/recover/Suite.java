@@ -20,24 +20,20 @@ package amqp.v100.ptp.recover;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(amqp.v100.ptp.recover.send.Suite.suite());
-    suite.addTest(amqp.v100.ptp.recover.receive.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(amqp.v100.ptp.recover.send.Suite.suite());
+        suite.addTest(amqp.v100.ptp.recover.receive.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "recover";
-  }
+    public String toString() {
+        return "recover";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

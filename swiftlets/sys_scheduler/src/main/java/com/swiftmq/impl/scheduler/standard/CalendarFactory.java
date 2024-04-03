@@ -23,7 +23,6 @@ import com.swiftmq.mgmt.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 
 public class CalendarFactory {
@@ -62,7 +61,7 @@ public class CalendarFactory {
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
                 SwiftletContext myCtx = (SwiftletContext) ((Object[]) configObject)[0];
                 SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
-                myCal.setEnableWeekDays(((Boolean) newValue).booleanValue());
+                myCal.setEnableWeekDays((Boolean) newValue);
                 try {
                     myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                 } catch (Exception e) {
@@ -75,7 +74,7 @@ public class CalendarFactory {
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
                 SwiftletContext myCtx = (SwiftletContext) ((Object[]) configObject)[0];
                 SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
-                myCal.setEnableMonthDays(((Boolean) newValue).booleanValue());
+                myCal.setEnableMonthDays((Boolean) newValue);
                 try {
                     myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                 } catch (Exception e) {
@@ -88,7 +87,7 @@ public class CalendarFactory {
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
                 SwiftletContext myCtx = (SwiftletContext) ((Object[]) configObject)[0];
                 SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
-                myCal.setEnableMonthDayLast(((Boolean) newValue).booleanValue());
+                myCal.setEnableMonthDayLast((Boolean) newValue);
                 try {
                     myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                 } catch (Exception e) {
@@ -101,7 +100,7 @@ public class CalendarFactory {
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
                 SwiftletContext myCtx = (SwiftletContext) ((Object[]) configObject)[0];
                 SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
-                myCal.setEnableAnnualDays(((Boolean) newValue).booleanValue());
+                myCal.setEnableAnnualDays((Boolean) newValue);
                 try {
                     myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                 } catch (Exception e) {
@@ -114,7 +113,7 @@ public class CalendarFactory {
             public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
                 SwiftletContext myCtx = (SwiftletContext) ((Object[]) configObject)[0];
                 SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
-                myCal.setEnableDateRanges(((Boolean) newValue).booleanValue());
+                myCal.setEnableDateRanges((Boolean) newValue);
                 try {
                     myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                 } catch (Exception e) {
@@ -131,7 +130,7 @@ public class CalendarFactory {
                     SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
                     try {
                         int day = fmt.parse(property.getName().substring(4)).intValue();
-                        myCal.setWeekDay(day, ((Boolean) newValue).booleanValue());
+                        myCal.setWeekDay(day, (Boolean) newValue);
                         myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                     } catch (Exception e) {
                         throw new PropertyChangeException(e.toString());
@@ -148,7 +147,7 @@ public class CalendarFactory {
                     SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
                     try {
                         int day = fmt.parse(property.getName().substring(4)).intValue();
-                        myCal.setMonthDay(day, ((Boolean) newValue).booleanValue());
+                        myCal.setMonthDay(day, (Boolean) newValue);
                         myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                     } catch (Exception e) {
                         throw new PropertyChangeException(e.toString());
@@ -162,7 +161,7 @@ public class CalendarFactory {
                 SwiftletContext myCtx = (SwiftletContext) ((Object[]) configObject)[0];
                 SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
                 try {
-                    myCal.setMonthDay(32, ((Boolean) newValue).booleanValue());
+                    myCal.setMonthDay(32, (Boolean) newValue);
                     myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                 } catch (Exception e) {
                     throw new PropertyChangeException(e.toString());
@@ -201,13 +200,7 @@ public class CalendarFactory {
                 SwiftletContext myCtx = (SwiftletContext) ((Object[]) configObject)[0];
                 SchedulerCalendar myCal = (SchedulerCalendar) ((Object[]) configObject)[1];
                 try {
-                    String from = (String) newEntity.getProperty("from").getValue();
-                    String to = (String) newEntity.getProperty("to").getValue();
-                    Date fd = drFmt.parse(from);
-                    Date td = drFmt.parse(to);
-                    if (td.getTime() < fd.getTime())
-                        throw new Exception("Date Range, 'from' (" + from + ") is greater than 'to' (" + to + ")");
-                    myCal.addDateRange(newEntity.getName(), from, to);
+                    checkDate(myCal, newEntity);
                     myCtx.scheduler.enqueue(new CalendarChanged(myCal.createCopy()));
                 } catch (Exception e) {
                     throw new EntityAddException(e.toString());
@@ -233,47 +226,51 @@ public class CalendarFactory {
         String name = entity.getName();
         String type = (String) entity.getProperty("type").getValue();
         String baseCalendar = (String) entity.getProperty("base-calendar").getValue();
-        boolean enableWeekDays = ((Boolean) entity.getProperty("enable-weekdays").getValue()).booleanValue();
-        boolean enableMonthDays = ((Boolean) entity.getProperty("enable-monthdays").getValue()).booleanValue();
-        boolean enableMonthDaysLast = ((Boolean) entity.getProperty("enable-monthdays-last").getValue()).booleanValue();
-        boolean enableAnnualDays = ((Boolean) entity.getProperty("enable-annualdays").getValue()).booleanValue();
-        boolean enableDateRanges = ((Boolean) entity.getProperty("enable-dateranges").getValue()).booleanValue();
+        boolean enableWeekDays = (Boolean) entity.getProperty("enable-weekdays").getValue();
+        boolean enableMonthDays = (Boolean) entity.getProperty("enable-monthdays").getValue();
+        boolean enableMonthDaysLast = (Boolean) entity.getProperty("enable-monthdays-last").getValue();
+        boolean enableAnnualDays = (Boolean) entity.getProperty("enable-annualdays").getValue();
+        boolean enableDateRanges = (Boolean) entity.getProperty("enable-dateranges").getValue();
         cal = new SchedulerCalendar(name, type.equals("exclude"), baseCalendar, enableWeekDays, enableMonthDays, enableMonthDaysLast, enableAnnualDays, enableDateRanges);
         Entity wdEntity = entity.getEntity("weekdays");
         for (int i = 0; i < 7; i++) {
             Property prop = wdEntity.getProperty("day-" + fmt.format(i + 1));
-            cal.setWeekDay(i + 1, ((Boolean) prop.getValue()).booleanValue());
+            cal.setWeekDay(i + 1, (Boolean) prop.getValue());
         }
         Entity mdEntity = entity.getEntity("monthdays");
         for (int i = 0; i < 31; i++) {
             Property prop = mdEntity.getProperty("day-" + fmt.format(i + 1));
-            cal.setMonthDay(i + 1, ((Boolean) prop.getValue()).booleanValue());
+            cal.setMonthDay(i + 1, (Boolean) prop.getValue());
         }
         Property prop = mdEntity.getProperty("last");
-        cal.setMonthDay(32, ((Boolean) prop.getValue()).booleanValue());
+        cal.setMonthDay(32, (Boolean) prop.getValue());
         EntityList adList = (EntityList) entity.getEntity("annualdays");
         Map entities = adList.getEntities();
         if (entities != null) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Object o : entities.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 cal.addAnnualDay(e.getName(), fmt.parse((String) e.getProperty("day").getValue()).intValue(), (String) e.getProperty("month").getValue());
             }
         }
         EntityList drList = (EntityList) entity.getEntity("date-ranges");
         entities = drList.getEntities();
         if (entities != null) {
-            for (Iterator iter = entities.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
-                String from = (String) e.getProperty("from").getValue();
-                String to = (String) e.getProperty("to").getValue();
-                Date fd = drFmt.parse(from);
-                Date td = drFmt.parse(to);
-                if (td.getTime() < fd.getTime())
-                    throw new Exception("Date Range, 'from' (" + from + ") is greater than 'to' (" + to + ")");
-                cal.addDateRange(e.getName(), from, to);
+            for (Object o : entities.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
+                checkDate(cal, e);
             }
         }
         addChangeListener(ctx, entity, cal);
         return cal;
+    }
+
+    private static void checkDate(SchedulerCalendar cal, Entity e) throws Exception {
+        String from = (String) e.getProperty("from").getValue();
+        String to = (String) e.getProperty("to").getValue();
+        Date fd = drFmt.parse(from);
+        Date td = drFmt.parse(to);
+        if (td.getTime() < fd.getTime())
+            throw new Exception("Date Range, 'from' (" + from + ") is greater than 'to' (" + to + ")");
+        cal.addDateRange(e.getName(), from, to);
     }
 }

@@ -19,53 +19,41 @@ package jms.ha.persistent.ptp.nontransacted.clientack.multiconsumer;
 
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.QueueSender;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
-public class Sender extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  String queueName = null;
-  QueueSender mySender = null;
+public class Sender extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    String queueName = null;
+    QueueSender mySender = null;
 
-  public Sender(String name, String queueName)
-  {
-    super(name);
-    this.queueName = queueName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
-    mySender = qs.createSender(getQueue(queueName));
-  }
-
-  public void send()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        msg.setIntProperty("no", i);
-        msg.setText("Msg: " + i);
-        mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Sender(String name, String queueName) {
+        super(name);
+        this.queueName = queueName;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    queueName = null;
-    mySender = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
+        mySender = qs.createSender(getQueue(queueName));
+    }
+
+    public void send() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < nMsgs; i++) {
+                msg.setIntProperty("no", i);
+                msg.setText("Msg: " + i);
+                mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        queueName = null;
+        mySender = null;
+        super.tearDown();
+    }
 }
 

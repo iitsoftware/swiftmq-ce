@@ -27,8 +27,8 @@ import com.swiftmq.amqp.v100.generated.transactions.coordination.Coordinator;
 import com.swiftmq.amqp.v100.generated.transactions.coordination.TransactionalState;
 import com.swiftmq.amqp.v100.generated.transactions.coordination.TxnIdFactory;
 import com.swiftmq.amqp.v100.generated.transactions.coordination.TxnIdIF;
-import com.swiftmq.amqp.v100.generated.transport.definitions.*;
 import com.swiftmq.amqp.v100.generated.transport.definitions.Error;
+import com.swiftmq.amqp.v100.generated.transport.definitions.*;
 import com.swiftmq.amqp.v100.generated.transport.performatives.*;
 import com.swiftmq.amqp.v100.types.*;
 import com.swiftmq.impl.amqp.SwiftletContext;
@@ -43,11 +43,12 @@ import com.swiftmq.swiftlet.auth.AuthenticationException;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.MessageIndex;
 import com.swiftmq.swiftlet.queue.QueueException;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.topic.TopicException;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.tools.collection.ConcurrentExpandableList;
+import com.swiftmq.tools.collection.ExpandableList;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.util.SwiftUtilities;
 import org.apache.qpid.translator.Translator;
@@ -64,7 +65,6 @@ public class SessionHandler implements AMQPSessionVisitor {
     SwiftletContext ctx = null;
     VersionedConnection versionedConnection = null;
     AMQPHandler amqpHandler = null;
-    PipelineQueue pipelineQueue = null;
     SessionFrameVisitor frameVisitor = new SessionFrameVisitor();
     ExceptionVisitor exceptionVisitor = new ExceptionVisitor();
     boolean closed = false;
@@ -74,7 +74,7 @@ public class SessionHandler implements AMQPSessionVisitor {
     int channel;
     long maxHandle = 0;
     long maxMessageSize = 0;
-    ArrayList handles = new ArrayList();
+    ExpandableList<ServerLink> handles = new ConcurrentExpandableList<>();
     Map remoteHandles = new HashMap();
     Map detachedLinks = new HashMap();
     Map unsettledIncomingDeliveries = new HashMap();
@@ -109,8 +109,8 @@ public class SessionHandler implements AMQPSessionVisitor {
     public volatile int msgsSent = 0;
     public volatile int totalMsgsReceived = 0;
     public volatile int totalMsgsSent = 0;
-
     boolean sessionDisabled = false;
+    EventLoop eventLoop;
 
     public SessionHandler(SwiftletContext ctx, VersionedConnection versionedConnection, AMQPHandler amqpHandler, BeginFrame beginFrame) {
         this.ctx = ctx;
@@ -130,7 +130,7 @@ public class SessionHandler implements AMQPSessionVisitor {
         incomingWindow = ((Integer) connectionTemplate.getProperty("incoming-window-size").getValue()).intValue();
         initialOutgoingWindow = ((Integer) connectionTemplate.getProperty("outgoing-window-size").getValue()).intValue();
         outgoingWindow = initialOutgoingWindow;
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(VersionedConnection.TP_SESSIONSVC), "SessionHandler", this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.session.service", list -> list.forEach(e -> ((POObject) e).accept(SessionHandler.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", created");
     }
 
@@ -515,7 +515,7 @@ public class SessionHandler implements AMQPSessionVisitor {
 
     public void dispatch(POObject po) {
         if (!sessionDisabled)
-            pipelineQueue.enqueue(po);
+            eventLoop.submit(po);
         else {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", Session disabled, PO discarded: " + po);
@@ -586,18 +586,18 @@ public class SessionHandler implements AMQPSessionVisitor {
             ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
         if (usage != null) {
             try {
-                if (((Long) propNextIncomingId.getValue()).longValue() != nextIncomingId)
-                    propNextIncomingId.setValue(new Long((long) nextIncomingId));
-                if (((Long) propNextOutgoingId.getValue()).longValue() != nextOutgoingId)
-                    propNextOutgoingId.setValue(new Long((long) nextOutgoingId));
-                if (((Long) propIncomingWindow.getValue()).longValue() != incomingWindow)
-                    propIncomingWindow.setValue(new Long((long) incomingWindow));
-                if (((Long) propOutgoingWindow.getValue()).longValue() != outgoingWindow)
-                    propOutgoingWindow.setValue(new Long((long) outgoingWindow));
-                if (((Long) propRemoteIncomingWindow.getValue()).longValue() != remoteIncomingWindow)
-                    propRemoteIncomingWindow.setValue(new Long((long) remoteIncomingWindow));
-                if (((Long) propRemoteOutgoingWindow.getValue()).longValue() != remoteOutgoingWindow)
-                    propRemoteOutgoingWindow.setValue(new Long((long) remoteOutgoingWindow));
+                if ((Long) propNextIncomingId.getValue() != nextIncomingId)
+                    propNextIncomingId.setValue(nextIncomingId);
+                if ((Long) propNextOutgoingId.getValue() != nextOutgoingId)
+                    propNextOutgoingId.setValue(nextOutgoingId);
+                if ((Long) propIncomingWindow.getValue() != incomingWindow)
+                    propIncomingWindow.setValue(incomingWindow);
+                if ((Long) propOutgoingWindow.getValue() != outgoingWindow)
+                    propOutgoingWindow.setValue(outgoingWindow);
+                if ((Long) propRemoteIncomingWindow.getValue() != remoteIncomingWindow)
+                    propRemoteIncomingWindow.setValue(remoteIncomingWindow);
+                if ((Long) propRemoteOutgoingWindow.getValue() != remoteOutgoingWindow)
+                    propRemoteOutgoingWindow.setValue(remoteOutgoingWindow);
                 for (int i = 0; i < handles.size(); i++) {
                     ServerLink link = (ServerLink) handles.get(i);
                     if (link != null)
@@ -640,7 +640,6 @@ public class SessionHandler implements AMQPSessionVisitor {
         unsettledOutgoingDeliveries.clear();
         unsettledIncomingDeliveries.clear();
         outboundDeliveries.clear();
-        pipelineQueue.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
@@ -662,6 +661,7 @@ public class SessionHandler implements AMQPSessionVisitor {
         Semaphore sem = new Semaphore();
         dispatch(new POCloseSession(sem));
         sem.waitHere();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close done");
     }
 
@@ -720,7 +720,7 @@ public class SessionHandler implements AMQPSessionVisitor {
                     }
                 });
             }
-            int handle = ArrayListTool.setFirstFreeOrExpand(handles, targetLink);
+            int handle = handles.add(targetLink);
             targetLink.setHandle(handle);
             targetLink.setRemoteHandle(frame.getHandle().getValue());
             if (frame.getInitialDeliveryCount() != null)
@@ -776,7 +776,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setTarget(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.INTERNAL_ERROR, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (QueueException e) {
                 if (ctx.traceSpace.enabled)
@@ -784,7 +785,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setTarget(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.NOT_FOUND, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (TopicException e) {
                 if (ctx.traceSpace.enabled)
@@ -792,7 +794,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setTarget(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.INTERNAL_ERROR, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (AuthenticationException e) {
                 if (ctx.traceSpace.enabled)
@@ -800,7 +803,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setTarget(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.UNAUTHORIZED_ACCESS, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (ResourceLimitException e) {
                 if (ctx.traceSpace.enabled)
@@ -809,7 +813,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setTarget(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.RESOURCE_LIMIT_EXCEEDED, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (IOException e) {
                 if (ctx.traceSpace.enabled)
@@ -817,7 +822,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setTarget(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.DECODE_ERROR, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             }
         }
@@ -910,7 +916,7 @@ public class SessionHandler implements AMQPSessionVisitor {
                     }
                 });
             }
-            int handle = ArrayListTool.setFirstFreeOrExpand(handles, sourceLink);
+            int handle = handles.add(sourceLink);
             sourceLink.setHandle(handle);
             sourceLink.setRemoteHandle(frame.getHandle().getValue());
             remoteHandles.put(frame.getHandle().getValue(), sourceLink);
@@ -975,7 +981,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setSource(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.INVALID_FIELD, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (QueueException e) {
                 if (ctx.traceSpace.enabled)
@@ -983,7 +990,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setSource(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.NOT_FOUND, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (TopicException e) {
                 if (ctx.traceSpace.enabled)
@@ -991,7 +999,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setSource(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.INTERNAL_ERROR, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (AuthenticationException e) {
                 if (ctx.traceSpace.enabled)
@@ -999,7 +1008,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setSource(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.UNAUTHORIZED_ACCESS, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (ResourceLimitException e) {
                 if (ctx.traceSpace.enabled)
@@ -1008,7 +1018,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setTarget(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.RESOURCE_LIMIT_EXCEEDED, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             } catch (IOException e) {
                 if (ctx.traceSpace.enabled)
@@ -1016,7 +1027,8 @@ public class SessionHandler implements AMQPSessionVisitor {
                 attachFrame.setSource(null);
                 versionedConnection.send(attachFrame);
                 sendDetach(attachFrame.getHandle(), AmqpError.DECODE_ERROR, new AMQPString(e.getMessage()));
-                handles.set(handle, null);
+                handles.remove(handle);
+                ;
                 remoteHandles.remove(frame.getHandle().getValue());
             }
         }
@@ -1252,7 +1264,7 @@ public class SessionHandler implements AMQPSessionVisitor {
             if (link != null) {
                 if (frame.getClosed() != null && frame.getClosed().getValue() == AMQPBoolean.TRUE.getValue()) {
                     remoteHandles.remove(frame.getHandle().getValue());
-                    handles.set(link.getHandle(), null);
+                    handles.remove(link.getHandle());
                     cleanupLink(link);
                     link.close();
                 } else
@@ -1282,7 +1294,7 @@ public class SessionHandler implements AMQPSessionVisitor {
             ctx.logSwiftlet.logError(ctx.amqpSwiftlet.getName(), toString() + ", " + exception);
             ServerLink link = (ServerLink) remoteHandles.remove(exception.getLink().getRemoteHandle());
             if (link != null) {
-                handles.set(link.getHandle(), null);
+                handles.remove(link.getHandle());
                 cleanupLink(link);
                 link.close();
                 sendDetach(new Handle(link.getHandle()), exception.getCondition(), exception.getDescription());

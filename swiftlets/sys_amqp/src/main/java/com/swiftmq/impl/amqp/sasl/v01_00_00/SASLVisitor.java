@@ -23,9 +23,9 @@ import com.swiftmq.impl.amqp.sasl.v01_00_00.po.POSendInit;
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface SASLVisitor extends POVisitor {
-    public void visit(POSendInit po);
+    void visit(POSendInit po);
 
-    public void visit(POSaslFrameReceived po);
+    void visit(POSaslFrameReceived po);
 
-    public void visit(POClose po);
+    void visit(POClose po);
 }

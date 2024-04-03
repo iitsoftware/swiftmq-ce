@@ -23,29 +23,31 @@ import com.swiftmq.swiftlet.net.ConnectionVetoException;
 import com.swiftmq.swiftlet.net.IntraVMListenerMetaData;
 import com.swiftmq.swiftlet.net.event.ConnectionListener;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class IntraVMScheduler {
     SwiftletContext ctx;
-    Map listeners = new HashMap();
+    Map<String, IntraVMListenerMetaData> listeners = new ConcurrentHashMap<>();
 
     public IntraVMScheduler(SwiftletContext ctx) {
         this.ctx = ctx;
     }
 
-    public synchronized void createListener(IntraVMListenerMetaData metaData)
+    public void createListener(IntraVMListenerMetaData metaData)
             throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/createListener: MetaData=" + metaData);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/createListener: MetaData=" + metaData);
         listeners.put(metaData.getSwiftlet().getName(), metaData);
     }
 
-    public synchronized void removeListener(IntraVMListenerMetaData metaData) {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/removeListener: metaData=" + metaData);
+    public void removeListener(IntraVMListenerMetaData metaData) {
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace("sys$net", toString() + "/removeListener: metaData=" + metaData);
         listeners.remove(metaData.getSwiftlet().getName());
     }
 
-    public synchronized void connectListener(String swiftletName, IntraVMConnection clientConnection)
+    public void connectListener(String swiftletName, IntraVMConnection clientConnection)
             throws Exception {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$net", toString() + "/connectListener: swiftletName=" + swiftletName + ", clientConnection=" + clientConnection);
@@ -70,7 +72,7 @@ public class IntraVMScheduler {
         ctx.logSwiftlet.logInformation("sys$net", toString() + "/connection accepted: " + connection);
     }
 
-    public synchronized void close() {
+    public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/close");
         listeners.clear();
     }

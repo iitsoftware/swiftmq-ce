@@ -46,7 +46,7 @@ public class PrepareLogRecordImpl implements PrepareLogRecord {
         this.type = type;
         this.queueName = queueName;
         this.globalTxId = globalTxId;
-        keyList = new ArrayList();
+        keyList = new ArrayList<>();
         keyList.addAll(keys);
         preparationTime = System.currentTimeMillis();
     }
@@ -112,8 +112,8 @@ public class PrepareLogRecordImpl implements PrepareLogRecord {
         out.writeUTF(queueName);
         globalTxId.writeContent(out);
         out.writeInt(keyList.size());
-        for (int i = 0; i < keyList.size(); i++) {
-            writeEntry(out, (QueueIndexEntry) keyList.get(i));
+        for (Object queueIndexEntry : keyList) {
+            writeEntry(out, (QueueIndexEntry) queueIndexEntry);
         }
     }
 
@@ -129,7 +129,7 @@ public class PrepareLogRecordImpl implements PrepareLogRecord {
         globalTxId = new XidImpl();
         globalTxId.readContent(in);
         int size = in.readInt();
-        keyList = new ArrayList(size);
+        keyList = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             keyList.add(readEntry(in));
         }

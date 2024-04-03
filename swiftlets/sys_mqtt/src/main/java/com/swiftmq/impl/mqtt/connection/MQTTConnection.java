@@ -32,36 +32,37 @@ import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.AuthenticationException;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.net.Connection;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.concurrent.AtomicWrappingCounterInteger;
 import com.swiftmq.tools.concurrent.Semaphore;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+import com.swiftmq.tools.pipeline.POObject;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MQTTConnection implements TimerListener, MqttListener, AssociateSessionCallback, MQTTVisitor {
-    public static final String TP_CONNECTIONSVC = "sys$mqtt.connection.service";
-
     SwiftletContext ctx = null;
     Entity usage = null;
     Entity connectionTemplate = null;
     Connection connection = null;
     OutboundQueue outboundQueue = null;
-    PipelineQueue connectionQueue = null;
-    volatile ActiveLogin activeLogin = null;
-    boolean closed = false;
-    boolean closeInProgress = false;
-    Lock closeLock = new ReentrantLock();
+    final AtomicReference<ActiveLogin> activeLogin = new AtomicReference<>();
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean closeInProgress = new AtomicBoolean(false);
     String clientId = null;
     String username = "anonymous";
     String remoteHostname;
-    boolean authenticated = false;
-    int nConnectPackets = 0;
-    boolean protocolInvalid = false;
-    long keepaliveInterval = 0;
-    int packetCount = 0;
+    final AtomicBoolean authenticated = new AtomicBoolean(false);
+    final AtomicInteger nConnectPackets = new AtomicInteger();
+    final AtomicBoolean protocolInvalid = new AtomicBoolean(false);
+    final AtomicLong keepaliveInterval = new AtomicLong();
+    final AtomicInteger packetCount = new AtomicInteger();
     Will will = null;
     MqttConnectMessage connectMessage = null;
     MqttConnAckMessage connAckMessage = null;
@@ -69,7 +70,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
     MQTTSession session = null;
     boolean cleanSession = false;
     String uniqueId;
-    int uniqueIdCount = 0;
+    AtomicWrappingCounterInteger uniqueIdCount = new AtomicWrappingCounterInteger(0);
     boolean hasLastWill = false;
     String lastWillTopic = null;
     MqttQoS lastWillQoS = null;
@@ -79,6 +80,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
     Property sentSecProp = null;
     Property receivedTotalProp = null;
     Property sentTotalProp = null;
+    EventLoop eventLoop;
 
     public MQTTConnection(SwiftletContext ctx, Connection connection, Entity usage, Entity connectionTemplate) {
         this.ctx = ctx;
@@ -90,11 +92,10 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         sentSecProp = usage.getProperty("msgs-sent");
         receivedTotalProp = usage.getProperty("total-received");
         sentTotalProp = usage.getProperty("total-sent");
-        connectionQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_CONNECTIONSVC), "MQTTConnection", this);
-        outboundQueue = new OutboundQueue(ctx, ctx.threadpoolSwiftlet.getPool(TP_CONNECTIONSVC), this);
-        outboundQueue.startQueue();
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$mqtt.connection.inbound", list -> list.forEach(e -> ((POObject) e).accept(MQTTConnection.this)));
+        outboundQueue = new OutboundQueue(ctx, this);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/created");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/created");
     }
 
     public String getClientId() {
@@ -114,15 +115,11 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
     }
 
     public ActiveLogin getActiveLogin() {
-        return activeLogin;
+        return activeLogin.get();
     }
 
     public String getRemoteHostname() {
         return connection.getHostname();
-    }
-
-    public PipelineQueue getConnectionQueue() {
-        return connectionQueue;
     }
 
     public OutboundQueue getOutboundQueue() {
@@ -130,15 +127,11 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
     }
 
     public String nextId() {
-        if (uniqueIdCount == Integer.MAX_VALUE)
-            uniqueIdCount = 0;
-        else
-            uniqueIdCount++;
-        return uniqueId + "/" + uniqueIdCount;
+        return uniqueId + "/" + uniqueIdCount.getAndIncrement();
     }
 
     public void collect(long lastCollect) {
-        connectionQueue.enqueue(new POCollect(lastCollect));
+        eventLoop.submit(new POCollect(lastCollect));
     }
 
     @Override
@@ -148,140 +141,138 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
 
     @Override
     public void associated(MQTTSession session) {
-        connectionQueue.enqueue(new POSessionAssociated(session));
+        eventLoop.submit(new POSessionAssociated(session));
     }
 
     @Override
-    public synchronized void performTimeAction() {
+    public void performTimeAction() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/performTimeAction, packetCount=" + packetCount);
-        if (packetCount == 0)
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/performTimeAction, packetCount=" + packetCount.get());
+        if (packetCount.getAndSet(0) == 0)
             initiateClose("inactivity timeout");
-        packetCount = 0;
+    }
+
+    public void dispatch(POObject event) {
+        eventLoop.submit(event);
     }
 
     private void process(MqttMessage message) {
         if (ctx.protSpace.enabled)
-            ctx.protSpace.trace("mqtt", toString() + "/RCV: " + message);
-        synchronized (this) {
-            packetCount++;
-        }
+            ctx.protSpace.trace("mqtt", this + "/RCV: " + message);
+        packetCount.getAndIncrement();
         if (message.fixedHeader() != null) {
             switch (message.fixedHeader().messageType()) {
                 case CONNECT:
-                    connectionQueue.enqueue(new POConnect((MqttConnectMessage) message));
+                    eventLoop.submit(new POConnect((MqttConnectMessage) message));
                     break;
                 case CONNACK:
-                    connectionQueue.enqueue(new POProtocolError(message));
+                    eventLoop.submit(new POProtocolError(message));
                     break;
                 case SUBSCRIBE:
-                    connectionQueue.enqueue(new POSubscribe((MqttSubscribeMessage) message));
+                    eventLoop.submit(new POSubscribe((MqttSubscribeMessage) message));
                     break;
                 case SUBACK:
-                    connectionQueue.enqueue(new POProtocolError(message));
+                    eventLoop.submit(new POProtocolError(message));
                     break;
                 case UNSUBACK:
-                    connectionQueue.enqueue(new POProtocolError(message));
+                    eventLoop.submit(new POProtocolError(message));
                     break;
                 case UNSUBSCRIBE:
-                    connectionQueue.enqueue(new POUnsubscribe((MqttUnsubscribeMessage) message));
+                    eventLoop.submit(new POUnsubscribe((MqttUnsubscribeMessage) message));
                     break;
                 case PUBLISH:
-                    connectionQueue.enqueue(new POPublish((MqttPublishMessage) message));
+                    eventLoop.submit(new POPublish((MqttPublishMessage) message));
                     break;
                 case PUBACK:
-                    connectionQueue.enqueue(new POPubAck((MqttPubAckMessage) message));
+                    eventLoop.submit(new POPubAck((MqttPubAckMessage) message));
                     break;
                 case PUBREC:
-                    connectionQueue.enqueue(new POPubRec(message));
+                    eventLoop.submit(new POPubRec(message));
                     break;
                 case PUBREL:
-                    connectionQueue.enqueue(new POPubRel(message));
+                    eventLoop.submit(new POPubRel(message));
                     break;
                 case PUBCOMP:
-                    connectionQueue.enqueue(new POPubComp(message));
+                    eventLoop.submit(new POPubComp(message));
                     break;
                 case PINGREQ:
-                    connectionQueue.enqueue(new POPingReq(message));
+                    eventLoop.submit(new POPingReq(message));
                     break;
                 case PINGRESP:
-                    connectionQueue.enqueue(new POProtocolError(message));
+                    eventLoop.submit(new POProtocolError(message));
                     break;
                 case DISCONNECT:
-                    connectionQueue.enqueue(new PODisconnect(message));
+                    eventLoop.submit(new PODisconnect(message));
                     break;
                 default:
-                    connectionQueue.enqueue(new POProtocolError(message));
+                    eventLoop.submit(new POProtocolError(message));
             }
         } else {
-            connectionQueue.enqueue(new POProtocolError(message));
+            eventLoop.submit(new POProtocolError(message));
         }
     }
 
     public void initiateClose(String reason) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/initiateClose, reason=" + reason);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/initiateClose, reason=" + reason);
         if (reason != null)
-            ctx.logSwiftlet.logError(ctx.mqttSwiftlet.getName(), toString() + "/Disconnect client due to this reason: " + reason);
+            ctx.logSwiftlet.logError(ctx.mqttSwiftlet.getName(), this + "/Disconnect client due to this reason: " + reason);
         ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
     }
 
     @Override
     public void onMessage(List<MqttMessage> list) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/onMessage, list=" + list);
-        for (int i = 0; i < list.size(); i++) {
-            process(list.get(i));
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/onMessage, list=" + list);
+        for (MqttMessage mqttMessage : list) {
+            process(mqttMessage);
         }
     }
 
     @Override
     public void onException(Exception e) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/onException, exception=" + e);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/onException, exception=" + e);
         initiateClose(e.toString());
     }
 
     public void close() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", close ...");
-        closeLock.lock();
-        if (closeInProgress) {
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", close ...");
+        if (closed.get() || closeInProgress.getAndSet(true)) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", close in progress, return");
+                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", closed or close in progress, return");
             return;
         }
         //Todo: Remove Usage entry
         ctx.timerSwiftlet.removeTimerListener(this);
-        closeInProgress = true;
-        closeLock.unlock();
         Semaphore sem = new Semaphore();
-        connectionQueue.enqueue(new POClose(sem));
+        eventLoop.submit(new POClose(sem));
         sem.waitHere();
-        outboundQueue.stopQueue();
-        closed = true;
+        outboundQueue.close();
+        closed.set(true);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", close done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", close done");
     }
 
     @Override
     public void visit(POConnect po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
 
-        if (nConnectPackets > 0) {
-            protocolInvalid = true;
+        if (nConnectPackets.get() > 0) {
+            protocolInvalid.set(true);
             initiateClose("protocol error, multiple connect packets");
             return;
         }
-        nConnectPackets++;
+        nConnectPackets.getAndIncrement();
 
         connectMessage = po.getMessage();
         MqttConnectVariableHeader variableConnectHeader = connectMessage.variableHeader();
         MqttConnectPayload payload = connectMessage.payload();
         clientId = payload.clientIdentifier();
-        if (clientId == null || clientId.length() == 0) {
+        if (clientId == null || clientId.isEmpty()) {
             if (!variableConnectHeader.isCleanSession())
                 rc = MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED;
             else
@@ -296,16 +287,16 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
             try {
                 ctx.authSwiftlet.verifyHostLogin(username, remoteHostname);
                 String pwd = ctx.authSwiftlet.getPassword(username);
-                if (password == pwd || password != null && password.equals(pwd)) {
+                if (Objects.equals(password, pwd)) {
                     rc = MqttConnectReturnCode.CONNECTION_ACCEPTED;
-                    activeLogin = ctx.authSwiftlet.createActiveLogin(username, "MQTT");
-                    activeLogin.setClientId(clientId);
-                    authenticated = true;
+                    activeLogin.set(ctx.authSwiftlet.createActiveLogin(username, "MQTT"));
+                    activeLogin.get().setClientId(clientId);
+                    authenticated.set(true);
                 } else
                     throw new AuthenticationException("invalid password");
-                keepaliveInterval = (long) ((double) (variableConnectHeader.keepAliveTimeSeconds() * 1000.0) * 1.5);
-                if (keepaliveInterval > 0) {
-                    ctx.timerSwiftlet.addTimerListener(keepaliveInterval, this);
+                keepaliveInterval.set((long) (variableConnectHeader.keepAliveTimeSeconds() * 1000.0 * 1.5));
+                if (keepaliveInterval.get() > 0) {
+                    ctx.timerSwiftlet.addTimerListener(keepaliveInterval.get(), this);
                 }
                 if (variableConnectHeader.isWillFlag())
                     will = new Will(payload.willTopic(), variableConnectHeader.willQos(), variableConnectHeader.isWillRetain(), payload.willMessageInBytes());
@@ -341,23 +332,23 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         MqttConnAckVariableHeader variableHeader = new MqttConnAckVariableHeader(rc, false);
         connAckMessage = new MqttConnAckMessage(fixedHeader, variableHeader);
         if (rc != MqttConnectReturnCode.CONNECTION_ACCEPTED) {
-            protocolInvalid = true;
+            protocolInvalid.set(true);
             initiateClose("not authenticated");
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POSessionAssociated po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         session = po.getSession();
         connAckMessage.variableHeader().setSessionPresent(session.isWasPresent());
-        outboundQueue.enqueue(connAckMessage);
+        outboundQueue.submit(connAckMessage);
         if (rc != MqttConnectReturnCode.CONNECTION_ACCEPTED) {
-            protocolInvalid = true;
+            protocolInvalid.set(true);
             initiateClose("connection not accepted");
         } else {
             uniqueId = "mqtt/" + SwiftletManager.getInstance().getRouterName() + "/" + clientId + "/" + System.currentTimeMillis();
@@ -365,94 +356,94 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         }
         session.fillConnectionUsage(usage.getEntity("MQTT Session"));
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POPublish po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POSendMessage po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POPubAck po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POPubRec po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POPubRel po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POPubComp po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POSubscribe po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POUnsubscribe po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         session.visit(po);
     }
 
     @Override
     public void visit(POPingReq po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
 
-        outboundQueue.enqueue(new MqttMessage(new MqttFixedHeader(MqttMessageType.PINGRESP, false, MqttQoS.AT_MOST_ONCE, false, 0)));
+        outboundQueue.submit(new MqttMessage(new MqttFixedHeader(MqttMessageType.PINGRESP, false, MqttQoS.AT_MOST_ONCE, false, 0)));
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(PODisconnect po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
 
         hasLastWill = false;
 
         initiateClose(null);
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POProtocolError po) {
-        if (closed || protocolInvalid) return;
+        if (closed.get() || protocolInvalid.get()) return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        protocolInvalid = true;
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
+        protocolInvalid.set(true);
 
         initiateClose("protocol error");
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
@@ -460,35 +451,35 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         if (session == null)
             return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         long received = session.getMsgsReceived();
         long sent = session.getMsgsSent();
         int totalReceived = session.getTotalMsgsReceived();
         int totalSent = session.getTotalMsgsSent();
         session.visit(po);
         double deltasec = Math.max(1.0, (double) (System.currentTimeMillis() - po.getLastCollect()) / 1000.0);
-        double rsec = ((double) received / (double) deltasec) + 0.5;
-        double ssec = ((double) sent / (double) deltasec) + 0.5;
+        double rsec = ((double) received / deltasec) + 0.5;
+        double ssec = ((double) sent / deltasec) + 0.5;
         try {
-            if (((Integer) receivedSecProp.getValue()).intValue() != rsec)
-                receivedSecProp.setValue(new Integer((int) rsec));
-            if (((Integer) sentSecProp.getValue()).intValue() != ssec)
-                sentSecProp.setValue(new Integer((int) ssec));
-            if (((Integer) receivedTotalProp.getValue()).intValue() != totalReceived)
-                receivedTotalProp.setValue(new Integer(totalReceived));
-            if (((Integer) sentTotalProp.getValue()).intValue() != totalSent)
-                sentTotalProp.setValue(new Integer(totalSent));
+            if ((Integer) receivedSecProp.getValue() != rsec)
+                receivedSecProp.setValue((int) rsec);
+            if ((Integer) sentSecProp.getValue() != ssec)
+                sentSecProp.setValue((int) ssec);
+            if ((Integer) receivedTotalProp.getValue() != totalReceived)
+                receivedTotalProp.setValue(totalReceived);
+            if ((Integer) sentTotalProp.getValue() != totalSent)
+                sentTotalProp.setValue(totalSent);
         } catch (Exception e) {
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POClose po) {
-        if (closed) return;
+        if (closed.get()) return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         if (hasLastWill) {
             try {
                 String topicName = session.topicNameTranslate(lastWillTopic);
@@ -514,12 +505,12 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
                 session.destroy();
         }
 
-        connectionQueue.close();
+        eventLoop.close();
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
@@ -527,7 +518,7 @@ public class MQTTConnection implements TimerListener, MqttListener, AssociateSes
         return "MQTTConnection, clientid=" + clientId;
     }
 
-    private class Will {
+    private static class Will {
         String topic;
         int qos;
         boolean retain;

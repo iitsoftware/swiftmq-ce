@@ -199,7 +199,7 @@
                   display="Router Network Input Buffer Size"
                   description="Router Network Input Buffer Size"
                   mandatory="false"
-                  min="4096"
+                  min="1024"
                   default="131072"/>
         <property name="router-input-extend-size"
                   read-only="true"
@@ -207,7 +207,7 @@
                   display="Router Network Input Extend Size"
                   description="Router Network Input Extend Size"
                   mandatory="false"
-                  min="4096"
+                  min="1024"
                   default="65536"/>
         <property name="router-output-buffer-size"
                   read-only="true"
@@ -215,7 +215,7 @@
                   display="Router Network Output Buffer Size"
                   description="Router Network Output Buffer Size"
                   mandatory="false"
-                  min="4096"
+                  min="1024"
                   default="131072"/>
         <property name="router-output-extend-size"
                   read-only="true"
@@ -223,7 +223,7 @@
                   display="Router Network Output Extend Size"
                   description="Router Network Output Extend Size"
                   mandatory="false"
-                  min="4096"
+                  min="1024"
                   default="65536"/>
         <entitylist name="host-access-list"
                     display="Host Access List"
@@ -275,7 +275,7 @@
                       display="Client Network Input Buffer Size"
                       description="Client Network Input Buffer Size"
                       mandatory="false"
-                      min="4096"
+                      min="1024"
                       default="131072"/>
             <property name="client-input-extend-size"
                       read-only="true"
@@ -283,7 +283,7 @@
                       display="Client Network Input Extend Size"
                       description="Client Network Input Extend Size"
                       mandatory="false"
-                      min="4096"
+                      min="1024"
                       default="65536"/>
             <property name="client-output-buffer-size"
                       read-only="true"
@@ -291,7 +291,7 @@
                       display="Client Network Output Buffer Size"
                       description="Client Network Output Buffer Size"
                       mandatory="false"
-                      min="4096"
+                      min="1024"
                       default="131072"/>
             <property name="client-output-extend-size"
                       read-only="true"
@@ -299,8 +299,8 @@
                       display="Client Network Output Extend Size"
                       description="Client Network Output Extend Size"
                       mandatory="false"
-                      min="4096"
-                      default="65536"/>
+                      min="1024"
+                      default="131072"/>
             <property name="smqp-producer-reply-interval"
                       read-only="true"
                       type="java.lang.Integer"

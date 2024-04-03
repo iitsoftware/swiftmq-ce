@@ -31,25 +31,28 @@ import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.mgmt.event.MgmtListener;
 import com.swiftmq.swiftlet.net.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
+import com.swiftmq.tools.collection.ConcurrentList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListener {
     SwiftletContext ctx = null;
     protected IntraVMScheduler ivmScheduler = null;
     protected IOScheduler ioScheduler = null;
-    boolean collectOn = false;
-    long collectInterval = -1;
+    final AtomicBoolean collectOn = new AtomicBoolean(false);
+    final AtomicLong collectInterval = new AtomicLong(-1);
     boolean reuseServerSocket = true;
     boolean dnsResolve = true;
     long zombiConnectionTimeout = 0;
-    boolean delayed = true;
-    List<Integer> listenersToStart = new ArrayList<>();
-    List<Integer> connectorsToStart = new ArrayList<>();
+    final AtomicBoolean delayed = new AtomicBoolean(true);
+    List<Integer> listenersToStart = new ConcurrentList<>(new ArrayList<>());
+    List<Integer> connectorsToStart = new ConcurrentList<>(new ArrayList<>());
 
     private void collectChanged(long oldInterval, long newInterval) {
-        if (!collectOn)
+        if (!collectOn.get())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "collectChanged: old interval: " + oldInterval + " new interval: " + newInterval);
@@ -88,7 +91,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPListener: MetaData=" + metaData);
         int id = ioScheduler.createListener(metaData);
         metaData.setId(id);
-        if (!delayed || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
+        if (!delayed.get() || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
             TCPListener l = ioScheduler.getListener(id);
             l.start();
         } else
@@ -124,7 +127,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "createTCPConnector: MetaData=" + metaData);
         int id = ioScheduler.createConnector(metaData);
         metaData.setId(id);
-        if (!delayed || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
+        if (!delayed.get() || metaData.getSwiftlet().getName().equals("sys$hacontroller")) {
             TCPConnector c = ioScheduler.getConnector(id);
             c.start();
         } else
@@ -150,17 +153,17 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
             connector.start();
         }
         connectorsToStart.clear();
-        delayed = false;
+        delayed.set(false);
     }
 
     @Override
     public void setDelayed(boolean delayed) {
-        this.delayed = delayed;
+        this.delayed.set(delayed);
     }
 
     @Override
     public void startDelayed() throws Exception {
-        if (delayed)
+        if (delayed.get())
             startListenerAndConnectors();
     }
 
@@ -201,15 +204,16 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
-                collectInterval = (Long) newValue;
-                collectChanged((Long) oldValue, collectInterval);
+                collectInterval.set((Long) newValue);
+                collectChanged((Long) oldValue, collectInterval.get());
             }
         });
-        collectInterval = (Long) prop.getValue();
-        if (collectOn) {
-            if (collectInterval > 0) {
-                if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup: registering byte count collector");
-                ctx.timerSwiftlet.addTimerListener(collectInterval, this);
+        collectInterval.set((Long) prop.getValue());
+        if (collectOn.get()) {
+            if (collectInterval.get() > 0) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "startup: registering byte count collector");
+                ctx.timerSwiftlet.addTimerListener(collectInterval.get(), this);
             } else if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(getName(), "startup: collect interval <= 0; no byte count collector");
         }
@@ -221,13 +225,13 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
                         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "registering MgmtListener ...");
                         ctx. mgmtSwiftlet.addMgmtListener(new MgmtListener() {
                             public void adminToolActivated() {
-                                collectOn = true;
-                                collectChanged(-1, collectInterval);
+                                collectOn.set(true);
+                                collectChanged(-1, collectInterval.get());
                             }
 
                             public void adminToolDeactivated() {
-                                collectChanged(collectInterval, -1);
-                                collectOn = false;
+                                collectChanged(collectInterval.get(), -1);
+                                collectOn.set(false);
                             }
                         });
                     } catch (Exception e) {
@@ -256,7 +260,7 @@ public class NetworkSwiftletImpl extends NetworkSwiftlet implements TimerListene
 
     @Override
     protected void shutdown() throws SwiftletException {
-        delayed = true;
+        delayed.set(true);
         // true when shutdown while standby
         if (ctx == null)
             return;

@@ -22,26 +22,22 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class BrowserSuite extends ActiveTestSuite
-{
+public class BrowserSuite extends ActiveTestSuite {
 
-  public static Test suite()
-  {
-    TestSuite suite = new BrowserSuite();
-    suite.addTest(new Browser("browse", 0));
-    suite.addTest(new Browser("browse", 1));
-    suite.addTest(new Browser("browse", 2));
-    suite.addTest(new Browser("browse", 3));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new BrowserSuite();
+        suite.addTest(new Browser("browse", 0));
+        suite.addTest(new Browser("browse", 1));
+        suite.addTest(new Browser("browse", 2));
+        suite.addTest(new Browser("browse", 3));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "preloadbrowse";
-  }
+    public String toString() {
+        return "preloadbrowse";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(BrowserSuite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(BrowserSuite.suite());
+    }
 }

@@ -17,6 +17,7 @@
 
 package jms.ccunified.transacted.psdur;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.ServerSessionImpl;
 import jms.base.ServerSessionPoolImpl;
 import jms.base.UnifiedPSTestCase;
@@ -24,106 +25,88 @@ import jms.base.UnifiedPSTestCase;
 import javax.jms.*;
 import javax.naming.InitialContext;
 
-public class Tester extends UnifiedPSTestCase
-{
-  InitialContext ctx = null;
-  Connection tc = null;
-  Connection tc1 = null;
-  Session qs = null;
-  MessageProducer producer = null;
-  Topic topic = null;
-  ConnectionConsumer cc = null;
-  ServerSessionPoolImpl pool = null;
-  int nMsgs = 0;
+public class Tester extends UnifiedPSTestCase {
+    InitialContext ctx = null;
+    Connection tc = null;
+    Connection tc1 = null;
+    Session qs = null;
+    MessageProducer producer = null;
+    Topic topic = null;
+    ConnectionConsumer cc = null;
+    ServerSessionPoolImpl pool = null;
+    int nMsgs = 0;
+    Semaphore sem = new Semaphore();
 
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    String tcfName = System.getProperty("jndi.tcf");
-    assertNotNull("missing property 'jndi.tcf'", tcfName);
-    tc = createConnection(tcfName, "jms.cc-test", false);
-    String topicName = System.getProperty("jndi.topic");
-    assertNotNull("missing property 'jndi.topic'", topicName);
-    topic = getTopic(topicName);
-    pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 10; i++)
-    {
-      Session qs = tc.createSession(true, Session.CLIENT_ACKNOWLEDGE);
-      qs.setMessageListener(new Listener(qs, i));
-      pool.addServerSession(new ServerSessionImpl(pool, qs));
+    public Tester(String name) {
+        super(name);
     }
-    cc = tc.createDurableConnectionConsumer(topic, "transacted", null, pool, 5);
-    tc1 = createConnection(tcfName, true);
-    qs = tc1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-    producer = qs.createProducer(topic);
-  }
 
-  synchronized void inc()
-  {
-    nMsgs++;
-    if (nMsgs == 10000)
-      notify();
-  }
-
-  public void test()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 10000; i++)
-      {
-        msg.setText("Msg: " + (i + 1));
-        producer.send(msg);
-      }
-
-      tc.start();
-      synchronized (this)
-      {
-        try
-        {
-          wait();
-        } catch (InterruptedException e)
-        {
+    protected void setUp() throws Exception {
+        String tcfName = System.getProperty("jndi.tcf");
+        assertNotNull("missing property 'jndi.tcf'", tcfName);
+        tc = createConnection(tcfName, "jms-cc-test", false);
+        String topicName = System.getProperty("jndi.topic");
+        assertNotNull("missing property 'jndi.topic'", topicName);
+        topic = getTopic(topicName);
+        pool = new ServerSessionPoolImpl();
+        for (int i = 0; i < 10; i++) {
+            Session qs = tc.createSession(true, Session.CLIENT_ACKNOWLEDGE);
+            qs.setMessageListener(new Listener(qs, i));
+            pool.addServerSession(new ServerSessionImpl(pool, qs));
         }
-      }
-    } catch (Exception e)
-    {
-      failFast("Test failed: " + e.toString());
-    }
-  }
-
-  protected void tearDown() throws Exception
-  {
-    tc.close();
-    tc1.close();
-    super.tearDown();
-  }
-
-  private class Listener implements MessageListener
-  {
-    Session session;
-    int id;
-
-    public Listener(Session session, int id)
-    {
-      this.session = session;
-      this.id = id;
+        cc = tc.createDurableConnectionConsumer(topic, "transacted", null, pool, 5);
+        tc1 = createConnection(tcfName, true);
+        qs = tc1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        producer = qs.createProducer(topic);
     }
 
-    public void onMessage(Message msg)
-    {
-      try
-      {
-        session.commit();
-      } catch (JMSException e)
-      {
-        e.printStackTrace();
-      }
-      inc();
+    synchronized void inc() {
+        nMsgs++;
+        if (nMsgs == 10000)
+            sem.notifySingleWaiter();
     }
-  }
+
+    public void test() {
+        try {
+            tc.start();
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 10000; i++) {
+                msg.setText("Msg: " + (i + 1));
+                producer.send(msg);
+            }
+
+            sem.waitHere();
+        } catch (Exception e) {
+            failFast("Test failed: " + e.toString());
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        sem.reset();
+        sem.waitHere(1000);
+        Session ts = tc.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        ts.unsubscribe("transacted");
+        tc.close();
+        tc1.close();
+        super.tearDown();
+    }
+
+    private class Listener implements MessageListener {
+        Session session;
+        int id;
+
+        public Listener(Session session, int id) {
+            this.session = session;
+            this.id = id;
+        }
+
+        public void onMessage(Message msg) {
+            try {
+                session.commit();
+            } catch (JMSException e) {
+                e.printStackTrace();
+            }
+            inc();
+        }
+    }
 }

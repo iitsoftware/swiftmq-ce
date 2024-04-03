@@ -17,6 +17,11 @@
       <outputDirectory>${project.artifactId}_${project.version}_router/certs</outputDirectory>
       <filtered>false</filtered>
     </fileSet>
+    <fileSet>
+      <directory>../graalvm/target/lib</directory>
+      <outputDirectory>${project.artifactId}_${project.version}_router/graalvm</outputDirectory>
+      <filtered>false</filtered>
+    </fileSet>
   </fileSets>
   <files>
     <file>

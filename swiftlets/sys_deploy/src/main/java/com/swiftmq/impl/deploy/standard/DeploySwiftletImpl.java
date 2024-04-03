@@ -21,16 +21,16 @@ import com.swiftmq.mgmt.*;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.deploy.DeploySpace;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DeploySwiftletImpl extends com.swiftmq.swiftlet.deploy.DeploySwiftlet {
     SwiftletContext ctx = null;
     EntityListEventAdapter spaceAdapter = null;
-    Map spaceMap = null;
+    Map<String, DeploySpace> spaceMap = new ConcurrentHashMap<>();
 
-    public synchronized DeploySpace getDeploySpace(String name) {
-        return (DeploySpace) spaceMap.get(name);
+    public DeploySpace getDeploySpace(String name) {
+        return spaceMap.get(name);
     }
 
     private void createSpaceAdapter(EntityList spaceList) throws SwiftletException {
@@ -39,9 +39,7 @@ public class DeploySwiftletImpl extends com.swiftmq.swiftlet.deploy.DeploySwiftl
             public void onEntityAdd(Entity parent, Entity newEntity) throws EntityAddException {
                 try {
                     DeploySpace space = new DeploySpaceImpl(ctx, newEntity);
-                    synchronized (DeploySwiftletImpl.this) {
-                        spaceMap.put(newEntity.getName(), space);
-                    }
+                    spaceMap.put(newEntity.getName(), space);
                 } catch (Exception e) {
                     throw new EntityAddException(e.toString());
                 }
@@ -49,9 +47,7 @@ public class DeploySwiftletImpl extends com.swiftmq.swiftlet.deploy.DeploySwiftl
 
             public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException {
                 DeploySpace space = null;
-                synchronized (DeploySwiftletImpl.this) {
-                    space = (DeploySpace) spaceMap.remove(delEntity.getName());
-                }
+                space = spaceMap.remove(delEntity.getName());
                 if (space != null)
                     space.close();
             }
@@ -68,7 +64,6 @@ public class DeploySwiftletImpl extends com.swiftmq.swiftlet.deploy.DeploySwiftl
     protected void startup(Configuration configuration) throws SwiftletException {
         ctx = new SwiftletContext(this, configuration);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
-        spaceMap = new HashMap();
         createSpaceAdapter((EntityList) configuration.getEntity("deploy-spaces"));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup done");
     }

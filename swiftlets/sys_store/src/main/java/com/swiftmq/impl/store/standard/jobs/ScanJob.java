@@ -18,17 +18,18 @@
 package com.swiftmq.impl.store.standard.jobs;
 
 import com.swiftmq.impl.store.standard.StoreContext;
-import com.swiftmq.impl.store.standard.pagedb.scan.po.StartScan;
+import com.swiftmq.impl.store.standard.processor.scan.po.StartScan;
 import com.swiftmq.swiftlet.scheduler.Job;
 import com.swiftmq.swiftlet.scheduler.JobException;
 import com.swiftmq.swiftlet.scheduler.JobTerminationListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ScanJob implements Job {
     StoreContext ctx = null;
-    boolean stopCalled = false;
+    final AtomicBoolean stopCalled = new AtomicBoolean(false);
     Properties properties = null;
     JobTerminationListener jobTerminationListener = null;
 
@@ -36,7 +37,7 @@ public class ScanJob implements Job {
         this.ctx = ctx;
     }
 
-    public synchronized void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
+    public void start(Properties properties, JobTerminationListener jobTerminationListener) throws JobException {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
         this.jobTerminationListener = jobTerminationListener;
@@ -53,9 +54,9 @@ public class ScanJob implements Job {
             ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/start, properties=" + properties + " ...");
     }
 
-    public synchronized void stop() throws JobException {
+    public void stop() throws JobException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop ...");
-        stopCalled = true;
+        stopCalled.set(true);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.storeSwiftlet.getName(), toString() + "/stop done");
     }
 

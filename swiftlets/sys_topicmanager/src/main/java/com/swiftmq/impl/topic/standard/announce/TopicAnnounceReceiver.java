@@ -25,22 +25,22 @@ import com.swiftmq.swiftlet.queue.MessageEntry;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueuePullTransaction;
 import com.swiftmq.swiftlet.queue.QueueReceiver;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.versioning.*;
 import com.swiftmq.tools.versioning.event.VersionedListener;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class TopicAnnounceReceiver extends MessageProcessor
         implements VersionVisitor {
     // Thread-Names
-    static final String TP_TOPICLISTENER = "sys$topicmanager.topic.listener";
     TopicManagerContext ctx = null;
-    ThreadPool myTP = null;
     String topicQueue = null;
     QueueReceiver topicReceiver = null;
-    QueuePullTransaction topicTransaction = null;
+    final AtomicReference<QueuePullTransaction> topicTransaction = new AtomicReference<>();
     MessageEntry messageEntry = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     TopicInfoFactory factory = new TopicInfoFactory();
     TopicInfoConverter converter = new TopicInfoConverter();
     DataByteArrayInputStream dis = new DataByteArrayInputStream();
@@ -51,7 +51,6 @@ public class TopicAnnounceReceiver extends MessageProcessor
         this.ctx = ctx;
         this.topicQueue = topicQueue;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/ startup ...");
-        myTP = ctx.threadpoolSwiftlet.getPool(TP_TOPICLISTENER);
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/ checking if queue " + topicQueue + " exists ...");
         try {
@@ -64,8 +63,8 @@ public class TopicAnnounceReceiver extends MessageProcessor
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/ startup: starting topic listener ...");
         try {
-            topicTransaction = topicReceiver.createTransaction(false);
-            topicTransaction.registerMessageProcessor(this);
+            topicTransaction.set(topicReceiver.createTransaction(false));
+            topicTransaction.get().registerMessageProcessor(this);
         } catch (Exception e) {
             throw new SwiftletException(e.getMessage());
         }
@@ -74,7 +73,7 @@ public class TopicAnnounceReceiver extends MessageProcessor
 
     public void setClosed() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/ setClosed ...");
-        closed = true;
+        closed.set(true);
         try {
             topicReceiver.close();
         } catch (Exception ignored) {
@@ -82,13 +81,13 @@ public class TopicAnnounceReceiver extends MessageProcessor
     }
 
     public boolean isValid() {
-        return !closed;
+        return !closed.get();
     }
 
     public void processMessage(MessageEntry messageEntry) {
-        if (!closed) {
+        if (!closed.get()) {
             this.messageEntry = messageEntry;
-            myTP.dispatchTask(this);
+            ctx.threadpoolSwiftlet.runAsync(this);
         }
     }
 
@@ -97,7 +96,7 @@ public class TopicAnnounceReceiver extends MessageProcessor
     }
 
     public String getDispatchToken() {
-        return TP_TOPICLISTENER;
+        return "none";
     }
 
     public String getDescription() {
@@ -109,9 +108,9 @@ public class TopicAnnounceReceiver extends MessageProcessor
     }
 
     public void run() {
-        if (!closed) {
+        if (!closed.get()) {
             try {
-                topicTransaction.commit();
+                topicTransaction.get().commit();
                 BytesMessageImpl msg = (BytesMessageImpl) messageEntry.getMessage();
                 msg.reset();
                 if (ctx.traceSpace.enabled)
@@ -123,8 +122,8 @@ public class TopicAnnounceReceiver extends MessageProcessor
                 VersionObject vo = (VersionObject) versionObjectFactory.createDumpable(dis.readInt());
                 vo.readContent(dis);
                 vo.accept(this);
-                topicTransaction = topicReceiver.createTransaction(false);
-                topicTransaction.registerMessageProcessor(this);
+                topicTransaction.set(topicReceiver.createTransaction(false));
+                topicTransaction.get().registerMessageProcessor(this);
             } catch (Exception e) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.topicManager.getName(), toString() + "/ exception occurred: " + e + ", EXITING");
@@ -132,7 +131,6 @@ public class TopicAnnounceReceiver extends MessageProcessor
                     ctx.queueManager.purgeQueue(topicQueue);
                 } catch (Exception ignored) {
                 }
-                return;
             }
         }
     }

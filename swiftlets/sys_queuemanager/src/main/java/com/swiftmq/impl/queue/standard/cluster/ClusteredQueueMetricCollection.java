@@ -22,7 +22,7 @@ import com.swiftmq.tools.dump.Dumpable;
 import java.util.List;
 
 public interface ClusteredQueueMetricCollection extends Dumpable {
-    public String getRouterName();
+    String getRouterName();
 
-    public List getClusteredQueueMetrics();
+    List getClusteredQueueMetrics();
 }

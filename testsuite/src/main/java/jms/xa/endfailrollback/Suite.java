@@ -17,26 +17,23 @@
 
 package jms.xa.endfailrollback;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xa.endfailrollback.singledest.Suite.suite());
-    suite.addTest(jms.xa.endfailrollback.multidest.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xa.endfailrollback.singledest.Suite.suite());
+        suite.addTest(jms.xa.endfailrollback.multidest.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "endfailrollback";
-  }
+    public String toString() {
+        return "endfailrollback";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -28,30 +28,31 @@ import com.swiftmq.impl.routing.single.manager.po.PORemoveObject;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionManager
         implements POCMVisitor {
-    static final String TP_CONNMGR = "sys$routing.connection.mgr";
-
-    PipelineQueue queue = null;
     SwiftletContext ctx = null;
-    protected HashMap connections = new HashMap();
-    List listeners = new ArrayList();
+    protected Map<String, RoutingConnection> connections = new HashMap<>();
+    List<ConnectionListener> listeners = new ConcurrentList<>(new ArrayList<>());
     EntityList connectionEntity = null;
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    EventLoop eventLoop;
 
     public ConnectionManager(SwiftletContext ctx) {
         this.ctx = ctx;
         connectionEntity = (EntityList) ctx.usageList.getEntity("connections");
-        queue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_CONNMGR), TP_CONNMGR, this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$routing.connection.mgr", list -> list.forEach(e -> ((POObject) e).accept(ConnectionManager.this)));
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/created");
     }
 
     protected boolean isLicenseLimit() {
-        return connections.size() > 0;
+        return !connections.isEmpty();
     }
 
     public void visit(POAddObject poa) {
@@ -120,8 +121,8 @@ public class ConnectionManager
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/removeAll...");
 
-        for (Iterator iter = connections.entrySet().iterator(); iter.hasNext(); ) {
-            RoutingConnection rc = (RoutingConnection) ((Map.Entry) iter.next()).getValue();
+        for (Iterator<Map.Entry<String, RoutingConnection>> iter = connections.entrySet().iterator(); iter.hasNext(); ) {
+            RoutingConnection rc = iter.next().getValue();
             removeConnection(rc, false);
             iter.remove();
             fireConnectionRemoved(new ConnectionEvent(rc));
@@ -165,26 +166,17 @@ public class ConnectionManager
     }
 
     public void addConnectionListener(ConnectionListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        listeners.add(l);
     }
 
     public void removeConnectionListener(ConnectionListener l) {
-        synchronized (listeners) {
             listeners.remove(l);
-        }
     }
 
     private void fireConnectionAdded(ConnectionEvent evt) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/fireConnectionAdded...");
-        synchronized (listeners) {
-            for (int i = 0; i < listeners.size(); i++) {
-                ConnectionListener l = (ConnectionListener) listeners.get(i);
-                l.connectionAdded(evt);
-            }
-        }
+        listeners.forEach(listener -> listener.connectionAdded(evt));
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/fireConnectionAdded done");
     }
@@ -192,23 +184,20 @@ public class ConnectionManager
     private void fireConnectionRemoved(ConnectionEvent evt) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/fireConnectionRemoved...");
-        synchronized (listeners) {
-            for (int i = 0; i < listeners.size(); i++) {
-                ConnectionListener l = (ConnectionListener) listeners.get(i);
-                l.connectionRemoved(evt);
-            }
-        }
+        listeners.forEach(listener -> listener.connectionRemoved(evt));
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/fireConnectionRemoved done");
     }
 
     public void enqueue(POObject obj) {
-        queue.enqueue(obj);
+        eventLoop.submit(obj);
     }
 
-    public synchronized void close() {
+    public void close() {
+        if (closed.getAndSet(true))
+            return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/close...");
-        queue.close();
+        eventLoop.close();
         connections.clear();
         listeners.clear();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), "ConnectionManager/close done");

@@ -19,55 +19,41 @@ package jms.ha.nonpersistent.ps.nondurable.requestreply;
 
 import jms.base.SimpleConnectedPSTestCase;
 
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.TemporaryTopic;
-import javax.jms.TextMessage;
-import javax.jms.TopicPublisher;
+import javax.jms.*;
 
-public class Replier extends SimpleConnectedPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+public class Replier extends SimpleConnectedPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
 
-  public Replier(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-  }
-
-  public void reply()
-  {
-    try
-    {
-      boolean finished = false;
-      while (!finished)
-      {
-        TextMessage msg = (TextMessage) subscriber.receive();
-        finished = msg.getBooleanProperty("finished");
-        if (!finished)
-        {
-          try
-          {
-            TopicPublisher replyPublisher = ts.createPublisher((TemporaryTopic) msg.getJMSReplyTo());
-            String s = msg.getText();
-            msg.clearBody();
-            msg.setText("Re: " + s);
-            replyPublisher.publish(msg);
-            replyPublisher.close();
-          } catch (JMSException e)
-          {
-            // no problem (reconnected)
-          }
-        }
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Replier(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+    }
+
+    public void reply() {
+        try {
+            boolean finished = false;
+            while (!finished) {
+                TextMessage msg = (TextMessage) subscriber.receive();
+                finished = msg.getBooleanProperty("finished");
+                if (!finished) {
+                    try {
+                        TopicPublisher replyPublisher = ts.createPublisher((TemporaryTopic) msg.getJMSReplyTo());
+                        String s = msg.getText();
+                        msg.clearBody();
+                        msg.setText("Re: " + s);
+                        replyPublisher.publish(msg);
+                        replyPublisher.close();
+                    } catch (JMSException e) {
+                        // no problem (reconnected)
+                    }
+                }
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

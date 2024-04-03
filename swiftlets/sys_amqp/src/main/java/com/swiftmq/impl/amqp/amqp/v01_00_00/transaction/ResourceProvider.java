@@ -18,9 +18,9 @@
 package com.swiftmq.impl.amqp.amqp.v01_00_00.transaction;
 
 public interface ResourceProvider {
-    public void increaseActiveTransactions();
+    void increaseActiveTransactions();
 
-    public void decreaseActiveTransactions();
+    void decreaseActiveTransactions();
 
-    public void closeResource();
+    void closeResource();
 }

@@ -21,23 +21,19 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class ListenerSuite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new ListenerSuite();
-    suite.addTest(new Listener("receive"));
-    return suite;
-  }
+public class ListenerSuite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new ListenerSuite();
+        suite.addTest(new Listener("receive"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "onmessage";
-  }
+    public String toString() {
+        return "onmessage";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

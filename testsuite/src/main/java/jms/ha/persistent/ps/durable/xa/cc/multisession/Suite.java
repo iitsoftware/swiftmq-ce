@@ -17,37 +17,30 @@
 
 package jms.ha.persistent.ps.durable.xa.cc.multisession;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import jms.ha.persistent.ps.durable.xa.cc.Sender;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
-    super.run(testResult);
-  }
+public class Suite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Sender("send", "testtopic"));
-    suite.addTest(new Consumer("consume"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Sender("send", "testtopic"));
+        suite.addTest(new Consumer("consume"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "multisession";
-  }
+    public String toString() {
+        return "multisession";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

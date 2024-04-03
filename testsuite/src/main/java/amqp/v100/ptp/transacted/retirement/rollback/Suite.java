@@ -20,25 +20,21 @@ package amqp.v100.ptp.transacted.retirement.rollback;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(amqp.v100.ptp.transacted.retirement.rollback.at_least_once.Suite.suite());
-    suite.addTest(amqp.v100.ptp.transacted.retirement.rollback.exactly_once.Suite.suite());
-    suite.addTest(amqp.v100.ptp.transacted.retirement.rollback.requestreply.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(amqp.v100.ptp.transacted.retirement.rollback.at_least_once.Suite.suite());
+        suite.addTest(amqp.v100.ptp.transacted.retirement.rollback.exactly_once.Suite.suite());
+        suite.addTest(amqp.v100.ptp.transacted.retirement.rollback.requestreply.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "rollback";
-  }
+    public String toString() {
+        return "rollback";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

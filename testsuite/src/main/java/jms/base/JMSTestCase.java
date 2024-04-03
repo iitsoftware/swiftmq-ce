@@ -27,154 +27,156 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.Hashtable;
 
-public class JMSTestCase extends TestCase
-{
-  QueueConnection cliQC = null;
-  private CLI cli = null;
-  protected static int id = 0;
+public class JMSTestCase extends TestCase {
+    QueueConnection cliQC = null;
+    private CLI cli = null;
+    protected static int id = 0;
 
-  public JMSTestCase(String name)
-  {
-    super(name);
-  }
-
-  public InitialContext createInitialContext(String className, String url)
-  {
-    InitialContext ctx = null;
-    try
-    {
-      Hashtable env = new Hashtable();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, className);
-      env.put(Context.PROVIDER_URL, url);
-      ctx = new InitialContext(env);
-    } catch (Exception e)
-    {
-      failFast("Failed to create InitialContext from class: " + className + ", url: " + url + ", exception=" + e);
+    public JMSTestCase(String name) {
+        super(name);
     }
-    return ctx;
-  }
 
-  public InitialContext createInitialContext()
-  {
-    String className = System.getProperty("jndi.class");
-    assertNotNull("missing property 'jndi.class'", className);
-    String url = System.getProperty("jndi.url");
-    assertNotNull("missing property 'jndi.url'", url);
-    return createInitialContext(className, url);
-  }
-
-  public void pause(long ms)
-  {
-    try
-    {
-      Thread.sleep(ms);
-    } catch (Exception ignored)
-    {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.out.println(getClass().getName());
     }
-  }
 
-  private void createCLI() throws Exception
-  {
-    InitialContext ctx = createInitialContext();
-    QueueConnectionFactory qcf = (QueueConnectionFactory) ctx.lookup("ConnectionFactory");
-    cliQC = qcf.createQueueConnection();
-    cli = new CLI(cliQC);
-    ctx.close();
-  }
-
-  public void createQueue(String queueName) throws Exception {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter("router");
-    cli.executeCommand("sr router");
-    cli.executeCommand("cc /sys$queuemanager/queues");
-    try {
-      cli.executeCommand("delete " + queueName);
-    } catch (CLIException e) {
+    @Override
+    public void runBare() throws Throwable {
+        String fullName = this.getClass().getName() + "." + getName();
+        System.out.println("Starting test: " + fullName);
+        try {
+            super.runBare();
+            System.out.println("Test succeeded: " + fullName);
+        } catch (Throwable t) {
+            System.out.println("Test failed: " + fullName);
+            throw t;  // rethrow to allow the test framework to handle the failure
+        } finally {
+            System.out.println("Finished test: " + fullName);
+        }
     }
-    cli.executeCommand("new " + queueName);
-  }
-
-  public void createTopic(String topicName) throws Exception {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter("router");
-    cli.executeCommand("sr router");
-    cli.executeCommand("cc /sys$topicmanager/topics");
-    try {
-      cli.executeCommand("delete " + topicName);
-    } catch (CLIException e) {
+    public InitialContext createInitialContext(String className, String url) {
+        InitialContext ctx = null;
+        try {
+            Hashtable env = new Hashtable();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, className);
+            env.put(Context.PROVIDER_URL, url);
+            ctx = new InitialContext(env);
+        } catch (Exception e) {
+            failFast("Failed to create InitialContext from class: " + className + ", url: " + url + ", exception=" + e);
+        }
+        return ctx;
     }
-    cli.executeCommand("new " + topicName);
-  }
 
-  public void deleteQueue(String queueName) throws Exception
-  {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter("router");
-    cli.executeCommand("sr router");
-    cli.executeCommand("cc /sys$queuemanager/queues");
-    cli.executeCommand("delete " + queueName);
-  }
-
-  public void deleteTopic(String topicName) throws Exception
-  {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter("router");
-    cli.executeCommand("sr router");
-    cli.executeCommand("cc /sys$topicmanager/topics");
-    cli.executeCommand("delete " + topicName);
-  }
-
-  public void haltRouter(String routerName) throws Exception
-  {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter(routerName);
-    cli.executeCommand("sr " + routerName);
-    cli.executeCommand("halt");
-  }
-
-  public void rebootRouter(String routerName) throws Exception
-  {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter(routerName);
-    cli.executeCommand("sr " + routerName);
-    cli.executeCommand("reboot");
-  }
-
-  public void saveRouter(String routerName) throws Exception
-  {
-    if (cli == null)
-      createCLI();
-    cli.waitForRouter(routerName);
-    cli.executeCommand("sr " + routerName);
-    cli.executeCommand("save");
-  }
-
-  public static void failFast(String msg){
-    fail(msg);
-    System.exit(-1);
-  }
-
-  protected void tearDown() throws Exception
-  {
-    if (cli != null)
-    {
-      cli.close();
-      cliQC.close();
-      cli = null;
-      cliQC = null;
+    public InitialContext createInitialContext() {
+        String className = System.getProperty("jndi.class");
+        assertNotNull("missing property 'jndi.class'", className);
+        String url = System.getProperty("jndi.url");
+        assertNotNull("missing property 'jndi.url'", url);
+        return createInitialContext(className, url);
     }
-    super.tearDown();
-  }
 
-  protected static synchronized int nextId()
-  {
-    return id++;
-  }
+    public void pause(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void createCLI() throws Exception {
+        InitialContext ctx = createInitialContext();
+        QueueConnectionFactory qcf = (QueueConnectionFactory) ctx.lookup("ConnectionFactory");
+        cliQC = qcf.createQueueConnection();
+        cli = new CLI(cliQC);
+        ctx.close();
+    }
+
+    public void createQueue(String queueName) throws Exception {
+        if (cli == null)
+            createCLI();
+        cli.waitForRouter("router");
+        cli.executeCommand("sr router");
+        cli.executeCommand("cc /sys$queuemanager/queues");
+        try {
+            cli.executeCommand("delete " + queueName);
+        } catch (CLIException e) {
+        }
+        cli.executeCommand("new " + queueName);
+    }
+
+    public void createTopic(String topicName) throws Exception {
+        if (cli == null)
+            createCLI();
+        cli.waitForRouter("router");
+        cli.executeCommand("sr router");
+        cli.executeCommand("cc /sys$topicmanager/topics");
+        try {
+            cli.executeCommand("delete " + topicName);
+        } catch (CLIException e) {
+        }
+        cli.executeCommand("new " + topicName);
+    }
+
+    public void deleteQueue(String queueName) throws Exception {
+        if (cli == null)
+            createCLI();
+        cli.waitForRouter("router");
+        cli.executeCommand("sr router");
+        cli.executeCommand("cc /sys$queuemanager/queues");
+        cli.executeCommand("delete " + queueName);
+    }
+
+    public void deleteTopic(String topicName) throws Exception {
+        if (cli == null)
+            createCLI();
+        cli.waitForRouter("router");
+        cli.executeCommand("sr router");
+        cli.executeCommand("cc /sys$topicmanager/topics");
+        cli.executeCommand("delete " + topicName);
+    }
+
+    public void haltRouter(String routerName) throws Exception {
+        if (cli == null)
+            createCLI();
+        cli.waitForRouter(routerName);
+        cli.executeCommand("sr " + routerName);
+        cli.executeCommand("halt");
+    }
+
+    public void rebootRouter(String routerName) throws Exception {
+        if (cli == null)
+            createCLI();
+        cli.waitForRouter(routerName);
+        cli.executeCommand("sr " + routerName);
+        cli.executeCommand("reboot");
+    }
+
+    public void saveRouter(String routerName) throws Exception {
+        if (cli == null)
+            createCLI();
+        cli.waitForRouter(routerName);
+        cli.executeCommand("sr " + routerName);
+        cli.executeCommand("save");
+    }
+
+    public static void failFast(String msg) {
+        fail(msg);
+        System.exit(-1);
+    }
+
+    protected void tearDown() throws Exception {
+        if (cli != null) {
+            cli.close();
+            cliQC.close();
+            cli = null;
+            cliQC = null;
+        }
+        super.tearDown();
+    }
+
+    protected static synchronized int nextId() {
+        return id++;
+    }
 }
 

@@ -23,41 +23,41 @@ import com.swiftmq.mgmt.Entity;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.MessageProcessor;
 import com.swiftmq.swiftlet.queue.QueueHandlerClosedException;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.requestreply.GenericRequest;
 
 public abstract class TransactedSession extends Session {
     TransactionManager transactionManager;
     DeliveryItem currentItem = null;
 
-    public TransactedSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
-        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
+    public TransactedSession(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
+        super(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
         transactionManager = new TransactionManager(ctx);
         ctx.transacted = true;
     }
 
     protected void purgeMarkedProducers() throws Exception {
         for (int i = 0; i < producerList.size(); i++) {
-            Producer producer = (Producer) producerList.get(i);
+            Producer producer = producerList.get(i);
             if (producer != null && producer.isMarkedForClose()) {
                 try {
                     producer.close();
                 } catch (QueueHandlerClosedException ignored) {
                 }
-                producerList.set(i, null);
+                producerList.remove(i);
             }
         }
     }
 
     protected void purgeMarkedConsumers() throws Exception {
         for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
+            Consumer consumer = consumerList.get(i);
             if (consumer != null && consumer.isMarkedForClose()) {
                 try {
                     consumer.close();
                 } catch (QueueHandlerClosedException ignored) {
                 }
-                consumerList.set(i, null);
+                consumerList.remove(i);
             }
         }
     }
@@ -105,7 +105,7 @@ public abstract class TransactedSession extends Session {
         reply.setRecoveryEpoche(req.getRecoveryEpoche());
         reply.setOk(true);
         for (int i = 0; i < consumerList.size(); i++) {
-            Consumer consumer = (Consumer) consumerList.get(i);
+            Consumer consumer = consumerList.get(i);
             if (consumer != null) {
                 try {
                     MessageProcessor mp = consumer.getMessageProcessor();
@@ -123,7 +123,7 @@ public abstract class TransactedSession extends Session {
         }
 
         GenericRequest gr = new GenericRequest(-1, false, reply);
-        ctx.sessionQueue.enqueue(gr);
+        ctx.sessionLoop.submit(gr);
     }
 
     public String toString() {

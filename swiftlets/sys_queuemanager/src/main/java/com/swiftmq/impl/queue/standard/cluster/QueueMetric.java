@@ -21,17 +21,17 @@ import com.swiftmq.tools.dump.Dumpable;
 
 
 public interface QueueMetric extends Dumpable {
-    public String getQueueName();
+    String getQueueName();
 
-    public void setHasReceiver(boolean b);
+    void setHasReceiver(boolean b);
 
-    public boolean hasReceiver();
+    boolean hasReceiver();
 
-    public void setRouterName(String routerName);
+    void setRouterName(String routerName);
 
-    public String getRouterName();
+    String getRouterName();
 
-    public void setRedispatch(boolean redispatch);
+    void setRedispatch(boolean redispatch);
 
-    public boolean isRedispatch();
+    boolean isRedispatch();
 }

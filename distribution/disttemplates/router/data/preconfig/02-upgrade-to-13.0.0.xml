@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<router>
+
+  <swiftlet name="sys$threadpool"
+            group-shutdown-order="default network routing swiftlet processing storeprocessor store">
+    <pools _op="remove"/>
+    <groups _op="add">
+      <group name="network">
+        <eventloops>
+          <eventloop name="sys$amqp.connection.service"/>
+          <eventloop name="sys$jms.connection.inbound"/>
+          <eventloop name="sys$jms.connection.outbound" bulk-mode="true"/>
+          <eventloop name="sys$mqtt.connection.inbound"/>
+          <eventloop name="sys$mqtt.connection.outbound"/>
+        </eventloops>
+      </group>
+      <group name="swiftlet">
+        <eventloops>
+          <eventloop name="sys$mgmt.dispatch"/>
+          <eventloop name="sys$topicmanager.announce"/>
+          <eventloop name="sys$scheduler.scheduler"/>
+        </eventloops>
+      </group>
+      <group name="processing">
+        <eventloops>
+          <eventloop name="sys$amqp.sasl.service"/>
+          <eventloop name="sys$amqp.session.service"/>
+          <eventloop name="sys$jms.session"/>
+          <eventloop name="sys$streams.processor" virtual="false"/>
+        </eventloops>
+      </group>
+      <group name="routing">
+        <eventloops>
+          <eventloop name="sys$routing.connection.mgr"/>
+          <eventloop name="sys$routing.route.exchanger"/>
+          <eventloop name="sys$routing.scheduler"/>
+          <eventloop name="sys$routing.connection.service"/>
+          <eventloop name="sys$routing.connection.throttle"/>
+        </eventloops>
+      </group>
+      <group name="storeprocessor">
+        <eventloops>
+          <eventloop name="sys$store.backup"/>
+          <eventloop name="sys$store.shrink"/>
+          <eventloop name="sys$store.scan"/>
+        </eventloops>
+      </group>
+      <group name="store">
+        <eventloops>
+          <eventloop name="sys$store.log" bulk-mode="true"/>
+        </eventloops>
+      </group>
+    </groups>
+  </swiftlet>
+
+</router>

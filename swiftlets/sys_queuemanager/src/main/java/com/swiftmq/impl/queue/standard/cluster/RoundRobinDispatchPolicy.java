@@ -25,17 +25,21 @@ import com.swiftmq.swiftlet.queue.AbstractQueue;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class RoundRobinDispatchPolicy implements DispatchPolicy {
     SwiftletContext ctx = null;
     String clusteredQueueName = null;
     List localMetrics = new LinkedList();
-    int nextLocal = -1;
+    final AtomicInteger nextLocal = new AtomicInteger(-1);
     List receiverMetrics = new LinkedList();
-    int nextReceiver = -1;
+    final AtomicInteger nextReceiver = new AtomicInteger(-1);
     List noReceiverMetrics = new LinkedList();
-    int nextNoReceiver = -1;
-    DispatchPolicyListener listener = null;
+    final AtomicInteger nextNoReceiver = new AtomicInteger(-1);
+    final AtomicReference<DispatchPolicyListener> listener = new AtomicReference<>();
+    final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public RoundRobinDispatchPolicy(SwiftletContext ctx, String clusteredQueueName) {
         this.ctx = ctx;
@@ -47,135 +51,197 @@ public class RoundRobinDispatchPolicy implements DispatchPolicy {
             QueueMetric qm = (QueueMetric) iter.next();
             if (qm.getRouterName() != null && qm.getRouterName().equals(routerName)) {
                 iter.remove();
-                if (listener != null)
-                    listener.dispatchQueueRemoved(qm.getQueueName());
+                DispatchPolicyListener listenerInstance = listener.get();
+                if (listenerInstance != null)
+                    listenerInstance.dispatchQueueRemoved(qm.getQueueName());
             }
         }
     }
 
     private QueueMetric getMetric(String queueName, List list) {
-        for (Iterator iter = list.iterator(); iter.hasNext(); ) {
-            QueueMetric qm = (QueueMetric) iter.next();
+        for (Object o : list) {
+            QueueMetric qm = (QueueMetric) o;
             if (qm.getQueueName().equals(queueName))
                 return qm;
         }
         return null;
     }
 
-    public synchronized void setDispatchPolicyListener(DispatchPolicyListener listener) {
-        this.listener = listener;
+    public void setDispatchPolicyListener(DispatchPolicyListener listener) {
+        this.listener.set(listener);
     }
 
-    public synchronized void receiverCountChanged(AbstractQueue abstractQueue, int receiverCount) {
-        if (receiverCount == 0 || receiverCount == 1) {
-            QueueMetric qm = getMetric(abstractQueue.getQueueName(), localMetrics);
-            if (qm != null) {
-                if (qm.hasReceiver())
-                    receiverMetrics.remove(qm);
-                else
-                    noReceiverMetrics.remove(qm);
-                qm.setHasReceiver(receiverCount == 1);
-                if (qm.hasReceiver())
-                    receiverMetrics.add(qm);
-                else
-                    noReceiverMetrics.add(qm);
+    public void receiverCountChanged(AbstractQueue abstractQueue, int receiverCount) {
+        lock.writeLock().lock();
+        try {
+            if (receiverCount == 0 || receiverCount == 1) {
+                QueueMetric qm = getMetric(abstractQueue.getQueueName(), localMetrics);
+                if (qm != null) {
+                    if (qm.hasReceiver())
+                        receiverMetrics.remove(qm);
+                    else
+                        noReceiverMetrics.remove(qm);
+                    qm.setHasReceiver(receiverCount == 1);
+                    if (qm.hasReceiver())
+                        receiverMetrics.add(qm);
+                    else
+                        noReceiverMetrics.add(qm);
+                }
             }
+        } finally {
+            lock.writeLock().unlock();
         }
+
     }
 
-    public synchronized void addLocalMetric(QueueMetric metric) {
-        localMetrics.add(metric);
-        if (metric.hasReceiver())
-            receiverMetrics.add(metric);
-        else
-            noReceiverMetrics.add(metric);
-    }
-
-    public synchronized void removeLocalMetric(QueueMetric metric) {
-        localMetrics.remove(metric);
-        if (metric.hasReceiver())
-            receiverMetrics.remove(metric);
-        else
-            noReceiverMetrics.remove(metric);
-        if (listener != null)
-            listener.dispatchQueueRemoved(metric.getQueueName());
-    }
-
-    public synchronized ClusteredQueueMetric getLocalMetric() {
-        int rcount = receiverMetrics.size();
-        List cloned = (List) ((LinkedList) localMetrics).clone();
-        for (int i = 0; i < cloned.size(); i++) {
-            QueueMetric qm = (QueueMetric) cloned.get(i);
-            if (qm.hasReceiver())
-                rcount++;
+    public void addLocalMetric(QueueMetric metric) {
+        lock.writeLock().lock();
+        try {
+            localMetrics.add(metric);
+            if (metric.hasReceiver())
+                receiverMetrics.add(metric);
+            else
+                noReceiverMetrics.add(metric);
+        } finally {
+            lock.writeLock().unlock();
         }
-        return new ClusteredQueueMetricImpl(clusteredQueueName, cloned, rcount > 0);
+
     }
 
-    public synchronized void addMetric(String routerName, ClusteredQueueMetric metric) {
-        removeRouterMetrics(routerName, receiverMetrics);
-        removeRouterMetrics(routerName, noReceiverMetrics);
-        List list = metric.getQueueMetrics();
-        if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                QueueMetric qm = (QueueMetric) list.get(i);
-                qm.setRouterName(routerName);
+    public void removeLocalMetric(QueueMetric metric) {
+        lock.writeLock().lock();
+        try {
+            localMetrics.remove(metric);
+            if (metric.hasReceiver())
+                receiverMetrics.remove(metric);
+            else
+                noReceiverMetrics.remove(metric);
+            DispatchPolicyListener listenerInstance = listener.get();
+            if (listenerInstance != null)
+                listenerInstance.dispatchQueueRemoved(metric.getQueueName());
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public ClusteredQueueMetric getLocalMetric() {
+        lock.readLock().lock();
+        try {
+            int rcount = receiverMetrics.size();
+            List cloned = (List) ((LinkedList) localMetrics).clone();
+            for (int i = 0; i < cloned.size(); i++) {
+                QueueMetric qm = (QueueMetric) cloned.get(i);
                 if (qm.hasReceiver())
-                    receiverMetrics.add(qm);
-                else
-                    noReceiverMetrics.add(qm);
+                    rcount++;
             }
+            return new ClusteredQueueMetricImpl(clusteredQueueName, cloned, rcount > 0);
+        } finally {
+            lock.readLock().unlock();
         }
+
     }
 
-    public synchronized void removeMetric(String routerName) {
-        removeRouterMetrics(routerName, receiverMetrics);
-        removeRouterMetrics(routerName, noReceiverMetrics);
+    public void addMetric(String routerName, ClusteredQueueMetric metric) {
+        lock.writeLock().lock();
+        try {
+            removeRouterMetrics(routerName, receiverMetrics);
+            removeRouterMetrics(routerName, noReceiverMetrics);
+            List list = metric.getQueueMetrics();
+            if (list != null) {
+                for (int i = 0; i < list.size(); i++) {
+                    QueueMetric qm = (QueueMetric) list.get(i);
+                    qm.setRouterName(routerName);
+                    if (qm.hasReceiver())
+                        receiverMetrics.add(qm);
+                    else
+                        noReceiverMetrics.add(qm);
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
-    public synchronized boolean isReceiverSomewhere() {
-        return receiverMetrics.size() > 0;
+    public void removeMetric(String routerName) {
+        lock.writeLock().lock();
+        try {
+            removeRouterMetrics(routerName, receiverMetrics);
+            removeRouterMetrics(routerName, noReceiverMetrics);
+        } finally {
+            lock.writeLock().unlock();
+        }
+
+    }
+
+    public boolean isReceiverSomewhere() {
+        lock.readLock().lock();
+        try {
+            return receiverMetrics.size() > 0;
+        } finally {
+            lock.readLock().unlock();
+        }
+
     }
 
     public boolean isMessageBasedDispatch() {
         return false;
     }
 
-    public synchronized String getNextSendQueue() {
-        if (receiverMetrics.size() > 0) {
-            nextReceiver++;
-            if (nextReceiver > receiverMetrics.size() - 1)
-                nextReceiver = 0;
-            return ((QueueMetric) receiverMetrics.get(nextReceiver)).getQueueName();
+    public String getNextSendQueue() {
+        lock.writeLock().lock();
+        try {
+            if (receiverMetrics.size() > 0) {
+                nextReceiver.getAndIncrement();
+                if (nextReceiver.get() > receiverMetrics.size() - 1)
+                    nextReceiver.set(0);
+                return ((QueueMetric) receiverMetrics.get(nextReceiver.get())).getQueueName();
+            }
+            if (noReceiverMetrics.size() > 0) {
+                nextNoReceiver.getAndIncrement();
+                if (nextNoReceiver.get() > noReceiverMetrics.size() - 1)
+                    nextNoReceiver.set(0);
+                return ((QueueMetric) noReceiverMetrics.get(nextNoReceiver.get())).getQueueName();
+            }
+            return null;
+        } finally {
+            lock.writeLock().unlock();
         }
-        if (noReceiverMetrics.size() > 0) {
-            nextNoReceiver++;
-            if (nextNoReceiver > noReceiverMetrics.size() - 1)
-                nextNoReceiver = 0;
-            return ((QueueMetric) noReceiverMetrics.get(nextNoReceiver)).getQueueName();
-        }
-        return null;
+
     }
 
     public String getNextSendQueue(MessageImpl message) {
         return getNextSendQueue();
     }
 
-    public synchronized String getNextReceiveQueue() {
-        if (localMetrics.size() == 0)
-            return null;
-        nextLocal++;
-        if (nextLocal > localMetrics.size() - 1)
-            nextLocal = 0;
-        return ((QueueMetric) localMetrics.get(nextLocal)).getQueueName();
+    public String getNextReceiveQueue() {
+        lock.writeLock().lock();
+        try {
+            if (localMetrics.size() == 0)
+                return null;
+            nextLocal.getAndIncrement();
+            if (nextLocal.get() > localMetrics.size() - 1)
+                nextLocal.set(0);
+            return ((QueueMetric) localMetrics.get(nextLocal.get())).getQueueName();
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 
     public void close() {
-        localMetrics.clear();
-        receiverMetrics.clear();
-        noReceiverMetrics.clear();
-        nextLocal = -1;
-        nextReceiver = -1;
-        nextNoReceiver = -1;
+        lock.writeLock().lock();
+        try {
+            localMetrics.clear();
+            receiverMetrics.clear();
+            noReceiverMetrics.clear();
+            nextLocal.set(-1);
+            nextReceiver.set(-1);
+            nextNoReceiver.set(-1);
+        } finally {
+            lock.writeLock().unlock();
+        }
+
     }
 }

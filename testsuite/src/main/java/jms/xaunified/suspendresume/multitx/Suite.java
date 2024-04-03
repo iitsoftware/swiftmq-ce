@@ -17,26 +17,23 @@
 
 package jms.xaunified.suspendresume.multitx;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.xaunified.suspendresume.multitx.singledest.Suite.suite());
-    suite.addTest(jms.xaunified.suspendresume.multitx.multidest.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.xaunified.suspendresume.multitx.singledest.Suite.suite());
+        suite.addTest(jms.xaunified.suspendresume.multitx.multidest.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "multitx";
-  }
+    public String toString() {
+        return "multitx";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

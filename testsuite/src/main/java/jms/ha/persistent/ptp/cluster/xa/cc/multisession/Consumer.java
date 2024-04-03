@@ -17,12 +17,8 @@
 
 package jms.ha.persistent.ptp.cluster.xa.cc.multisession;
 
-import jms.base.MsgNoVerifier;
-import jms.base.ServerSessionImpl;
-import jms.base.ServerSessionPoolImpl;
-import jms.base.SimpleConnectedXAPTPCCClusterTestCase;
-import jms.base.XidImpl;
 import com.swiftmq.tools.concurrent.Semaphore;
+import jms.base.*;
 
 import javax.jms.ConnectionConsumer;
 import javax.jms.Message;
@@ -31,101 +27,87 @@ import javax.jms.XAQueueSession;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-public class Consumer extends SimpleConnectedXAPTPCCClusterTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
-  long initDelay = Long.parseLong(System.getProperty("jms.ha.cluster.receive.initdelay", "20000"));
-  MsgNoVerifier verifier = null;
-  ConnectionConsumer cc = null;
-  ServerSessionPoolImpl pool = null;
-  Semaphore sem = null;
-  Exception exception = null;
-  int n = 0;
-
-  public Consumer(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    pause(initDelay);
-    super.setUp();
-    sender.close();
-    receiver.close();
-    qs.close();
-    pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 10; i++)
-    {
-      XAQueueSession session = qc.createXAQueueSession();
-      session.setMessageListener(new Listener(session));
-      pool.addServerSession(new ServerSessionImpl(pool, session));
-    }
-    cc = qc.createConnectionConsumer(queue, null, pool, 5);
-    verifier = new MsgNoVerifier(this, nMsgs, "no", true);
-    verifier.setCheckSequence(false);
-  }
-
-  public void consume()
-  {
-    sem = new Semaphore();
-    sem.waitHere();
-    if (exception != null)
-      failFast("failed: " + exception);
-    try
-    {
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("failed: " + e);
-    }
-  }
-
-  synchronized void inc()
-  {
-    n++;
-    if (n == nMsgs)
-      sem.notifySingleWaiter();
-  }
-
-  protected void tearDown() throws Exception
-  {
-    cc.close();
-    verifier = null;
-    cc = null;
-    pool = null;
-    sem = null;
-    exception = null;
-    super.tearDown();
-  }
-
-  private class Listener implements MessageListener
-  {
-    XAQueueSession mySession = null;
+public class Consumer extends SimpleConnectedXAPTPCCClusterTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.cluster.nmsgs", "20000"));
+    long initDelay = Long.parseLong(System.getProperty("jms.ha.cluster.receive.initdelay", "20000"));
+    MsgNoVerifier verifier = null;
+    ConnectionConsumer cc = null;
+    ServerSessionPoolImpl pool = null;
+    Semaphore sem = null;
+    Exception exception = null;
     int n = 0;
 
-    public Listener(XAQueueSession mySession)
-    {
-      this.mySession = mySession;
+    public Consumer(String name) {
+        super(name);
     }
 
-    public void onMessage(Message msg)
-    {
-      try
-      {
-        XAResource xares = mySession.getXAResource();
-        Xid xid = new XidImpl(getClass().getName());
-        xares.start(xid, XAResource.TMNOFLAGS);
-        verifier.add(msg);
-        xares.end(xid, XAResource.TMSUCCESS);
-        xares.prepare(xid);
-        xares.commit(xid, false);
-      } catch (Exception e)
-      {
-        exception = e;
-        sem.notifySingleWaiter();
-      }
-      inc();
+    protected void setUp() throws Exception {
+        pause(initDelay);
+        super.setUp();
+        sender.close();
+        receiver.close();
+        qs.close();
+        pool = new ServerSessionPoolImpl();
+        for (int i = 0; i < 10; i++) {
+            XAQueueSession session = qc.createXAQueueSession();
+            session.setMessageListener(new Listener(session));
+            pool.addServerSession(new ServerSessionImpl(pool, session));
+        }
+        cc = qc.createConnectionConsumer(queue, null, pool, 5);
+        verifier = new MsgNoVerifier(this, nMsgs, "no", true);
+        verifier.setCheckSequence(false);
     }
-  }
+
+    public void consume() {
+        sem = new Semaphore();
+        sem.waitHere();
+        if (exception != null)
+            failFast("failed: " + exception);
+        try {
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("failed: " + e);
+        }
+    }
+
+    synchronized void inc() {
+        n++;
+        if (n == nMsgs)
+            sem.notifySingleWaiter();
+    }
+
+    protected void tearDown() throws Exception {
+        cc.close();
+        verifier = null;
+        cc = null;
+        pool = null;
+        sem = null;
+        exception = null;
+        super.tearDown();
+    }
+
+    private class Listener implements MessageListener {
+        XAQueueSession mySession = null;
+        int n = 0;
+
+        public Listener(XAQueueSession mySession) {
+            this.mySession = mySession;
+        }
+
+        public void onMessage(Message msg) {
+            try {
+                XAResource xares = mySession.getXAResource();
+                Xid xid = new XidImpl(getClass().getName());
+                xares.start(xid, XAResource.TMNOFLAGS);
+                verifier.add(msg);
+                xares.end(xid, XAResource.TMSUCCESS);
+                xares.prepare(xid);
+                xares.commit(xid, false);
+            } catch (Exception e) {
+                exception = e;
+                sem.notifySingleWaiter();
+            }
+            inc();
+        }
+    }
 }

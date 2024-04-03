@@ -52,40 +52,40 @@ public class Consumer {
         queueName = ctx.queueManager.createTemporaryQueue();
         subscriberId = ctx.topicManager.subscribe(topic, null, false, queueName, session.getMqttConnection().getActiveLogin(), true);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/createReceiver, queueName=" + queueName + ", subsciberId=" + subscriberId);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/createReceiver, queueName=" + queueName + ", subsciberId=" + subscriberId);
         return ctx.queueManager.createQueueReceiver(queueName, session.getMqttConnection().getActiveLogin(), null);
     }
 
     public QueuePullTransaction createTransaction() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/createTransaction");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/createTransaction");
         transaction = queueReceiver.createTransaction(true);
         return transaction;
     }
 
     public QueuePullTransaction createReadTransaction() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/createReadTransaction");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/createReadTransaction");
         readTransaction = queueReceiver.createTransaction(false);
         return readTransaction;
     }
 
     public void start(MessageProcessor messageProcessor) throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/start");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/start");
         this.messageProcessor = messageProcessor;
         restart();
     }
 
     public void restart() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/restart");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/restart");
         readTransaction.registerMessageProcessor(messageProcessor);
     }
 
     public void stop() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/stop");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/stop");
         if (readTransaction != null && !readTransaction.isClosed())
             if (messageProcessor != null)
                 readTransaction.unregisterMessageProcessor(messageProcessor);
@@ -95,7 +95,7 @@ public class Consumer {
 
     public void close() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + "/close");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + "/close");
         try {
             if (transaction != null && !transaction.isClosed())
                 transaction.rollback();

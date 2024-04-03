@@ -17,81 +17,70 @@
 
 package amqp.v100.ptp.transacted.retirement.commit;
 
+import amqp.v100.base.AMQPConnectedSessionTestCase;
+import amqp.v100.base.MessageFactory;
 import com.swiftmq.amqp.v100.client.Consumer;
 import com.swiftmq.amqp.v100.client.TransactionController;
 import com.swiftmq.amqp.v100.generated.transactions.coordination.TxnIdIF;
 import com.swiftmq.amqp.v100.messaging.AMQPMessage;
-import amqp.v100.base.AMQPConnectedSessionTestCase;
-import amqp.v100.base.MessageFactory;
 
-public class Receiver extends AMQPConnectedSessionTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "100000"));
-  int linkCredit = Integer.parseInt(System.getProperty("linkcredit", "500"));
-  int txRcvSize = Integer.parseInt(System.getProperty("txrcvsize", "10"));
+public class Receiver extends AMQPConnectedSessionTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "100000"));
+    int linkCredit = Integer.parseInt(System.getProperty("linkcredit", "500"));
+    int txRcvSize = Integer.parseInt(System.getProperty("txrcvsize", "10"));
 
-  MessageFactory messageFactory;
-  int qos;
-  String address = null;
-  Consumer consumer = null;
-  TransactionController txc = null;
+    MessageFactory messageFactory;
+    int qos;
+    String address = null;
+    Consumer consumer = null;
+    TransactionController txc = null;
 
-  public Receiver(String name, int qos, String address)
-  {
-    super(name);
-    this.qos = qos;
-    this.address = address;
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    consumer = getSession().createConsumer(address, linkCredit, qos, true, null);
-    messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
-    txc = getSession().getTransactionController();
-  }
-
-  public void receive()
-  {
-    try
-    {
-      int txSize = 0;
-      TxnIdIF txnIdIF = txc.createTxnId();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        AMQPMessage msg = consumer.receive();
-        if (msg != null)
-        {
-          messageFactory.verify(msg);
-          msg.setTxnIdIF(txnIdIF);
-          if (!msg.isSettled())
-            msg.accept();
-          txSize++;
-          if (txSize == txRcvSize)
-          {
-            txc.commit(txnIdIF);
-            txnIdIF = txc.createTxnId();
-            txSize = 0;
-          }
-        } else
-          throw new Exception("Msg == null at i=" + i);
-      }
-      if (txSize > 0)
-      {
-        txc.commit(txnIdIF);
-        txSize = 0;
-      }
-    } catch (Exception e)
-    {
-      fail("test failed: " + e);
+    public Receiver(String name, int qos, String address) {
+        super(name);
+        this.qos = qos;
+        this.address = address;
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (consumer != null)
-      consumer.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp();
+        consumer = getSession().createConsumer(address, linkCredit, qos, true, null);
+        messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
+        txc = getSession().getTransactionController();
+    }
+
+    public void receive() {
+        try {
+            int txSize = 0;
+            TxnIdIF txnIdIF = txc.createTxnId();
+            for (int i = 0; i < nMsgs; i++) {
+                AMQPMessage msg = consumer.receive();
+                if (msg != null) {
+                    messageFactory.verify(msg);
+                    msg.setTxnIdIF(txnIdIF);
+                    if (!msg.isSettled())
+                        msg.accept();
+                    txSize++;
+                    if (txSize == txRcvSize) {
+                        txc.commit(txnIdIF);
+                        txnIdIF = txc.createTxnId();
+                        txSize = 0;
+                    }
+                } else
+                    throw new Exception("Msg == null at i=" + i);
+            }
+            if (txSize > 0) {
+                txc.commit(txnIdIF);
+                txSize = 0;
+            }
+        } catch (Exception e) {
+            fail("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        if (consumer != null)
+            consumer.close();
+        super.tearDown();
+    }
 
 }

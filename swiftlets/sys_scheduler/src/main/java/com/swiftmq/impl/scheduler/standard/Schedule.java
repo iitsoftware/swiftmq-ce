@@ -181,7 +181,7 @@ public abstract class Schedule implements Serializable {
                     if (nextTime != -1) {
                         if (respectDST) {
                             long startOfDay = myCal.getTime().getTime() - (myCal.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000) - (myCal.get(Calendar.MINUTE) * 60 * 1000) - (myCal.get(Calendar.SECOND) * 1000) - myCal.get(Calendar.MILLISECOND);
-                            startTime = startOfDay + nextTime * 1000;
+                            startTime = startOfDay + nextTime * 1000L;
                             startTimeSec = nextTime;
                         } else {
                             Calendar c = (Calendar) Calendar.getInstance();

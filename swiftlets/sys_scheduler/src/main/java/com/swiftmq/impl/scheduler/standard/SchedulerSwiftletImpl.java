@@ -36,7 +36,7 @@ public class SchedulerSwiftletImpl extends SchedulerSwiftlet {
     EntityListEventAdapter scheduleAdapter = null;
     JobGroup myJobGroup = null;
 
-    public synchronized JobGroup getJobGroup(String s) {
+    public JobGroup getJobGroup(String s) {
         Entity entity = ctx.jobGroupList.getEntity(s);
         if (entity == null) {
             entity = ctx.jobGroupList.createEntity();

@@ -19,55 +19,47 @@ package jms.funcunified.transacted.multisubscriber;
 
 import jms.base.SimpleConnectedUnifiedPSTestCase;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class Publisher extends SimpleConnectedUnifiedPSTestCase
-{
-  Object sem = new Object();
+public class Publisher extends SimpleConnectedUnifiedPSTestCase {
+    Object sem = new Object();
 
-  public Publisher(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE);
-    pause(10000);
-  }
-
-  public void testPublishNP()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      ts.commit();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Publisher(String name) {
+        super(name);
     }
-  }
 
-  public void testPublishP()
-  {
-    try
-    {
-      TextMessage msg = ts.createTextMessage();
-      for (int i = 0; i < 10; i++)
-      {
-        msg.setText("Msg: " + i);
-        producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      ts.commit();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE);
+        pause(10000);
     }
-  }
+
+    public void testPublishNP() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.NON_PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            ts.commit();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    public void testPublishP() {
+        try {
+            TextMessage msg = ts.createTextMessage();
+            for (int i = 0; i < 10; i++) {
+                msg.setText("Msg: " + i);
+                producer.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            ts.commit();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

@@ -26,9 +26,8 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.auth.ResourceLimitException;
 import com.swiftmq.swiftlet.queue.QueuePushTransaction;
-import com.swiftmq.tools.collection.ArrayListTool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.tools.collection.RingBuffer;
-import com.swiftmq.tools.queue.SingleProcessorQueue;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 
 import javax.jms.InvalidDestinationException;
@@ -41,8 +40,8 @@ public class TransactedQueueSession extends TransactedSession {
     EntityList senderEntityList = null;
     EntityList receiverEntityList = null;
 
-    public TransactedQueueSession(String connectionTracePrefix, Entity sessionEntity, SingleProcessorQueue connectionOutboundQueue, int dispatchId, ActiveLogin activeLogin) {
-        super(connectionTracePrefix, sessionEntity, connectionOutboundQueue, dispatchId, activeLogin);
+    public TransactedQueueSession(String connectionTracePrefix, Entity sessionEntity, EventLoop outboundLoop, int dispatchId, ActiveLogin activeLogin) {
+        super(connectionTracePrefix, sessionEntity, outboundLoop, dispatchId, activeLogin);
         browserManager = new BrowserManager(ctx);
         if (ctx.sessionEntity != null) {
             senderEntityList = (EntityList) sessionEntity.getEntity("sender");
@@ -125,10 +124,8 @@ public class TransactedQueueSession extends TransactedSession {
             if (!ctx.queueManager.isQueueRunning(queue.getQueueName()))
                 throw new InvalidDestinationException("Invalid destination: " + queue.getQueueName());
             int producerId;
-            QueueProducer producer;
-            producerId = ArrayListTool.setFirstFreeOrExpand(producerList, null);
-            producer = new QueueProducer(ctx, queue.getQueueName());
-            producerList.set(producerId, producer);
+            QueueProducer producer = new QueueProducer(ctx, queue.getQueueName());
+            producerId = producerList.add(producer);
             reply.setQueueProducerId(producerId);
             reply.setOk(true);
             if (senderEntityList != null) {
@@ -196,10 +193,8 @@ public class TransactedQueueSession extends TransactedSession {
         try {
             queueName = validateDestination(queueName);
             int consumerId = 0;
-            QueueConsumer consumer = null;
-            consumerId = ArrayListTool.setFirstFreeOrExpand(consumerList, null);
-            consumer = new QueueConsumer(ctx, queueName, messageSelector);
-            consumerList.set(consumerId, consumer);
+            QueueConsumer consumer = new QueueConsumer(ctx, queueName, messageSelector);
+            consumerId = consumerList.add(consumer);
             reply.setOk(true);
             reply.setQueueConsumerId(consumerId);
             if (receiverEntityList != null) {

@@ -17,40 +17,42 @@
 
 package com.swiftmq.impl.auth.standard;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class TopicResourceGrant extends ResourceGrant {
-    boolean subscriberGranted;
-    boolean publisherGranted;
-    boolean createDurableGranted;
+    final AtomicBoolean subscriberGranted = new AtomicBoolean(false);
+    final AtomicBoolean publisherGranted = new AtomicBoolean(false);
+    final AtomicBoolean createDurableGranted = new AtomicBoolean(false);
 
     public TopicResourceGrant(String resourceName, boolean subscriberGranted, boolean publisherGranted, boolean createDurableGranted) {
         super(resourceName);
-        this.subscriberGranted = subscriberGranted;
-        this.publisherGranted = publisherGranted;
-        this.createDurableGranted = createDurableGranted;
+        this.subscriberGranted.set(subscriberGranted);
+        this.publisherGranted.set(publisherGranted);
+        this.createDurableGranted.set(createDurableGranted);
     }
 
-    public synchronized void setSubscriberGranted(boolean subscriberGranted) {
-        this.subscriberGranted = subscriberGranted;
+    public void setSubscriberGranted(boolean subscriberGranted) {
+        this.subscriberGranted.set(subscriberGranted);
     }
 
-    public synchronized boolean isSubscriberGranted() {
-        return (subscriberGranted);
+    public boolean isSubscriberGranted() {
+        return (subscriberGranted.get());
     }
 
-    public synchronized void setPublisherGranted(boolean publisherGranted) {
-        this.publisherGranted = publisherGranted;
+    public void setPublisherGranted(boolean publisherGranted) {
+        this.publisherGranted.set(publisherGranted);
     }
 
-    public synchronized boolean isPublisherGranted() {
-        return (publisherGranted);
+    public boolean isPublisherGranted() {
+        return (publisherGranted.get());
     }
 
-    public synchronized void setCreateDurableGranted(boolean createDurableGranted) {
-        this.createDurableGranted = createDurableGranted;
+    public void setCreateDurableGranted(boolean createDurableGranted) {
+        this.createDurableGranted.set(createDurableGranted);
     }
 
-    public synchronized boolean isCreateDurableGranted() {
-        return (createDurableGranted);
+    public boolean isCreateDurableGranted() {
+        return (createDurableGranted.get());
     }
 
     public String toString() {
@@ -58,11 +60,11 @@ public class TopicResourceGrant extends ResourceGrant {
         s.append("[TopicResourceGrant, resourceName=");
         s.append(resourceName);
         s.append(", subscriberGranted=");
-        s.append(subscriberGranted);
+        s.append(subscriberGranted.get());
         s.append(", publisherGranted=");
-        s.append(publisherGranted);
+        s.append(publisherGranted.get());
         s.append(", createDurableGranted=");
-        s.append(createDurableGranted);
+        s.append(createDurableGranted.get());
         s.append("]");
         return s.toString();
     }

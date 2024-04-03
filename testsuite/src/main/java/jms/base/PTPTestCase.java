@@ -22,100 +22,82 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
 import javax.naming.InitialContext;
 
-public class PTPTestCase extends JMSTestCase
-{
-  public InitialContext ctx = null;
-  QueueConnectionFactory qcf = null;
+public class PTPTestCase extends JMSTestCase {
+    public InitialContext ctx = null;
+    QueueConnectionFactory qcf = null;
 
-  public PTPTestCase(String name)
-  {
-    super(name);
-  }
-
-  public QueueConnection createQueueConnection(InitialContext ctx, String lookup, boolean start)
-  {
-    QueueConnection qc = null;
-    try
-    {
-      if (qcf == null)
-        qcf = (QueueConnectionFactory) ctx.lookup(lookup);
-      qc = qcf.createQueueConnection();
-      if (start)
-        qc.start();
-    } catch (Exception e)
-    {
-      failFast("create queue connection failed: " + e);
+    public PTPTestCase(String name) {
+        super(name);
     }
-    return qc;
-  }
 
-  public QueueConnection createQueueConnection(InitialContext ctx, String lookup)
-  {
-    QueueConnection qc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      qc = createQueueConnection(ctx, lookup, false);
-    } catch (Exception e)
-    {
-      failFast("create queue connection failed: " + e);
+    public QueueConnection createQueueConnection(InitialContext ctx, String lookup, boolean start) {
+        QueueConnection qc = null;
+        try {
+            if (qcf == null)
+                qcf = (QueueConnectionFactory) ctx.lookup(lookup);
+            qc = qcf.createQueueConnection();
+            if (start)
+                qc.start();
+        } catch (Exception e) {
+            failFast("create queue connection failed: " + e);
+        }
+        return qc;
     }
-    return qc;
-  }
 
-  public QueueConnection createQueueConnection(String lookup)
-  {
-    QueueConnection qc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      qc = createQueueConnection(ctx, lookup);
-    } catch (Exception e)
-    {
-      failFast("create queue connection failed: " + e);
+    public QueueConnection createQueueConnection(InitialContext ctx, String lookup) {
+        QueueConnection qc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            qc = createQueueConnection(ctx, lookup, false);
+        } catch (Exception e) {
+            failFast("create queue connection failed: " + e);
+        }
+        return qc;
     }
-    return qc;
-  }
 
-  public QueueConnection createQueueConnection(String lookup, boolean start)
-  {
-    QueueConnection qc = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      qc = createQueueConnection(ctx, lookup, start);
-    } catch (Exception e)
-    {
-      failFast("create queue connection failed: " + e);
+    public QueueConnection createQueueConnection(String lookup) {
+        QueueConnection qc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            qc = createQueueConnection(ctx, lookup);
+        } catch (Exception e) {
+            failFast("create queue connection failed: " + e);
+        }
+        return qc;
     }
-    return qc;
-  }
 
-  public Queue getQueue(String name)
-  {
-    Queue queue = null;
-    try
-    {
-      if (ctx == null)
-        ctx = createInitialContext();
-      queue = (Queue) ctx.lookup(name);
-    } catch (Exception e)
-    {
-      failFast("get queue failed: " + e);
+    public QueueConnection createQueueConnection(String lookup, boolean start) {
+        QueueConnection qc = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            qc = createQueueConnection(ctx, lookup, start);
+        } catch (Exception e) {
+            failFast("create queue connection failed: " + e);
+        }
+        return qc;
     }
-    return queue;
-  }
 
-  protected void tearDown() throws Exception
-  {
-    if (ctx != null)
-      ctx.close();
-    ctx = null;
-    qcf = null;
-    super.tearDown();
-  }
+    public Queue getQueue(String name) {
+        Queue queue = null;
+        try {
+            if (ctx == null)
+                ctx = createInitialContext();
+            queue = (Queue) ctx.lookup(name);
+        } catch (Exception e) {
+            failFast("get queue failed: " + e);
+        }
+        return queue;
+    }
+
+    protected void tearDown() throws Exception {
+        if (ctx != null)
+            ctx.close();
+        ctx = null;
+        qcf = null;
+        super.tearDown();
+    }
 }
 

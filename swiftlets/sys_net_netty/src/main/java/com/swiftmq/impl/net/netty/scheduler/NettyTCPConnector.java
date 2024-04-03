@@ -20,7 +20,6 @@ package com.swiftmq.impl.net.netty.scheduler;
 import com.swiftmq.impl.net.netty.SSLContextFactory;
 import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.swiftlet.net.ConnectorMetaData;
-import com.swiftmq.swiftlet.net.event.ConnectionListener;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -28,25 +27,27 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class NettyTCPConnector extends TCPConnector {
     EventLoopGroup group;
     TaskExecutor taskExecutor;
-    ChannelFuture channelFuture = null;
-    NettyConnection connection = null;
-    NettyOutboundConnectionHandler connectionHandler = null;
+    final AtomicReference<ChannelFuture> channelFuture = new AtomicReference<>();
+    final AtomicReference<NettyConnection> connection = new AtomicReference<>();
+    final AtomicReference<NettyOutboundConnectionHandler> connectionHandler = new AtomicReference<>();
     boolean useTLS = false;
 
     public NettyTCPConnector(SwiftletContext ctx, ConnectorMetaData metaData) {
         super(ctx, metaData);
         useTLS = metaData.getSocketFactoryClass() != null && metaData.getSocketFactoryClass().equals("com.swiftmq.net.JSSESocketFactory");
         taskExecutor = new TaskExecutor(ctx);
-        group = new NioEventLoopGroup(taskExecutor.getNumberThreads()-1, taskExecutor);
+        group = new NioEventLoopGroup(taskExecutor.getNumberThreads() - 1, taskExecutor);
     }
 
     @Override
-    public synchronized void connect() {
-        if (connectionHandler != null && connectionHandler.isActive())
+    public void connect() {
+        NettyOutboundConnectionHandler handler = connectionHandler.get();
+        if (handler != null && handler.isActive())
             return;
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$net", toString() + "/connect");
@@ -55,17 +56,17 @@ public class NettyTCPConnector extends TCPConnector {
         clientBootstrap.channel(NioSocketChannel.class);
         clientBootstrap.remoteAddress(new InetSocketAddress(getMetaData().getHostname(), getMetaData().getPort()));
         clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
                 ctx.logSwiftlet.logError("sys$net", NettyTCPConnector.this.toString()+"/Got exception: "+cause);
             }
 
             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                connection = new NettyConnection(ctx, socketChannel, ctx.networkSwiftlet.isDnsResolve());
-                connectionHandler = new NettyOutboundConnectionHandler(ctx, connection, getMetaData());
+                connection.set(new NettyConnection(ctx, socketChannel, ctx.networkSwiftlet.isDnsResolve()));
+                connectionHandler.set(new NettyOutboundConnectionHandler(ctx, connection.get(), getMetaData()));
                 if (useTLS)
                     socketChannel.pipeline().addLast(SSLContextFactory.createClientContext().newHandler(socketChannel.alloc()));
-                socketChannel.pipeline().addLast(connectionHandler);
+                socketChannel.pipeline().addLast(connectionHandler.get());
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace("sys$net", NettyTCPConnector.this.toString() + "/initChannel");
             }
@@ -82,13 +83,14 @@ public class NettyTCPConnector extends TCPConnector {
         .option(ChannelOption.SO_RCVBUF, getMetaData().getInputBufferSize())
         .option(ChannelOption.TCP_NODELAY, getMetaData().isUseTcpNoDelay());
         try {
-            channelFuture = clientBootstrap.connect().sync();
+            channelFuture.set(clientBootstrap.connect().sync());
+            ctx.logSwiftlet.logInformation("sys$net", super.toString() + ", connection created: " + connection.toString());
         } catch (Exception e) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$net", super.toString() + "/connect, exception: " + e.toString());
-            channelFuture = null;
-            connectionHandler = null;
-            connection = null;
+                ctx.traceSpace.trace("sys$net", super.toString() + ", connect, exception: " + e.toString());
+            channelFuture.set(null);
+            connectionHandler.set(null);
+            connection.set(null);
         }
     }
 
@@ -97,11 +99,14 @@ public class NettyTCPConnector extends TCPConnector {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$net", super.toString() + "/close");
         super.close();
-        if (channelFuture != null)
-            channelFuture.channel().close();
-        group.shutdownGracefully();
-        channelFuture = null;
-        connectionHandler = null;
-        connection = null;
+        ChannelFuture future = channelFuture.getAndSet(null);
+        if (future != null)
+            future.channel().close();
+        try {
+            group.shutdownGracefully().get();
+        } catch (Exception ignored) {
+        }
+        connectionHandler.set(null);
+        connection.set(null);
     }
 }

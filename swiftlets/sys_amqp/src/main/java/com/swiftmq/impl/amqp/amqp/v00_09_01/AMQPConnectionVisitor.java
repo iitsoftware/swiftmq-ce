@@ -21,17 +21,17 @@ import com.swiftmq.impl.amqp.amqp.v00_09_01.po.*;
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface AMQPConnectionVisitor extends POVisitor {
-    public void visit(POSendStart po);
+    void visit(POSendStart po);
 
-    public void visit(POSendTune po);
+    void visit(POSendTune po);
 
-    public void visit(POSendHeartBeat po);
+    void visit(POSendHeartBeat po);
 
-    public void visit(POCheckIdleTimeout po);
+    void visit(POCheckIdleTimeout po);
 
-    public void visit(POSendClose po);
+    void visit(POSendClose po);
 
-    public void visit(POSendChannelClose po);
+    void visit(POSendChannelClose po);
 
-    public void visit(POClose po);
+    void visit(POClose po);
 }

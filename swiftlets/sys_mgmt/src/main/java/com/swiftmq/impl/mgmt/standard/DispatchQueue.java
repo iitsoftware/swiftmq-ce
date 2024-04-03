@@ -29,39 +29,40 @@ import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.swiftlet.routing.event.RoutingEvent;
 import com.swiftmq.swiftlet.routing.event.RoutingListener;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.dump.Dumpalizer;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+import com.swiftmq.tools.pipeline.POObject;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 
 import javax.jms.DeliveryMode;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DispatchQueue
         implements EventVisitor, TimerListener, EntityWatchListener, PropertyWatchListener, RoutingListener {
-    static final String TP_DISPATCH = "sys$mgmt.dispatchqueue";
     static final long EXPIRATION_CHECK_INTERVAL = 60000;
 
     SwiftletContext ctx = null;
-    PipelineQueue pipelineQueue = null;
-    Map dispatchers = new HashMap();
+    Map<String, Dispatcher> dispatchers = new ConcurrentHashMap<>();
     TimerListener updateTimer = null;
-    boolean leaseStarted = false;
+    final AtomicBoolean leaseStarted = new AtomicBoolean(false);
     ProtocolFactory factory = new ProtocolFactory();
     DataByteArrayInputStream dis = new DataByteArrayInputStream();
     DataByteArrayOutputStream dos = new DataByteArrayOutputStream();
     long flushInterval = 0;
+    EventLoop eventLoop;
 
     public DispatchQueue(SwiftletContext ctx) {
         this.ctx = ctx;
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(TP_DISPATCH), TP_DISPATCH, this);
+        this.eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$mgmt.dispatch", list -> list.forEach(e -> ((POObject) e).accept(DispatchQueue.this)));
         ctx.usageList.setEntityRemoveListener(new EntityRemoveListener() {
             public void onEntityRemove(Entity parent, Entity delEntity) throws EntityRemoveException {
-                pipelineQueue.enqueue(new Disconnect(delEntity.getName()));
+                eventLoop.submit(new Disconnect(delEntity.getName()));
             }
         });
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/created");
@@ -72,16 +73,16 @@ public class DispatchQueue
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/addWatchListeners, entity: " + entity.getName());
         Map m = entity.getProperties();
-        if (m.size() > 0) {
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                Property prop = (Property) ((Map.Entry) iter.next()).getValue();
+        if (!m.isEmpty()) {
+            for (Object o : m.entrySet()) {
+                Property prop = (Property) ((Map.Entry<?, ?>) o).getValue();
                 prop.addPropertyWatchListener(this);
             }
         }
         m = entity.getEntities();
         if (m.size() > 0) {
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+            for (Object o : m.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 e.addEntityWatchListener(this);
                 addWatchListeners(e);
             }
@@ -92,16 +93,16 @@ public class DispatchQueue
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/removeWatchListeners, entity: " + entity.getName());
         Map m = entity.getProperties();
-        if (m.size() > 0) {
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                Property prop = (Property) ((Map.Entry) iter.next()).getValue();
+        if (!m.isEmpty()) {
+            for (Object o : m.entrySet()) {
+                Property prop = (Property) ((Map.Entry<?, ?>) o).getValue();
                 prop.removePropertyWatchListener(this);
             }
         }
         m = entity.getEntities();
-        if (m.size() > 0) {
-            for (Iterator iter = m.entrySet().iterator(); iter.hasNext(); ) {
-                Entity e = (Entity) ((Map.Entry) iter.next()).getValue();
+        if (!m.isEmpty()) {
+            for (Object o : m.entrySet()) {
+                Entity e = (Entity) ((Map.Entry<?, ?>) o).getValue();
                 e.removeEntityWatchListener(this);
                 removeWatchListeners(e);
             }
@@ -115,33 +116,26 @@ public class DispatchQueue
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/checkStartLeases, start timers");
             ctx.timerSwiftlet.addTimerListener(EXPIRATION_CHECK_INTERVAL, this);
-            updateTimer = new TimerListener() {
-                public void performTimeAction() {
-                    pipelineQueue.enqueue(new SendUpdates());
-                }
-            };
+            updateTimer = () -> eventLoop.submit(new SendUpdates());
             Property prop = ctx.root.getProperty("flush-interval");
-            flushInterval = ((Long) prop.getValue()).longValue();
+            flushInterval = (Long) prop.getValue();
             ctx.timerSwiftlet.addTimerListener(flushInterval, updateTimer);
-            prop.setPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChanged(Property property, Object oldValue, Object newValue)
-                        throws PropertyChangeException {
-                    ctx.timerSwiftlet.removeTimerListener(updateTimer);
-                    flushInterval = ((Long) newValue).longValue();
-                    ctx.timerSwiftlet.addTimerListener(flushInterval, updateTimer);
-                }
+            prop.setPropertyChangeListener((property, oldValue, newValue) -> {
+                ctx.timerSwiftlet.removeTimerListener(updateTimer);
+                flushInterval = ((Long) newValue).longValue();
+                ctx.timerSwiftlet.addTimerListener(flushInterval, updateTimer);
             });
             RouterConfiguration.Singleton().addEntityWatchListener(this);
             addWatchListeners(RouterConfiguration.Singleton());
             ctx.mgmtSwiftlet.fireEvent(true);
-            leaseStarted = true;
+            leaseStarted.set(true);
         }
     }
 
     private void checkStopLeases() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/checkStopLeases, dispatchers.size(): " + dispatchers.size());
-        if (dispatchers.size() == 0 && leaseStarted) {
+        if (dispatchers.isEmpty() && leaseStarted.get()) {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/checkStopLeases, stop timers");
             ctx.timerSwiftlet.removeTimerListener(this);
@@ -150,14 +144,14 @@ public class DispatchQueue
             RouterConfiguration.Singleton().removeEntityWatchListener(this);
             removeWatchListeners(RouterConfiguration.Singleton());
             ctx.mgmtSwiftlet.fireEvent(false);
-            leaseStarted = false;
+            leaseStarted.set(false);
         }
     }
 
     private void checkExpire() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/checkExpire ...");
-        for (Iterator iter = dispatchers.entrySet().iterator(); iter.hasNext(); ) {
-            Dispatcher d = (Dispatcher) ((Map.Entry) iter.next()).getValue();
+        for (Iterator<Map.Entry<String, Dispatcher>> iter = dispatchers.entrySet().iterator(); iter.hasNext(); ) {
+            Dispatcher d = (Dispatcher) ((Map.Entry<?, ?>) iter.next()).getValue();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/checkExpire, dispatcher: " + d);
             if (d.isExpired()) {
@@ -175,8 +169,8 @@ public class DispatchQueue
     private void dispatch(EventObject event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatch, event: " + event + " ...");
-        for (Iterator iter = dispatchers.entrySet().iterator(); iter.hasNext(); ) {
-            Dispatcher d = (Dispatcher) ((Map.Entry) iter.next()).getValue();
+        for (Iterator<Map.Entry<String, Dispatcher>> iter = dispatchers.entrySet().iterator(); iter.hasNext(); ) {
+            Dispatcher d = (Dispatcher) ((Map.Entry<?, ?>) iter.next()).getValue();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatch, event: " + event + ", dispatcher: " + d);
             if (d.isInvalid()) {
@@ -204,7 +198,7 @@ public class DispatchQueue
     private void dispatchClientRequest(ClientRequest event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " ...");
-        Dispatcher d = (Dispatcher) dispatchers.get(event.getQueueName());
+        Dispatcher d = dispatchers.get(event.getQueueName());
         if (d != null) {
             if (d.isInvalid()) {
                 if (ctx.traceSpace.enabled)
@@ -226,7 +220,7 @@ public class DispatchQueue
                     ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " try ProtocolRequest ...");
                 dis.reset();
                 dis.setBuffer(event.getBuffer());
-                ProtocolRequest r = null;
+                ProtocolRequest r;
                 try {
                     r = (ProtocolRequest) Dumpalizer.construct(dis, factory);
                 } catch (NullPointerException e) {
@@ -240,13 +234,6 @@ public class DispatchQueue
                     ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " got ProtocolRequest: " + r);
                 ProtocolReply reply = (ProtocolReply) r.createReply();
                 switch (r.getVersion()) {
-                    case 400:
-                        if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " create v400 Dispatcher");
-                        d = new com.swiftmq.impl.mgmt.standard.v400.DispatcherImpl(ctx, event.getQueueName());
-                        dispatchers.put(event.getQueueName(), d);
-                        reply.setOk(true);
-                        break;
                     case 750:
                         if (ctx.traceSpace.enabled)
                             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, event: " + event + " create v750 Dispatcher");
@@ -289,18 +276,16 @@ public class DispatchQueue
     private void disconnect(Disconnect event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/disconnect, event: " + event + " ...");
-        Dispatcher d = (Dispatcher) dispatchers.get(event.getName());
+        Dispatcher d = dispatchers.get(event.getName());
         if (d != null) {
             if (d.isInvalid()) {
                 if (ctx.traceSpace.enabled)
                     ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/disconnect, event: " + event + ", dispatcher invalid (1): " + d);
-                d.close();
-                dispatchers.remove(event.getName());
             } else {
                 d.doDisconnect();
-                d.close();
-                dispatchers.remove(event.getName());
             }
+            d.close();
+            dispatchers.remove(event.getName());
         }
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/disconnect, event: " + event + " done");
@@ -308,7 +293,7 @@ public class DispatchQueue
 
     private void flushAll() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/flushAll ...");
-        for (Iterator iter = dispatchers.entrySet().iterator(); iter.hasNext(); ) {
+        for (Iterator<Map.Entry<String, Dispatcher>> iter = dispatchers.entrySet().iterator(); iter.hasNext(); ) {
             Dispatcher d = (Dispatcher) ((Map.Entry) iter.next()).getValue();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/flushAll, dispatcher: " + d);
@@ -340,11 +325,11 @@ public class DispatchQueue
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/entityAdded, entity: " + newEntity.getName() + " ...");
         addWatchListeners(newEntity);
         if (newEntity instanceof Configuration)
-            pipelineQueue.enqueue(new SwiftletAdded(newEntity.getName(), (Configuration) newEntity));
+            eventLoop.submit(new SwiftletAdded(newEntity.getName(), (Configuration) newEntity));
         else {
-            pipelineQueue.enqueue(new EntityAdded(parent.getContext(), newEntity.getName()));
-            for (Iterator iter = newEntity.getProperties().entrySet().iterator(); iter.hasNext(); ) {
-                Property prop = (Property) ((Map.Entry) iter.next()).getValue();
+            eventLoop.submit(new EntityAdded(parent.getContext(), newEntity.getName()));
+            for (Object o : newEntity.getProperties().entrySet()) {
+                Property prop = (Property) ((Map.Entry<?, ?>) o).getValue();
                 if (prop.getValue() != prop.getDefaultValue())
                     propertyValueChanged(prop);
             }
@@ -358,9 +343,9 @@ public class DispatchQueue
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/entityRemoved, entity: " + delEntity.getName() + " ...");
         removeWatchListeners(delEntity);
         if (delEntity instanceof Configuration)
-            pipelineQueue.enqueue(new SwiftletRemoved(delEntity.getName()));
+            eventLoop.submit(new SwiftletRemoved(delEntity.getName()));
         else
-            pipelineQueue.enqueue(new EntityRemoved(parent.getContext(), delEntity.getName()));
+            eventLoop.submit(new EntityRemoved(parent.getContext(), delEntity.getName()));
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/entityRemoved, entity: " + delEntity.getName() + " done");
     }
@@ -373,7 +358,7 @@ public class DispatchQueue
         String[] entityListContext = null;
         if (prop.getParent().getParent() != null && prop.getParent().getParent() instanceof EntityList)
             entityListContext = prop.getParent().getParent().getContext();
-        pipelineQueue.enqueue(new PropertyChanged(entityListContext, prop.getParent().getContext(), prop.getName(), prop.getValue()));
+        eventLoop.submit(new PropertyChanged(entityListContext, prop.getParent().getContext(), prop.getName(), prop.getValue()));
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/propertyValueChanged, prop: " + prop.getName() + " done");
     }
@@ -391,7 +376,7 @@ public class DispatchQueue
     public void destinationActivated(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/destinationActivated, event: " + event + " ...");
-        pipelineQueue.enqueue(new RouterAvailable(event.getDestination()));
+        eventLoop.submit(new RouterAvailable(event.getDestination()));
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/destinationActivated, event: " + event + " done");
     }
@@ -399,7 +384,7 @@ public class DispatchQueue
     public void destinationDeactivated(RoutingEvent event) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/destinationDeactivated, event: " + event + " ...");
-        pipelineQueue.enqueue(new RouterUnavailable(event.getDestination()));
+        eventLoop.submit(new RouterUnavailable(event.getDestination()));
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/destinationDeactivated, event: " + event + " done");
     }
@@ -409,7 +394,7 @@ public class DispatchQueue
     public void performTimeAction() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/performTimeAction ...");
-        pipelineQueue.enqueue(new CheckExpire());
+        eventLoop.submit(new CheckExpire());
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/performTimeAction done");
     }
@@ -419,7 +404,7 @@ public class DispatchQueue
     public void dispatchClientRequest(String userName, String queueName, byte[] buffer) {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/dispatchClientRequest, userName=" + userName + ", queueName" + queueName + ", buffer.length: " + buffer.length);
-        pipelineQueue.enqueue(new ClientRequest(userName, queueName, buffer));
+        eventLoop.submit(new ClientRequest(userName, queueName, buffer));
     }
     // <-- Exposed Methods
 
@@ -518,12 +503,11 @@ public class DispatchQueue
         ctx.timerSwiftlet.removeTimerListener(this);
         if (updateTimer != null)
             ctx.timerSwiftlet.removeTimerListener(updateTimer);
-        for (Iterator iter = dispatchers.entrySet().iterator(); iter.hasNext(); ) {
-            Dispatcher d = (Dispatcher) ((Map.Entry) iter.next()).getValue();
+        for (Map.Entry<String, Dispatcher> stringDispatcherEntry : dispatchers.entrySet()) {
+            Dispatcher d = (Dispatcher) ((Map.Entry<?, ?>) stringDispatcherEntry).getValue();
             d.close();
         }
         dispatchers.clear();
-        pipelineQueue.close();
         if (event.getSemaphore() != null)
             event.getSemaphore().notifySingleWaiter();
         if (ctx.traceSpace.enabled)
@@ -534,8 +518,9 @@ public class DispatchQueue
     public void close() {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/close ...");
         Semaphore sem = new Semaphore();
-        pipelineQueue.enqueue(new Close(sem));
+        eventLoop.submit(new Close(sem));
         sem.waitHere();
+        eventLoop.close();
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/close done");
     }
 

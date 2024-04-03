@@ -20,5 +20,5 @@ package com.swiftmq.impl.amqp.amqp.v00_09_01.transformer;
 import javax.jms.Destination;
 
 public interface DestinationFactory {
-    public Destination create(String name);
+    Destination create(String name);
 }

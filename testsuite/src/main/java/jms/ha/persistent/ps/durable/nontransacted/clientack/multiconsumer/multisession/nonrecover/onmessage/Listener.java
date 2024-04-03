@@ -17,107 +17,91 @@
 
 package jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.nonrecover.onmessage;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.MsgNoVerifier;
 import jms.base.SimpleConnectedPSTestCase;
-import com.swiftmq.tools.concurrent.Semaphore;
 
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
+import javax.jms.*;
 
-public class Listener extends SimpleConnectedPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  Exception exception = null;
-  TopicSession session1 = null;
-  TopicSession session2 = null;
-  TopicSubscriber subscriber1 = null;
-  TopicSubscriber subscriber2 = null;
+public class Listener extends SimpleConnectedPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    Exception exception = null;
+    TopicSession session1 = null;
+    TopicSession session2 = null;
+    TopicSubscriber subscriber1 = null;
+    TopicSubscriber subscriber2 = null;
 
-  public Listener(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.CLIENT_ACKNOWLEDGE, true, false, true);
-    session1 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
-    session2 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
-    subscriber1 = session1.createDurableSubscriber(getTopic("testtopic1"), "dur1");
-    subscriber2 = session2.createDurableSubscriber(getTopic("testtopic2"), "dur2");
-  }
-
-  public void receive()
-  {
-    try
-    {
-      Semaphore sem1 = new Semaphore();
-      subscriber.setMessageListener(new MyListener("testtopic", new MsgNoVerifier(this, nMsgs, "no"), sem1));
-      Semaphore sem2 = new Semaphore();
-      subscriber1.setMessageListener(new MyListener("testtopic1", new MsgNoVerifier(this, nMsgs, "no"), sem2));
-      Semaphore sem3 = new Semaphore();
-      subscriber2.setMessageListener(new MyListener("testtopic2", new MsgNoVerifier(this, nMsgs, "no"), sem3));
-      sem1.waitHere();
-      sem2.waitHere();
-      sem3.waitHere();
-      if (exception != null)
-        throw exception;
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
-    }
-  }
-
-  protected void tearDown() throws Exception
-  {
-    subscriber1.close();
-    subscriber2.close();
-    session1.unsubscribe("dur1");
-    session2.unsubscribe("dur2");
-    session1.close();
-    session2.close();
-    exception = null;
-    session1 = null;
-    session2 = null;
-    subscriber1 = null;
-    subscriber2 = null;
-    super.tearDown();
-  }
-
-  private class MyListener implements MessageListener
-  {
-    String name = null;
-    MsgNoVerifier verifier = null;
-    Semaphore sem = null;
-    int n = 0;
-
-    public MyListener(String name, MsgNoVerifier verifier, Semaphore sem)
-    {
-      this.name = name;
-      this.verifier = verifier;
-      this.sem = sem;
+    public Listener(String name) {
+        super(name);
     }
 
-    public void onMessage(Message message)
-    {
-      try
-      {
-        System.out.println(name + "/onMessage: " + message.getIntProperty("no"));
-        verifier.add(message);
-        n++;
-        if (n % 10 == 0)
-          message.acknowledge();
-        if (n == nMsgs)
-          sem.notifySingleWaiter();
-      } catch (Exception e)
-      {
-        exception = e;
-        sem.notifySingleWaiter();
-      }
+    protected void setUp() throws Exception {
+        setUp(false, Session.CLIENT_ACKNOWLEDGE, true, false, true);
+        session1 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
+        session2 = tc.createTopicSession(false, Session.CLIENT_ACKNOWLEDGE);
+        subscriber1 = session1.createDurableSubscriber(getTopic("testtopic1"), "dur1");
+        subscriber2 = session2.createDurableSubscriber(getTopic("testtopic2"), "dur2");
     }
-  }
+
+    public void receive() {
+        try {
+            Semaphore sem1 = new Semaphore();
+            subscriber.setMessageListener(new MyListener("testtopic", new MsgNoVerifier(this, nMsgs, "no"), sem1));
+            Semaphore sem2 = new Semaphore();
+            subscriber1.setMessageListener(new MyListener("testtopic1", new MsgNoVerifier(this, nMsgs, "no"), sem2));
+            Semaphore sem3 = new Semaphore();
+            subscriber2.setMessageListener(new MyListener("testtopic2", new MsgNoVerifier(this, nMsgs, "no"), sem3));
+            sem1.waitHere();
+            sem2.waitHere();
+            sem3.waitHere();
+            if (exception != null)
+                throw exception;
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        subscriber1.close();
+        subscriber2.close();
+        session1.unsubscribe("dur1");
+        session2.unsubscribe("dur2");
+        session1.close();
+        session2.close();
+        exception = null;
+        session1 = null;
+        session2 = null;
+        subscriber1 = null;
+        subscriber2 = null;
+        super.tearDown();
+    }
+
+    private class MyListener implements MessageListener {
+        String name = null;
+        MsgNoVerifier verifier = null;
+        Semaphore sem = null;
+        int n = 0;
+
+        public MyListener(String name, MsgNoVerifier verifier, Semaphore sem) {
+            this.name = name;
+            this.verifier = verifier;
+            this.sem = sem;
+        }
+
+        public void onMessage(Message message) {
+            try {
+                System.out.println(name + "/onMessage: " + message.getIntProperty("no"));
+                verifier.add(message);
+                n++;
+                if (n % 10 == 0)
+                    message.acknowledge();
+                if (n == nMsgs)
+                    sem.notifySingleWaiter();
+            } catch (Exception e) {
+                exception = e;
+                sem.notifySingleWaiter();
+            }
+        }
+    }
 }
 

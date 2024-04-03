@@ -28,7 +28,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -84,8 +83,7 @@ public class BasicInboundTransformer extends InboundTransformer {
 
         Map<String, Object> headers = prop.getHeaders();
         if (headers != null) {
-            for (Iterator iter = headers.entrySet().iterator(); iter.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) iter.next();
+            for (Map.Entry<String, Object> entry : headers.entrySet()) {
                 String name = nameTranslator.translate((String) entry.getKey());
                 Field field = (Field) entry.getValue();
                 switch (field.getType()) {

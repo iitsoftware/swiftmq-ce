@@ -25,20 +25,22 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PreparedLogFile extends PreparedLog {
     static final String FILENAME = "xa.log";
     StoreContext ctx = null;
     String path = null;
     String filename = null;
-    boolean autoSync = false;
+    final AtomicBoolean autoSync = new AtomicBoolean(false);
     RandomAccessFile file = null;
-    int validRecords = 0;
+    final AtomicInteger validRecords = new AtomicInteger();
 
     public PreparedLogFile(StoreContext ctx, String path, boolean autoSync) throws IOException {
         this.ctx = ctx;
         this.path = path;
-        this.autoSync = autoSync;
+        this.autoSync.set(autoSync);
         filename = path + File.separatorChar + FILENAME;
         new File(filename).getParentFile().mkdirs();
         file = new RandomAccessFile(path + File.separatorChar + FILENAME, "rw");
@@ -48,19 +50,19 @@ public class PreparedLogFile extends PreparedLog {
         ctx.logSwiftlet.logInformation("sys$store", toString() + "/created, " + validRecords + " prepared transactions");
     }
 
-    public synchronized long add(PrepareLogRecordImpl logRecord) throws IOException {
+    public long add(PrepareLogRecordImpl logRecord) throws IOException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/add, logRecord: " + logRecord);
         file.seek(file.length());
         long address = file.getFilePointer();
         logRecord.setAddress(address);
         logRecord.writeContent(file);
-        validRecords++;
-        if (autoSync)
+        validRecords.getAndIncrement();
+        if (autoSync.get())
             file.getFD().sync();
         return address;
     }
 
-    public synchronized PrepareLogRecordImpl get(long address) throws IOException {
+    public PrepareLogRecordImpl get(long address) throws IOException {
         file.seek(address);
         PrepareLogRecordImpl logRecord = new PrepareLogRecordImpl(address);
         logRecord.readContent(file);
@@ -68,8 +70,8 @@ public class PreparedLogFile extends PreparedLog {
         return logRecord;
     }
 
-    public synchronized List getAll() throws IOException {
-        List list = new ArrayList();
+    public List<PrepareLogRecordImpl> getAll() throws IOException {
+        List<PrepareLogRecordImpl> list = new ArrayList();
         file.seek(0);
         while (file.getFilePointer() < file.length()) {
             try {
@@ -82,25 +84,25 @@ public class PreparedLogFile extends PreparedLog {
                 System.err.println("+++          Unable to reconstruct the last prepared Log Record!");
             }
         }
-        validRecords = list.size();
-        if (validRecords == 0) {
+        validRecords.set(list.size());
+        if (validRecords.get() == 0) {
             file.setLength(0);
-            if (autoSync)
+            if (autoSync.get())
                 file.getFD().sync();
         }
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/getAll, logRecords: " + list);
         return list;
     }
 
-    public synchronized void remove(PrepareLogRecordImpl logRecord) throws IOException {
+    public void remove(PrepareLogRecordImpl logRecord) throws IOException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/remove, logRecord: " + logRecord);
         file.seek(logRecord.getAddress());
         logRecord.setValid(false);
         logRecord.writeValid(file);
-        validRecords--;
-        if (validRecords == 0)
+        validRecords.getAndDecrement();
+        if (validRecords.get() == 0)
             file.setLength(0);
-        if (autoSync)
+        if (autoSync.get())
             file.getFD().sync();
     }
 
@@ -108,7 +110,7 @@ public class PreparedLogFile extends PreparedLog {
         return true;
     }
 
-    public synchronized void backup(String destPath) throws Exception {
+    public void backup(String destPath) throws Exception {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$store", toString() + "/copy to " + (destPath + File.separatorChar + FILENAME) + " ...");
         String destFilename = destPath + File.separatorChar + FILENAME;
@@ -131,7 +133,7 @@ public class PreparedLogFile extends PreparedLog {
             ctx.traceSpace.trace("sys$store", toString() + "/copy to " + (destPath + File.separatorChar + FILENAME) + " done");
     }
 
-    public synchronized void sync() throws IOException {
+    public void sync() throws IOException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$store", toString() + "/sync");
         file.getFD().sync();
     }

@@ -24,57 +24,49 @@ import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.QueueSender;
 import javax.jms.TextMessage;
-import javax.transaction.xa.Xid;
 import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Sender extends SimpleConnectedXAPTPTestCase
-{
-  String myQueueName = System.getProperty("jndi.composite.queue");
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.composite.nmsgs", "20000"));
-  QueueSender mySender = null;
+public class Sender extends SimpleConnectedXAPTPTestCase {
+    String myQueueName = System.getProperty("jndi.composite.queue");
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.composite.nmsgs", "20000"));
+    QueueSender mySender = null;
 
-  public Sender(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    createSender = false;
-    createReceiver = false;
-    super.setUp();
-    mySender = qs.getQueueSession().createSender(getQueue(myQueueName));
-  }
-
-  public void send()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Xid xid = new XidImpl(getClass().getName());
-        xares.start(xid, XAResource.TMNOFLAGS);
-        TextMessage msg = qs.createTextMessage();
-        msg.setIntProperty("no", i);
-        if (i % 100 == 0)
-          msg.setStringProperty("Prop", "X");
-        msg.setText("Msg: " + i);
-        mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        xares.end(xid, XAResource.TMSUCCESS);
-        xares.prepare(xid);
-        xares.commit(xid, false);
-      }
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Sender(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    mySender.close();
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        createSender = false;
+        createReceiver = false;
+        super.setUp();
+        mySender = qs.getQueueSession().createSender(getQueue(myQueueName));
+    }
+
+    public void send() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                Xid xid = new XidImpl(getClass().getName());
+                xares.start(xid, XAResource.TMNOFLAGS);
+                TextMessage msg = qs.createTextMessage();
+                msg.setIntProperty("no", i);
+                if (i % 100 == 0)
+                    msg.setStringProperty("Prop", "X");
+                msg.setText("Msg: " + i);
+                mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                xares.end(xid, XAResource.TMSUCCESS);
+                xares.prepare(xid);
+                xares.commit(xid, false);
+            }
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        mySender.close();
+        super.tearDown();
+    }
 }
 

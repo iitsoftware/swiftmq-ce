@@ -21,33 +21,33 @@ import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface MQTTVisitor extends POVisitor {
 
-    public void visit(POConnect po);
+    void visit(POConnect po);
 
-    public void visit(POPublish po);
+    void visit(POPublish po);
 
-    public void visit(POSendMessage po);
+    void visit(POSendMessage po);
 
-    public void visit(POSessionAssociated po);
+    void visit(POSessionAssociated po);
 
-    public void visit(POPubAck po);
+    void visit(POPubAck po);
 
-    public void visit(POPubRec po);
+    void visit(POPubRec po);
 
-    public void visit(POPubRel po);
+    void visit(POPubRel po);
 
-    public void visit(POPubComp po);
+    void visit(POPubComp po);
 
-    public void visit(POSubscribe po);
+    void visit(POSubscribe po);
 
-    public void visit(POUnsubscribe po);
+    void visit(POUnsubscribe po);
 
-    public void visit(POPingReq po);
+    void visit(POPingReq po);
 
-    public void visit(PODisconnect po);
+    void visit(PODisconnect po);
 
-    public void visit(POProtocolError po);
+    void visit(POProtocolError po);
 
-    public void visit(POCollect po);
+    void visit(POCollect po);
 
-    public void visit(POClose po);
+    void visit(POClose po);
 }

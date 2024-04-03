@@ -20,23 +20,19 @@ package amqp.v100.ps;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(amqp.v100.ps.one_to_n.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(amqp.v100.ps.one_to_n.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "ps";
-  }
+    public String toString() {
+        return "ps";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

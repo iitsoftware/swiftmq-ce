@@ -19,38 +19,34 @@ package jms.func.requestreply.receive.unidentified.ps;
 
 import jms.base.SimpleConnectedPSTestCase;
 
-import javax.jms.*;
+import javax.jms.Session;
+import javax.jms.TemporaryTopic;
+import javax.jms.TextMessage;
+import javax.jms.TopicPublisher;
 
-public class Replier extends SimpleConnectedPSTestCase
-{
-  TopicPublisher replyPublisher = null;
+public class Replier extends SimpleConnectedPSTestCase {
+    TopicPublisher replyPublisher = null;
 
-  public Replier(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    replyPublisher = ts.createPublisher(null);
-  }
-
-  public void testReply()
-  {
-    try
-    {
-      for (int i = 0; i < 10000; i++)
-      {
-        TextMessage msg = (TextMessage) subscriber.receive();
-        msg.clearBody();
-        msg.setText("Re: " + msg.getText());
-        replyPublisher.publish((TemporaryTopic) msg.getJMSReplyTo(), msg);
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Replier(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        replyPublisher = ts.createPublisher(null);
+    }
+
+    public void testReply() {
+        try {
+            for (int i = 0; i < 10000; i++) {
+                TextMessage msg = (TextMessage) subscriber.receive();
+                msg.clearBody();
+                msg.setText("Re: " + msg.getText());
+                replyPublisher.publish((TemporaryTopic) msg.getJMSReplyTo(), msg);
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

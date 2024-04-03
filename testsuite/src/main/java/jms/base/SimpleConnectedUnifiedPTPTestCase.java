@@ -17,54 +17,45 @@
 
 package jms.base;
 
-import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
+import javax.jms.*;
 
-public class SimpleConnectedUnifiedPTPTestCase extends UnifiedPTPTestCase
-{
-  public Connection qc = null;
-  public Session qs = null;
-  public MessageProducer producer = null;
-  public MessageConsumer consumer = null;
-  public Queue queue = null;
+public class SimpleConnectedUnifiedPTPTestCase extends UnifiedPTPTestCase {
+    public Connection qc = null;
+    public Session qs = null;
+    public MessageProducer producer = null;
+    public MessageConsumer consumer = null;
+    public Queue queue = null;
 
-  public SimpleConnectedUnifiedPTPTestCase(String name)
-  {
-    super(name);
-  }
+    public SimpleConnectedUnifiedPTPTestCase(String name) {
+        super(name);
+    }
 
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-  }
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+    }
 
-  protected void setUp(boolean transacted, int ackMode) throws Exception
-  {
-    String qcfName = System.getProperty("jndi.qcf");
-    assertNotNull("missing property 'jndi.qcf'", qcfName);
-    qc = createConnection(qcfName);
-    String queueName = System.getProperty("jndi.queue");
-    assertNotNull("missing property 'jndi.queue'", queueName);
-    queue = getQueue(queueName);
-    qs = qc.createSession(transacted, ackMode);
-    consumer = qs.createConsumer(queue);
-    producer = qs.createProducer(queue);
-    qc.start();
-  }
+    protected void setUp(boolean transacted, int ackMode) throws Exception {
+        String qcfName = System.getProperty("jndi.qcf");
+        assertNotNull("missing property 'jndi.qcf'", qcfName);
+        qc = createConnection(qcfName);
+        String queueName = System.getProperty("jndi.queue");
+        assertNotNull("missing property 'jndi.queue'", queueName);
+        queue = getQueue(queueName);
+        qs = qc.createSession(transacted, ackMode);
+        consumer = qs.createConsumer(queue);
+        producer = qs.createProducer(queue);
+        qc.start();
+    }
 
-  protected void tearDown() throws Exception
-  {
-    qc.close();
-    qc = null;
-    qs = null;
-    producer = null;
-    consumer = null;
-    queue = null;
-    super.tearDown();
-  }
+    protected void tearDown() throws Exception {
+        qc.close();
+        qc = null;
+        qs = null;
+        producer = null;
+        consumer = null;
+        queue = null;
+        super.tearDown();
+    }
 
 }
 

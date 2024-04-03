@@ -1,6 +1,11 @@
 wr router
 sr router
 cc /sys$queuemanager/queues
+new t0
+new t1
+new t2
+new t3
+new t4
 new testqueue1
 new testqueue2
 new testqueue3

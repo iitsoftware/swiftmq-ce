@@ -17,353 +17,183 @@
 
 package com.swiftmq.impl.threadpool.standard;
 
-import com.swiftmq.mgmt.*;
+import com.swiftmq.impl.threadpool.standard.group.EventLoopImpl;
+import com.swiftmq.impl.threadpool.standard.group.GroupRegistry;
+import com.swiftmq.impl.threadpool.standard.group.pool.PlatformThreadRunner;
+import com.swiftmq.impl.threadpool.standard.group.pool.RejectionHandler;
+import com.swiftmq.impl.threadpool.standard.group.pool.ThreadRunner;
+import com.swiftmq.impl.threadpool.standard.group.pool.VirtualThreadRunner;
+import com.swiftmq.mgmt.Configuration;
+import com.swiftmq.mgmt.Entity;
+import com.swiftmq.mgmt.Property;
+import com.swiftmq.mgmt.PropertyChangeAdapter;
 import com.swiftmq.swiftlet.SwiftletException;
 import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.event.SwiftletManagerAdapter;
 import com.swiftmq.swiftlet.event.SwiftletManagerEvent;
 import com.swiftmq.swiftlet.mgmt.MgmtSwiftlet;
 import com.swiftmq.swiftlet.mgmt.event.MgmtListener;
-import com.swiftmq.swiftlet.threadpool.AsyncTask;
-import com.swiftmq.swiftlet.threadpool.ThreadPool;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.threadpool.ThreadpoolSwiftlet;
 import com.swiftmq.swiftlet.timer.TimerSwiftlet;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
-import com.swiftmq.swiftlet.trace.TraceSpace;
-import com.swiftmq.swiftlet.trace.TraceSwiftlet;
-import com.swiftmq.tools.sql.LikeComparator;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
         implements TimerListener {
-    public static final String PROP_KERNEL_POOL = "kernel-pool";
     public static final String PROP_COLLECT_INTERVAL = "collect-interval";
-    public static final String PROP_THREADS_IDLING = "idling-threads";
-    public static final String PROP_THREADS_RUNNING = "running-threads";
-    public static final String DEFAULT_POOL = "default";
+    public static final String PROP_PLATFORM_THREADS = "platform";
+    public static final String PROP_VIRTUAL_THREADS = "virtual";
+    public static final String PROP_ADHOC_VIRTUAL_THREADS = "adhocvirtual";
+    public static final String PROP_ADHOC_PLATFORM_THREADS = "adhocplatform";
 
-    Configuration config = null;
-    Entity root = null;
-    EntityList usageList = null;
+    SwiftletContext ctx = null;
+    GroupRegistry groupRegistry = null;
+    ThreadRunner adHocVirtualThreadRunner = null;
+    ThreadRunner adHocPlatformThreadRunner = null;
+    RejectionHandler rejectionHandler = null;
 
-    MgmtSwiftlet mgmtSwiftlet = null;
-    TimerSwiftlet timerSwiftlet = null;
-    TraceSwiftlet traceSwiftlet = null;
-    TraceSpace traceSpace = null;
+    final AtomicBoolean collectOn = new AtomicBoolean(false);
+    final AtomicLong collectInterval = new AtomicLong(-1);
 
-    HashMap pools = new HashMap();
-    HashMap threadNameMaps = new HashMap();
-
-    boolean collectOn = false;
-    long collectInterval = -1;
-    boolean stopped = false;
 
     private void collectChanged(long oldInterval, long newInterval) {
-        if (!collectOn)
+        if (!collectOn.get())
             return;
-        if (traceSpace.enabled)
-            traceSpace.trace(getName(), "collectChanged: old interval: " + oldInterval + " new interval: " + newInterval);
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(getName(), "collectChanged: old interval: " + oldInterval + " new interval: " + newInterval);
         if (oldInterval > 0) {
-            if (traceSpace.enabled)
-                traceSpace.trace(getName(), "collectChanged: removeTimerListener for interval " + oldInterval);
-            timerSwiftlet.removeTimerListener(this);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "collectChanged: removeTimerListener for interval " + oldInterval);
+            ctx.timerSwiftlet.removeTimerListener(this);
         }
         if (newInterval > 0) {
-            if (traceSpace.enabled)
-                traceSpace.trace(getName(), "collectChanged: addTimerListener for interval " + newInterval);
-            timerSwiftlet.addTimerListener(newInterval, this);
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "collectChanged: addTimerListener for interval " + newInterval);
+            ctx.timerSwiftlet.addTimerListener(newInterval, this);
         }
     }
 
-    private String[] getDefinedPoolnames(EntityList list) {
-        Map m = list.getEntities();
-        if (m.size() == 0)
-            return null;
-        String[] rArray = new String[m.size()];
-        int i = 0;
-        for (Iterator iter = m.keySet().iterator(); iter.hasNext(); )
-            rArray[i++] = (String) iter.next();
-        return rArray;
+    @Override
+    public CompletableFuture<?> runAsync(Runnable runnable) {
+        return runAsync(runnable, true);
     }
 
-    private void storeThreadNamesForPool(String poolname, Entity poolEntity) {
-        EntityList list = (EntityList) poolEntity.getEntity("threads");
-        Map m = list.getEntities();
-        if (m.size() > 0) {
-            for (Iterator iter = m.keySet().iterator(); iter.hasNext(); )
-                threadNameMaps.put((String) iter.next(), poolname);
-        }
+    @Override
+    public CompletableFuture<?> runAsync(Runnable runnable, boolean virtual) {
+        return virtual ? adHocVirtualThreadRunner.execute(runnable) : adHocPlatformThreadRunner.execute(runnable);
+    }
+
+    @Override
+    public EventLoop createEventLoop(String id, EventProcessor eventProcessor) {
+        EventLoopImpl eventLoop = new EventLoopImpl(ctx, id, groupRegistry.isBulkMode(id), eventProcessor, groupRegistry.threadRunnerForEventLoop(id));
+        groupRegistry.getGroup(id).addEventLoop(eventLoop);
+        return eventLoop;
     }
 
     public void performTimeAction() {
-        if (traceSpace.enabled) traceSpace.trace(getName(), "collecting thread counts...");
-        synchronized (pools) {
-            for (Iterator iter = pools.keySet().iterator(); iter.hasNext(); ) {
-                try {
-                    String name = (String) iter.next();
-                    ThreadPool p = (ThreadPool) pools.get(name);
-                    int idleCount = p.getNumberIdlingThreads();
-                    int runningCount = p.getNumberRunningThreads();
-                    Entity tpEntity = usageList.getEntity(name);
-                    Property prop = tpEntity.getProperty(PROP_THREADS_IDLING);
-                    int oldValue = (int) ((Integer) prop.getValue()).intValue();
-                    if (oldValue != idleCount) {
-                        prop.setReadOnly(false);
-                        prop.setValue(new Integer(idleCount));
-                        prop.setReadOnly(true);
-                    }
-                    prop = tpEntity.getProperty(PROP_THREADS_RUNNING);
-                    oldValue = (int) ((Integer) prop.getValue()).intValue();
-                    if (oldValue != runningCount) {
-                        prop.setReadOnly(false);
-                        prop.setValue(new Integer(runningCount));
-                        prop.setReadOnly(true);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "collecting thread counts...");
+        try {
+            Integer platformRunningCount = groupRegistry.platformThreads();
+            Integer virtualRunningCount = groupRegistry.virtualThreads();
+            Integer adHocVirtualRunningCount = adHocVirtualThreadRunner.getActiveThreadCount();
+            Integer adHocPlatformRunningCount = adHocPlatformThreadRunner.getActiveThreadCount();
+            Property prop = ctx.usage.getProperty(PROP_PLATFORM_THREADS);
+            Integer oldValue = (Integer) prop.getValue();
+            if (!Objects.equals(oldValue, platformRunningCount)) {
+                prop.setReadOnly(false);
+                prop.setValue(platformRunningCount);
+                prop.setReadOnly(true);
             }
-        }
-        if (traceSpace.enabled) traceSpace.trace(getName(), "collecting thread counts...DONE.");
-    }
-
-    public String[] getPoolnames() {
-        String[] names = null;
-        synchronized (pools) {
-            names = new String[pools.size()];
-            int i = 0;
-            Iterator iter = pools.keySet().iterator();
-            while (iter.hasNext())
-                names[i++] = (String) iter.next();
-        }
-        return names;
-    }
-
-    public ThreadPool getPoolByName(String name) {
-        return (ThreadPool) pools.get(name);
-    }
-
-    public ThreadPool getPool(String threadName) {
-        String name = DEFAULT_POOL;
-        synchronized (threadNameMaps) {
-            Iterator iter = threadNameMaps.keySet().iterator();
-            while (iter.hasNext()) {
-                String predicate = (String) iter.next();
-                if (LikeComparator.compare(threadName, predicate, '\\')) {
-                    name = (String) threadNameMaps.get(predicate);
-                    break;
-                }
+            prop = ctx.usage.getProperty(PROP_VIRTUAL_THREADS);
+            oldValue = (Integer) prop.getValue();
+            if (!Objects.equals(oldValue, virtualRunningCount)) {
+                prop.setReadOnly(false);
+                prop.setValue(virtualRunningCount);
+                prop.setReadOnly(true);
             }
-        }
-        ThreadPool p = (ThreadPool) pools.get(name);
-        if (traceSpace.enabled)
-            traceSpace.trace(getName(), "getPoolForThreadName '" + threadName + "' returns " + name);
-        return p;
-    }
-
-    /**
-     * @param asyncTask
-     */
-    public void dispatchTask(AsyncTask asyncTask) {
-        ThreadPool pool = getPool(asyncTask.getDispatchToken());
-        if (pool == null)
-            return; // only during shutdown
-        if (traceSpace.enabled)
-            traceSpace.trace(getName(), "dispatchTask, dispatchToken=" + asyncTask.getDispatchToken() +
-                    ", description=" + asyncTask.getDescription() +
-                    ", pool=" + pool.getPoolName());
-        pool.dispatchTask(asyncTask);
-    }
-
-    public void stopPools() {
-        synchronized (pools) {
-            if (stopped)
-                return;
-            stopped = true;
-            synchronized (pools) {
-                for (Iterator iter = pools.entrySet().iterator(); iter.hasNext(); ) {
-                    ThreadPool p = (ThreadPool) ((Map.Entry) iter.next()).getValue();
-                    p.stop();
-                }
+            prop = ctx.usage.getProperty(PROP_ADHOC_VIRTUAL_THREADS);
+            oldValue = (Integer) prop.getValue();
+            if (!Objects.equals(oldValue, adHocVirtualRunningCount)) {
+                prop.setReadOnly(false);
+                prop.setValue(adHocVirtualRunningCount);
+                prop.setReadOnly(true);
             }
+            prop = ctx.usage.getProperty(PROP_ADHOC_PLATFORM_THREADS);
+            oldValue = (Integer) prop.getValue();
+            if (!Objects.equals(oldValue, adHocPlatformRunningCount)) {
+                prop.setReadOnly(false);
+                prop.setValue(adHocPlatformRunningCount);
+                prop.setReadOnly(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "collecting thread counts...DONE.");
+    }
+
+    @Override
+    public void freeze() {
+        try {
+            groupRegistry.freezeGroups().get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void createPoolChangeListeners(PoolDispatcher pool, Entity poolEntity) {
-        Property prop = poolEntity.getProperty("max-threads");
-        prop.setPropertyChangeListener(new PropertyChangeAdapter(pool) {
-
-            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                PoolDispatcher p = (PoolDispatcher) configObject;
-                int n = ((Integer) newValue).intValue();
-                if (n < p.getMinThreads())
-                    throw new PropertyChangeException("max-threads must be greater or equal to min-threads");
-                p.setMaxThreads(n);
-            }
-        });
-        prop = poolEntity.getProperty("queue-length-threshold");
-        prop.setPropertyChangeListener(new PropertyChangeAdapter(pool) {
-
-            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                PoolDispatcher p = (PoolDispatcher) configObject;
-                int n = ((Integer) newValue).intValue();
-                p.setThreshold(n);
-            }
-        });
-        prop = poolEntity.getProperty("additional-threads");
-        prop.setPropertyChangeListener(new PropertyChangeAdapter(pool) {
-
-            public void propertyChanged(Property property, Object oldValue, Object newValue) throws PropertyChangeException {
-                PoolDispatcher p = (PoolDispatcher) configObject;
-                int n = ((Integer) newValue).intValue();
-                p.setAddThreads(n);
-            }
-        });
-    }
-
-    private void createPool(String poolName, Entity poolEntity, Entity defaultEntity) {
-        synchronized (pools) {
-            Entity entity = poolEntity != null ? poolEntity : defaultEntity;
-            boolean kernelPool = ((Boolean) entity.getProperty("kernel-pool").getValue()).booleanValue();
-            int min = ((Integer) entity.getProperty("min-threads").getValue()).intValue();
-            int max = ((Integer) entity.getProperty("max-threads").getValue()).intValue();
-            int threshold = ((Integer) entity.getProperty("queue-length-threshold").getValue()).intValue();
-            int addThreads = ((Integer) entity.getProperty("additional-threads").getValue()).intValue();
-            int prio = ((Integer) entity.getProperty("priority").getValue()).intValue();
-            long ttl = ((Long) entity.getProperty("idle-timeout").getValue()).longValue();
-            if (traceSpace.enabled)
-                traceSpace.trace(getName(), "creating thread pool '" + poolName +
-                        "', kernelPool=" + kernelPool +
-                        ", minThreads=" + min +
-                        ", maxThreads=" + max +
-                        ", threshold=" + threshold +
-                        ", addThreads=" + addThreads +
-                        ", prio=" + prio +
-                        ", idletimeout=" + ttl);
-            PoolDispatcher pool = new PoolDispatcher(getName(), poolName, kernelPool, min, max, threshold, addThreads, prio, ttl);
-            pools.put(poolName, pool);
-            Entity qEntity = usageList.createEntity();
-            qEntity.setName(poolName);
-            qEntity.setDynamicObject(pool);
-            qEntity.createCommands();
-            try {
-                usageList.addEntity(qEntity);
-            } catch (Exception ignored) {
-            }
-            createPoolChangeListeners(pool, entity);
-            if (!poolName.equals(DEFAULT_POOL)) {
-                EntityList list = (EntityList) poolEntity.getEntity("threads");
-                list.setEntityAddListener(new EntityChangeAdapter(pool) {
-                    public void onEntityAdd(Entity parent, Entity newEntity)
-                            throws EntityAddException {
-                        PoolDispatcher myPd = (PoolDispatcher) configObject;
-                        if (myPd.isKernelPool())
-                            throw new EntityAddException("You cannot create a thread assignment for a kernel pool dynamically.");
-                        synchronized (threadNameMaps) {
-                            threadNameMaps.put(newEntity.getName(), myPd.getPoolName());
-                        }
-                        if (traceSpace.enabled)
-                            traceSpace.trace(getName(), "onEntityAdd (thread), poolName=" + myPd.getPoolName() + ", thread=" + newEntity.getName());
-                    }
-                });
-                list.setEntityRemoveListener(new EntityChangeAdapter(pool) {
-                    public void onEntityRemove(Entity parent, Entity delEntity)
-                            throws EntityRemoveException {
-                        PoolDispatcher myPd = (PoolDispatcher) configObject;
-                        if (myPd.isKernelPool())
-                            throw new EntityRemoveException("You cannot remove a thread assignment from a kernel pool dynamically.");
-                        synchronized (threadNameMaps) {
-                            threadNameMaps.remove(delEntity.getName());
-                        }
-                        if (traceSpace.enabled)
-                            traceSpace.trace(getName(), "onEntityRemove (thread), poolName=" + myPd.getPoolName() + ", thread=" + delEntity.getName());
-                    }
-                });
-            }
-        }
+    @Override
+    public void unfreeze() {
+        groupRegistry.unfreezeGroups();
     }
 
     protected void startup(Configuration config) throws SwiftletException {
-        this.config = config;
-        root = config;
-        usageList = (EntityList) root.getEntity("usage");
+        ctx = new SwiftletContext(config, this);
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
 
-        traceSwiftlet = (TraceSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$trace");
-        traceSpace = traceSwiftlet.getTraceSpace(TraceSwiftlet.SPACE_KERNEL);
-
-        if (traceSpace.enabled) traceSpace.trace(getName(), "startup ...");
-
-        EntityList poolList = (EntityList) root.getEntity("pools");
-        createPool(DEFAULT_POOL, null, poolList.getTemplate());
-        PoolDispatcher dp = (PoolDispatcher) pools.get(DEFAULT_POOL);
-        dp.setKernelPool(true);
-
-        String[] poolNames = getDefinedPoolnames(poolList);
-        if (poolNames != null && poolNames.length > 0) {
-            if (traceSpace.enabled) traceSpace.trace(getName(), "startup: starting defined thread pools");
-            for (int i = 0; i < poolNames.length; i++) {
-                createPool(poolNames[i], poolList.getEntity(poolNames[i]), poolList.getTemplate());
-                storeThreadNamesForPool(poolNames[i], poolList.getEntity(poolNames[i]));
-            }
-        }
-        poolList.setEntityAddListener(new EntityChangeAdapter(null) {
-            public void onEntityAdd(Entity parent, Entity newEntity)
-                    throws EntityAddException {
-                boolean kp = ((Boolean) newEntity.getProperty(PROP_KERNEL_POOL).getValue()).booleanValue();
-                if (kp)
-                    throw new EntityAddException("You cannot create a kernel pool dynamically.");
-                createPool(newEntity.getName(), newEntity, newEntity);
-                if (traceSpace.enabled)
-                    traceSpace.trace(getName(), "onEntityAdd (pool), poolName=" + newEntity.getName());
-            }
-        });
-        poolList.setEntityRemoveListener(new EntityChangeAdapter(null) {
-            public void onEntityRemove(Entity parent, Entity delEntity)
-                    throws EntityRemoveException {
-                PoolDispatcher pd = null;
-                synchronized (pools) {
-                    pd = (PoolDispatcher) pools.get(delEntity.getName());
-                    if (pd.isKernelPool())
-                        throw new EntityRemoveException("You cannot remove a kernel pool dynamically.");
-                    pd.close();
-                    pools.remove(delEntity.getName());
-                    usageList.removeDynamicEntity(pd);
-                }
-                synchronized (threadNameMaps) {
-                    for (Iterator iter = threadNameMaps.entrySet().iterator(); iter.hasNext(); ) {
-                        String entry = (String) ((Map.Entry) iter.next()).getValue();
-                        if (entry.equals(pd.getPoolName()))
-                            iter.remove();
-                    }
-                }
-                if (traceSpace.enabled)
-                    traceSpace.trace(getName(), "onEntityRemove (pool): poolName=" + delEntity.getName());
-            }
-        });
+        groupRegistry = new GroupRegistry(ctx);
+        adHocVirtualThreadRunner = new VirtualThreadRunner();
+        Entity adHocPlatformEntity = ctx.config.getEntity("adhocplatform");
+        int corePoolSize = (Integer) adHocPlatformEntity.getProperty("core-pool-size").getValue();
+        int maxPoolSize = (Integer) adHocPlatformEntity.getProperty("max-pool-size").getValue();
+        long keepalive = (Long) adHocPlatformEntity.getProperty("keepalive").getValue();
+        rejectionHandler = new RejectionHandler(ctx);
+        ctx.logSwiftlet.logInformation(getName(), "Creating the AdHocPlatformThreadRunner with core-pool-size=" + corePoolSize + ", max-pool-size=" + maxPoolSize + ", keepalive=" + keepalive);
+        adHocPlatformThreadRunner = new PlatformThreadRunner(new ThreadPoolExecutor(
+                corePoolSize,
+                maxPoolSize,
+                keepalive,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                rejectionHandler
+        ));
 
         try {
             SwiftletManager.getInstance().addSwiftletManagerListener("sys$mgmt", new SwiftletManagerAdapter() {
                 public void swiftletStarted(SwiftletManagerEvent evt) {
                     try {
-                        timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
-                        mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");
-                        if (traceSpace.enabled) traceSpace.trace(getName(), "registering MgmtListener ...");
-                        mgmtSwiftlet.addMgmtListener(new MgmtListener() {
+                        ctx.timerSwiftlet = (TimerSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$timer");
+                        ctx.mgmtSwiftlet = (MgmtSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$mgmt");
+                        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "registering MgmtListener ...");
+                        ctx.mgmtSwiftlet.addMgmtListener(new MgmtListener() {
                             public void adminToolActivated() {
-                                collectOn = true;
-                                collectChanged(-1, collectInterval);
+                                collectOn.set(true);
+                                collectChanged(-1, collectInterval.get());
                             }
 
                             public void adminToolDeactivated() {
-                                collectChanged(collectInterval, -1);
-                                collectOn = false;
+                                collectChanged(collectInterval.get(), -1);
+                                collectOn.set(false);
                             }
                         });
                     } catch (Exception e) {
-                        if (traceSpace.enabled) traceSpace.trace(getName(), "swiftletStartet, exception=" + e);
+                        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "swiftletStartet, exception=" + e);
                     }
                 }
             });
@@ -371,36 +201,37 @@ public class ThreadpoolSwiftletImpl extends ThreadpoolSwiftlet
             throw new SwiftletException(e.getMessage());
         }
 
-        Property prop = root.getProperty(PROP_COLLECT_INTERVAL);
+        Property prop = ctx.config.getProperty(PROP_COLLECT_INTERVAL);
         prop.setPropertyChangeListener(new PropertyChangeAdapter(null) {
-            public void propertyChanged(Property property, Object oldValue, Object newValue)
-                    throws PropertyChangeException {
-                collectInterval = ((Long) newValue).longValue();
-                collectChanged(((Long) oldValue).longValue(), collectInterval);
+            public void propertyChanged(Property property, Object oldValue, Object newValue) {
+                collectInterval.set((Long) newValue);
+                collectChanged((Long) oldValue, collectInterval.get());
             }
         });
-        collectInterval = ((Long) prop.getValue()).longValue();
-        if (collectOn) {
-            if (collectInterval > 0) {
-                if (traceSpace.enabled) traceSpace.trace(getName(), "startup: registering thread count collector");
-                timerSwiftlet.addTimerListener(collectInterval, this);
-            } else if (traceSpace.enabled)
-                traceSpace.trace(getName(), "startup: collect interval <= 0; no thread count collector");
+        collectInterval.set((Long) prop.getValue());
+        if (collectOn.get()) {
+            if (collectInterval.get() > 0) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "startup: registering thread count collector");
+                ctx.timerSwiftlet.addTimerListener(collectInterval.get(), this);
+            } else if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(getName(), "startup: collect interval <= 0; no thread count collector");
         }
     }
 
-    protected void shutdown() throws SwiftletException {
-        if (traceSpace.enabled) traceSpace.trace(getName(), "shutdown: closing thread pools ...");
-        synchronized (pools) {
-            Iterator iter = pools.entrySet().iterator();
-            while (iter.hasNext()) {
-                ThreadPool p = (ThreadPool) ((Map.Entry) iter.next()).getValue();
-                p.close();
-            }
-            pools.clear();
-            threadNameMaps.clear();
-        }
-        if (traceSpace.enabled) traceSpace.trace(getName(), "shutdown: done.");
+    protected void shutdown() {
+        if (ctx == null)
+            return;
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: closing thread pools ...");
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown");
+        adHocVirtualThreadRunner.shutdown(10, TimeUnit.SECONDS);
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocVirtualThreadRunner shutdown done");
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocPlatformThreadRunner shutdown");
+        adHocPlatformThreadRunner.shutdown(10, TimeUnit.SECONDS);
+        rejectionHandler.stopTimer();
+        ctx.logSwiftlet.logInformation(getName(), "shutdown/adHocPlatformThreadRunner shutdown done");
+        groupRegistry.close();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "shutdown: done.");
     }
 }
 

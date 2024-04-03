@@ -84,7 +84,7 @@ public class TargetLink extends ServerLink
         super(ctx, mySessionHandler, name);
         this.rcvSettleMode = rcvSettleMode;
         transactionRegistry = mySessionHandler.getTransactionRegistry();
-        linkCredit = ((Long) mySessionHandler.getVersionedConnection().getConnectionTemplate().getProperty("target-link-credit").getValue()).longValue();
+        linkCredit = (Long) mySessionHandler.getVersionedConnection().getConnectionTemplate().getProperty("target-link-credit").getValue();
         currentLinkCredit = linkCredit;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/created");
     }
@@ -102,15 +102,15 @@ public class TargetLink extends ServerLink
     public void fillUsage() {
         if (usage != null) {
             try {
-                if (((Long) propLinkCredit.getValue()).longValue() != currentLinkCredit)
-                    propLinkCredit.setValue(new Long(currentLinkCredit));
-                if (((Long) propDeliveryCount.getValue()).longValue() != deliveryCount)
-                    propDeliveryCount.setValue(new Long(deliveryCount));
-                if (((Long) propMessagesReceived.getValue()).longValue() != nmsgs)
-                    propMessagesReceived.setValue(new Long(nmsgs));
+                if ((Long) propLinkCredit.getValue() != currentLinkCredit)
+                    propLinkCredit.setValue(currentLinkCredit);
+                if ((Long) propDeliveryCount.getValue() != deliveryCount)
+                    propDeliveryCount.setValue(deliveryCount);
+                if ((Long) propMessagesReceived.getValue() != nmsgs)
+                    propMessagesReceived.setValue(nmsgs);
                 int size = unsettledFrames.size();
                 if (((Integer) propUnsettledTransfers.getValue()).longValue() != size)
-                    propUnsettledTransfers.setValue(new Integer(size));
+                    propUnsettledTransfers.setValue(size);
             } catch (Exception e) {
             }
         }

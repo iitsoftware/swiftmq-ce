@@ -17,30 +17,25 @@
 
 package jms;
 
-import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class SuiteWithXA extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new SuiteWithXA();
-    suite.addTest(jms.func.Suite.suite());
-    suite.addTest(jms.funcunified.Suite.suite());
-    suite.addTest(jms.xa.Suite.suite());
-    suite.addTest(jms.xaunified.Suite.suite());
-    return suite;
-  }
+public class SuiteWithXA extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new SuiteWithXA();
+        suite.addTest(jms.func.Suite.suite());
+        suite.addTest(jms.funcunified.Suite.suite());
+        suite.addTest(jms.xa.Suite.suite());
+        suite.addTest(jms.xaunified.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "jms";
-  }
+    public String toString() {
+        return "jms";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

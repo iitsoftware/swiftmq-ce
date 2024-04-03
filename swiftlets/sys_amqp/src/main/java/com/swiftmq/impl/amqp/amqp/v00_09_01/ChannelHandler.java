@@ -41,17 +41,16 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import com.swiftmq.swiftlet.auth.AuthenticationException;
 import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
 import com.swiftmq.util.SwiftUtilities;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     static final POActivateFlow PO_ACTIVATE_FLOW = new POActivateFlow();
@@ -59,18 +58,15 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     AMQPHandler amqpHandler;
     int channelNo = 0;
     VersionedConnection versionedConnection = null;
-    PipelineQueue pipelineQueue = null;
-    boolean closed = false;
-    boolean closeInProgress = false;
-    boolean channelDisabled = false;
-    Lock closeLock = new ReentrantLock();
+    final AtomicBoolean closed = new AtomicBoolean(false);
+    final AtomicBoolean closeInProgress = new AtomicBoolean(false);
+    final AtomicBoolean channelDisabled = new AtomicBoolean(false);
     ChannelMethodVisitor channelMethodVisitor = new ChannelMethodVisitorImpl();
     ExchangeMethodVisitor exchangeMethodVisitor = new ExchangeMethodVisitorImpl();
     QueueMethodVisitor queueMethodVisitor = new QueueMethodVisitorImpl();
     BasicMethodVisitor basicMethodVisitor = new BasicMethodVisitorImpl();
     TxMethodVisitor txMethodVisitor = new TxMethodVisitorImpl();
     MessageWrap currentMessage = null;
-    Map bindings = new HashMap();
     Map producers = new HashMap();
     Map consumers = new HashMap();
     InboundTransformer inboundTransformer = new BasicInboundTransformer();
@@ -85,13 +81,17 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     long deliveryCnt = 0;
     List<POSendMessages> waitingSends = new ArrayList<POSendMessages>();
     OutboundTransformer outboundTransformer = new BasicOutboundTransformer();
+    EventLoop eventLoop;
 
     public ChannelHandler(SwiftletContext ctx, AMQPHandler amqpHandler, int channelNo) {
         this.ctx = ctx;
         this.amqpHandler = amqpHandler;
         this.channelNo = channelNo;
         versionedConnection = amqpHandler.getVersionedConnection();
-        pipelineQueue = new PipelineQueue(ctx.threadpoolSwiftlet.getPool(VersionedConnection.TP_SESSIONSVC), "ChannelHandler", this);
+        eventLoop = ctx.threadpoolSwiftlet.createEventLoop("sys$amqp.session.service", list -> {
+            for (Object event : list)
+                ((POObject) event).accept(ChannelHandler.this);
+        });
     }
 
     public int getChannelNo() {
@@ -103,12 +103,12 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     }
 
     public void dispatch(POObject po) {
-        pipelineQueue.enqueue(po);
+        eventLoop.submit(po);
     }
 
     private void handleMethodFrame(Frame frame) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", handleMethodFrame");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", handleMethodFrame");
         try {
             Method method = (Method) frame.getPayloadObject();
             switch (method._getClassId()) {
@@ -161,7 +161,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     private boolean isWithinPrefetchLimits(int msgSize) {
         boolean rc = flowActive && (prefetchCountLimit == 0 || unackedPrefetchedCount <= prefetchCountLimit) && (prefetchSizeLimit == 0 || unackedPrefetchedSize + msgSize <= prefetchSizeLimit);
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", isWithinPrefetchLimits, flowActive=" + flowActive + ", msgSize=" + msgSize + ", prefetchCountLimit=" + prefetchCountLimit + ", unackedPrefetchedCount=" + unackedPrefetchedCount + ", prefetchSizeLimit=" + prefetchSizeLimit + ", unackedPrefetchedSize=" + unackedPrefetchedSize + " returns " + rc);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", isWithinPrefetchLimits, flowActive=" + flowActive + ", msgSize=" + msgSize + ", prefetchCountLimit=" + prefetchCountLimit + ", unackedPrefetchedCount=" + unackedPrefetchedCount + ", prefetchSizeLimit=" + prefetchSizeLimit + ", unackedPrefetchedSize=" + unackedPrefetchedSize + " returns " + rc);
         if (rc) {
             if (prefetchCountLimit > 0)
                 unackedPrefetchedCount++;
@@ -174,7 +174,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     private void dispatchWaitingSends() {
         if (waitingSends.size() > 0) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", dispatch waiting sends");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", dispatch waiting sends");
             POSendMessages[] po = waitingSends.toArray(new POSendMessages[waitingSends.size()]);
             waitingSends.clear();
             for (int i = 0; i < po.length; i++)
@@ -190,17 +190,17 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                 if (sender == null) {
                     if (producers.size() > 10) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", sender cache > 10, closing all");
+                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", sender cache > 10, closing all");
                         for (Iterator iter = producers.entrySet().iterator(); iter.hasNext(); ) {
                             QueueSender s = (QueueSender) ((Map.Entry) iter.next()).getValue();
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", closing sender for queue: " + s.getQueueName());
+                                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", closing sender for queue: " + s.getQueueName());
                             s.close();
                             iter.remove();
                         }
                     }
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", creating new sender on queue: " + rk);
+                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", creating new sender on queue: " + rk);
                     sender = ctx.queueManager.createQueueSender(rk, versionedConnection.getActiveLogin());
                     producers.put(rk, sender);
 
@@ -210,7 +210,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                 msg.setJMSDestination(create(rk));
                 msg.reset();
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", converted JMS message: " + msg);
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", converted JMS message: " + msg);
                 t.putMessage(msg);
                 t.commit();
                 if (remoteFlowActive) {
@@ -233,7 +233,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
     private void sendFlow(boolean activate) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", sendFlow (" + activate + ")");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", sendFlow (" + activate + ")");
         remoteFlowActive = activate;
         Flow flow = new Flow();
         flow.setActive(activate);
@@ -244,7 +244,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
     private void publishCurrentMessage() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", publishCurrentMessage ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", publishCurrentMessage ...");
 
         try {
             Exchange exchange = ctx.exchangeRegistry.get(currentMessage.getPublish().getExchange());
@@ -259,12 +259,12 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
         }
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", publishCurrentMessage done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", publishCurrentMessage done");
     }
 
     private void handleHeaderFrame(Frame frame) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", handleHeaderFrame");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", handleHeaderFrame");
         if (currentMessage != null && currentMessage.getContentHeaderProperties() == null) {
             try {
                 ContentHeaderProperties contentHeaderProperties = (ContentHeaderProperties) frame.getPayloadObject();
@@ -280,7 +280,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
     private void handleBodyFrame(Frame frame) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", handleBodyFrame+");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", handleBodyFrame+");
         if (currentMessage != null && currentMessage.getContentHeaderProperties() != null) {
             try {
                 if (currentMessage.addBodyPart(frame.getPayload()))
@@ -300,15 +300,15 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
     public void addUnacked(long deliveryTag, Consumer consumer, MessageIndex messageIndex, int size) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/addUnacked, deliveryTag=" + deliveryTag + ", size=" + size + ", consumer=" + consumer + ", messageIndex=" + messageIndex);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/addUnacked, deliveryTag=" + deliveryTag + ", size=" + size + ", consumer=" + consumer + ", messageIndex=" + messageIndex);
         unacked.add(new UnackedEntry(deliveryTag, consumer, messageIndex, size));
     }
 
     public void visit(POChannelFrameReceived po) {
-        if (channelDisabled)
+        if (channelDisabled.get())
             return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         Frame frame = po.getFrame();
         switch (frame.getType()) {
             case Frame.TYPE_METHOD:
@@ -325,12 +325,12 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                 break;
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POSendMessages po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         try {
             SourceMessageProcessor mp = po.getSourceMessageProcessor();
             Consumer consumer = mp.getConsumer();
@@ -339,7 +339,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
             else {
                 if (!consumer.isNoAck() && waitingSends.size() > 0) {
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " sends waiting, adding to list");
+                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " sends waiting, adding to list");
                     waitingSends.add(po);
                     return;
                 }
@@ -348,7 +348,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                     Delivery delivery = deliveries[i];
                     if (!consumer.isNoAck() && !isWithinPrefetchLimits(delivery.getBody().length)) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " not within prefetch limit, adding to list");
+                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " not within prefetch limit, adding to list");
                         po.setDeliveryStart(i);
                         po.setDeliveries(deliveries);
                         waitingSends.add(po);
@@ -392,18 +392,18 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, e.toString(), null));
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void visit(POActivateFlow po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         sendFlow(true);
     }
 
     public void visit(POCloseChannel po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         for (int i = 0; i < unacked.size(); i++) {
             UnackedEntry unackedEntry = (UnackedEntry) unacked.get(i);
             try {
@@ -419,7 +419,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
             QueueSender s = (QueueSender) ((Map.Entry) iter.next()).getValue();
             try {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", closing sender for queue: " + s.getQueueName());
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", closing sender for queue: " + s.getQueueName());
                 s.close();
             } catch (QueueException e) {
             }
@@ -429,36 +429,33 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
             Consumer s = (Consumer) ((Map.Entry) iter.next()).getValue();
             try {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", closing consumer: " + s);
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", closing consumer: " + s);
                 s.close();
             } catch (Exception e) {
             }
             iter.remove();
         }
-        closed = true;
-        pipelineQueue.close();
+        closed.set(true);
         po.setSuccess(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close ...");
-        closeLock.lock();
-        if (closeInProgress) {
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close ...");
+        if (closed.get() || closeInProgress.getAndSet(true)) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close in progress, return");
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", closed or close in progress, return");
             return;
         }
-        closeInProgress = true;
-        closeLock.unlock();
-        channelDisabled = false;
+        channelDisabled.set(false);
         Semaphore sem = new Semaphore();
         dispatch(new POCloseChannel(sem));
         sem.waitHere();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", close done");
+        eventLoop.close();
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", close done");
     }
 
     public String toString() {
@@ -468,19 +465,19 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
     private class ChannelMethodVisitorImpl implements ChannelMethodVisitor {
         public void visit(Open method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(OpenOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Flow method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             flowActive = method.getActive();
             FlowOk flowOk = new FlowOk();
             flowOk.setActive(flowActive);
@@ -493,31 +490,31 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(FlowOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             remoteFlowActive = method.getActive();
         }
 
         public void visit(Close method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(CloseOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public String toString() {
-            return ChannelHandler.this.toString() + "/ChannelMethodVisitorImpl";
+            return ChannelHandler.this + "/ChannelMethodVisitorImpl";
         }
     }
 
     private class ExchangeMethodVisitorImpl implements ExchangeMethodVisitor {
         public void visit(final Declare method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             if (method.getPassive()) {
                 if (ctx.exchangeRegistry.get(method.getExchange()) != null) {
                     DeclareOk declareOk = new DeclareOk();
@@ -532,24 +529,12 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                         public Exchange create() throws Exception {
                             Exchange r = null;
                             if (method.getType().equals("direct")) {
-                                r = new Exchange() {
-                                    public int getType() {
-                                        return DIRECT;
-                                    }
-                                };
+                                r = () -> Exchange.DIRECT;
                             } else if (method.getType().equals("fanout")) {
                                 SwiftUtilities.verifyTopicName(method.getExchange());
-                                r = new Exchange() {
-                                    public int getType() {
-                                        return FANOUT;
-                                    }
-                                };
+                                r = () -> Exchange.FANOUT;
                             } else if (method.getType().equals("topic")) {
-                                r = new Exchange() {
-                                    public int getType() {
-                                        return TOPIC;
-                                    }
-                                };
+                                r = () -> Exchange.TOPIC;
                             }
                             return r;
                         }
@@ -568,13 +553,13 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(DeclareOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Delete method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             try {
                 ctx.exchangeRegistry.delete(method.getExchange(), method.getIfUnused());
                 if (method.getNoWait())
@@ -590,36 +575,36 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(DeleteOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Bind method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(BindOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Unbind method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(UnbindOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public String toString() {
-            return ChannelHandler.this.toString() + "/ExchangeMethodVisitorImpl";
+            return ChannelHandler.this + "/ExchangeMethodVisitorImpl";
         }
     }
 
@@ -652,7 +637,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.Declare method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             if (method.getPassive())
                 checkQueue(method);
             else {
@@ -661,7 +646,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                 else {
                     try {
                         com.swiftmq.amqp.v091.generated.queue.DeclareOk declareOk = new com.swiftmq.amqp.v091.generated.queue.DeclareOk();
-                        if (method.getQueue().length() > 0) {
+                        if (!method.getQueue().isEmpty()) {
                             AbstractQueue abstractQueue = ctx.queueManager.getQueueForInternalUse(method.getQueue());
                             if (abstractQueue == null) {
                                 String name = ctx.queueManager.createTemporaryQueue();
@@ -688,13 +673,13 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.DeclareOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.Bind method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             Exchange exchange = ctx.exchangeRegistry.get(method.getExchange());
             if (exchange != null) {
                 String queueName = getMapping(method.getQueue());
@@ -717,13 +702,13 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.BindOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.Unbind method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             Exchange exchange = ctx.exchangeRegistry.get(method.getExchange());
             if (exchange != null) {
                 String queueName = getMapping(method.getQueue());
@@ -744,13 +729,13 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.UnbindOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Purge method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             QueueReceiver receiver = null;
             try {
                 String queueName = getMapping(method.getQueue());
@@ -786,13 +771,13 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(PurgeOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.Delete method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             String queueName = getMapping(method.getQueue());
             if (ctx.queueManager.isTemporaryQueue(queueName)) {
                 amqpHandler.removeTempQueue(queueName);
@@ -812,19 +797,19 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(com.swiftmq.amqp.v091.generated.queue.DeleteOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public String toString() {
-            return ChannelHandler.this.toString() + "/QueueMethodVisitorImpl";
+            return ChannelHandler.this + "/QueueMethodVisitorImpl";
         }
     }
 
     private class BasicMethodVisitorImpl implements BasicMethodVisitor {
         public void visit(Qos method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             if (method.getGlobal())
                 amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.NOT_IMPLEMENTED, "Global prefetch settings are not implemented: " + method, method));
             else {
@@ -839,15 +824,15 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(QosOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Consume method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             String consumerTag = method.getConsumerTag();
-            if (consumerTag.length() == 0)
+            if (consumerTag.isEmpty())
                 consumerTag = "consumer-" + (consumerCount++);
             try {
                 if (consumers.get(consumerTag) == null) {
@@ -871,13 +856,13 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(ConsumeOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Cancel method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             Consumer consumer = (Consumer) consumers.remove(method.getConsumerTag());
             if (consumer != null) {
                 consumer.close();
@@ -894,31 +879,31 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(CancelOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Publish method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             currentMessage = new MessageWrap(method);
         }
 
         public void visit(Return method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Deliver method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Get method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             try {
                 QueueReceiver receiver = ctx.queueManager.createQueueReceiver(method.getQueue(), versionedConnection.getActiveLogin(), null);
                 QueuePullTransaction t = receiver.createTransaction(true);
@@ -926,7 +911,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                 if (messageEntry != null) {
                     Delivery delivery = outboundTransformer.transform(messageEntry.getMessage());
                     if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/getTransformedMessages, delivery=" + delivery);
+                        ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/getTransformedMessages, delivery=" + delivery);
                     long deliveryTag = getNextDeliveryTag();
                     GetOk getOk = new GetOk();
                     getOk.setDeliveryTag(deliveryTag);
@@ -974,19 +959,19 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(GetOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(GetEmpty method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Ack method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             try {
                 long deliveryTag = method.getDeliveryTag();
                 boolean multiple = method.getMultiple();
@@ -995,7 +980,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                     UnackedEntry unackedEntry = (UnackedEntry) iter.previous();
                     if (found) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", acking " + unackedEntry.getDeliveryTag() + " due to muliple");
+                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", acking " + unackedEntry.getDeliveryTag() + " due to muliple");
                         if (unackedEntry.isGet)
                             unackedEntry.ack();
                         else {
@@ -1006,10 +991,10 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
                         iter.remove();
                     } else {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", checking " + unackedEntry.getDeliveryTag() + " vs " + deliveryTag);
+                            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", checking " + unackedEntry.getDeliveryTag() + " vs " + deliveryTag);
                         if (unackedEntry.getDeliveryTag() == deliveryTag) {
                             if (ctx.traceSpace.enabled)
-                                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", found!");
+                                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", found!");
                             found = true;
                             if (unackedEntry.isGet)
                                 unackedEntry.ack();
@@ -1036,7 +1021,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(Reject method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             try {
                 long deliveryTag = method.getDeliveryTag();
                 boolean found = false;
@@ -1077,7 +1062,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(RecoverAsync method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             try {
                 doRecover(method.getRequeue());
             } catch (Exception e) {
@@ -1087,7 +1072,7 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(Recover method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             try {
                 doRecover(method.getRequeue());
                 Frame frame = new Frame(Frame.TYPE_METHOD, channelNo, 0, null);
@@ -1125,71 +1110,64 @@ public class ChannelHandler implements AMQPChannelVisitor, DestinationFactory {
 
         public void visit(RecoverOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public void visit(Nack method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.CHANNEL_ERROR, "Unexpected method received: " + method, method));
         }
 
         public String toString() {
-            return ChannelHandler.this.toString() + "/BasicMethodVisitorImpl";
+            return ChannelHandler.this + "/BasicMethodVisitorImpl";
         }
     }
 
     private class TxMethodVisitorImpl implements TxMethodVisitor {
         public void visit(Select method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.NOT_IMPLEMENTED, "Method not implemented: " + method, method));
         }
 
         public void visit(SelectOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.NOT_IMPLEMENTED, "Method not implemented: " + method, method));
         }
 
         public void visit(Commit method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.NOT_IMPLEMENTED, "Method not implemented: " + method, method));
         }
 
         public void visit(CommitOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.NOT_IMPLEMENTED, "Method not implemented: " + method, method));
         }
 
         public void visit(Rollback method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.NOT_IMPLEMENTED, "Method not implemented: " + method, method));
         }
 
         public void visit(RollbackOk method) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + ", visit: " + method);
+                ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + ", visit: " + method);
             amqpHandler.dispatch(new POSendChannelClose(channelNo, Constants.NOT_IMPLEMENTED, "Method not implemented: " + method, method));
         }
 
         public String toString() {
-            return ChannelHandler.this.toString() + "/TxMethodVisitorImpl";
+            return ChannelHandler.this + "/TxMethodVisitorImpl";
         }
     }
 
-    private class Binding {
-        String topicName = null;
-        String queueName = null;
-        int subscriberId = -1;
-        QueueReceiver queueReceiver = null;
-    }
-
-    private class UnackedEntry {
+    private static class UnackedEntry {
         long deliveryTag;
         Consumer consumer;
         MessageIndex messageIndex;

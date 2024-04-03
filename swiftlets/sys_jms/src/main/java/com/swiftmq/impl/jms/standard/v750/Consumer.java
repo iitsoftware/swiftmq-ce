@@ -54,14 +54,14 @@ public class Consumer implements TransactionFactory {
 
     public QueueTransaction createTransaction() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createTransaction");
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/createTransaction");
         transaction = receiver.createTransaction(true);
         return transaction;
     }
 
     public QueueTransaction createReadTransaction() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createReadTransaction");
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/createReadTransaction");
         readTransaction = receiver.createTransaction(false);
         return readTransaction;
     }
@@ -76,13 +76,13 @@ public class Consumer implements TransactionFactory {
 
     public QueueTransaction createDuplicateTransaction() throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/createDuplicateTransaction");
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/createDuplicateTransaction");
         return receiver.createTransaction(false);
     }
 
     public void setMessageListener(int clientDispatchId, int clientListenerId, MessageProcessor messageProcessor) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/setMessageListener, clientDispatchId=" + clientDispatchId + ", clientListenerId=" + clientListenerId);
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/setMessageListener, clientDispatchId=" + clientDispatchId + ", clientListenerId=" + clientListenerId);
         this.clientDispatchId = clientDispatchId;
         this.clientListenerId = clientListenerId;
         this.messageProcessor = messageProcessor;
@@ -103,7 +103,7 @@ public class Consumer implements TransactionFactory {
 
     public void removeMessageListener() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/removeMessageListener");
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/removeMessageListener");
         this.clientDispatchId = -1;
         this.clientListenerId = -1;
         this.messageProcessor = null;
@@ -116,7 +116,7 @@ public class Consumer implements TransactionFactory {
 
     public void markForClose() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/markForClose");
+            ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/markForClose");
         try {
             if (readTransaction != null && !readTransaction.isClosed()) {
                 if (messageProcessor != null)
@@ -133,7 +133,7 @@ public class Consumer implements TransactionFactory {
     }
 
     protected void close() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + toString() + "/close");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$jms", ctx.tracePrefix + "/" + this + "/close");
         if (readTransaction != null && !readTransaction.isClosed()) {
             if (messageProcessor != null)
                 readTransaction.unregisterMessageProcessor(messageProcessor);

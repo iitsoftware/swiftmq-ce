@@ -20,9 +20,9 @@ package com.swiftmq.impl.routing.single.route.po;
 import com.swiftmq.tools.pipeline.POVisitor;
 
 public interface POExchangeVisitor extends POVisitor {
-    public void visit(PORouteObject po);
+    void visit(PORouteObject po);
 
-    public void visit(POConnectionActivatedObject po);
+    void visit(POConnectionActivatedObject po);
 
-    public void visit(POConnectionRemoveObject po);
+    void visit(POConnectionRemoveObject po);
 }

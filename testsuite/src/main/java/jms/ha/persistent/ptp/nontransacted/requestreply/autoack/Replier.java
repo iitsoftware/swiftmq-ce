@@ -17,76 +17,61 @@
 
 package jms.ha.persistent.ptp.nontransacted.requestreply.autoack;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.MsgNoVerifier;
 import jms.base.SimpleConnectedPTPTestCase;
-import com.swiftmq.tools.concurrent.Semaphore;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.QueueSender;
-import javax.jms.Session;
+import javax.jms.*;
 
-public class Replier extends SimpleConnectedPTPTestCase implements MessageListener
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  int n = 0;
-  Exception exception = null;
-  Semaphore sem = null;
+public class Replier extends SimpleConnectedPTPTestCase implements MessageListener {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    int n = 0;
+    Exception exception = null;
+    Semaphore sem = null;
 
-  public Replier(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
-
-  public void onMessage(Message message)
-  {
-    try
-    {
-      verifier.add(message);
-      QueueSender replySender = qs.createSender((Queue) message.getJMSReplyTo());
-      replySender.send(message, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      replySender.close();
-      n++;
-      if (n == nMsgs)
-        sem.notifySingleWaiter();
-    } catch (Exception e)
-    {
-      exception = e;
-      sem.notifySingleWaiter();
+    public Replier(String name) {
+        super(name);
     }
-  }
 
-  public void receive()
-  {
-    try
-    {
-      sem = new Semaphore();
-      receiver.setMessageListener(this);
-      sem.waitHere();
-      if (exception != null)
-        throw exception;
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    exception = null;
-    sem = null;
-    super.tearDown();
-  }
+    public void onMessage(Message message) {
+        try {
+            verifier.add(message);
+            QueueSender replySender = qs.createSender((Queue) message.getJMSReplyTo());
+            replySender.send(message, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            replySender.close();
+            n++;
+            if (n == nMsgs)
+                sem.notifySingleWaiter();
+        } catch (Exception e) {
+            exception = e;
+            sem.notifySingleWaiter();
+        }
+    }
+
+    public void receive() {
+        try {
+            sem = new Semaphore();
+            receiver.setMessageListener(this);
+            sem.waitHere();
+            if (exception != null)
+                throw exception;
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        exception = null;
+        sem = null;
+        super.tearDown();
+    }
 }
 

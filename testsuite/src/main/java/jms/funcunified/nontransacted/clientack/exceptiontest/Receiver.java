@@ -19,38 +19,31 @@ package jms.funcunified.nontransacted.clientack.exceptiontest;
 
 import jms.base.SimpleConnectedUnifiedPTPTestCase;
 
-import javax.jms.*;
+import javax.jms.Message;
+import javax.jms.Session;
 
-public class Receiver extends SimpleConnectedUnifiedPTPTestCase
-{
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-  }
-
-  public void testReceive()
-  {
-    try
-    {
-      Message msg = consumer.receive();
-      try
-      {
-        msg.acknowledge();
-        throw new Exception("Expected to throw an IllegalStateException!");
-      } catch (javax.jms.IllegalStateException e)
-      {
-        // ok.
-      }
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class Receiver extends SimpleConnectedUnifiedPTPTestCase {
+    public Receiver(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+    }
+
+    public void testReceive() {
+        try {
+            Message msg = consumer.receive();
+            try {
+                msg.acknowledge();
+                throw new Exception("Expected to throw an IllegalStateException!");
+            } catch (javax.jms.IllegalStateException e) {
+                // ok.
+            }
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

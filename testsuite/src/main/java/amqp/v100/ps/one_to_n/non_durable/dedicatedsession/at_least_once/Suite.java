@@ -17,38 +17,33 @@
 
 package amqp.v100.ps.one_to_n.non_durable.dedicatedsession.at_least_once;
 
-import com.swiftmq.amqp.v100.client.QoS;
 import amqp.v100.base.Util;
 import amqp.v100.ps.one_to_n.non_durable.dedicatedsession.Receiver;
 import amqp.v100.ps.one_to_n.non_durable.dedicatedsession.Sender;
+import com.swiftmq.amqp.v100.client.QoS;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
-    int nSubscribers = Integer.parseInt(System.getProperty("nsubscribers", "10"));
-    TestSuite suite = new Suite();
-    for (int i = 0; i < nPairs; i++)
-    {
-      for (int j = 0; j < nSubscribers; j++)
-        suite.addTest(new Receiver("receive", QoS.AT_LEAST_ONCE, Util.getTopicNamePrefix() + (i + 1)));
-      suite.addTest(new Sender("send", QoS.AT_LEAST_ONCE, Util.getTopicNamePrefix() + (i + 1)));
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        int nPairs = Integer.parseInt(System.getProperty("npairs", "10"));
+        int nSubscribers = Integer.parseInt(System.getProperty("nsubscribers", "10"));
+        TestSuite suite = new Suite();
+        for (int i = 0; i < nPairs; i++) {
+            for (int j = 0; j < nSubscribers; j++)
+                suite.addTest(new Receiver("receive", QoS.AT_LEAST_ONCE, Util.getTopicNamePrefix() + (i + 1)));
+            suite.addTest(new Sender("send", QoS.AT_LEAST_ONCE, Util.getTopicNamePrefix() + (i + 1)));
+        }
+        return suite;
     }
-    return suite;
-  }
 
-  public String toString()
-  {
-    return "at_least_once";
-  }
+    public String toString() {
+        return "at_least_once";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

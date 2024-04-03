@@ -19,40 +19,40 @@ package com.swiftmq.impl.amqp.amqp.v00_09_01;
 
 import com.swiftmq.impl.amqp.SwiftletContext;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class QueueMapper {
     SwiftletContext ctx = null;
-    Map<String, String> mapping = new HashMap<String, String>();
+    Map<String, String> mapping = new ConcurrentHashMap<>();
 
     public QueueMapper(SwiftletContext ctx) {
         this.ctx = ctx;
     }
 
-    public synchronized void map(String name, String mapTo) {
+    public void map(String name, String mapTo) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/map " + name + " to " + mapTo);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/map " + name + " to " + mapTo);
         mapping.put(name, mapTo);
     }
 
-    public synchronized void unmap(String name) {
+    public void unmap(String name) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/unmap " + name);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/unmap " + name);
         mapping.remove(name);
     }
 
-    public synchronized String get(String name) {
+    public String get(String name) {
         return mapping.get(name);
     }
 
-    public synchronized void unmapTempQueue(String mapTo) {
-        for (Iterator iter = mapping.entrySet().iterator(); iter.hasNext(); ) {
-            String s = (String) ((Map.Entry) iter.next()).getValue();
+    public void unmapTempQueue(String mapTo) {
+        for (Iterator<Map.Entry<String, String>> iter = mapping.entrySet().iterator(); iter.hasNext(); ) {
+            String s = iter.next().getValue();
             if (s.equals(mapTo)) {
                 if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/unmapTempQueue " + mapTo);
+                    ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/unmapTempQueue " + mapTo);
                 iter.remove();
                 break;
             }
@@ -60,8 +60,6 @@ public class QueueMapper {
     }
 
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append("QueueMapper");
-        return sb.toString();
+        return "QueueMapper";
     }
 }

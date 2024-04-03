@@ -1,16 +1,15 @@
-FROM ghcr.io/graalvm/graalvm-ce:22.2.0
-RUN gu install js
-RUN microdnf install rsync
+FROM ghcr.io/graalvm/graalvm-community:21
+RUN microdnf install -y rsync gzip
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /
 RUN tar xvfz swiftmq.tar.gz
-RUN mkdir /swiftmq/preconfig
-RUN mkdir /swiftmq/initialconfig
-RUN mkdir /swiftmq/initialpreconfig
+RUN mkdir -p /swiftmq/preconfig mkdir /swiftmq/initialconfig mkdir /swiftmq/initialpreconfig
 COPY /swiftmq/data/config/routerconfig.xml /swiftmq/initialconfig/.
 COPY /swiftmq/data/preconfig/* /swiftmq/initialpreconfig/.
 ENV SWIFTMQ_INITIAL_CONFIG /swiftmq/initialconfig/routerconfig.xml
+ENV SWIFTMQ_IN_DOCKER true
 WORKDIR /swiftmq/scripts
+RUN echo $JAVA_HOME > .javahome && echo $JAVA_HOME/bin > .executables
 CMD ./checkconfig && exec ./router $SWIFTMQ_PRECONFIG
 
 

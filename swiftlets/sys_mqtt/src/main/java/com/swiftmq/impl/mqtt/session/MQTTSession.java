@@ -23,45 +23,54 @@ import com.swiftmq.impl.mqtt.po.*;
 import com.swiftmq.impl.mqtt.pubsub.Producer;
 import com.swiftmq.impl.mqtt.pubsub.Subscription;
 import com.swiftmq.impl.mqtt.pubsub.SubscriptionStoreEntry;
+import com.swiftmq.impl.mqtt.v311.netty.buffer.ByteBuf;
+import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.*;
 import com.swiftmq.jms.BytesMessageImpl;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.EntityAddException;
 import com.swiftmq.mgmt.EntityList;
 import com.swiftmq.mgmt.Property;
-import com.swiftmq.impl.mqtt.v311.netty.buffer.ByteBuf;
-import com.swiftmq.impl.mqtt.v311.netty.handler.codec.mqtt.*;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.QueueTransactionClosedException;
+import com.swiftmq.tools.collection.ConcurrentList;
 import com.swiftmq.util.SwiftUtilities;
 import org.magicwerk.brownies.collections.GapList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MQTTSession extends MQTTVisitorAdapter {
     SwiftletContext ctx;
     String clientId;
     boolean persistent;
-    MQTTConnection mqttConnection;
-    long lastUse;
-    boolean wasPresent = false;
-    int pid = 1;
-    int durableId = 0;
-    Map<Integer, Producer> producers = new HashMap<Integer, Producer>();
-    Map<String, Subscription> subscriptions = new HashMap<String, Subscription>();
-    Map<Integer, POSendMessage> outboundPackets = new HashMap<Integer, POSendMessage>();
-    List<ReplayEntry> replayLog = new GapList<ReplayEntry>();
-    Entity registryUsage = null;
-    Entity connectionUsage = null;
-    volatile int msgsReceived = 0;
-    volatile int msgsSent = 0;
-    volatile int totalMsgsReceived = 0;
-    volatile int totalMsgsSent = 0;
+    final AtomicReference<MQTTConnection> mqttConnection = new AtomicReference<>();
+    final AtomicLong lastUse = new AtomicLong();
+    final AtomicBoolean wasPresent = new AtomicBoolean(false);
+    final AtomicInteger pid = new AtomicInteger(1);
+    final AtomicInteger durableId = new AtomicInteger(0);
+    Map<Integer, Producer> producers = new ConcurrentHashMap<>();
+    Map<String, Subscription> subscriptions = new ConcurrentHashMap<>();
+    Map<Integer, POSendMessage> outboundPackets = new ConcurrentHashMap<>();
+    List<ReplayEntry> replayLog = new ConcurrentList<>(new GapList<>());
+    final AtomicReference<Entity> registryUsage = new AtomicReference<>();
+    final AtomicReference<Entity> connectionUsage = new AtomicReference<>();
+    final AtomicInteger msgsReceived = new AtomicInteger();
+    final AtomicInteger msgsSent = new AtomicInteger();
+    final AtomicInteger totalMsgsReceived = new AtomicInteger();
+    final AtomicInteger totalMsgsSent = new AtomicInteger();
 
     public MQTTSession(SwiftletContext ctx, String clientId, boolean persistent) {
         this.ctx = ctx;
         this.clientId = clientId;
         this.persistent = persistent;
-        this.lastUse = System.currentTimeMillis();
+        this.lastUse.set(System.currentTimeMillis());
         try {
             if (persistent)
                 ctx.sessionStore.add(clientId, this);
@@ -69,22 +78,22 @@ public class MQTTSession extends MQTTVisitorAdapter {
             e.printStackTrace();
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", created");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", created");
     }
 
     public MQTTSession(SwiftletContext ctx, String clientId, SessionStoreEntry sessionStoreEntry) throws Exception {
         this.ctx = ctx;
         this.clientId = clientId;
         this.persistent = true;
-        this.pid = sessionStoreEntry.pid;
-        this.durableId = sessionStoreEntry.durableId;
-        this.lastUse = System.currentTimeMillis();
+        this.pid.set(sessionStoreEntry.pid);
+        this.durableId.set(sessionStoreEntry.durableId);
+        this.lastUse.set(System.currentTimeMillis());
         for (int i = 0; i < sessionStoreEntry.subscriptionStoreEntries.size(); i++) {
             SubscriptionStoreEntry subscriptionStoreEntry = sessionStoreEntry.subscriptionStoreEntries.get(i);
             subscriptions.put(subscriptionStoreEntry.topicName, new Subscription(ctx, this, subscriptionStoreEntry));
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", created from: " + sessionStoreEntry);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", created from: " + sessionStoreEntry);
     }
 
     public boolean isPersistent() {
@@ -96,101 +105,97 @@ public class MQTTSession extends MQTTVisitorAdapter {
     }
 
     public long getLastUse() {
-        return lastUse;
+        return lastUse.get();
     }
 
     public boolean isWasPresent() {
-        return wasPresent;
+        return wasPresent.get();
     }
 
     public void setWasPresent(boolean wasPresent) {
-        this.wasPresent = wasPresent;
+        this.wasPresent.set(wasPresent);
     }
 
     public void associate(MQTTConnection mqttConnection) {
-        this.mqttConnection = mqttConnection;
-        lastUse = System.currentTimeMillis();
+        this.mqttConnection.set(mqttConnection);
+        lastUse.set(System.currentTimeMillis());
         try {
-            if (registryUsage != null) {
-                registryUsage.getProperty("associated").setValue(new Boolean(mqttConnection != null));
+            if (registryUsage.get() != null) {
+                registryUsage.get().getProperty("associated").setValue(mqttConnection != null);
             }
         } catch (Exception e) {
         }
     }
 
     public boolean isAssociated() {
-        return mqttConnection != null;
+        return mqttConnection.get() != null;
     }
 
     public MQTTConnection getMqttConnection() {
-        return mqttConnection;
+        return mqttConnection.get();
     }
 
     public int getMsgsReceived() {
-        int n = msgsReceived;
-        msgsReceived = 0;
-        return n;
+        return msgsReceived.getAndSet(0);
     }
 
     public int getMsgsSent() {
-        int n = msgsSent;
-        msgsSent = 0;
-        return n;
+        return msgsSent.getAndSet(0);
     }
 
     public int getTotalMsgsReceived() {
-        return totalMsgsReceived;
+        return totalMsgsReceived.get();
     }
 
     public int getTotalMsgsSent() {
-        return totalMsgsSent;
+        return totalMsgsSent.get();
     }
 
     private void incMsgsSent(int n) {
-        if (msgsSent == Integer.MAX_VALUE)
-            msgsSent = 0;
-        msgsSent += n;
-        if (totalMsgsSent == Integer.MAX_VALUE)
-            totalMsgsSent = 0;
-        totalMsgsSent += n;
+        if (msgsSent.get() == Integer.MAX_VALUE)
+            msgsSent.set(0);
+        msgsSent.addAndGet(n);
+        if (totalMsgsSent.get() == Integer.MAX_VALUE)
+            totalMsgsSent.set(0);
+        totalMsgsSent.addAndGet(n);
     }
 
     private void incMsgsReceived(int n) {
-        if (msgsReceived == Integer.MAX_VALUE)
-            msgsReceived = 0;
-        msgsReceived += n;
-        if (totalMsgsReceived == Integer.MAX_VALUE)
-            totalMsgsReceived = 0;
-        totalMsgsReceived += n;
+        if (msgsReceived.get() == Integer.MAX_VALUE)
+            msgsReceived.set(0);
+        msgsReceived.addAndGet(n);
+        if (totalMsgsReceived.get() == Integer.MAX_VALUE)
+            totalMsgsReceived.set(0);
+        totalMsgsReceived.addAndGet(n);
     }
 
     private void createRegistryUsage(Subscription subscription) {
         try {
-            Entity subUsage = ((EntityList) registryUsage.getEntity("subscriptions")).createEntity();
+            Entity subUsage = ((EntityList) registryUsage.get().getEntity("subscriptions")).createEntity();
             subUsage.setName(subscription.getTopicName());
             subscription.fillRegistryUsage(subUsage);
             subUsage.createCommands();
-            registryUsage.getEntity("subscriptions").addEntity(subUsage);
+            registryUsage.get().getEntity("subscriptions").addEntity(subUsage);
         } catch (EntityAddException e) {
         }
     }
 
     private void createConnectionUsage(Subscription subscription) {
         try {
-            Entity subUsage = ((EntityList) connectionUsage.getEntity("subscriptions")).createEntity();
+            Entity subUsage = ((EntityList) connectionUsage.get().getEntity("subscriptions")).createEntity();
             subUsage.setName(subscription.getTopicName());
             subscription.fillConnectionUsage(subUsage);
             subUsage.createCommands();
-            connectionUsage.getEntity("subscriptions").addEntity(subUsage);
+            connectionUsage.get().getEntity("subscriptions").addEntity(subUsage);
         } catch (EntityAddException e) {
         }
     }
 
     public void fillRegistryUsage(Entity registryUsage) {
-        this.registryUsage = registryUsage;
+        this.registryUsage.set(registryUsage);
         try {
-            registryUsage.getProperty("associated").setValue(new Boolean(mqttConnection != null));
-            registryUsage.getProperty("persistent").setValue(new Boolean(persistent));
+            registryUsage.getProperty("associated").setValue(mqttConnection.get() != null);
+            registryUsage.getProperty("persistent").setValue(persistent);
         } catch (Exception e) {
         }
         for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
@@ -200,9 +205,9 @@ public class MQTTSession extends MQTTVisitorAdapter {
     }
 
     public void fillConnectionUsage(Entity connectionUsage) {
-        this.connectionUsage = connectionUsage;
+        this.connectionUsage.set(connectionUsage);
         try {
-            connectionUsage.getProperty("persistent").setValue(new Boolean(persistent));
+            connectionUsage.getProperty("persistent").setValue(persistent);
         } catch (Exception e) {
         }
         for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
@@ -212,46 +217,43 @@ public class MQTTSession extends MQTTVisitorAdapter {
     }
 
     public SessionStoreEntry getSessionStoreEntry() {
-        List<SubscriptionStoreEntry> subscriptionStoreEntries = new ArrayList<SubscriptionStoreEntry>();
-        for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
-            subscriptionStoreEntries.add(iter.next().getValue().getStoreEntry());
+        List<SubscriptionStoreEntry> subscriptionStoreEntries = new ArrayList<>();
+        for (Map.Entry<String, Subscription> stringSubscriptionEntry : subscriptions.entrySet()) {
+            subscriptionStoreEntries.add(stringSubscriptionEntry.getValue().getStoreEntry());
         }
-        return new SessionStoreEntry(durableId, pid, subscriptionStoreEntries);
+        return new SessionStoreEntry(durableId.get(), pid.get(), subscriptionStoreEntries);
     }
 
     public int nextDurableId() {
-        if (durableId == Integer.MAX_VALUE)
-            durableId = 0;
-        int id = durableId;
-        durableId++;
-        return id;
+        if (durableId.get() == Integer.MAX_VALUE)
+            durableId.set(0);
+        return durableId.getAndIncrement();
     }
 
     private void addReplay(int packetId, MqttMessage message) {
         replayLog.add(new ReplayEntry(packetId, message));
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", addReplay, size=" + replayLog.size() + ", packetId= " + packetId + ", message=" + message);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", addReplay, size=" + replayLog.size() + ", packetId= " + packetId + ", message=" + message);
     }
 
     private void removeReplay(int packetId) {
-        for (Iterator<ReplayEntry> iter = replayLog.listIterator(); iter.hasNext(); ) {
+        for (Iterator<ReplayEntry> iter = replayLog.iterator(); iter.hasNext(); ) {
             if (iter.next().packetid == packetId) {
                 iter.remove();
                 break;
             }
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", removeReplay, size=" + replayLog.size() + " packetId=" + packetId);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", removeReplay, size=" + replayLog.size() + " packetId=" + packetId);
     }
 
     private void replay() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", replay, size= " + replayLog.size());
-        for (Iterator<ReplayEntry> iter = replayLog.listIterator(); iter.hasNext(); ) {
-            ReplayEntry replayEntry = iter.next();
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", replay, size= " + replayLog.size());
+        for (ReplayEntry replayEntry : replayLog) {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", replay, packetId= " + replayEntry.packetid + ", message=" + replayEntry.message);
-            mqttConnection.getOutboundQueue().enqueue(replayEntry.message);
+                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", replay, packetId= " + replayEntry.packetid + ", message=" + replayEntry.message);
+            mqttConnection.get().getOutboundQueue().submit(replayEntry.message);
         }
     }
 
@@ -278,7 +280,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
                 throw new Exception("Singlelevel wildcard '+' must stand on its own in a topic filter: " + mqttTopicFilter);
             if (tokenized[i].contains("%"))
                 throw new Exception("SwiftMQ wildcard '%' is not allowed in a MQTT topic filter: " + mqttTopicFilter);
-            if (tokenized[i].length() == 0)
+            if (tokenized[i].isEmpty())
                 throw new Exception("Invalid topic filter: " + mqttTopicFilter);
         }
         return SwiftUtilities.concat(tokenized, ".").replaceAll("\\+", "%").replaceAll("#", "%");
@@ -286,17 +288,17 @@ public class MQTTSession extends MQTTVisitorAdapter {
 
     private int subscribe(MqttTopicSubscription subscription) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", subscribe: " + subscription.topicName());
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", subscribe: " + subscription.topicName());
         try {
             Subscription sub = subscriptions.remove(subscription.topicName());
             if (sub != null) {
                 sub.stop();
                 sub.close();
-                if (registryUsage != null) {
-                    registryUsage.getEntity("subscriptions").removeEntity(registryUsage.getEntity("subscriptions").getEntity(sub.getTopicName()));
+                if (registryUsage.get() != null) {
+                    registryUsage.get().getEntity("subscriptions").removeEntity(registryUsage.get().getEntity("subscriptions").getEntity(sub.getTopicName()));
                 }
-                if (connectionUsage != null) {
-                    connectionUsage.getEntity("subscriptions").removeEntity(connectionUsage.getEntity("subscriptions").getEntity(sub.getTopicName()));
+                if (connectionUsage.get() != null) {
+                    connectionUsage.get().getEntity("subscriptions").removeEntity(connectionUsage.get().getEntity("subscriptions").getEntity(sub.getTopicName()));
                 }
             }
             String topicNameTranslated = topicFilterTranslate(subscription.topicName());
@@ -308,27 +310,27 @@ public class MQTTSession extends MQTTVisitorAdapter {
                 ctx.sessionStore.add(clientId, this);
                 createRegistryUsage(sub);
             }
-            if (connectionUsage != null)
+            if (connectionUsage.get() != null)
                 createConnectionUsage(sub);
             return subscription.qualityOfService().value();
         } catch (Exception e) {
-            ctx.logSwiftlet.logError(ctx.mqttSwiftlet.getName(), toString() + "/Subscribe exception: " + e.getMessage());
+            ctx.logSwiftlet.logError(ctx.mqttSwiftlet.getName(), this + "/Subscribe exception: " + e.getMessage());
             return MqttQoS.FAILURE.value();
         }
     }
 
     private void unsubscribe(String topicFilter) throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", unsubscribe: " + topicFilter);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", unsubscribe: " + topicFilter);
         Subscription subscription = subscriptions.remove(topicFilter);
         if (subscription != null) {
             subscription.stop();
             subscription.close();
-            if (registryUsage != null) {
-                registryUsage.getEntity("subscriptions").removeEntity(registryUsage.getEntity("subscriptions").getEntity(subscription.getTopicName()));
+            if (registryUsage.get() != null) {
+                registryUsage.get().getEntity("subscriptions").removeEntity(registryUsage.get().getEntity("subscriptions").getEntity(subscription.getTopicName()));
             }
-            if (connectionUsage != null) {
-                connectionUsage.getEntity("subscriptions").removeEntity(connectionUsage.getEntity("subscriptions").getEntity(subscription.getTopicName()));
+            if (connectionUsage.get() != null) {
+                connectionUsage.get().getEntity("subscriptions").removeEntity(connectionUsage.get().getEntity("subscriptions").getEntity(subscription.getTopicName()));
             }
         }
         if (persistent) {
@@ -339,7 +341,7 @@ public class MQTTSession extends MQTTVisitorAdapter {
 
     public void unsubscribe(String topicFilter, ActiveLogin activeLogin) throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", unsubscribe: " + topicFilter);
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", unsubscribe: " + topicFilter);
         Subscription subscription = subscriptions.remove(topicFilter);
         if (subscription != null) {
             subscription.close(activeLogin);
@@ -352,10 +354,10 @@ public class MQTTSession extends MQTTVisitorAdapter {
 
     public void start() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", start ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", start ...");
         replay();
-        for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
-            Subscription subscription = iter.next().getValue();
+        for (Map.Entry<String, Subscription> stringSubscriptionEntry : subscriptions.entrySet()) {
+            Subscription subscription = stringSubscriptionEntry.getValue();
             try {
                 subscription.start();
             } catch (Exception e) {
@@ -363,18 +365,18 @@ public class MQTTSession extends MQTTVisitorAdapter {
             }
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", start done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", start done");
     }
 
     public void stop() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", stop ...");
-        for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
-            Subscription subscription = iter.next().getValue();
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", stop ...");
+        for (Map.Entry<String, Subscription> stringSubscriptionEntry : subscriptions.entrySet()) {
+            Subscription subscription = stringSubscriptionEntry.getValue();
             subscription.stop();
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", stop done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", stop done");
     }
 
     public void destroy() {
@@ -383,9 +385,9 @@ public class MQTTSession extends MQTTVisitorAdapter {
 
     public void destroy(ActiveLogin activeLogin, boolean removeUsage) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", destroy ...");
-        for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
-            Subscription subscription = iter.next().getValue();
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", destroy ...");
+        for (Map.Entry<String, Subscription> stringSubscriptionEntry : subscriptions.entrySet()) {
+            Subscription subscription = stringSubscriptionEntry.getValue();
             subscription.close(activeLogin);
         }
         subscriptions.clear();
@@ -396,14 +398,14 @@ public class MQTTSession extends MQTTVisitorAdapter {
             e.printStackTrace();
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", destroy done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", destroy done");
     }
 
     public void destroy(boolean removeUsage) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", destroy ...");
-        for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
-            Subscription subscription = iter.next().getValue();
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", destroy ...");
+        for (Map.Entry<String, Subscription> stringSubscriptionEntry : subscriptions.entrySet()) {
+            Subscription subscription = stringSubscriptionEntry.getValue();
             subscription.close();
         }
         subscriptions.clear();
@@ -414,13 +416,13 @@ public class MQTTSession extends MQTTVisitorAdapter {
             e.printStackTrace();
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", destroy done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", destroy done");
     }
 
     @Override
     public void visit(POPublish po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         MqttPublishMessage publishMessage = po.getMessage();
         MqttFixedHeader fixedHeader = publishMessage.fixedHeader();
         MqttPublishVariableHeader variableHeader = publishMessage.variableHeader();
@@ -438,51 +440,51 @@ public class MQTTSession extends MQTTVisitorAdapter {
                     break;
                 case AT_LEAST_ONCE:
                     producer.commit();
-                    mqttConnection.getOutboundQueue().enqueue(
+                    mqttConnection.get().getOutboundQueue().submit(
                             new MqttPubAckMessage(new MqttFixedHeader(MqttMessageType.PUBACK, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                                     MqttMessageIdVariableHeader.from(packetId))
                     );
                     break;
                 case EXACTLY_ONCE:
                     producers.put(packetId, producer);
-                    mqttConnection.getOutboundQueue().enqueue(
+                    mqttConnection.get().getOutboundQueue().submit(
                             new MqttMessage(new MqttFixedHeader(MqttMessageType.PUBREC, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                                     MqttMessageIdVariableHeader.from(packetId))
                     );
                     break;
                 default:
-                    mqttConnection.initiateClose("publish: invalid qos=" + qos.value());
+                    mqttConnection.get().initiateClose("publish: invalid qos=" + qos.value());
             }
             incMsgsSent(1);
         } catch (Exception e) {
-            mqttConnection.initiateClose("publish: exception=" + e);
+            mqttConnection.get().initiateClose("publish: exception=" + e);
         }
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POSendMessage po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         try {
             BytesMessageImpl jmsMessage = (BytesMessageImpl) po.getJmsMessage();
             jmsMessage.reset();
             MqttQoS qos = po.getQos();
             String topicName = topicNameTranslateReverse(po.getTopicName());
-            byte b[] = new byte[(int) jmsMessage.getBodyLength()];
+            byte[] b = new byte[(int) jmsMessage.getBodyLength()];
             jmsMessage.readBytes(b);
             ByteBuf byteBuf = new ByteBuf(b);
             byteBuf.reset();
             int packetId = -1;
             if (qos != MqttQoS.AT_MOST_ONCE) {
-                if (pid == 65535)
-                    pid = 1;
-                packetId = pid++;
+                if (pid.get() == 65535)
+                    pid.set(1);
+                packetId = pid.getAndIncrement();
                 outboundPackets.put(packetId, po);
             }
-            mqttConnection.getOutboundQueue().enqueue(
+            mqttConnection.get().getOutboundQueue().submit(
                     new MqttPublishMessage(new MqttFixedHeader(MqttMessageType.PUBLISH, false, qos, false, 0),
                             new MqttPublishVariableHeader(topicName, packetId), byteBuf)
             );
@@ -496,46 +498,46 @@ public class MQTTSession extends MQTTVisitorAdapter {
         } catch (QueueTransactionClosedException qtc) {
 
         } catch (Exception e) {
-            mqttConnection.initiateClose("send message: exception=" + e);
+            mqttConnection.get().initiateClose("send message: exception=" + e);
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POPubAck po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
 
         MqttPubAckMessage pubAckMessage = po.getMessage();
         POSendMessage poSendMessage = outboundPackets.remove(pubAckMessage.variableHeader().messageId());
         if (poSendMessage == null || poSendMessage.getQos() != MqttQoS.AT_LEAST_ONCE) {
-            mqttConnection.getConnectionQueue().enqueue(new POProtocolError(pubAckMessage));
+            mqttConnection.get().dispatch(new POProtocolError(pubAckMessage));
         } else {
             try {
                 removeReplay(pubAckMessage.variableHeader().messageId());
                 poSendMessage.getTransaction().commit();
                 poSendMessage.getSubscription().restart();
             } catch (Exception e) {
-                mqttConnection.initiateClose("puback: exception=" + e);
+                mqttConnection.get().initiateClose("puback: exception=" + e);
             }
         }
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POPubRec po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         int packetId = ((MqttMessageIdVariableHeader) (po.getMessage().variableHeader())).messageId();
         POSendMessage poSendMessage = outboundPackets.get(packetId);
         if (poSendMessage == null || poSendMessage.getQos() != MqttQoS.EXACTLY_ONCE) {
-            mqttConnection.getConnectionQueue().enqueue(new POProtocolError(po.getMessage()));
+            mqttConnection.get().dispatch(new POProtocolError(po.getMessage()));
         } else {
             try {
-                mqttConnection.getOutboundQueue().enqueue(
+                mqttConnection.get().getOutboundQueue().submit(
                         new MqttMessage(new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                                 MqttMessageIdVariableHeader.from(packetId))
                 );
@@ -543,45 +545,45 @@ public class MQTTSession extends MQTTVisitorAdapter {
                 addReplay(packetId, new MqttMessage(new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                         MqttMessageIdVariableHeader.from(packetId)));
             } catch (Exception e) {
-                mqttConnection.initiateClose("pubrec: exception=" + e);
+                mqttConnection.get().initiateClose("pubrec: exception=" + e);
             }
         }
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POPubRel po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         int packetId = ((MqttMessageIdVariableHeader) (po.getMessage().variableHeader())).messageId();
         Producer producer = producers.remove(packetId);
         try {
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + ", packetId=" + packetId + ", producer=" + producer);
+                ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + ", packetId=" + packetId + ", producer=" + producer);
             if (producer != null)
                 producer.commit();
-            mqttConnection.getOutboundQueue().enqueue(
+            mqttConnection.get().getOutboundQueue().submit(
                     new MqttMessage(new MqttFixedHeader(MqttMessageType.PUBCOMP, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                             MqttMessageIdVariableHeader.from(packetId))
             );
         } catch (Exception e) {
-            mqttConnection.initiateClose("pubrel: exception=" + e);
+            mqttConnection.get().initiateClose("pubrel: exception=" + e);
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POPubComp po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
         int packetId = ((MqttMessageIdVariableHeader) (po.getMessage().variableHeader())).messageId();
         removeReplay(packetId);
         POSendMessage poSendMessage = outboundPackets.remove(packetId);
         if (poSendMessage == null || poSendMessage.getQos() != MqttQoS.EXACTLY_ONCE)
-            mqttConnection.getConnectionQueue().enqueue(new POProtocolError(po.getMessage()));
+            mqttConnection.get().dispatch(new POProtocolError(po.getMessage()));
         else {
             try {
                 if (!poSendMessage.getTransaction().isClosed()) {
@@ -589,18 +591,18 @@ public class MQTTSession extends MQTTVisitorAdapter {
                     poSendMessage.getSubscription().restart();
                 }
             } catch (Exception e) {
-                mqttConnection.initiateClose("pubcomp: exception=" + e);
+                mqttConnection.get().initiateClose("pubcomp: exception=" + e);
             }
         }
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POSubscribe po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
 
         MqttSubscribeMessage subscribeMessage = po.getMessage();
         MqttMessageIdVariableHeader variableHeader = subscribeMessage.variableHeader();
@@ -608,36 +610,35 @@ public class MQTTSession extends MQTTVisitorAdapter {
 
         List<Integer> grantedQoS = new ArrayList<Integer>();
         List<MqttTopicSubscription> subscriptions = payload.topicSubscriptions();
-        for (int i = 0; i < subscriptions.size(); i++) {
-            grantedQoS.add(subscribe(subscriptions.get(i)));
+        for (MqttTopicSubscription subscription : subscriptions) {
+            grantedQoS.add(subscribe(subscription));
         }
         MqttSubAckPayload subAckPayload = new MqttSubAckPayload(grantedQoS);
-        mqttConnection.getOutboundQueue().enqueue(
+        mqttConnection.get().getOutboundQueue().submit(
                 new MqttSubAckMessage(new MqttFixedHeader(MqttMessageType.SUBACK, false, MqttQoS.AT_LEAST_ONCE, false, 0),
                         variableHeader, subAckPayload)
         );
-        for (int i = 0; i < subscriptions.size(); i++) {
+        for (MqttTopicSubscription subscription : subscriptions) {
             try {
-                List<MqttPublishMessage> retained = ctx.retainer.get(topicFilterTranslate(subscriptions.get(i).topicName()));
-                for (int j = 0; j < retained.size(); j++) {
-                    MqttPublishMessage publishMessage = retained.get(j);
-                    mqttConnection.getOutboundQueue().enqueue(
+                List<MqttPublishMessage> retained = ctx.retainer.get(topicFilterTranslate(subscription.topicName()));
+                for (MqttPublishMessage publishMessage : retained) {
+                    mqttConnection.get().getOutboundQueue().submit(
                             new MqttPublishMessage(new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_MOST_ONCE, true, 0),
                                     new MqttPublishVariableHeader(publishMessage.variableHeader().topicName(), 0), publishMessage.payload())
                     );
                 }
             } catch (Exception e) {
-                mqttConnection.initiateClose("subscribe: exception=" + e);
+                mqttConnection.get().initiateClose("subscribe: exception=" + e);
             }
         }
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POUnsubscribe po) {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
 
         MqttUnsubscribeMessage unsubscribeMessage = po.getMessage();
         MqttMessageIdVariableHeader variableHeader = unsubscribeMessage.variableHeader();
@@ -645,57 +646,57 @@ public class MQTTSession extends MQTTVisitorAdapter {
 
         try {
             List<String> filters = payload.topics();
-            for (int i = 0; i < filters.size(); i++) {
-                unsubscribe(filters.get(i));
+            for (String filter : filters) {
+                unsubscribe(filter);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        mqttConnection.getOutboundQueue().enqueue(
+        mqttConnection.get().getOutboundQueue().submit(
                 new MqttMessage(new MqttFixedHeader(MqttMessageType.UNSUBACK, false, MqttQoS.AT_LEAST_ONCE, false, 2),
                         variableHeader, null)
         );
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public void visit(POCollect po) {
-        if (connectionUsage == null)
+        if (connectionUsage.get() == null)
             return;
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " ...");
-        for (Iterator<Map.Entry<String, Subscription>> iter = subscriptions.entrySet().iterator(); iter.hasNext(); ) {
-            Subscription subscription = iter.next().getValue();
-            Property receivedSecProp = connectionUsage.getEntity("subscriptions").getEntity(subscription.getTopicName()).getProperty("msgs-received");
-            Property receivedTotalProp = connectionUsage.getEntity("subscriptions").getEntity(subscription.getTopicName()).getProperty("total-received");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " ...");
+        for (Map.Entry<String, Subscription> stringSubscriptionEntry : subscriptions.entrySet()) {
+            Subscription subscription = stringSubscriptionEntry.getValue();
+            Property receivedSecProp = connectionUsage.get().getEntity("subscriptions").getEntity(subscription.getTopicName()).getProperty("msgs-received");
+            Property receivedTotalProp = connectionUsage.get().getEntity("subscriptions").getEntity(subscription.getTopicName()).getProperty("total-received");
             long received = subscription.getMsgsReceived();
             int totalReceived = subscription.getTotalMsgsReceived();
             double deltasec = Math.max(1.0, (double) (System.currentTimeMillis() - po.getLastCollect()) / 1000.0);
-            double ssec = ((double) received / (double) deltasec) + 0.5;
+            double ssec = ((double) received / deltasec) + 0.5;
             try {
-                if (((Integer) receivedSecProp.getValue()).intValue() != ssec)
-                    receivedSecProp.setValue(new Integer((int) ssec));
-                if (((Integer) receivedTotalProp.getValue()).intValue() != totalReceived)
-                    receivedTotalProp.setValue(new Integer(totalReceived));
+                if ((Integer) receivedSecProp.getValue() != ssec)
+                    receivedSecProp.setValue((int) ssec);
+                if ((Integer) receivedTotalProp.getValue() != totalReceived)
+                    receivedTotalProp.setValue(totalReceived);
             } catch (Exception e) {
             }
         }
 
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), toString() + ", visit, po=" + po + " done");
+            ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", visit, po=" + po + " done");
     }
 
     @Override
     public String toString() {
-        return (mqttConnection != null ? (mqttConnection.toString() + "/") : "") + "MQTTSession, " +
+        return (mqttConnection.get() != null ? (mqttConnection + "/") : "") + "MQTTSession, " +
                 "clientId='" + clientId + '\'' +
                 ", persistent=" + persistent;
     }
 
-    private class ReplayEntry {
+    private static class ReplayEntry {
         int packetid;
         MqttMessage message;
 

@@ -79,12 +79,12 @@ public class SwiftletContext {
         schedulerRegistry = new SchedulerRegistry(this);
 
         Property prop = root.getProperty("roundrobin-enabled");
-        roundRobinEnabled = ((Boolean) prop.getValue()).booleanValue();
+        roundRobinEnabled = (Boolean) prop.getValue();
 
         prop = root.getProperty("crfactory-class");
         String crf = (String) root.getProperty("crfactory-class").getValue();
         try {
-            challengeResponseFactory = (ChallengeResponseFactory) Class.forName(crf).newInstance();
+            challengeResponseFactory = (ChallengeResponseFactory) Class.forName(crf).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             String msg = "Error creating class instance of challenge/response factory '" + crf + "', exception=" + e;
             if (traceSpace.enabled) traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), msg);
@@ -94,7 +94,7 @@ public class SwiftletContext {
             public void propertyChanged(Property property, Object oldValue, Object newValue)
                     throws PropertyChangeException {
                 try {
-                    ChallengeResponseFactory sf = (ChallengeResponseFactory) Class.forName((String) newValue).newInstance();
+                    ChallengeResponseFactory sf = (ChallengeResponseFactory) Class.forName((String) newValue).getDeclaredConstructor().newInstance();
                 } catch (Exception e) {
                     String msg = "Error creating class instance of default challenge/response factory '" + newValue + "', exception=" + e;
                     if (traceSpace.enabled) traceSpace.trace(SwiftletContext.this.routingSwiftlet.getName(), msg);

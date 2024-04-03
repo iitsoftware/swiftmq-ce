@@ -17,121 +17,98 @@
 
 package jms.ha.persistent.ptp.xa.cc.multiqueue.multisession;
 
-import jms.base.MsgNoVerifier;
-import jms.base.ServerSessionImpl;
-import jms.base.ServerSessionPoolImpl;
-import jms.base.SimpleConnectedXAPTPTestCase;
-import jms.base.XidImpl;
 import com.swiftmq.tools.concurrent.Semaphore;
+import jms.base.*;
 
-import javax.jms.ConnectionConsumer;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.QueueSender;
-import javax.jms.XAQueueSession;
+import javax.jms.*;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-public class Forwarder extends SimpleConnectedXAPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  ConnectionConsumer cc = null;
-  ServerSessionPoolImpl pool = null;
-  volatile Semaphore sem = null;
-  Exception exception = null;
-  int n = 0;
-  String sourceQueueName = null;
-  String targetQueueName = null;
+public class Forwarder extends SimpleConnectedXAPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    ConnectionConsumer cc = null;
+    ServerSessionPoolImpl pool = null;
+    volatile Semaphore sem = null;
+    Exception exception = null;
+    int n = 0;
+    String sourceQueueName = null;
+    String targetQueueName = null;
 
-  public Forwarder(String name, String sourceQueueName, String targetQueueName)
-  {
-    super(name);
-    this.sourceQueueName = sourceQueueName;
-    this.targetQueueName = targetQueueName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    sender.close();
-    receiver.close();
-    qs.close();
-    pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 10; i++)
-    {
-      XAQueueSession session = qc.createXAQueueSession();
-      session.setMessageListener(new Listener(session, session.getQueueSession().createSender(getQueue(targetQueueName))));
-      pool.addServerSession(new ServerSessionImpl(pool, session));
-    }
-    cc = qc.createConnectionConsumer(getQueue(sourceQueueName), null, pool, 5);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-    verifier.setCheckSequence(false);
-  }
-
-  synchronized void inc()
-  {
-    n++;
-    if (n == nMsgs)
-      sem.notifySingleWaiter();
-  }
-
-  public void forward()
-  {
-    sem = new Semaphore();
-    sem.waitHere();
-    if (exception != null)
-      failFast("failed: " + exception);
-    try
-    {
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("failed: " + e);
-    }
-  }
-
-  protected void tearDown() throws Exception
-  {
-    cc.close();
-    verifier = null;
-    cc = null;
-    pool = null;
-    sem = null;
-    exception = null;
-    super.tearDown();
-  }
-
-  private class Listener implements MessageListener
-  {
-    XAQueueSession mySession = null;
-    QueueSender mySender = null;
-
-    public Listener(XAQueueSession mySession, QueueSender mySender)
-    {
-      this.mySession = mySession;
-      this.mySender = mySender;
+    public Forwarder(String name, String sourceQueueName, String targetQueueName) {
+        super(name);
+        this.sourceQueueName = sourceQueueName;
+        this.targetQueueName = targetQueueName;
     }
 
-    public void onMessage(Message msg)
-    {
-      try
-      {
-        XAResource xares = mySession.getXAResource();
-        Xid xid = new XidImpl(getClass().getName());
-        xares.start(xid, XAResource.TMNOFLAGS);
-        verifier.add(msg);
-        mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        xares.end(xid, XAResource.TMSUCCESS);
-        xares.prepare(xid);
-        xares.commit(xid, false);
-      } catch (Exception e)
-      {
-        exception = e;
-        sem.notifySingleWaiter();
-      }
-      inc();
+    protected void setUp() throws Exception {
+        super.setUp();
+        sender.close();
+        receiver.close();
+        qs.close();
+        pool = new ServerSessionPoolImpl();
+        for (int i = 0; i < 10; i++) {
+            XAQueueSession session = qc.createXAQueueSession();
+            session.setMessageListener(new Listener(session, session.getQueueSession().createSender(getQueue(targetQueueName))));
+            pool.addServerSession(new ServerSessionImpl(pool, session));
+        }
+        cc = qc.createConnectionConsumer(getQueue(sourceQueueName), null, pool, 5);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+        verifier.setCheckSequence(false);
     }
-  }
+
+    synchronized void inc() {
+        n++;
+        if (n == nMsgs)
+            sem.notifySingleWaiter();
+    }
+
+    public void forward() {
+        sem = new Semaphore();
+        sem.waitHere();
+        if (exception != null)
+            failFast("failed: " + exception);
+        try {
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        cc.close();
+        verifier = null;
+        cc = null;
+        pool = null;
+        sem = null;
+        exception = null;
+        super.tearDown();
+    }
+
+    private class Listener implements MessageListener {
+        XAQueueSession mySession = null;
+        QueueSender mySender = null;
+
+        public Listener(XAQueueSession mySession, QueueSender mySender) {
+            this.mySession = mySession;
+            this.mySender = mySender;
+        }
+
+        public void onMessage(Message msg) {
+            try {
+                XAResource xares = mySession.getXAResource();
+                Xid xid = new XidImpl(getClass().getName());
+                xares.start(xid, XAResource.TMNOFLAGS);
+                verifier.add(msg);
+                mySender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                xares.end(xid, XAResource.TMSUCCESS);
+                xares.prepare(xid);
+                xares.commit(xid, false);
+            } catch (Exception e) {
+                exception = e;
+                sem.notifySingleWaiter();
+            }
+            inc();
+        }
+    }
 }

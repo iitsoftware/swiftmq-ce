@@ -22,31 +22,27 @@ import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 import com.swiftmq.amqp.v100.types.AMQPByte;
 import com.swiftmq.amqp.v100.types.AMQPType;
 
-public class AMQPValueByteMessageFactory implements MessageFactory
-{
-  public AMQPMessage create(int sequenceNo) throws Exception
-  {
-    AMQPMessage msg = new AMQPMessage();
-    msg.setAmqpValue(new AmqpValue(new AMQPByte((byte) 100)));
-    return msg;
-  }
+public class AMQPValueByteMessageFactory implements MessageFactory {
+    public AMQPMessage create(int sequenceNo) throws Exception {
+        AMQPMessage msg = new AMQPMessage();
+        msg.setAmqpValue(new AmqpValue(new AMQPByte((byte) 100)));
+        return msg;
+    }
 
-  public void verify(AMQPMessage message) throws Exception
-  {
-    AmqpValue value = message.getAmqpValue();
-    if (value == null)
-      throw new Exception(("verify - no AmqpValue section found!"));
-    AMQPType t = value.getValue();
-    if (!(t instanceof AMQPByte))
-      throw new Exception(("verify - AmqpValue does not contain an AmqpByte!"));
-    if (((AMQPByte) t).getValue() != (byte) 100)
-      throw new Exception("verify - invalid value: " + ((AMQPByte) t).getValue());
-  }
+    public void verify(AMQPMessage message) throws Exception {
+        AmqpValue value = message.getAmqpValue();
+        if (value == null)
+            throw new Exception(("verify - no AmqpValue section found!"));
+        AMQPType t = value.getValue();
+        if (!(t instanceof AMQPByte))
+            throw new Exception(("verify - AmqpValue does not contain an AmqpByte!"));
+        if (((AMQPByte) t).getValue() != (byte) 100)
+            throw new Exception("verify - invalid value: " + ((AMQPByte) t).getValue());
+    }
 
-  public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception
-  {
-    AMQPMessage reply = new AMQPMessage();
-    reply.setAmqpValue(new AmqpValue(new AMQPByte((byte) 100)));
-    return reply;
-  }
+    public AMQPMessage createReplyMessage(AMQPMessage request) throws Exception {
+        AMQPMessage reply = new AMQPMessage();
+        reply.setAmqpValue(new AmqpValue(new AMQPByte((byte) 100)));
+        return reply;
+    }
 }

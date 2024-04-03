@@ -17,95 +17,78 @@
 
 package jms.ha.persistent.ps.durable.cc.multisession.autoack;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.MsgNoVerifier;
 import jms.base.ServerSessionImpl;
 import jms.base.ServerSessionPoolImpl;
 import jms.base.SimpleConnectedPSTestCase;
-import com.swiftmq.tools.concurrent.Semaphore;
 
-import javax.jms.ConnectionConsumer;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.jms.TopicSession;
+import javax.jms.*;
 
-public class Consumer extends SimpleConnectedPSTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  ConnectionConsumer cc = null;
-  ServerSessionPoolImpl pool = null;
-  Semaphore sem = null;
-  Exception exception = null;
-  int n = 0;
+public class Consumer extends SimpleConnectedPSTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    ConnectionConsumer cc = null;
+    ServerSessionPoolImpl pool = null;
+    Semaphore sem = null;
+    Exception exception = null;
+    int n = 0;
 
-  public Consumer(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp(false, Session.AUTO_ACKNOWLEDGE, true, false, true);
-    subscriber.close();
-    pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 10; i++)
-    {
-      TopicSession session = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      session.setMessageListener(new Listener());
-      pool.addServerSession(new ServerSessionImpl(pool, session));
+    public Consumer(String name) {
+        super(name);
     }
-    cc = tc.createDurableConnectionConsumer(topic, "dur", null, pool, 5);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-    verifier.setCheckSequence(false);
-  }
 
-  synchronized void inc()
-  {
-    n++;
-    if (n == nMsgs)
-      sem.notifySingleWaiter();
-  }
-
-  public void consume()
-  {
-    sem = new Semaphore();
-    sem.waitHere();
-    if (exception != null)
-      failFast("failed: " + exception);
-    try
-    {
-      verifier.verify();
-    } catch (Exception e)
-    {
-      failFast("failed: " + e);
+    protected void setUp() throws Exception {
+        super.setUp(false, Session.AUTO_ACKNOWLEDGE, true, false, true);
+        subscriber.close();
+        pool = new ServerSessionPoolImpl();
+        for (int i = 0; i < 10; i++) {
+            TopicSession session = tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+            session.setMessageListener(new Listener());
+            pool.addServerSession(new ServerSessionImpl(pool, session));
+        }
+        cc = tc.createDurableConnectionConsumer(topic, "dur", null, pool, 5);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+        verifier.setCheckSequence(false);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    cc.close();
-    verifier = null;
-    cc = null;
-    pool = null;
-    sem = null;
-    exception = null;
-    super.tearDown();
-  }
-
-  private class Listener implements MessageListener
-  {
-    public void onMessage(Message msg)
-    {
-      try
-      {
-        verifier.add(msg);
-      } catch (Exception e)
-      {
-        exception = e;
-        sem.notifySingleWaiter();
-      }
-      inc();
+    synchronized void inc() {
+        n++;
+        if (n == nMsgs)
+            sem.notifySingleWaiter();
     }
-  }
+
+    public void consume() {
+        sem = new Semaphore();
+        sem.waitHere();
+        if (exception != null)
+            failFast("failed: " + exception);
+        try {
+            verifier.verify();
+        } catch (Exception e) {
+            failFast("failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        cc.close();
+        verifier = null;
+        cc = null;
+        pool = null;
+        sem = null;
+        exception = null;
+        super.tearDown();
+    }
+
+    private class Listener implements MessageListener {
+        public void onMessage(Message msg) {
+            try {
+                verifier.add(msg);
+            } catch (Exception e) {
+                exception = e;
+                sem.notifySingleWaiter();
+            }
+            inc();
+        }
+    }
 }

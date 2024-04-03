@@ -24,7 +24,6 @@ import com.swiftmq.mgmt.Property;
 import com.swiftmq.tools.sql.LikeComparator;
 import com.swiftmq.util.SwiftUtilities;
 
-import java.util.Iterator;
 import java.util.Map;
 
 public class Role {
@@ -49,8 +48,8 @@ public class Role {
             Map map = filters.getEntities();
             if (map != null && map.size() > 0) {
                 boolean wasIncludeGranted = false;
-                for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity filter = (Entity) ((Map.Entry) iter.next()).getValue();
+                for (Object o : map.entrySet()) {
+                    Entity filter = (Entity) ((Map.Entry<?, ?>) o).getValue();
                     String predicate = (String) filter.getProperty("cli-context-predicate").getValue();
                     String type = (String) filter.getProperty("type").getValue();
                     boolean readOnly = (Boolean) filter.getProperty("read-only").getValue();
@@ -83,8 +82,8 @@ public class Role {
         if (filters != null) {
             Map map = filters.getEntities();
             if (map != null && map.size() > 0) {
-                for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity filter = (Entity) ((Map.Entry) iter.next()).getValue();
+                for (Object o : map.entrySet()) {
+                    Entity filter = (Entity) ((Map.Entry<?, ?>) o).getValue();
                     String predicate = (String) filter.getProperty("cli-context-predicate").getValue();
                     if (LikeComparator.compare(context, predicate, '\\')) {
                         String cmds = (String) filter.getProperty("granted-commands").getValue();
@@ -107,8 +106,8 @@ public class Role {
             Map map = filters.getEntities();
             if (map != null && map.size() > 0) {
                 boolean wasIncludeGranted = false;
-                for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
-                    Entity filter = (Entity) ((Map.Entry) iter.next()).getValue();
+                for (Object o : map.entrySet()) {
+                    Entity filter = (Entity) ((Map.Entry<?, ?>) o).getValue();
                     String predicate = (String) filter.getProperty("cli-context-predicate").getValue();
                     String type = (String) filter.getProperty("type").getValue();
                     boolean readOnly = (Boolean) filter.getProperty("read-only").getValue();

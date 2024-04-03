@@ -20,17 +20,17 @@ package com.swiftmq.impl.mgmt.standard;
 import com.swiftmq.impl.mgmt.standard.po.EventObject;
 
 public interface Dispatcher {
-    public void process(EventObject event);
+    void process(EventObject event);
 
-    public void flush();
+    void flush();
 
-    public boolean isInvalid();
+    boolean isInvalid();
 
-    public boolean isExpired();
+    boolean isExpired();
 
-    public void doExpire();
+    void doExpire();
 
-    public void doDisconnect();
+    void doDisconnect();
 
-    public void close();
+    void close();
 }

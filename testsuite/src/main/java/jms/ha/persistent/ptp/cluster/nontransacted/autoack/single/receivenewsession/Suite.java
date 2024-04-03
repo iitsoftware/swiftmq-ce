@@ -17,36 +17,29 @@
 
 package jms.ha.persistent.ptp.cluster.nontransacted.autoack.single.receivenewsession;
 
-import com.swiftmq.tools.tracking.MessageTracker;
 import jms.ha.persistent.ptp.cluster.nontransacted.SenderNewSession;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
-    super.run(testResult);
-  }
+public class Suite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(new Receiver("receive"));
-    suite.addTest(new SenderNewSession("send"));
-    return suite;
-  }
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(new Receiver("receive"));
+        suite.addTest(new SenderNewSession("send"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "receivenewsession";
-  }
+    public String toString() {
+        return "receivenewsession";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(Suite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(Suite.suite());
+    }
 }

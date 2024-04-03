@@ -81,6 +81,31 @@ public class RequestVisitor implements JNDIRequestVisitor {
         return msg;
     }
 
+    private void doReply(JNDIRequest request, String msg, boolean registered) {
+        if (registered) {
+            if (replyToQueue != null) {
+                try {
+                    QueueSender sender = ctx.queueManager.createQueueSender(replyToQueue.getQueueName(), null);
+                    QueuePushTransaction transaction = sender.createTransaction();
+                    TextMessageImpl reply = new TextMessageImpl();
+                    reply.setJMSDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
+                    reply.setJMSDestination(replyToQueue);
+                    reply.setJMSPriority(MessageImpl.MAX_PRIORITY);
+                    reply.setText(msg);
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": sending reply " + reply);
+                    transaction.putMessage(reply);
+                    transaction.commit();
+                    sender.close();
+                } catch (Exception e1) {
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": exception occurred while sending reply: " + e1);
+                }
+            } else if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": replyTo is not set. Unable to send.");
+        }
+    }
+
     public void visit(LookupRequest request) {
         String name = request.getName();
         Object object = ctx.jndiSwiftlet.getJNDIObject(name);
@@ -149,28 +174,7 @@ public class RequestVisitor implements JNDIRequestVisitor {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": exception: " + msg);
         }
-        if (registered) {
-            if (replyToQueue != null) {
-                try {
-                    QueueSender sender = ctx.queueManager.createQueueSender(replyToQueue.getQueueName(), null);
-                    QueuePushTransaction transaction = sender.createTransaction();
-                    TextMessageImpl reply = new TextMessageImpl();
-                    reply.setJMSDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
-                    reply.setJMSDestination(replyToQueue);
-                    reply.setJMSPriority(MessageImpl.MAX_PRIORITY);
-                    reply.setText(msg);
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": sending reply " + reply);
-                    transaction.putMessage(reply);
-                    transaction.commit();
-                    sender.close();
-                } catch (Exception e1) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": exception occurred while sending reply: " + e1);
-                }
-            } else if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": replyTo is not set. Unable to send.");
-        }
+        doReply(request, msg, registered);
     }
 
     public void visit(RebindRequest request) {
@@ -203,28 +207,7 @@ public class RequestVisitor implements JNDIRequestVisitor {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": exception: " + msg);
         }
-        if (registered) {
-            if (replyToQueue != null) {
-                try {
-                    QueueSender sender = ctx.queueManager.createQueueSender(replyToQueue.getQueueName(), null);
-                    QueuePushTransaction transaction = sender.createTransaction();
-                    TextMessageImpl reply = new TextMessageImpl();
-                    reply.setJMSDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
-                    reply.setJMSDestination(replyToQueue);
-                    reply.setJMSPriority(MessageImpl.MAX_PRIORITY);
-                    reply.setText(msg);
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": sending reply " + reply);
-                    transaction.putMessage(reply);
-                    transaction.commit();
-                    sender.close();
-                } catch (Exception e1) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": exception occurred while sending reply: " + e1);
-                }
-            } else if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.jndiSwiftlet.getName(), "visitor " + request + ": replyTo is not set. Unable to send.");
-        }
+        doReply(request, msg, registered);
     }
 
     public void visit(UnbindRequest request) {

@@ -21,24 +21,20 @@ import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends ActiveTestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.nonpersistent.ptp.Suite.suite());
-    suite.addTest(jms.ha.nonpersistent.ps.Suite.suite());
-    return suite;
-  }
+public class Suite extends ActiveTestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.nonpersistent.ptp.Suite.suite());
+        suite.addTest(jms.ha.nonpersistent.ps.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "nonpersistent";
-  }
+    public String toString() {
+        return "nonpersistent";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

@@ -19,91 +19,74 @@ package jms.ha.persistent.ptp.transacted.commit.single;
 
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
-public class Sender extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  QueueSession s1 = null;
-  QueueSession s2 = null;
-  QueueSession s3 = null;
-  QueueSender sender1 = null;
-  QueueSender sender2 = null;
-  QueueSender sender3 = null;
+public class Sender extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    QueueSession s1 = null;
+    QueueSession s2 = null;
+    QueueSession s3 = null;
+    QueueSender sender1 = null;
+    QueueSender sender2 = null;
+    QueueSender sender3 = null;
 
-  public Sender(String name)
-  {
-    super(name);
-  }
-
-  protected void beforeCreateSession() throws Exception
-  {
-    s1 = qc.createQueueSession(true, Session.AUTO_ACKNOWLEDGE);
-    s2 = qc.createQueueSession(true, Session.AUTO_ACKNOWLEDGE);
-    s3 = qc.createQueueSession(true, Session.AUTO_ACKNOWLEDGE);
-  }
-
-  protected void afterCreateSession() throws Exception
-  {
-    s1.close();
-    s2.close();
-    s3.close();
-  }
-
-  protected void beforeCreateSender() throws Exception
-  {
-    sender1 = qs.createSender(queue);
-    sender2 = qs.createSender(queue);
-    sender3 = qs.createSender(queue);
-  }
-
-  protected void afterCreateSender() throws Exception
-  {
-    sender1.close();
-    sender2.close();
-    sender3.close();
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.AUTO_ACKNOWLEDGE, true, false);
-  }
-
-  public void send()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < nMsgs; i++)
-      {
-        msg.setIntProperty("no", i);
-        msg.setText("Msg: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        if ((i + 1) % 10 == 0)
-          qs.commit();
-      }
-
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Sender(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    s1 = null;
-    s2 = null;
-    s3 = null;
-    sender1 = null;
-    sender2 = null;
-    sender3 = null;
-    super.tearDown();
-  }
+    protected void beforeCreateSession() throws Exception {
+        s1 = qc.createQueueSession(true, Session.AUTO_ACKNOWLEDGE);
+        s2 = qc.createQueueSession(true, Session.AUTO_ACKNOWLEDGE);
+        s3 = qc.createQueueSession(true, Session.AUTO_ACKNOWLEDGE);
+    }
+
+    protected void afterCreateSession() throws Exception {
+        s1.close();
+        s2.close();
+        s3.close();
+    }
+
+    protected void beforeCreateSender() throws Exception {
+        sender1 = qs.createSender(queue);
+        sender2 = qs.createSender(queue);
+        sender3 = qs.createSender(queue);
+    }
+
+    protected void afterCreateSender() throws Exception {
+        sender1.close();
+        sender2.close();
+        sender3.close();
+    }
+
+    protected void setUp() throws Exception {
+        setUp(true, Session.AUTO_ACKNOWLEDGE, true, false);
+    }
+
+    public void send() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < nMsgs; i++) {
+                msg.setIntProperty("no", i);
+                msg.setText("Msg: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                if ((i + 1) % 10 == 0)
+                    qs.commit();
+            }
+
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        s1 = null;
+        s2 = null;
+        s3 = null;
+        sender1 = null;
+        sender2 = null;
+        sender3 = null;
+        super.tearDown();
+    }
 
 }
 

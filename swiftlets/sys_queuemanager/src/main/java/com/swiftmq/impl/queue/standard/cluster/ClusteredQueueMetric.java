@@ -22,11 +22,11 @@ import com.swiftmq.tools.dump.Dumpable;
 import java.util.List;
 
 public interface ClusteredQueueMetric extends Dumpable {
-    public String getClusteredQueueName();
+    String getClusteredQueueName();
 
-    public void setReceiverSomewhere(boolean b);
+    void setReceiverSomewhere(boolean b);
 
-    public boolean isReceiverSomewhere();
+    boolean isReceiverSomewhere();
 
-    public List getQueueMetrics();
+    List getQueueMetrics();
 }

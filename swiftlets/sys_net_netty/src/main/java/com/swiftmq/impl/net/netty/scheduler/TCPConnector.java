@@ -22,10 +22,12 @@ import com.swiftmq.impl.net.netty.SwiftletContext;
 import com.swiftmq.swiftlet.net.ConnectorMetaData;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public abstract class TCPConnector implements TimerListener {
     SwiftletContext ctx;
     ConnectorMetaData metaData = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
 
     public TCPConnector(SwiftletContext ctx, ConnectorMetaData metaData) {
         this.ctx = ctx;
@@ -49,9 +51,8 @@ public abstract class TCPConnector implements TimerListener {
     public abstract void connect();
 
     public void close() {
-        if (closed)
+        if (closed.getAndSet(true))
             return;
-        closed = true;
         ctx.timerSwiftlet.removeTimerListener(this);
     }
 

@@ -24,32 +24,48 @@ import com.swiftmq.impl.streams.comp.io.ManagementInput;
 import com.swiftmq.impl.streams.comp.io.QueueWireTapInput;
 import com.swiftmq.impl.streams.comp.message.Message;
 import com.swiftmq.impl.streams.processor.po.*;
+import com.swiftmq.swiftlet.threadpool.EventProcessor;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.pipeline.POObject;
-import com.swiftmq.tools.pipeline.PipelineQueue;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class StreamProcessor implements POStreamVisitor {
-    static final String TP_DISPATCH = "sys$streams.stream.processor";
     StreamContext ctx;
     StreamController controller;
-    PipelineQueue pipelineQueue = null;
-    boolean closed = false;
+    final AtomicBoolean closed = new AtomicBoolean(false);
     int msgsProcessed = 0;
     int totalMsg = 0;
     int timeOnMessage = 0;
+    private final Lock lock = new ReentrantLock();
 
     public StreamProcessor(StreamContext ctx, StreamController controller) {
         this.ctx = ctx;
         this.controller = controller;
-        pipelineQueue = new PipelineQueue(ctx.ctx.threadpoolSwiftlet.getPool(TP_DISPATCH), TP_DISPATCH, this);
     }
 
-    public synchronized void dispatch(POObject po) {
-        if (closed) {
+    public void dispatch(POObject po) {
+        if (closed.get()) {
             if (po.getSemaphore() != null)
                 po.getSemaphore().notifySingleWaiter();
-        } else
-            pipelineQueue.enqueue(po);
+        } else {
+            ctx.ctx.threadpoolSwiftlet.runAsync(() -> {
+                // Locking required due to Java Memory Mpdel
+                lock.lock();
+                try {
+                    po.accept(StreamProcessor.this);
+                } finally {
+                    lock.unlock();
+                }
+
+            }, false);
+        }
+    }
+
+    public void close() {
     }
 
     private void handleException(POObject po, Exception e) {
@@ -225,7 +241,7 @@ public class StreamProcessor implements POStreamVisitor {
         try {
             ctx.usage.getProperty("stream-total-processed").setValue(totalMsg);
             ctx.usage.getProperty("stream-processing-rate").setValue((int) (msgsProcessed / ((double) po.getInterval() / 1000.0)));
-            ctx.usage.getProperty("stream-last-onmessage-time").setValue(new Integer(timeOnMessage));
+            ctx.usage.getProperty("stream-last-onmessage-time").setValue(timeOnMessage);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -272,7 +288,7 @@ public class StreamProcessor implements POStreamVisitor {
         ctx.stream.log().info("Stream stopped");
         ctx.stream.close();
 
-        closed = true;
+        closed.set(true);
         if (po.getSemaphore() != null)
             po.getSemaphore().notifySingleWaiter();
 
@@ -285,5 +301,12 @@ public class StreamProcessor implements POStreamVisitor {
         StringBuilder sb = new StringBuilder("StreamProcessor, name=");
         sb.append(ctx.entity.getName());
         return sb.toString();
+    }
+
+    private class Processor implements EventProcessor {
+        @Override
+        public void process(List<Object> events) {
+            events.forEach(e -> ((POObject) e).accept(StreamProcessor.this));
+        }
     }
 }

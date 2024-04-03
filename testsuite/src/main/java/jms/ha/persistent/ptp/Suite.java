@@ -20,29 +20,25 @@ package jms.ha.persistent.ptp;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ptp.cluster.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.composite.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.browser.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.cc.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.nontransacted.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.transacted.Suite.suite());
-    suite.addTest(jms.ha.persistent.ptp.xa.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ptp.cluster.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.composite.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.browser.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.cc.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.nontransacted.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.transacted.Suite.suite());
+        suite.addTest(jms.ha.persistent.ptp.xa.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "ptp";
-  }
+    public String toString() {
+        return "ptp";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

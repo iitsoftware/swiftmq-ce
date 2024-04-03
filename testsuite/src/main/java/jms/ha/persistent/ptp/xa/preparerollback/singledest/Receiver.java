@@ -25,80 +25,68 @@ import javax.jms.Message;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-public class Receiver extends SimpleConnectedXAPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
+public class Receiver extends SimpleConnectedXAPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
 
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    sender.close();
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-//    verifier.setCheckSequence(false);
-  }
-
-  public void receive()
-  {
-    try
-    {
-      boolean rollback = false;
-      int n = 0, m = 0;
-      Xid xid = new XidImpl(getClass().getName());
-      xares.start(xid, XAResource.TMNOFLAGS);
-      while (n < nMsgs)
-      {
-        Message msg = receiver.receive(120000);
-        if (msg == null)
-          break;
-        if (rollback)
-        {
-          m++;
-          if (m == 10)
-          {
-            xares.end(xid, XAResource.TMSUCCESS);
-            xares.prepare(xid);
-            xares.rollback(xid);
-            xid = new XidImpl(getClass().getName());
-            xares.start(xid, XAResource.TMNOFLAGS);
-            rollback = false;
-            m = 0;
-          }
-          continue;
-        }
-        verifier.add(msg);
-        n++;
-        if (n % 10 == 0)
-        {
-          xares.end(xid, XAResource.TMSUCCESS);
-          xares.prepare(xid);
-          xares.commit(xid, false);
-          if (n < nMsgs)
-          {
-            xid = new XidImpl(getClass().getName());
-            xares.start(xid, XAResource.TMNOFLAGS);
-          }
-          rollback = true;
-        }
-      }
-      verifier.verify();
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+    public Receiver(String name) {
+        super(name);
     }
-  }
 
-  protected void tearDown() throws Exception
-  {
-    verifier = null;
-    super.tearDown();
-  }
+    protected void setUp() throws Exception {
+        super.setUp();
+        sender.close();
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
+//    verifier.setCheckSequence(false);
+    }
+
+    public void receive() {
+        try {
+            boolean rollback = false;
+            int n = 0, m = 0;
+            Xid xid = new XidImpl(getClass().getName());
+            xares.start(xid, XAResource.TMNOFLAGS);
+            while (n < nMsgs) {
+                Message msg = receiver.receive(120000);
+                if (msg == null)
+                    break;
+                if (rollback) {
+                    m++;
+                    if (m == 10) {
+                        xares.end(xid, XAResource.TMSUCCESS);
+                        xares.prepare(xid);
+                        xares.rollback(xid);
+                        xid = new XidImpl(getClass().getName());
+                        xares.start(xid, XAResource.TMNOFLAGS);
+                        rollback = false;
+                        m = 0;
+                    }
+                    continue;
+                }
+                verifier.add(msg);
+                n++;
+                if (n % 10 == 0) {
+                    xares.end(xid, XAResource.TMSUCCESS);
+                    xares.prepare(xid);
+                    xares.commit(xid, false);
+                    if (n < nMsgs) {
+                        xid = new XidImpl(getClass().getName());
+                        xares.start(xid, XAResource.TMNOFLAGS);
+                    }
+                    rollback = true;
+                }
+            }
+            verifier.verify();
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
+
+    protected void tearDown() throws Exception {
+        verifier = null;
+        super.tearDown();
+    }
 
 }
 

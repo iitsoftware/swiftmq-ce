@@ -7,9 +7,10 @@
   <groupId>com.swiftmq</groupId>
   <artifactId>swiftmq-ce</artifactId>
   <packaging>pom</packaging>
-  <version>12.5.4</version>
+  <version>13.0.0</version>
 
   <modules>
+    <module>graalvm</module>
     <module>router</module>
     <module>swiftlets/sys_amqp</module>
     <module>swiftlets/sys_authentication</module>

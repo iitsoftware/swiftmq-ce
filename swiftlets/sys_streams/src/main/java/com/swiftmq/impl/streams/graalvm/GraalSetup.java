@@ -17,11 +17,8 @@
 
 package com.swiftmq.impl.streams.graalvm;
 
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
-
-import javax.script.ScriptEngine;
 
 public class GraalSetup {
     private static HostAccess getHostAccess() {
@@ -29,11 +26,13 @@ public class GraalSetup {
         return builder.build();
     }
 
-    public static ScriptEngine engine(ClassLoader cl) throws Exception {
-        return GraalJSScriptEngine.create(null, Context.newBuilder("js")
-                .allowExperimentalOptions(true).option("js.nashorn-compat", "true")
+    public static Context context(ClassLoader cl) throws Exception {
+        return Context.newBuilder("js")
+                .allowExperimentalOptions(true)
+                .option("js.nashorn-compat", "true")
+                .option("js.ecmascript-version", "latest")
                 .allowAllAccess(true)
                 .allowHostAccess(getHostAccess())
-                .hostClassLoader(cl));
+                .hostClassLoader(cl).build();
     }
 }

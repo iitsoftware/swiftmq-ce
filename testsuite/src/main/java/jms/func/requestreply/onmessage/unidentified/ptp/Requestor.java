@@ -21,40 +21,33 @@ import jms.base.SimpleConnectedPTPTestCase;
 
 import javax.jms.*;
 
-public class Requestor extends SimpleConnectedPTPTestCase
-{
-  QueueReceiver tempReceiver = null;
-  TemporaryQueue tempQueue = null;
+public class Requestor extends SimpleConnectedPTPTestCase {
+    QueueReceiver tempReceiver = null;
+    TemporaryQueue tempQueue = null;
 
-  public Requestor(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE);
-    tempQueue = qs.createTemporaryQueue();
-    tempReceiver = qs.createReceiver(tempQueue);
-  }
-
-  public void testRequest()
-  {
-    try
-    {
-      TextMessage msg = qs.createTextMessage();
-      msg.setJMSReplyTo(tempQueue);
-      for (int i = 0; i < 1000; i++)
-      {
-        msg.setText("Request: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-        TextMessage reply = (TextMessage) tempReceiver.receive();
-      }
-      pause(3000);
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public Requestor(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE);
+        tempQueue = qs.createTemporaryQueue();
+        tempReceiver = qs.createReceiver(tempQueue);
+    }
+
+    public void testRequest() {
+        try {
+            TextMessage msg = qs.createTextMessage();
+            msg.setJMSReplyTo(tempQueue);
+            for (int i = 0; i < 1000; i++) {
+                msg.setText("Request: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+                TextMessage reply = (TextMessage) tempReceiver.receive();
+            }
+            pause(3000);
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

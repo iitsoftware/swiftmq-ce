@@ -30,6 +30,7 @@ import com.swiftmq.util.SwiftUtilities;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DeploySpaceImpl implements DeploySpace, TimerListener {
     SwiftletContext ctx = null;
@@ -41,40 +42,46 @@ public class DeploySpaceImpl implements DeploySpace, TimerListener {
     EntityList deployList = null;
     boolean closed = false;
     boolean instant = false;
+    ReentrantLock lock = new ReentrantLock();
 
     public DeploySpaceImpl(SwiftletContext ctx, Entity spaceEntity) throws Exception {
         this.ctx = ctx;
         this.spaceEntity = spaceEntity;
         init();
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/created");
     }
 
     public Bundle[] getInstalledBundles() throws Exception {
-        List list = deployPath.getInstalledBundles();
+        List<Bundle> list = deployPath.getInstalledBundles();
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/getInstalledBundles: " + list);
+            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/getInstalledBundles: " + list);
         if (list == null)
             return null;
-        for (int i = 0; i < list.size(); i++)
-            createUsage((Bundle) list.get(i));
-        return (Bundle[]) list.toArray(new Bundle[list.size()]);
+        for (Bundle o : list) createUsage(o);
+        return list.toArray(new Bundle[0]);
     }
 
-    public synchronized void setDeployListener(DeployListener listener) {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/setDeployListener: " + listener);
-        if (listener == null) {
-            if (this.listener != null)
-                stopTimer();
-            this.listener = listener;
-        } else {
-            this.listener = listener;
-            startTimer();
+    public void setDeployListener(DeployListener listener) {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/setDeployListener: " + listener);
+            if (listener == null) {
+                if (this.listener != null)
+                    stopTimer();
+                this.listener = listener;
+            } else {
+                this.listener = listener;
+                startTimer();
+            }
+        } finally {
+            lock.unlock();
         }
+
     }
 
     private void init() throws Exception {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/init ...");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/init ...");
         Property prop = spaceEntity.getProperty("check-interval");
         checkInterval = ((Long) prop.getValue()).longValue();
 
@@ -83,7 +90,7 @@ public class DeploySpaceImpl implements DeploySpace, TimerListener {
                     throws PropertyChangeException {
                 if (checkInterval != -1 && listener != null)
                     stopTimer();
-                checkInterval = ((Long) newValue).longValue();
+                checkInterval = (Long) newValue;
                 if (checkInterval != -1 && listener != null)
                     startTimer();
             }
@@ -105,18 +112,18 @@ public class DeploySpaceImpl implements DeploySpace, TimerListener {
         ctx.usageList.addEntity(usage);
         deployList = (EntityList) usage.getEntity("deployments");
 
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/init done");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/init done");
     }
 
     private void startTimer() {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/startTimer, instant timer listener, 1000");
+            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/startTimer, instant timer listener, 1000");
         instant = true;
         ctx.timerSwiftlet.addInstantTimerListener(1000, this);
     }
 
     private void stopTimer() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/stopTimer");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/stopTimer");
         ctx.timerSwiftlet.removeTimerListener(this);
     }
 
@@ -133,74 +140,85 @@ public class DeploySpaceImpl implements DeploySpace, TimerListener {
         }
     }
 
-    public synchronized void performTimeAction() {
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction ...");
-        if (closed)
-            return;
+    public void performTimeAction() {
+        lock.lock();
         try {
-            BundleEvent[] events = deployPath.getBundleEvents();
-            if (events != null) {
-                for (int i = 0; i < events.length; i++) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, event=" + events[i]);
-                    Bundle bundle = events[i].getBundle();
-                    try {
-                        switch (events[i].getType()) {
-                            case BundleEvent.BUNDLE_ADDED:
-                                ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, " + bundle.getBundleName() + ", BundleEvent.BUNDLE_ADDED");
-                                listener.bundleAdded(events[i].getBundle());
-                                createUsage(events[i].getBundle());
-                                break;
-                            case BundleEvent.BUNDLE_REMOVED:
-                                ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, " + bundle.getBundleName() + ", BundleEvent.BUNDLE_REMOVED");
-                                listener.bundleRemoved(events[i].getBundle(), false);
-                                deployList.removeDynamicEntity(events[i].getBundle());
-                                break;
-                            case BundleEvent.BUNDLE_CHANGED:
-                                ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, " + bundle.getBundleName() + ", BundleEvent.BUNDLE_CHANGED");
-                                listener.bundleRemoved(events[i].getBundle(), true);
-                                deployList.removeDynamicEntity(events[i].getBundle());
-                                listener.bundleAdded(events[i].getBundle());
-                                createUsage(events[i].getBundle());
-                                break;
-                        }
-                    } catch (Exception e1) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/performTimeAction ...");
+            if (closed)
+                return;
+            try {
+                BundleEvent[] events = deployPath.getBundleEvents();
+                if (events != null) {
+                    for (int i = 0; i < events.length; i++) {
                         if (ctx.traceSpace.enabled)
-                            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, " + bundle.getBundleName() + ", exception: " + e1);
-                        ctx.logSwiftlet.logError(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, " + bundle.getBundleName() + ", exception: " + e1 + ", removing bundle. Correct the error and deploy again!");
-                        deployPath.removeBundle(bundle);
-                        deployList.removeDynamicEntity(events[i].getBundle());
+                            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/performTimeAction, event=" + events[i]);
+                        Bundle bundle = events[i].getBundle();
+                        try {
+                            switch (events[i].getType()) {
+                                case BundleEvent.BUNDLE_ADDED:
+                                    ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), this + "/performTimeAction, " + bundle.getBundleName() + ", BundleEvent.BUNDLE_ADDED");
+                                    listener.bundleAdded(events[i].getBundle());
+                                    createUsage(events[i].getBundle());
+                                    break;
+                                case BundleEvent.BUNDLE_REMOVED:
+                                    ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), this + "/performTimeAction, " + bundle.getBundleName() + ", BundleEvent.BUNDLE_REMOVED");
+                                    listener.bundleRemoved(events[i].getBundle(), false);
+                                    deployList.removeDynamicEntity(events[i].getBundle());
+                                    break;
+                                case BundleEvent.BUNDLE_CHANGED:
+                                    ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), this + "/performTimeAction, " + bundle.getBundleName() + ", BundleEvent.BUNDLE_CHANGED");
+                                    listener.bundleRemoved(events[i].getBundle(), true);
+                                    deployList.removeDynamicEntity(events[i].getBundle());
+                                    listener.bundleAdded(events[i].getBundle());
+                                    createUsage(events[i].getBundle());
+                                    break;
+                            }
+                        } catch (Exception e1) {
+                            if (ctx.traceSpace.enabled)
+                                ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/performTimeAction, " + bundle.getBundleName() + ", exception: " + e1);
+                            ctx.logSwiftlet.logError(ctx.deploySwiftlet.getName(), this + "/performTimeAction, " + bundle.getBundleName() + ", exception: " + e1 + ", removing bundle. Correct the error and deploy again!");
+                            deployPath.removeBundle(bundle);
+                            deployList.removeDynamicEntity(events[i].getBundle());
+                        }
                     }
-                }
-            } else if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, no events!");
+                } else if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/performTimeAction, no events!");
 
-        } catch (Exception e) {
+            } catch (Exception e) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/performTimeAction, exception=" + e);
+                ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), this + "/performTimeAction, exception=" + e);
+            }
+            if (instant) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/performTimeAction, startTimer, interval=" + checkInterval);
+                instant = false;
+                ctx.timerSwiftlet.addTimerListener(checkInterval, this);
+            }
             if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, exception=" + e);
-            ctx.logSwiftlet.logInformation(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, exception=" + e);
+                ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/performTimeAction done");
+        } finally {
+            lock.unlock();
         }
-        if (instant) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction, startTimer, interval=" + checkInterval);
-            instant = false;
-            ctx.timerSwiftlet.addTimerListener(checkInterval, this);
-        }
-        if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/performTimeAction done");
+
     }
 
-    public synchronized void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/close ...");
-        if (closed)
-            return;
-        closed = true;
-        if (checkInterval != -1 && listener != null)
-            stopTimer();
-        ctx.usageList.removeDynamicEntity(this);
-        ;
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), toString() + "/close done");
+    public void close() {
+        lock.lock();
+        try {
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/close ...");
+            if (closed)
+                return;
+            closed = true;
+            if (checkInterval != -1 && listener != null)
+                stopTimer();
+            ctx.usageList.removeDynamicEntity(this);
+            if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.deploySwiftlet.getName(), this + "/close done");
+        } finally {
+            lock.unlock();
+        }
+
     }
 
     public String toString() {

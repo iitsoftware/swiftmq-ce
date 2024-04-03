@@ -18,10 +18,10 @@
 package com.swiftmq.impl.net.netty;
 
 public interface Countable {
-    public void addByteCount(long cnt);
+    void addByteCount(long cnt);
 
-    public long getByteCount();
+    long getByteCount();
 
-    public void resetByteCount();
+    void resetByteCount();
 }
 

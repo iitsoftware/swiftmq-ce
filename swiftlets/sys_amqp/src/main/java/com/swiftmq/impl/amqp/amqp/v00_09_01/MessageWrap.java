@@ -26,7 +26,7 @@ import java.util.List;
 public class MessageWrap {
     Publish publish = null;
     ContentHeaderProperties contentHeaderProperties = null;
-    List<byte[]> bodyParts = new ArrayList<byte[]>();
+    List<byte[]> bodyParts = new ArrayList<>();
     int currentSize = 0;
 
     public MessageWrap(Publish publish) {
@@ -56,13 +56,12 @@ public class MessageWrap {
     }
 
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append("[MessageWrap");
-        sb.append(" publish=").append(publish);
-        sb.append(", contentHeaderProperties=").append(contentHeaderProperties);
-        sb.append(", bodyParts=").append(bodyParts);
-        sb.append(", currentSize=").append(currentSize);
-        sb.append(']');
-        return sb.toString();
+        String s = "[MessageWrap" +
+                " publish=" + publish +
+                ", contentHeaderProperties=" + contentHeaderProperties +
+                ", bodyParts=" + bodyParts +
+                ", currentSize=" + currentSize +
+                ']';
+        return s;
     }
 }

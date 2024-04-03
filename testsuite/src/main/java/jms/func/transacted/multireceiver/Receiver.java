@@ -19,38 +19,32 @@ package jms.func.transacted.multireceiver;
 
 import jms.base.SimpleConnectedPTPTestCase;
 
-import javax.jms.*;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
-public class Receiver extends SimpleConnectedPTPTestCase
-{
-  public Receiver(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(true, Session.CLIENT_ACKNOWLEDGE);
-  }
-
-  public void testReceive()
-  {
-    try
-    {
-      TextMessage msg = null;
-      int cnt = 0;
-      do
-      {
-        msg = (TextMessage) receiver.receive(2000);
-        if (msg != null)
-          cnt++;
-      } while (msg != null);
-      qs.commit();
-      System.out.println("got " + cnt + " messages");
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+public class Receiver extends SimpleConnectedPTPTestCase {
+    public Receiver(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(true, Session.CLIENT_ACKNOWLEDGE);
+    }
+
+    public void testReceive() {
+        try {
+            TextMessage msg = null;
+            int cnt = 0;
+            do {
+                msg = (TextMessage) receiver.receive(2000);
+                if (msg != null)
+                    cnt++;
+            } while (msg != null);
+            qs.commit();
+            System.out.println("got " + cnt + " messages");
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

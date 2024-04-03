@@ -17,94 +17,77 @@
 
 package jms.ha.persistent.ptp.cc.multiqueue.singlesession.autoack;
 
+import com.swiftmq.tools.concurrent.Semaphore;
 import jms.base.MsgNoVerifier;
 import jms.base.ServerSessionImpl;
 import jms.base.ServerSessionPoolImpl;
 import jms.base.SimpleConnectedPTPTestCase;
-import com.swiftmq.tools.concurrent.Semaphore;
 
-import javax.jms.ConnectionConsumer;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.QueueSession;
-import javax.jms.Session;
+import javax.jms.*;
 
-public class Consumer extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
-  MsgNoVerifier verifier = null;
-  ConnectionConsumer cc = null;
-  ServerSessionPoolImpl pool = null;
-  Semaphore sem = null;
-  Exception exception = null;
-  String queueName = null;
+public class Consumer extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.nmsgs", "100000"));
+    MsgNoVerifier verifier = null;
+    ConnectionConsumer cc = null;
+    ServerSessionPoolImpl pool = null;
+    Semaphore sem = null;
+    Exception exception = null;
+    String queueName = null;
 
-  public Consumer(String name, String queueName)
-  {
-    super(name);
-    this.queueName = queueName;
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
-    pool = new ServerSessionPoolImpl();
-    for (int i = 0; i < 1; i++)
-    {
-      QueueSession session = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      session.setMessageListener(new Listener());
-      pool.addServerSession(new ServerSessionImpl(pool, session));
+    public Consumer(String name, String queueName) {
+        super(name);
+        this.queueName = queueName;
     }
-    cc = qc.createConnectionConsumer(getQueue(queueName), null, pool, 5);
-    verifier = new MsgNoVerifier(this, nMsgs, "no");
-  }
 
-  public void consume()
-  {
-    sem = new Semaphore();
-    sem.waitHere();
-    if (exception != null)
-      failFast("failed: " + exception);
-  }
-
-  protected void tearDown() throws Exception
-  {
-    cc.close();
-    verifier = null;
-    cc = null;
-    pool = null;
-    sem = null;
-    exception = null;
-    queueName = null;
-    super.tearDown();
-  }
-
-  private class Listener implements MessageListener
-  {
-    int n = 0;
-
-    public void onMessage(Message msg)
-    {
-      n++;
-      try
-      {
-        verifier.add(msg);
-      } catch (Exception e)
-      {
-        exception = e;
-        sem.notifySingleWaiter();
-      }
-      if (n == nMsgs)
-      {
-        try
-        {
-          verifier.verify();
-        } catch (Exception e)
-        {
-          exception = e;
+    protected void setUp() throws Exception {
+        super.setUp(false, Session.AUTO_ACKNOWLEDGE, false, false);
+        pool = new ServerSessionPoolImpl();
+        for (int i = 0; i < 1; i++) {
+            QueueSession session = qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+            session.setMessageListener(new Listener());
+            pool.addServerSession(new ServerSessionImpl(pool, session));
         }
-        sem.notifySingleWaiter();
-      }
+        cc = qc.createConnectionConsumer(getQueue(queueName), null, pool, 5);
+        verifier = new MsgNoVerifier(this, nMsgs, "no");
     }
-  }
+
+    public void consume() {
+        sem = new Semaphore();
+        sem.waitHere();
+        if (exception != null)
+            failFast("failed: " + exception);
+    }
+
+    protected void tearDown() throws Exception {
+        cc.close();
+        verifier = null;
+        cc = null;
+        pool = null;
+        sem = null;
+        exception = null;
+        queueName = null;
+        super.tearDown();
+    }
+
+    private class Listener implements MessageListener {
+        int n = 0;
+
+        public void onMessage(Message msg) {
+            n++;
+            try {
+                verifier.add(msg);
+            } catch (Exception e) {
+                exception = e;
+                sem.notifySingleWaiter();
+            }
+            if (n == nMsgs) {
+                try {
+                    verifier.verify();
+                } catch (Exception e) {
+                    exception = e;
+                }
+                sem.notifySingleWaiter();
+            }
+        }
+    }
 }

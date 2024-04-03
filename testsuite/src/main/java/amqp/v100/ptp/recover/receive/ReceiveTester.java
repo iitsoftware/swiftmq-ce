@@ -17,107 +17,96 @@
 
 package amqp.v100.ptp.recover.receive;
 
+import amqp.v100.base.MessageFactory;
+import amqp.v100.base.ReceiveVerifier;
+import amqp.v100.base.Util;
 import com.swiftmq.amqp.v100.client.*;
 import com.swiftmq.amqp.v100.generated.messaging.message_format.ApplicationProperties;
 import com.swiftmq.amqp.v100.messaging.AMQPMessage;
 import com.swiftmq.amqp.v100.types.AMQPInt;
 import com.swiftmq.amqp.v100.types.AMQPString;
-import amqp.v100.base.MessageFactory;
-import amqp.v100.base.ReceiveVerifier;
-import amqp.v100.base.Util;
 import junit.framework.TestCase;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReceiveTester extends TestCase
-{
-  private static String PROPNAME = "no";
-  int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "1000"));
-  boolean persistent = Boolean.parseBoolean(System.getProperty("persistent", "true"));
+public class ReceiveTester extends TestCase {
+    private static String PROPNAME = "no";
+    int nMsgs = Integer.parseInt(System.getProperty("nmsgs", "1000"));
+    boolean persistent = Boolean.parseBoolean(System.getProperty("persistent", "true"));
 
-  MessageFactory messageFactory;
-  int qos;
-  String address = null;
-  ReceiveVerifier receiveVerifier = null;
+    MessageFactory messageFactory;
+    int qos;
+    String address = null;
+    ReceiveVerifier receiveVerifier = null;
 
-  public ReceiveTester(String name, int qos, String address, boolean dupsOk, boolean missesOk)
-  {
-    super(name);
-    this.qos = qos;
-    this.address = address;
-    receiveVerifier = new ReceiveVerifier(this, nMsgs, PROPNAME, dupsOk, missesOk);
-    receiveVerifier.setCheckSequence(qos != QoS.AT_LEAST_ONCE);
-  }
-
-  protected void setUp() throws Exception
-  {
-    super.setUp();
-    messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
-  }
-
-  public void test()
-  {
-    try
-    {
-      Connection connection = Util.createConnection();
-      Session session = Util.createSession(connection);
-      Producer producer = session.createProducer(address, qos);
-      for (int i = 0; i < nMsgs; i++)
-      {
-        AMQPMessage msg = messageFactory.create(i);
-        Map map = new HashMap();
-        map.put(new AMQPString(PROPNAME), new AMQPInt(i));
-        msg.setApplicationProperties(new ApplicationProperties(map));
-        producer.send(msg, persistent, 5, -1);
-      }
-      Consumer consumer = session.createConsumer(address, 500, qos, true, null);
-      for (int i = 0; i < nMsgs; i++)
-      {
-        AMQPMessage msg = consumer.receive(1000);
-        if (msg != null)
-        {
-          messageFactory.verify(msg);
-          if (!msg.isSettled())
-            msg.accept();
-          receiveVerifier.add(msg);
-        } else
-          throw new Exception("message is null");
-      }
-      connection.close();
-
-      DeliveryMemory deliveryMemory = consumer.getDeliveryMemory();
-      System.out.println("Unsettled: " + deliveryMemory.getNumberUnsettled());
-      connection = Util.createConnection();
-      session = Util.createSession(connection);
-      Consumer consumerRecover = session.createConsumer(address, 500, qos, true, null, deliveryMemory);
-      consumerRecover.close();
-      session.close();
-      connection.close();
-
-      connection = Util.createConnection();
-      session = Util.createSession(connection);
-      consumer = session.createConsumer(address, 500, qos, true, null);
-      for (; ; )
-      {
-        AMQPMessage msg = consumer.receive(1000);
-        if (msg != null)
-        {
-          messageFactory.verify(msg);
-          if (!msg.isSettled())
-            msg.accept();
-          receiveVerifier.add(msg);
-        } else
-          break;
-      }
-      consumer.close();
-      session.close();
-      connection.close();
-      receiveVerifier.verify();
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      fail("test failed: " + e);
+    public ReceiveTester(String name, int qos, String address, boolean dupsOk, boolean missesOk) {
+        super(name);
+        this.qos = qos;
+        this.address = address;
+        receiveVerifier = new ReceiveVerifier(this, nMsgs, PROPNAME, dupsOk, missesOk);
+        receiveVerifier.setCheckSequence(qos != QoS.AT_LEAST_ONCE);
     }
-  }
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        messageFactory = (MessageFactory) Class.forName(System.getProperty("messagefactory", "amqp.v100.base.AMQPValueStringMessageFactory")).newInstance();
+    }
+
+    public void test() {
+        try {
+            Connection connection = Util.createConnection();
+            Session session = Util.createSession(connection);
+            Producer producer = session.createProducer(address, qos);
+            for (int i = 0; i < nMsgs; i++) {
+                AMQPMessage msg = messageFactory.create(i);
+                Map map = new HashMap();
+                map.put(new AMQPString(PROPNAME), new AMQPInt(i));
+                msg.setApplicationProperties(new ApplicationProperties(map));
+                producer.send(msg, persistent, 5, -1);
+            }
+            Consumer consumer = session.createConsumer(address, 500, qos, true, null);
+            for (int i = 0; i < nMsgs; i++) {
+                AMQPMessage msg = consumer.receive(1000);
+                if (msg != null) {
+                    messageFactory.verify(msg);
+                    if (!msg.isSettled())
+                        msg.accept();
+                    receiveVerifier.add(msg);
+                } else
+                    throw new Exception("message is null");
+            }
+            connection.close();
+
+            DeliveryMemory deliveryMemory = consumer.getDeliveryMemory();
+            System.out.println("Unsettled: " + deliveryMemory.getNumberUnsettled());
+            connection = Util.createConnection();
+            session = Util.createSession(connection);
+            Consumer consumerRecover = session.createConsumer(address, 500, qos, true, null, deliveryMemory);
+            consumerRecover.close();
+            session.close();
+            connection.close();
+
+            connection = Util.createConnection();
+            session = Util.createSession(connection);
+            consumer = session.createConsumer(address, 500, qos, true, null);
+            for (; ; ) {
+                AMQPMessage msg = consumer.receive(1000);
+                if (msg != null) {
+                    messageFactory.verify(msg);
+                    if (!msg.isSettled())
+                        msg.accept();
+                    receiveVerifier.add(msg);
+                } else
+                    break;
+            }
+            consumer.close();
+            session.close();
+            connection.close();
+            receiveVerifier.verify();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("test failed: " + e);
+        }
+    }
 }

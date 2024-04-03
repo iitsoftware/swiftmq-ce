@@ -20,23 +20,19 @@ package jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multi
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new Suite();
-    suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.singletopic.recover.onmessage.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new Suite();
+        suite.addTest(jms.ha.persistent.ps.durable.nontransacted.clientack.multiconsumer.multisession.singletopic.recover.onmessage.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "recover";
-  }
+    public String toString() {
+        return "recover";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

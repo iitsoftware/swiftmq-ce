@@ -20,66 +20,60 @@ package jms.xa.specials.concurrentcommit;
 import jms.base.SimpleConnectedXAPTPTestCase;
 import jms.base.XidImpl;
 
-import javax.jms.*;
-import javax.transaction.xa.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.TextMessage;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
-public class Tester extends SimpleConnectedXAPTPTestCase
-{
-  public Tester(String name)
-  {
-    super(name);
-  }
-
-  public void testP()
-  {
-    try
-    {
-      Xid xid1 = new XidImpl();
-      xares.start(xid1, XAResource.TMNOFLAGS);
-      TextMessage msg = qs.createTextMessage();
-      for (int i = 0; i < 2; i++)
-      {
-        msg.setText("Msg1: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.end(xid1, XAResource.TMSUCCESS);
-      Xid xid2 = new XidImpl();
-      xares.start(xid2, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 3; i++)
-      {
-        msg.setText("Msg2: " + i);
-        sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
-      }
-      xares.prepare(xid1);
-      xares.commit(xid1, false);
-      xares.end(xid2, XAResource.TMSUCCESS);
-      xares.prepare(xid2);
-      xares.commit(xid2, false);
-
-      xid1 = new XidImpl();
-      xares.start(xid1, XAResource.TMNOFLAGS);
-      for (int i = 0; i < 2; i++)
-      {
-        msg = (TextMessage) receiver.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      xares.end(xid1, XAResource.TMSUCCESS);
-      xid2 = new XidImpl();
-      xares.start(xid2, XAResource.TMNOFLAGS);
-      xares.prepare(xid1);
-      xares.commit(xid1, false);
-      for (int i = 0; i < 3; i++)
-      {
-        msg = (TextMessage) receiver.receive(2000);
-        assertTrue("Received msg==null", msg != null);
-      }
-      xares.end(xid2, XAResource.TMSUCCESS);
-      xares.prepare(xid2);
-      xares.commit(xid2, false);
-    } catch (Exception e)
-    {
-      e.printStackTrace();
-      failFast("test failed: " + e);
+public class Tester extends SimpleConnectedXAPTPTestCase {
+    public Tester(String name) {
+        super(name);
     }
-  }
+
+    public void testP() {
+        try {
+            Xid xid1 = new XidImpl();
+            xares.start(xid1, XAResource.TMNOFLAGS);
+            TextMessage msg = qs.createTextMessage();
+            for (int i = 0; i < 2; i++) {
+                msg.setText("Msg1: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.end(xid1, XAResource.TMSUCCESS);
+            Xid xid2 = new XidImpl();
+            xares.start(xid2, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 3; i++) {
+                msg.setText("Msg2: " + i);
+                sender.send(msg, DeliveryMode.PERSISTENT, Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+            }
+            xares.prepare(xid1);
+            xares.commit(xid1, false);
+            xares.end(xid2, XAResource.TMSUCCESS);
+            xares.prepare(xid2);
+            xares.commit(xid2, false);
+
+            xid1 = new XidImpl();
+            xares.start(xid1, XAResource.TMNOFLAGS);
+            for (int i = 0; i < 2; i++) {
+                msg = (TextMessage) receiver.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            xares.end(xid1, XAResource.TMSUCCESS);
+            xid2 = new XidImpl();
+            xares.start(xid2, XAResource.TMNOFLAGS);
+            xares.prepare(xid1);
+            xares.commit(xid1, false);
+            for (int i = 0; i < 3; i++) {
+                msg = (TextMessage) receiver.receive(2000);
+                assertTrue("Received msg==null", msg != null);
+            }
+            xares.end(xid2, XAResource.TMSUCCESS);
+            xares.prepare(xid2);
+            xares.commit(xid2, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            failFast("test failed: " + e);
+        }
+    }
 }

@@ -22,34 +22,27 @@ import jms.base.SimpleConnectedPTPTestCase;
 import javax.jms.Message;
 import javax.jms.Session;
 
-public class DrainQueue extends SimpleConnectedPTPTestCase
-{
-  int nMsgs = Integer.parseInt(System.getProperty("jms.ha.browser.nmsgs", "50000"));
+public class DrainQueue extends SimpleConnectedPTPTestCase {
+    int nMsgs = Integer.parseInt(System.getProperty("jms.ha.browser.nmsgs", "50000"));
 
-  public DrainQueue(String name)
-  {
-    super(name);
-  }
-
-  protected void setUp() throws Exception
-  {
-    setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
-  }
-
-  public void drain()
-  {
-    try
-    {
-      for (int i = 0; i < nMsgs; i++)
-      {
-        Message msg = receiver.receive();
-        if (msg == null)
-          throw new Exception("null message received!");
-      }
-    } catch (Exception e)
-    {
-      failFast("test failed: " + e);
+    public DrainQueue(String name) {
+        super(name);
     }
-  }
+
+    protected void setUp() throws Exception {
+        setUp(false, Session.AUTO_ACKNOWLEDGE, false, true);
+    }
+
+    public void drain() {
+        try {
+            for (int i = 0; i < nMsgs; i++) {
+                Message msg = receiver.receive();
+                if (msg == null)
+                    throw new Exception("null message received!");
+            }
+        } catch (Exception e) {
+            failFast("test failed: " + e);
+        }
+    }
 }
 

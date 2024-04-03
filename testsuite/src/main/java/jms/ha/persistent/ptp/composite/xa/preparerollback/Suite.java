@@ -17,55 +17,45 @@
 
 package jms.ha.persistent.ptp.composite.xa.preparerollback;
 
-import com.swiftmq.tools.tracking.MessageTracker;
+import jms.base.Checker;
 import junit.extensions.ActiveTestSuite;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import jms.base.Checker;
 
-import javax.jms.Message;
 import javax.jms.JMSException;
+import javax.jms.Message;
 
-public class Suite extends ActiveTestSuite
-{
-  public void run(TestResult testResult)
-  {
-    MessageTracker.getInstance().setPrefix(getClass().getPackage().getName());
-    super.run(testResult);
-  }
+public class Suite extends ActiveTestSuite {
+    public void run(TestResult testResult) {
+        super.run(testResult);
+    }
 
-  public static Test suite()
-  {
-    int maxMsgs = Integer.parseInt(System.getProperty("jms.ha.composite.nmsgs", "20000"));
-    TestSuite suite = new Suite();
-    suite.addTest(new Receiver("receive", "complink1", maxMsgs));
-    suite.addTest(new Receiver("receive", "complink2", maxMsgs));
-    suite.addTest(new SelectorReceiver("receive", "complink3", maxMsgs, maxMsgs/100, new Checker() {
-      public boolean isMatch(Message msg)
-      {
-        try
-        {
-          String prop = msg.getStringProperty("Prop");
-          return prop != null && prop.equals("X");
-        } catch (JMSException e)
-        {
-          return false;
-        }
-      }
-    }));
-    suite.addTest(new Sender("send"));
-    return suite;
-  }
+    public static Test suite() {
+        int maxMsgs = Integer.parseInt(System.getProperty("jms.ha.composite.nmsgs", "20000"));
+        TestSuite suite = new Suite();
+        suite.addTest(new Receiver("receive", "complink1", maxMsgs));
+        suite.addTest(new Receiver("receive", "complink2", maxMsgs));
+        suite.addTest(new SelectorReceiver("receive", "complink3", maxMsgs, maxMsgs / 100, new Checker() {
+            public boolean isMatch(Message msg) {
+                try {
+                    String prop = msg.getStringProperty("Prop");
+                    return prop != null && prop.equals("X");
+                } catch (JMSException e) {
+                    return false;
+                }
+            }
+        }));
+        suite.addTest(new Sender("send"));
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "preparerollback";
-  }
+    public String toString() {
+        return "preparerollback";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(suite());
+    }
 }
 

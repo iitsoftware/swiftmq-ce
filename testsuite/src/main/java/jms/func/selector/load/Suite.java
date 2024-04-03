@@ -20,24 +20,20 @@ package jms.func.selector.load;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Suite extends TestSuite
-{
-  public static Test suite()
-  {
-    TestSuite suite = new jms.func.selector.load.Suite();
-    suite.addTest(jms.func.selector.load.browse.Suite.suite());
-    suite.addTest(jms.func.selector.load.concurrent.Suite.suite());
-    suite.addTest(jms.func.selector.load.preload.Suite.suite());
-    return suite;
-  }
+public class Suite extends TestSuite {
+    public static Test suite() {
+        TestSuite suite = new jms.func.selector.load.Suite();
+        suite.addTest(jms.func.selector.load.browse.Suite.suite());
+        suite.addTest(jms.func.selector.load.concurrent.Suite.suite());
+        suite.addTest(jms.func.selector.load.preload.Suite.suite());
+        return suite;
+    }
 
-  public String toString()
-  {
-    return "load";
-  }
+    public String toString() {
+        return "load";
+    }
 
-  public static void main(String args[])
-  {
-    junit.textui.TestRunner.run(jms.func.selector.load.Suite.suite());
-  }
+    public static void main(String args[]) {
+        junit.textui.TestRunner.run(jms.func.selector.load.Suite.suite());
+    }
 }

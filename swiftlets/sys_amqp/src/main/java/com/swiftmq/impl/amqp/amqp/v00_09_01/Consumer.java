@@ -42,7 +42,7 @@ public class Consumer {
         this.noAck = noAck;
         this.noLocal = noLocal;
         receiver = ctx.queueManager.createQueueReceiver(queueName, channelHandler.getVersionedConnection().getActiveLogin(), null);
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/created");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/created");
     }
 
     public ChannelHandler getChannelHandler() {
@@ -75,7 +75,7 @@ public class Consumer {
 
     public void startMessageProcessor() throws QueueException {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/startMessageProcessor");
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/startMessageProcessor");
         if (readTransaction == null)
             readTransaction = receiver.createTransaction(false);
         if (messageProcessor == null) {
@@ -86,14 +86,14 @@ public class Consumer {
 
     public void startMessageProcessor(SourceMessageProcessor messageProcessor) throws QueueException {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/startMessageProcessor, messageProcessor=" + messageProcessor);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/startMessageProcessor, messageProcessor=" + messageProcessor);
         this.messageProcessor = messageProcessor;
         readTransaction.registerMessageProcessor(messageProcessor);
     }
 
     public void ack(MessageIndex messageIndex) throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/ack, messageIndex=" + messageIndex);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/ack, messageIndex=" + messageIndex);
         QueuePullTransaction t = receiver.createTransaction(true);
         t.moveToTransaction(messageIndex, readTransaction);
         t.commit();
@@ -101,14 +101,14 @@ public class Consumer {
 
     public void reject(MessageIndex messageIndex) throws Exception {
         if (ctx.traceSpace.enabled)
-            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/reject, messageIndex=" + messageIndex);
+            ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/reject, messageIndex=" + messageIndex);
         QueuePullTransaction t = receiver.createTransaction(true);
         t.moveToTransaction(messageIndex, readTransaction);
         t.rollback();
     }
 
     public void close() {
-        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), toString() + "/close");
+        if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.amqpSwiftlet.getName(), this + "/close");
         closed = true;
         try {
             if (readTransaction != null)
@@ -122,13 +122,12 @@ public class Consumer {
     }
 
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append("[Consumer");
-        sb.append(" consumerTag='").append(consumerTag).append('\'');
-        sb.append(", originalQueueName='").append(originalQueueName).append('\'');
-        sb.append(", queueName='").append(queueName).append('\'');
-        sb.append(", closed=").append(closed);
-        sb.append(']');
-        return sb.toString();
+        String sb = "[Consumer" +
+                " consumerTag='" + consumerTag + '\'' +
+                ", originalQueueName='" + originalQueueName + '\'' +
+                ", queueName='" + queueName + '\'' +
+                ", closed=" + closed +
+                ']';
+        return sb;
     }
 }

@@ -33,6 +33,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter implements ChunkListener, TimerListener {
     SwiftletContext ctx;
@@ -42,8 +43,8 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
     InboundHandler inboundHandler = null;
     DataByteArrayInputStream bais = null;
     Countable countableInput;
-    boolean activated = false;
-    volatile boolean zombi = true;
+    final AtomicBoolean activated = new AtomicBoolean(false);
+    final AtomicBoolean zombi = new AtomicBoolean(true);
 
     public NettyOutboundConnectionHandler(SwiftletContext ctx, Connection connection, ConnectionMetaData metaData) {
         this.ctx = ctx;
@@ -72,12 +73,12 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
         inputHandler.setChunkListener(this);
         inputHandler.createInputBuffer(metaData.getInputBufferSize(), metaData.getInputExtendSize());
         inboundHandler = connection.getInboundHandler();
-        countableInput = (Countable)connection.getInputStream();
-        activated = true;
+        countableInput = (Countable) connection.getInputStream();
+        activated.set(true);
     }
 
     public boolean isActive() {
-        return activated;
+        return activated.get();
     }
 
     @Override
@@ -93,7 +94,7 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
             ctx.traceSpace.trace("sys$net", toString() + "/channelInactive");
         ctx.logSwiftlet.logInformation("sys$net", toString()+"/connection inactive, closing");
         ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
-        activated = false;
+        activated.set(false);
 
     }
     @Override
@@ -101,20 +102,24 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
         ctx.logSwiftlet.logInformation("sys$net", toString()+"/Got exception: "+cause);
     }
 
-    @Override
     public void channelRead(ChannelHandlerContext context, Object msg) throws Exception {
+        if (inputHandler == null)
+            throw new IOException("Connection not yet ready (no input handler)");
+        ByteBuf in = (ByteBuf) msg;
         try {
-            if (inputHandler == null)
-                throw new IOException("Connection not yet ready (no input handler)");
-            byte[] buffer = inputHandler.getBuffer();
-            int offset = inputHandler.getOffset();
-            ByteBuf in = (ByteBuf) msg;
-            int readableBytes = in.readableBytes();
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace("sys$net", toString() + "/channelRead, readableBytes: " + readableBytes);
-            in.readBytes(buffer, offset, readableBytes);
-            inputHandler.setBytesWritten(readableBytes);
-            countableInput.addByteCount(readableBytes);
+            while (in.isReadable()) { // Loop while there's data to read
+                byte[] buffer = inputHandler.getBuffer();
+                int offset = inputHandler.getOffset();
+                int readableBytes = in.readableBytes();
+                int bytesToRead = Math.min(buffer.length - offset, readableBytes);
+
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace("sys$net", toString() + "/channelRead, readableBytes: " + readableBytes + ", bytesToRead: " + bytesToRead);
+
+                in.readBytes(buffer, offset, bytesToRead);
+                inputHandler.setBytesWritten(bytesToRead);
+                countableInput.addByteCount(bytesToRead);
+            }
         } finally {
             ReferenceCountUtil.release(msg);
         }
@@ -124,11 +129,12 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
     public void performTimeAction() {
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace("sys$net", toString() + "/perform time action: checking for zombi connections...");
-        if (zombi) {
-            if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/zombi connection detected, close!");
+        if (zombi.get()) {
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace("sys$net", toString() + "/zombi connection detected, close!");
             ctx.logSwiftlet.logWarning("sys$net", toString() + "/zombi connection detected, close! Please check for possible denial-of-service attack!");
             ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
-            activated = false;
+            activated.set(false);
         }
     }
 
@@ -136,7 +142,7 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
     public void chunkCompleted(byte[] b, int offset, int len) {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/chunk completed");
         if (bais == null) {
-            zombi = false;
+            zombi.set(false);
             bais = new DataByteArrayInputStream();
         }
         bais.setBuffer(b, offset, len);
@@ -145,9 +151,9 @@ public class NettyOutboundConnectionHandler extends ChannelInboundHandlerAdapter
         } catch (Exception e) {
             if (ctx.traceSpace.enabled) ctx.traceSpace.trace("sys$net", toString() + "/Exception, EXITING: " + e);
             ctx.logSwiftlet.logInformation(toString(), "Exception, EXITING: " + e);
-            if (activated) {
+            if (activated.get()) {
                 ctx.networkSwiftlet.getConnectionManager().removeConnection(connection);
-                activated = true;
+                activated.set(true);
             }
         }
         

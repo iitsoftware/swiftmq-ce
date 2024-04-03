@@ -22,25 +22,25 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public interface LogFile {
-    public void init(long maxSize);
+    void init(long maxSize);
 
-    public void setInMemoryMode(boolean b);
+    void setInMemoryMode(boolean b);
 
-    public boolean isInMemoryMode();
+    boolean isInMemoryMode();
 
-    public RandomAccessFile getFile();
+    RandomAccessFile getFile();
 
-    public void write(LogRecord logRecord) throws IOException;
+    void write(LogRecord logRecord) throws IOException;
 
-    public void write(LogRecord logRecord, DataOutput copyHere) throws IOException;
+    void write(LogRecord logRecord, DataOutput copyHere) throws IOException;
 
-    public int getFlushSize();
+    int getFlushSize();
 
-    public long getPosition();
+    long getPosition();
 
-    public void flush(boolean sync) throws IOException;
+    void flush(boolean sync) throws IOException;
 
-    public void reset(boolean sync) throws IOException;
+    void reset(boolean sync) throws IOException;
 
-    public void reset(boolean sync, DataOutput copyHere) throws IOException;
+    void reset(boolean sync, DataOutput copyHere) throws IOException;
 }

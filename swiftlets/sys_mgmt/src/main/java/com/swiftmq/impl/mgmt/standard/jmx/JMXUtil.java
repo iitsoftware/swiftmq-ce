@@ -47,12 +47,11 @@ public class JMXUtil {
             mbeanServer = ManagementFactory.getPlatformMBeanServer();
         else if (option.equals("use-named-server")) {
             String serverName = (String) ctx.root.getEntity("jmx").getEntity("mbean-server").getProperty("server-name").getValue();
-            ArrayList list = MBeanServerFactory.findMBeanServer(null);
-            if (list != null && list.size() > 0) {
-                for (int i = 0; i < list.size(); i++) {
-                    MBeanServer srv = (MBeanServer) list.get(i);
-                    if (srv.getDefaultDomain().equals(serverName)) {
-                        mbeanServer = srv;
+            ArrayList<MBeanServer> list = MBeanServerFactory.findMBeanServer(null);
+            if (list.size() > 0) {
+                for (MBeanServer mBeanServer : list) {
+                    if (mBeanServer.getDefaultDomain().equals(serverName)) {
+                        mbeanServer = mBeanServer;
                         break;
                     }
                 }
@@ -75,7 +74,7 @@ public class JMXUtil {
     }
 
     public String getContext(Entity entity) {
-        String res = null;
+        String res;
         String[] econtext = entity.getContext();
         String context = toJMXString(SwiftletManager.getInstance().getRouterName()) + ":";
         if (groupNames) {

@@ -34,6 +34,7 @@ import com.swiftmq.swiftlet.topic.TopicManager;
 import com.swiftmq.swiftlet.trace.TraceSpace;
 import com.swiftmq.swiftlet.trace.TraceSwiftlet;
 import com.swiftmq.util.SwiftUtilities;
+import org.graalvm.home.Version;
 
 import java.io.File;
 
@@ -55,9 +56,6 @@ public class SwiftletContext {
     public TraceSpace traceSpace = null;
     public StreamsSwiftlet streamsSwiftlet = null;
     public String streamLibDir = SwiftUtilities.addWorkingDir("../data/streamlib");
-    public boolean ISGRAAL = false;
-    public boolean HASENGINE = false;
-    public int JAVAVERSION = 0;
 
     public SwiftletContext(Configuration config, StreamsSwiftlet streamsSwiftlet) {
         this.config = config;
@@ -79,14 +77,6 @@ public class SwiftletContext {
         jndiSwiftlet = (JNDISwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$jndi");
         storeSwiftlet = (StoreSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$store");
         threadpoolSwiftlet = (ThreadpoolSwiftlet) SwiftletManager.getInstance().getSwiftlet("sys$threadpool");
-        Runtime.Version version = Runtime.version();
-        JAVAVERSION = version.feature();
-        try {
-            ISGRAAL = org.graalvm.home.Version.getCurrent().isRelease();
-        } catch (Exception e) {
-            ISGRAAL = false;
-        }
-        HASENGINE = JAVAVERSION < 15 || ISGRAAL;
-        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", running on GraalVM: " + ISGRAAL);
+        logSwiftlet.logInformation(streamsSwiftlet.getName(), "java.vendor.version: " + System.getProperty("java.vendor.version") + ", GraalVM Version: " + Version.getCurrent() + ", available Processors: " + Runtime.getRuntime().availableProcessors());
     }
 }
