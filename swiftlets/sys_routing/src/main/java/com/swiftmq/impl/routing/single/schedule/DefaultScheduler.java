@@ -152,10 +152,16 @@ public class DefaultScheduler extends Scheduler {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, route=" + route);
             ConnectionEntry ce = getConnectionEntry(route.getRoutingConnection());
+            if (ctx.traceSpace.enabled)
+                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, ce=" + ce);
             if (ce != null) {
                 ce.removeRoute(route);
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, ce (after remove)=" + ce);
                 if (ce.getNumberRoutes() == 0) {
                     remove(ce);
+                    if (ctx.traceSpace.enabled)
+                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, connections.size=" + connections.size());
                     if (connections.isEmpty())
                         ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
                 } else {
