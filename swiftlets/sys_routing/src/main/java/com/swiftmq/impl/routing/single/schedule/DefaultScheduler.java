@@ -99,12 +99,18 @@ public class DefaultScheduler extends Scheduler {
     }
 
     private void remove(ConnectionEntry ce) {
-        for (Iterator<ConnectionEntry> iter = connections.iterator(); iter.hasNext(); ) {
-            ConnectionEntry entry = iter.next();
-            if (ce.getRoutingConnection() == entry.getRoutingConnection()) {
-                iter.remove();
-                break;
+        lock.writeLock().lock();  // Acquire write lock
+        try {
+            // Iterate with a standard for loop to ensure we modify the underlying list safely
+            for (int i = 0; i < connections.size(); i++) {
+                ConnectionEntry entry = connections.get(i);
+                if (entry != null && ce.getRoutingConnection() == entry.getRoutingConnection()) {
+                    connections.remove(i);  // Remove directly from the list
+                    break;  // Exit the loop after removal to avoid ConcurrentModificationException
+                }
             }
+        } finally {
+            lock.writeLock().unlock();  // Always ensure the lock is unlocked
         }
     }
 
@@ -152,16 +158,10 @@ public class DefaultScheduler extends Scheduler {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, route=" + route);
             ConnectionEntry ce = getConnectionEntry(route.getRoutingConnection());
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, ce=" + ce);
             if (ce != null) {
                 ce.removeRoute(route);
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, ce (after remove)=" + ce);
                 if (ce.getNumberRoutes() == 0) {
                     remove(ce);
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/removeRoute, connections.size=" + connections.size());
                     if (connections.isEmpty())
                         ctx.routingSwiftlet.fireRoutingEvent("destinationDeactivated", new RoutingEvent(ctx.routingSwiftlet, destinationRouter));
                 } else {
