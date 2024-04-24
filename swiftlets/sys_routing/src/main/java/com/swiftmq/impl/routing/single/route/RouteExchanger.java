@@ -195,13 +195,11 @@ public class RouteExchanger implements ConnectionListener, POExchangeVisitor, Ac
         RouteFilter filter = filters.get(rc.getRouterName());
         isFiltered = filter != null && !filter.isSendable(route);
         if (!sameRC && !hasHop && !isFiltered) {
-            if (ctx.traceSpace.enabled)
-                ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/sendRoute, rc=" + rc + ", route= " + route + " sending...");
+            ctx.logSwiftlet.logInformation(ctx.routingSwiftlet.getName(), this + "/sendRoute, rc=" + rc + ", route= " + route + " sending...");
             try {
                 rc.enqueueRequest(new SendRouteRequest(routeConverter.convert(route, rc.getProtocolVersion())));
             } catch (Exception e) {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/sendRoute, rc=" + rc + ", route= " + route + ", exception enqueueRequest: " + e);
+                ctx.logSwiftlet.logError(ctx.routingSwiftlet.getName(), this + "/sendRoute, rc=" + rc + ", route= " + route + ", exception enqueueRequest: " + e);
             }
         } else
             ctx.logSwiftlet.logInformation(ctx.routingSwiftlet.getName(), this + "/sendRoute, rc=" + rc + ", route=" + route + ", sameRC=" + sameRC + ", hasHop=" + hasHop + ", isFiltered=" + isFiltered + ", NOT SENT");
