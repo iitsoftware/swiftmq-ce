@@ -206,11 +206,10 @@ public class DefaultScheduler extends Scheduler {
         if (closed.getAndSet(true))
             return;
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/close ...");
-        for (Iterator<ConnectionEntry> iter = connections.iterator(); iter.hasNext(); ) {
-            ConnectionEntry entry = iter.next();
-            iter.remove();
+        connections.forEach(entry -> {
             connectionRemoved(entry.getRoutingConnection());
-        }
+        });
+        connections.clear();
         Semaphore sem = new Semaphore();
         enqueueClose(new POCloseObject(null, sem));
         sem.waitHere();

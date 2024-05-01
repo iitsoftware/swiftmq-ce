@@ -2087,6 +2087,7 @@ public class MessageQueue extends AbstractQueue {
                     long size = 0;
                     int n = 0;
                     StoreReadTransaction srt = null;
+                    List<StoreId> toRemove = new ArrayList<>();
                     for (Object o : messageIndexList) {
                         MessageIndex messageIndex = (MessageIndex) o;
                         for (Iterator iter = txList.iterator(); iter.hasNext(); ) {
@@ -2097,10 +2098,12 @@ public class MessageQueue extends AbstractQueue {
                                 size += storeId.getMsgSize();
                                 n++;
                                 removeMessage(srt, storeId);
-                                iter.remove();
+                                // Do not use iter.remove() as it is a snapshot iterator pointing to copy of the list
+                                toRemove.add(storeId);
                             }
                         }
                     }
+                    txList.removeAll(toRemove);
                     callback.setResult(size);
                     if (getFlowController() != null)
                         getFlowController().setReceiveMessageCount(n);
