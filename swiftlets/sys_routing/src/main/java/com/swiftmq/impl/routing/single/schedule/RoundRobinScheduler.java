@@ -37,7 +37,7 @@ public class RoundRobinScheduler extends DefaultScheduler {
                 return null;
             if (next > connections.size() - 1)
                 next = 0;
-            RoutingConnection rc = connections.isEmpty() ? null : connections.get(next).getRoutingConnection();
+            RoutingConnection rc = connections.get(next).getRoutingConnection();
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.routingSwiftlet.getName(), this + "/getNextConnection, rc=" + rc);
             next++;

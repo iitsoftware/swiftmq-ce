@@ -24,23 +24,24 @@ import com.swiftmq.impl.routing.single.route.RouteConverter;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RouteImpl implements Route {
-    int type = 0;
-    String version = null;
-    String key = null;
-    String destinationRouter = null;
-    List<String> hopList = null;
-    String lastHop = null;
-    RoutingConnection routingConnection = null;
+    private final AtomicInteger type = new AtomicInteger(0);
+    private final AtomicReference<String> version = new AtomicReference<>();
+    private final AtomicReference<String> key = new AtomicReference<>();
+    private final AtomicReference<String> destinationRouter = new AtomicReference<>();
+    private final List<String> hopList = new CopyOnWriteArrayList<>();
+    private final AtomicReference<String> lastHop = new AtomicReference<>();
+    private final AtomicReference<RoutingConnection> routingConnection = new AtomicReference<>();
 
     public RouteImpl(String version, int type, String destinationRouter) {
-        this.version = version;
-        this.type = type;
-        this.destinationRouter = destinationRouter;
-        hopList = new ArrayList<>();
+        this.version.set(version);
+        this.type.set(type);
+        this.destinationRouter.set(destinationRouter);
     }
 
     public RouteImpl() {
@@ -48,54 +49,57 @@ public class RouteImpl implements Route {
     }
 
     public int getType() {
-        return type;
+        return type.get();
     }
 
     public void setType(int type) {
-        this.type = type;
+        this.type.set(type);
     }
 
     public String getVersion() {
-        return version;
+        return version.get();
     }
 
     public void setVersion(String version) {
-        this.version = version;
+        this.version.set(version);
     }
 
     public String getDestinationRouter() {
-        return destinationRouter;
+        return destinationRouter.get();
     }
 
     public void setDestinationRouter(String destinationRouter) {
-        this.destinationRouter = destinationRouter;
+        this.destinationRouter.set(destinationRouter);
     }
 
     public String getKey() {
-        if (key == null) {
+        String localKey = key.get();
+        if (localKey == null) {
             StringBuilder b = new StringBuilder();
             for (int i = hopList.size() - 1; i >= 0; i--) {
                 b.append(hopList.get(i));
-                if (i > 0)
+                if (i > 0) {
                     b.append(";");
+                }
             }
-            key = b.toString();
+            localKey = b.toString();
+            key.compareAndSet(null, localKey);  // Set only if currently null
         }
-        return key;
+        return key.get();
     }
 
     public String getLastHop() {
-        return lastHop;
+        return lastHop.get();
     }
 
     public void addHop(String routerName) {
-        key = null;
-        lastHop = routerName;
+        key.set(null);  // Invalidate the cache
+        lastHop.set(routerName);
         hopList.add(routerName);
     }
 
     public boolean hasHop(String routerName) {
-        return hopList.stream().anyMatch(routerName::equals);
+        return hopList.contains(routerName);
     }
 
     public int getHopCount() {
@@ -103,11 +107,11 @@ public class RouteImpl implements Route {
     }
 
     public RoutingConnection getRoutingConnection() {
-        return routingConnection;
+        return routingConnection.get();
     }
 
     public void setRoutingConnection(RoutingConnection routingConnection) {
-        this.routingConnection = routingConnection;
+        this.routingConnection.set(routingConnection);
     }
 
     public int getDumpId() {
@@ -116,9 +120,9 @@ public class RouteImpl implements Route {
 
     public void writeContent(DataOutput out) throws IOException {
         out.writeInt(getDumpId());
-        out.writeInt(type);
-        out.writeUTF(version);
-        out.writeUTF(destinationRouter);
+        out.writeInt(getType());
+        out.writeUTF(getVersion());
+        out.writeUTF(getDestinationRouter());
         out.writeInt(hopList.size());
         for (String s : hopList) {
             out.writeUTF(s);
@@ -126,17 +130,17 @@ public class RouteImpl implements Route {
     }
 
     public void readContent(DataInput in) throws IOException {
-        type = in.readInt();
-        version = in.readUTF();
-        destinationRouter = in.readUTF();
+        type.set(in.readInt());
+        version.set(in.readUTF());
+        destinationRouter.set(in.readUTF());
         int size = in.readInt();
-        hopList = new ArrayList<>();
+        hopList.clear();
         for (int i = 0; i < size; i++) {
             hopList.add(in.readUTF());
         }
     }
 
     public String toString() {
-        return "[RouteImpl, version=" + version + ", type=" + type + ", destinationRouter=" + destinationRouter + ", key=" + key + ", lastHop=" + lastHop + ", hopList=" + hopList + "]";
+        return "[RouteImpl, version=" + getVersion() + ", type=" + getType() + ", destinationRouter=" + getDestinationRouter() + ", key=" + key.get() + ", lastHop=" + getLastHop() + ", hopList=" + hopList + "]";
     }
 }
