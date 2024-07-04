@@ -24,14 +24,11 @@ import com.swiftmq.impl.streams.comp.io.ManagementInput;
 import com.swiftmq.impl.streams.comp.io.QueueWireTapInput;
 import com.swiftmq.impl.streams.comp.message.Message;
 import com.swiftmq.impl.streams.processor.po.*;
-import com.swiftmq.swiftlet.threadpool.EventProcessor;
+import com.swiftmq.swiftlet.threadpool.EventLoop;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.pipeline.POObject;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class StreamProcessor implements POStreamVisitor {
     StreamContext ctx;
@@ -40,11 +37,12 @@ public class StreamProcessor implements POStreamVisitor {
     int msgsProcessed = 0;
     int totalMsg = 0;
     int timeOnMessage = 0;
-    private final Lock lock = new ReentrantLock();
+    EventLoop eventLoop;
 
     public StreamProcessor(StreamContext ctx, StreamController controller) {
         this.ctx = ctx;
         this.controller = controller;
+        this.eventLoop = ctx.ctx.threadpoolSwiftlet.createEventLoop("sys$streams.processor", l -> l.forEach(po -> ((POObject) po).accept(this)));
     }
 
     public void dispatch(POObject po) {
@@ -52,20 +50,12 @@ public class StreamProcessor implements POStreamVisitor {
             if (po.getSemaphore() != null)
                 po.getSemaphore().notifySingleWaiter();
         } else {
-            ctx.ctx.threadpoolSwiftlet.runAsync(() -> {
-                // Locking required due to Java Memory Mpdel
-                lock.lock();
-                try {
-                    po.accept(StreamProcessor.this);
-                } finally {
-                    lock.unlock();
-                }
-
-            }, false);
+            eventLoop.submit(po);
         }
     }
 
     public void close() {
+        eventLoop.close();
     }
 
     private void handleException(POObject po, Exception e) {
@@ -301,12 +291,5 @@ public class StreamProcessor implements POStreamVisitor {
         StringBuilder sb = new StringBuilder("StreamProcessor, name=");
         sb.append(ctx.entity.getName());
         return sb.toString();
-    }
-
-    private class Processor implements EventProcessor {
-        @Override
-        public void process(List<Object> events) {
-            events.forEach(e -> ((POObject) e).accept(StreamProcessor.this));
-        }
     }
 }
