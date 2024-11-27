@@ -21,11 +21,6 @@
       <artifactId>swiftmq-client</artifactId>
       <version>13.0.2</version>
     </dependency>
-    <dependency>
-      <groupId>org.graalvm.sdk</groupId>
-      <artifactId>graal-sdk</artifactId>
-      <version>21.1.0</version>
-    </dependency>
   </dependencies>
   <build>
     <plugins>

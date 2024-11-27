@@ -128,7 +128,6 @@ public class StreamController {
                 try {
                     ClassLoader classLoader = createClassLoader();
                     streamContext.classLoader = classLoader;
-                    Thread.currentThread().setContextClassLoader(classLoader);
                     Context context = GraalSetup.context(classLoader);
                     streamContext.bindings = context.getBindings("js");
                     streamContext.bindings.putMember("stream", streamContext.stream);
@@ -140,7 +139,6 @@ public class StreamController {
                     streamContext.bindings.putMember("typeconvert", new TypeConverter());
 
                     context.eval("js", loadScript((String) entity.getProperty("script-file").getValue()));
-                    Thread.currentThread().setContextClassLoader(null);
                 } catch (Exception e) {
                     e.printStackTrace();
                     exceptionRef.set(e);
