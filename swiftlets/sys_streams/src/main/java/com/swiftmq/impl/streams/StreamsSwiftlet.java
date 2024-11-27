@@ -354,6 +354,9 @@ public class StreamsSwiftlet extends Swiftlet implements TimerListener, Authenti
     }
 
     protected void startup(Configuration config) throws SwiftletException {
+        // Suppress experimental warnings (virtual threads)
+        System.setProperty("polyglot.engine.WarnVirtualThreadSupport", "false");
+
         ctx = new SwiftletContext(config, this);
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "startup ...");
         isStartup = true;

@@ -61,7 +61,7 @@ public class StreamProcessor implements POStreamVisitor {
                     lock.unlock();
                 }
 
-            }, false);
+            }, true);
         }
     }
 
