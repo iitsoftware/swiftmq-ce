@@ -1,7 +1,7 @@
 @echo off
 set JAVAHOME=..\graalvm-jdk
 set EXECUTABLES=%JAVAHOME%\bin
-set OPENS=--module-path=../graalvm --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED
+set OPENS=--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED
 %EXECUTABLES%\java -cp ../jars/swiftmq.jar;../graalvm com.swiftmq.SystemPreconfig > temp.txt
 set /p PRECONFIG=<temp.txt
 del temp.txt
@@ -29,5 +29,5 @@ if defined proxyhost (
 
 echo Starting SwiftMQ with '%JVMPARAM%' heap size on bundled GraalVM CE..
 echo Please have a look at data/log/stdout.log ...
-%EXECUTABLES%\java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
+%EXECUTABLES%\java -server %JVMPARAM% %ROUTEROPT% %PROXY% -cp ../jars/swiftmq.jar;../graalvm/* com.swiftmq.Router ../data/config/routerconfig.xml >../data/log/stdout.log 2>../data/log/stderr.log
 

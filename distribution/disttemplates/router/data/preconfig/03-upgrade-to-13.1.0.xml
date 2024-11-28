@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<router>
+
+  <swiftlet name="sys$threadpool">
+    <groups>
+      <group name="processing">
+        <eventloops>
+          <eventloop name="sys$streams.processor" virtual="true"/>
+        </eventloops>
+      </group>
+    </groups>
+  </swiftlet>
+
+</router>
