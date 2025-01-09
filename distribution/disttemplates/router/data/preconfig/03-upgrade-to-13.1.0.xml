@@ -16,9 +16,9 @@
     <domains>
       <domain name="swiftmq">
         <packages>
-          <package name="lastvalue">
+          <package name="lastvalue" _op="add">
             <streams>
-              <stream name="lastvalue_template" script-file="../streams/lastvalue.js" _op="add">
+              <stream name="lastvalue_template" script-file="../streams/lastvalue.js">
                 <dependencies/>
                 <parameters>
                   <parameter name="expiration" value="60000"/>
