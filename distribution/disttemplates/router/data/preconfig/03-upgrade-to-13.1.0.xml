@@ -12,4 +12,27 @@
     </groups>
   </swiftlet>
 
+  <swiftlet name="sys$streams">
+    <domain name="swiftmq">
+      <packages>
+        <package name="system">
+          <streams>
+            <stream name="lastvalue_template" script-file="../streams/lastvalue.js" _op="add">
+              <dependencies/>
+              <parameters>
+                <parameter name="expiration" value="60000"/>
+                <parameter name="last-value-property" value="swiftmq_lastvalue_property"/>
+                <parameter name="last-value-value" value="swiftmq_lastvalue_value"/>
+                <parameter name="persistent" value="true"/>
+                <parameter name="store-queue" value="swiftmq_lastvalue_template"/>
+                <parameter name="topic-name" value="lastvalues.template"/>
+                <parameter name="verbose" value="true"/>
+              </parameters>
+            </stream>
+          </streams>
+        </package>
+      </packages>
+    </domain>
+  </swiftlet>
+
 </router>
