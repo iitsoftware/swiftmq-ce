@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/graalvm-community:21
+FROM ghcr.io/graalvm/graalvm-community:23
 RUN microdnf install -y rsync gzip
 COPY swiftmq.tar.gz /swiftmq.tar.gz
 WORKDIR /

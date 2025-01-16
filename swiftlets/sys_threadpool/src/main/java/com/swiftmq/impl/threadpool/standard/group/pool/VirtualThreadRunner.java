@@ -33,10 +33,18 @@ public class VirtualThreadRunner implements ThreadRunner {
     @Override
     public CompletableFuture<?> execute(Runnable task) {
         Runnable wrappedTask = () -> {
-            activeTaskCount.incrementAndGet();
+            // Capture the system class loader
+            ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+            ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
+            // Set the system class loader for the virtual thread
+            Thread.currentThread().setContextClassLoader(systemClassLoader);
             try {
+                activeTaskCount.incrementAndGet();
                 task.run();
             } finally {
+                // Restore the original class loader after the task is done
+                Thread.currentThread().setContextClassLoader(originalClassLoader);
                 activeTaskCount.decrementAndGet();
             }
         };

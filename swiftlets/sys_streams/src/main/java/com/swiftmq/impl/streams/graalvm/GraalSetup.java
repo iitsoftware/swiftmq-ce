@@ -33,6 +33,8 @@ public class GraalSetup {
                 .option("js.ecmascript-version", "latest")
                 .allowAllAccess(true)
                 .allowHostAccess(getHostAccess())
+                .allowHostClassLoading(true)
+                .allowHostClassLookup(className -> true)
                 .hostClassLoader(cl).build();
     }
 }

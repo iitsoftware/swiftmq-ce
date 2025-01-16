@@ -25,6 +25,7 @@ import com.swiftmq.swiftlet.queue.QueueException;
 import com.swiftmq.swiftlet.queue.QueueTransaction;
 import com.swiftmq.swiftlet.store.CompositeStoreTransaction;
 import com.swiftmq.tools.util.IdGenerator;
+import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
 import java.io.PrintWriter;
@@ -37,6 +38,7 @@ public class StreamContext {
     public Stream stream;
     public StreamProcessor streamProcessor;
     public MessageBuilder messageBuilder;
+    public Context context;
     public Value bindings;
     public Entity entity;
     public Entity usage;

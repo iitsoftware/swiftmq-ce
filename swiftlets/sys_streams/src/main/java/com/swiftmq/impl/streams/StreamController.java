@@ -28,17 +28,14 @@ import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.concurrent.Semaphore;
 import com.swiftmq.tools.deploy.ExtendableClassLoader;
 import com.swiftmq.util.SwiftUtilities;
-import org.graalvm.polyglot.Context;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class StreamController {
@@ -71,7 +68,7 @@ public class StreamController {
     }
 
     private ClassLoader createClassLoader() {
-        final FallBackClassLoader fallBackClassLoader = new FallBackClassLoader(Context.class.getClassLoader(), StreamController.class.getClassLoader());
+        final ClassLoader classLoader = StreamController.class.getClassLoader();
         File libDir = new File(ctx.streamLibDir + File.separatorChar + fqn);
         if (libDir.exists()) {
             File[] libs = libDir.listFiles((dir, name) -> name.endsWith(".jar"));
@@ -84,10 +81,10 @@ public class StreamController {
                     e.printStackTrace();
                 }
                 ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(), "Create classloader for stream: " + fqn + " with libs: " + Arrays.asList(urls));
-                return new ExtendableClassLoader(libDir, urls, fallBackClassLoader);
+                return new ExtendableClassLoader(libDir, urls, classLoader);
             }
         }
-        return fallBackClassLoader;
+        return classLoader;
     }
 
     private String loadScript(String name) throws Exception {
@@ -119,40 +116,20 @@ public class StreamController {
     }
 
     private void evalScript() throws Exception {
-        // This must be covered by a platform thread until Polyglot Virtual Threads are supported by GraalVM
-        AtomicReference<Exception> exceptionRef = new AtomicReference<>(null);
-        CompletableFuture<?> future = new CompletableFuture<>();
-        ctx.threadpoolSwiftlet.runAsync(() -> {
-                if (ctx.traceSpace.enabled)
-                    ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript ...");
-                try {
-                    ClassLoader classLoader = createClassLoader();
-                    streamContext.classLoader = classLoader;
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    Context context = GraalSetup.context(classLoader);
-                    streamContext.bindings = context.getBindings("js");
-                    streamContext.bindings.putMember("stream", streamContext.stream);
-                    streamContext.bindings.putMember("parameters", new Parameters((EntityList) entity.getEntity("parameters")));
-                    streamContext.bindings.putMember("time", new TimeSupport());
-                    streamContext.bindings.putMember("os", new OsSupport());
-                    streamContext.bindings.putMember("repository", repositorySupport);
-                    streamContext.bindings.putMember("transform", new ContentTransformer());
-                    streamContext.bindings.putMember("typeconvert", new TypeConverter());
-
-                    context.eval("js", loadScript((String) entity.getProperty("script-file").getValue()));
-                    Thread.currentThread().setContextClassLoader(null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    exceptionRef.set(e);
-                } finally {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript done");
-                    future.complete(null);
-                }
-        }, false); // false => platform
-        future.get();
-        if (exceptionRef.get() != null)
-            throw exceptionRef.get();
+        if (ctx.traceSpace.enabled)
+            ctx.traceSpace.trace(ctx.streamsSwiftlet.getName(), this + "/evalScript ...");
+        ClassLoader classLoader = createClassLoader();
+        streamContext.classLoader = classLoader;
+        streamContext.context = GraalSetup.context(classLoader);
+        streamContext.bindings = streamContext.context.getBindings("js");
+        streamContext.bindings.putMember("stream", streamContext.stream);
+        streamContext.bindings.putMember("parameters", new Parameters((EntityList) entity.getEntity("parameters")));
+        streamContext.bindings.putMember("time", new TimeSupport());
+        streamContext.bindings.putMember("os", new OsSupport());
+        streamContext.bindings.putMember("repository", repositorySupport);
+        streamContext.bindings.putMember("transform", new ContentTransformer());
+        streamContext.bindings.putMember("typeconvert", new TypeConverter());
+        streamContext.context.eval("js", loadScript((String) entity.getProperty("script-file").getValue()));
     }
 
     private void start() throws Exception {
@@ -210,6 +187,7 @@ public class StreamController {
             streamContext.streamProcessor.dispatch(new POClose(sem));
             sem.waitHere(5000);
             streamContext.streamProcessor.close();
+            streamContext.context.close();
             try {
                 ctx.usageList.removeEntity(streamContext.usage);
             } catch (EntityRemoveException e) {
@@ -306,13 +284,28 @@ public class StreamController {
         }
 
         @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
+        public Class<?> loadClass(String name) throws ClassNotFoundException {
+            System.err.println("Attempting to load class: " + name);
+            // Try the first class loader
             try {
-                // Try to load the class using the first class loader
                 return firstClassLoader.loadClass(name);
-            } catch (ClassNotFoundException e) {
-                // If not found, try the second class loader
+            } catch (ClassNotFoundException ignored) {
+                // Ignore and try the second class loader
+            }
+
+            // Try the second class loader
+            try {
                 return secondClassLoader.loadClass(name);
+            } catch (ClassNotFoundException ignored) {
+                // Ignore and try the application class loader
+            }
+
+            // Finally, try the application class loader
+            try {
+                return ClassLoader.getSystemClassLoader().loadClass(name);
+            } catch (ClassNotFoundException e) {
+                System.err.println(this + "/Class not found: " + name);
+                throw e;
             }
         }
     }

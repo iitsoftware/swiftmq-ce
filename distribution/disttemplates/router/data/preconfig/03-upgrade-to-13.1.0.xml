@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<router>
+
+  <swiftlet name="sys$threadpool">
+    <groups>
+      <group name="processing">
+        <eventloops>
+          <eventloop name="sys$streams.processor" virtual="true"/>
+        </eventloops>
+      </group>
+    </groups>
+  </swiftlet>
+
+  <swiftlet name="sys$streams">
+    <domains>
+      <domain name="swiftmq">
+        <packages>
+          <package name="lastvalue" _op="add">
+            <streams>
+              <stream name="lastvalue_template" script-file="../streams/lastvalue.js">
+                <dependencies/>
+                <parameters>
+                  <parameter name="expiration" value="60000"/>
+                  <parameter name="last-value-property" value="swiftmq_lastvalue_property"/>
+                  <parameter name="last-value-value" value="swiftmq_lastvalue_value"/>
+                  <parameter name="persistent" value="true"/>
+                  <parameter name="store-queue" value="swiftmq_lastvalue_template"/>
+                  <parameter name="topic-name" value="lastvalues.template"/>
+                  <parameter name="verbose" value="true"/>
+                </parameters>
+              </stream>
+            </streams>
+          </package>
+        </packages>
+      </domain>
+    </domains>
+  </swiftlet>
+
+</router>
