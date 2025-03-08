@@ -4,12 +4,12 @@
   <parent>
     <artifactId>swiftmq-ce</artifactId>
     <groupId>com.swiftmq</groupId>
-    <version>13.1.0</version>
+    <version>13.1.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.swiftmq</groupId>
   <artifactId>router</artifactId>
-  <version>13.1.0</version>
+  <version>13.1.1</version>
   <build>
     <plugins>
       <plugin>
