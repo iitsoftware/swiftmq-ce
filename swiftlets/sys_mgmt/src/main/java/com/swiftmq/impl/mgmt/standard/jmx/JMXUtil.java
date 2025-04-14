@@ -99,9 +99,14 @@ public class JMXUtil {
     public void registerMBean(EntityMBean mbean) {
         try {
             ObjectName name = new ObjectName(DOMAIN + getContext(mbean.getEntity()));
+            mbean.setObjectName(name);
+
+            // First try to unregister
+            unregisterMBean(mbean);
+
+            // Then register
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/registerMBean, name=" + name);
-            mbean.setObjectName(name);
             mbs.registerMBean(mbean, name);
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,7 +117,8 @@ public class JMXUtil {
         try {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/unregisterMBean, name=" + mbean.getObjectName());
-            mbs.unregisterMBean(mbean.getObjectName());
+            if (mbs.isRegistered(mbean.getObjectName()))
+                mbs.unregisterMBean(mbean.getObjectName());
         } catch (Exception e) {
             e.printStackTrace();
         }
