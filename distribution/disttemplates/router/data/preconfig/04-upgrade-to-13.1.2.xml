@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<router>
+
+  <swiftlet name="sys$threadpool">
+    <groups>
+      <group name="swiftlet">
+        <eventloops>
+          <eventloop name="sys$mgmt.dispatch" virtual="true"/>
+        </eventloops>
+      </group>
+    </groups>
+  </swiftlet>
+
+</router>
