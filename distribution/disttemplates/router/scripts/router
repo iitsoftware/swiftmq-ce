@@ -20,14 +20,14 @@ fi
 JAVAHOME=$(cat .javahome)
 EXECUTABLES=$(cat .executables)
 CLASSP="../jars/swiftmq.jar:../graalvm/*"
-OPENS="--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS"
+OPENS="--sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED $SWIFTMQ_JVMOPENS"
 PRECONFIG="$("$EXECUTABLES"/java -cp "$CLASSP" com.swiftmq.SystemPreconfig)"
 if [ "$1" != "" ]
 then
   PRECONFIG="$PRECONFIG,$1"
   shift
 fi
-ROUTEROPT="$OPENS -Dswiftmq.preconfig=$PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret"
+ROUTEROPT="$OPENS -Dio.netty.noUnsafe=true -Dswiftmq.preconfig=$PRECONFIG -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret"
 
 if [[ ! -e ../certs/.certimported ]]; then
    CACERTS="$JAVAHOME/lib/security/cacerts"

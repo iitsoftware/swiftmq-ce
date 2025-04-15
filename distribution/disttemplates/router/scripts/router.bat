@@ -1,7 +1,7 @@
 @echo off
 set JAVAHOME=..\graalvm-jdk
 set EXECUTABLES=%JAVAHOME%\bin
-set OPENS=--add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED
+set OPENS=--sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED
 %EXECUTABLES%\java -cp ../jars/swiftmq.jar;../graalvm com.swiftmq.SystemPreconfig > temp.txt
 set /p PRECONFIG=<temp.txt
 del temp.txt
@@ -9,7 +9,7 @@ del temp.txt
 IF NOT "%~1"=="" (
   set PRECONFIG=%PRECONFIG%,%~1
 )
-set ROUTEROPT=%OPENS% -Dswiftmq.preconfig=%PRECONFIG% -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret
+set ROUTEROPT=%OPENS% -Dio.netty.noUnsafe=true -Dswiftmq.preconfig=%PRECONFIG% -Dswiftmq.directory.autocreate=true -Djavax.net.ssl.keyStore=../certs/server.keystore -Djavax.net.ssl.keyStorePassword=secret -Djavax.net.ssl.trustStore=../certs/client.truststore -Djavax.net.ssl.trustStorePassword=secret
 
 if not exist ../certs/.certimported (
    keytool -importkeystore -srckeystore "%JAVAHOME%/lib/security/cacerts" -srcstorepass changeit -destkeystore ../certs/client.truststore -deststorepass secret > nul 2>nul
