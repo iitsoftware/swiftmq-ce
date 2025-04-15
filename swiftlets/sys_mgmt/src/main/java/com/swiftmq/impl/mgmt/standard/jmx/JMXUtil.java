@@ -100,16 +100,10 @@ public class JMXUtil {
         try {
             ObjectName name = new ObjectName(DOMAIN + getContext(mbean.getEntity()));
             mbean.setObjectName(name);
-
-            // First try to unregister
-            unregisterMBean(mbean);
-
-            // Then register
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/registerMBean, name=" + name);
             mbs.registerMBean(mbean, name);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
     }
 
@@ -117,10 +111,8 @@ public class JMXUtil {
         try {
             if (ctx.traceSpace.enabled)
                 ctx.traceSpace.trace(ctx.mgmtSwiftlet.getName(), toString() + "/unregisterMBean, name=" + mbean.getObjectName());
-            if (mbs.isRegistered(mbean.getObjectName()))
-                mbs.unregisterMBean(mbean.getObjectName());
-        } catch (Exception e) {
-            e.printStackTrace();
+            mbs.unregisterMBean(mbean.getObjectName());
+        } catch (Exception ignored) {
         }
     }
 
