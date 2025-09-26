@@ -185,7 +185,7 @@ public class StreamController {
             started.set(false);
             Semaphore sem = new Semaphore();
             streamContext.streamProcessor.dispatch(new POClose(sem));
-            sem.waitHere(5000);
+            sem.waitHere(10000);
             streamContext.streamProcessor.close();
             streamContext.context.close();
             try {
