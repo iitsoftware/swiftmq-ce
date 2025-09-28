@@ -185,27 +185,26 @@ public class StreamController {
             started.set(false);
             Semaphore sem = new Semaphore();
             streamContext.streamProcessor.dispatch(new POClose(sem));
-            long deadline = System.currentTimeMillis() + 10000;
-            while (!sem.isNotified() && System.currentTimeMillis() < deadline) {
-                long remaining = deadline - System.currentTimeMillis();
-                long slice = Math.min(remaining, 200);
-                if (slice > 0) {
-                    sem.waitHere(slice);
+            boolean shutdownCompleted = false;
+            for (int attempt = 1; attempt <= 3; attempt++) {
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(),
+                        "Waiting for stream shutdown (" + attempt + "/3): " + fqn);
+                sem.waitHere(10000);
+                if (sem.isNotified()) {
+                    shutdownCompleted = true;
+                    break;
                 }
             }
-            if (!sem.isNotified()) {
-                started.set(true);
-                String message = "Timeout waiting for stream shutdown: " + fqn;
-                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), message);
-                throw new RuntimeException(message);
+            if (shutdownCompleted) {
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(),
+                        "Stream shutdown completed: " + fqn);
+            } else {
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(),
+                        "Shutdown deadline reached. Forcing stream shutdown: " + fqn);
             }
             streamContext.streamProcessor.close();
             if (streamContext.context != null) {
-                try {
-                    streamContext.context.close();
-                } catch (IllegalStateException e) {
-                    streamContext.context.close(true);
-                }
+                streamContext.context.close(!shutdownCompleted);
             }
             try {
                 ctx.usageList.removeEntity(streamContext.usage);
