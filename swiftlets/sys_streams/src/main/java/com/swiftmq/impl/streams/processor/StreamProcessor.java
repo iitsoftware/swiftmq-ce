@@ -45,16 +45,22 @@ public class StreamProcessor implements POStreamVisitor {
     public StreamProcessor(StreamContext ctx, StreamController controller) {
         this.ctx = ctx;
         this.controller = controller;
-        this.eventLoop = ctx.ctx.threadpoolSwiftlet.createEventLoop("sys$streams.processor", list -> list.forEach(po -> ((POObject) po).accept(StreamProcessor.this)));
+        this.eventLoop = ctx.ctx.threadpoolSwiftlet.createEventLoop("sys$streams.processor", list -> list.forEach(po -> safeAccept((POObject) po)));
+    }
+
+    private void safeAccept(POObject po) {
+        if (closed.get()) {
+            if (po.getSemaphore() != null) {
+                po.getSemaphore().notifySingleWaiter();
+            }
+            return;
+        }
+
+        po.accept(StreamProcessor.this);
     }
 
     public void dispatch(POObject po) {
-        if (closed.get()) {
-            if (po.getSemaphore() != null)
-                po.getSemaphore().notifySingleWaiter();
-        } else {
-            eventLoop.submit(po);
-        }
+        eventLoop.submit(po);
     }
 
     public void close() {
