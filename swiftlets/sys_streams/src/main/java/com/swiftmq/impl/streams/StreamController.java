@@ -185,9 +185,28 @@ public class StreamController {
             started.set(false);
             Semaphore sem = new Semaphore();
             streamContext.streamProcessor.dispatch(new POClose(sem));
-            sem.waitHere(10000);
+            long deadline = System.currentTimeMillis() + 10000;
+            while (!sem.isNotified() && System.currentTimeMillis() < deadline) {
+                long remaining = deadline - System.currentTimeMillis();
+                long slice = Math.min(remaining, 200);
+                if (slice > 0) {
+                    sem.waitHere(slice);
+                }
+            }
+            if (!sem.isNotified()) {
+                started.set(true);
+                String message = "Timeout waiting for stream shutdown: " + fqn;
+                ctx.logSwiftlet.logError(ctx.streamsSwiftlet.getName(), message);
+                throw new RuntimeException(message);
+            }
             streamContext.streamProcessor.close();
-            streamContext.context.close();
+            if (streamContext.context != null) {
+                try {
+                    streamContext.context.close();
+                } catch (IllegalStateException e) {
+                    streamContext.context.close(true);
+                }
+            }
             try {
                 ctx.usageList.removeEntity(streamContext.usage);
             } catch (EntityRemoveException e) {
