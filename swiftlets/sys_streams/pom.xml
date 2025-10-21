@@ -99,7 +99,6 @@
                      <exclude>com.swiftmq:swiftmq-client:*</exclude>
                      <exclude>org.magicwerk:*</exclude>
                      <exclude>org.dom4j:*</exclude>
-                     <exclude>com.thoughtworks.xstream:*</exclude>
                      <exclude>io.netty:*</exclude>
                      <exclude>org.graalvm.*:*</exclude>
                    </excludes>
