@@ -45,7 +45,6 @@ public class StableStore implements TimerListener, MgmtListener {
     protected volatile long fileLength;
     protected final AtomicInteger numberPages = new AtomicInteger();
     protected int initialPages = 0;
-    protected byte[] emptyData = null;
     private Property sizeCollectProp = null;
     private SwiftletManagerAdapter swiftletManagerAdapter = null;
     private Property freeProp = null;
@@ -358,7 +357,7 @@ public class StableStore implements TimerListener, MgmtListener {
             for (int i = numberPages.get(); i <= pageNo; i++) {
                 Page p = createPage(i);
                 writePage(p);
-                addToFreePool(pageNo);
+                addToFreePool(i);
             }
             numberPages.set(pageNo + 1);
         }
