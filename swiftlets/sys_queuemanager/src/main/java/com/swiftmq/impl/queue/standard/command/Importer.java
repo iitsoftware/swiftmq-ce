@@ -28,11 +28,11 @@ import com.swiftmq.swiftlet.queue.QueuePushTransaction;
 import com.swiftmq.swiftlet.queue.QueueSender;
 import com.swiftmq.tools.util.DataStreamInputStream;
 import com.swiftmq.tools.util.IdGenerator;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.Dom4JDriver;
-import com.thoughtworks.xstream.security.AnyTypePermission;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
@@ -89,14 +89,9 @@ public class Importer
                 idPrefix = b.toString();
             }
 
-            XStream xStream = null;
             File inputDir = new File(localDir);
             if (!inputDir.exists())
                 throw new Exception("Input directory doesn't exists: " + localDir);
-
-            xStream = new XStream(new Dom4JDriver());
-            xStream.addPermission(AnyTypePermission.ANY);
-            xStream.allowTypesByWildcard(new String[]{".*"});
 
             QueueSender sender = ctx.queueManager.createQueueSender(queueName, null);
             try {
@@ -112,11 +107,7 @@ public class Importer
                     for (int i = 0; i < files.length; i++) {
                         msg = null;
                         if (!files[i].isDirectory()) {
-                            if (files[i].getName().endsWith(".xml")) {
-                                BufferedReader bufferedReader = new BufferedReader(new FileReader(files[i]));
-                                msg = (MessageImpl) xStream.fromXML(bufferedReader);
-                                bufferedReader.close();
-                            } else if (files[i].getName().endsWith(".message")) {
+                            if (files[i].getName().endsWith(".message")) {
                                 DataStreamInputStream dis = new DataStreamInputStream(new BufferedInputStream(new FileInputStream(files[i])));
                                 msg = MessageImpl.createInstance(dis.readInt());
                                 msg.readContent(dis);

@@ -36,7 +36,10 @@ import com.swiftmq.swiftlet.SwiftletManager;
 import javax.jms.Destination;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Stream is the entry point for SwiftMQ Streams.
@@ -337,12 +340,12 @@ public class Stream {
      * Internal use only
      */
     public Timer[] getTimers() {
-        if (timers.size() == 0)
+        if (timers.isEmpty())
             return null;
         Timer[] t = new Timer[timers.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, Timer>> iter = timers.entrySet().iterator(); iter.hasNext(); ) {
-            t[i++] = iter.next().getValue();
+        for (Map.Entry<String, Timer> stringTimerEntry : timers.entrySet()) {
+            t[i++] = stringTimerEntry.getValue();
         }
         return t;
     }
@@ -351,12 +354,12 @@ public class Stream {
      * Internal use only
      */
     public Input[] getInputs() {
-        if (inputs.size() == 0)
+        if (inputs.isEmpty())
             return null;
         Input[] inputarr = new Input[inputs.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, Input>> iter = inputs.entrySet().iterator(); iter.hasNext(); ) {
-            inputarr[i++] = iter.next().getValue();
+        for (Map.Entry<String, Input> stringInputEntry : inputs.entrySet()) {
+            inputarr[i++] = stringInputEntry.getValue();
         }
         return inputarr;
     }
@@ -365,12 +368,12 @@ public class Stream {
      * Internal use only
      */
     public Output[] getOutputs() {
-        if (outputs.size() == 0)
+        if (outputs.isEmpty())
             return null;
         Output[] outputarr = new Output[outputs.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, Output>> iter = outputs.entrySet().iterator(); iter.hasNext(); ) {
-            outputarr[i++] = iter.next().getValue();
+        for (Map.Entry<String, Output> stringOutputEntry : outputs.entrySet()) {
+            outputarr[i++] = stringOutputEntry.getValue();
         }
         return outputarr;
     }
@@ -379,20 +382,20 @@ public class Stream {
      * Internal use only
      */
     public Memory[] getMemories() {
-        if (memories.size() == 0)
+        if (memories.isEmpty())
             return null;
         Memory[] memarr = new Memory[memories.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, Memory>> iter = memories.entrySet().iterator(); iter.hasNext(); ) {
-            memarr[i++] = iter.next().getValue();
+        for (Map.Entry<String, Memory> stringMemoryEntry : memories.entrySet()) {
+            memarr[i++] = stringMemoryEntry.getValue();
         }
         return memarr;
     }
 
     private void deferredMemoryClose() {
         List<Memory> mems = null;
-        for (Iterator<Map.Entry<String, Memory>> iter = memories.entrySet().iterator(); iter.hasNext(); ) {
-            Memory mem = iter.next().getValue();
+        for (Map.Entry<String, Memory> stringMemoryEntry : memories.entrySet()) {
+            Memory mem = stringMemoryEntry.getValue();
             if (mem.isMarkedAsClose()) {
                 if (mems == null)
                     mems = new ArrayList<Memory>();
@@ -400,15 +403,15 @@ public class Stream {
             }
         }
         if (mems != null) {
-            for (int i = 0; i < mems.size(); i++)
-                mems.get(i).deferredClose();
+            for (Memory mem : mems)
+                mem.deferredClose();
         }
     }
 
     private void deferredMemoryGroupClose() {
         List<MemoryGroup> mems = null;
-        for (Iterator<Map.Entry<String, MemoryGroup>> iter = memoryGroups.entrySet().iterator(); iter.hasNext(); ) {
-            MemoryGroup mem = iter.next().getValue();
+        for (Map.Entry<String, MemoryGroup> stringMemoryGroupEntry : memoryGroups.entrySet()) {
+            MemoryGroup mem = stringMemoryGroupEntry.getValue();
             if (mem.isMarkedAsClose()) {
                 if (mems == null)
                     mems = new ArrayList<MemoryGroup>();
@@ -416,8 +419,8 @@ public class Stream {
             }
         }
         if (mems != null) {
-            for (int i = 0; i < mems.size(); i++)
-                mems.get(i).deferredClose();
+            for (MemoryGroup mem : mems)
+                mem.deferredClose();
         }
     }
 
@@ -433,12 +436,12 @@ public class Stream {
      * Internal use only
      */
     public MemoryGroup[] getMemoryGroups() {
-        if (memoryGroups.size() == 0)
+        if (memoryGroups.isEmpty())
             return null;
         MemoryGroup[] memarr = new MemoryGroup[memoryGroups.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, MemoryGroup>> iter = memoryGroups.entrySet().iterator(); iter.hasNext(); ) {
-            memarr[i++] = iter.next().getValue();
+        for (Map.Entry<String, MemoryGroup> stringMemoryGroupEntry : memoryGroups.entrySet()) {
+            memarr[i++] = stringMemoryGroupEntry.getValue();
         }
         return memarr;
     }
@@ -447,12 +450,12 @@ public class Stream {
      * Internal use only
      */
     public MailServer[] getMailservers() {
-        if (mailservers.size() == 0)
+        if (mailservers.isEmpty())
             return null;
         MailServer[] serverarr = new MailServer[mailservers.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, MailServer>> iter = mailservers.entrySet().iterator(); iter.hasNext(); ) {
-            serverarr[i++] = iter.next().getValue();
+        for (Map.Entry<String, MailServer> stringMailServerEntry : mailservers.entrySet()) {
+            serverarr[i++] = stringMailServerEntry.getValue();
         }
         return serverarr;
     }
@@ -461,12 +464,12 @@ public class Stream {
      * Internal use only
      */
     public JDBCLookup[] getJDBCLookups() {
-        if (jdbcLookups.size() == 0)
+        if (jdbcLookups.isEmpty())
             return null;
         JDBCLookup[] serverarr = new JDBCLookup[jdbcLookups.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, JDBCLookup>> iter = jdbcLookups.entrySet().iterator(); iter.hasNext(); ) {
-            serverarr[i++] = iter.next().getValue();
+        for (Map.Entry<String, JDBCLookup> stringJDBCLookupEntry : jdbcLookups.entrySet()) {
+            serverarr[i++] = stringJDBCLookupEntry.getValue();
         }
         return serverarr;
     }
@@ -475,12 +478,12 @@ public class Stream {
      * Internal use only
      */
     public TempQueue[] getTempQueues() {
-        if (tempQueues.size() == 0)
+        if (tempQueues.isEmpty())
             return null;
         TempQueue[] serverarr = new TempQueue[tempQueues.size()];
         int i = 0;
-        for (Iterator<Map.Entry<String, TempQueue>> iter = tempQueues.entrySet().iterator(); iter.hasNext(); ) {
-            serverarr[i++] = iter.next().getValue();
+        for (Map.Entry<String, TempQueue> stringTempQueueEntry : tempQueues.entrySet()) {
+            serverarr[i++] = stringTempQueueEntry.getValue();
         }
         return serverarr;
     }
@@ -722,7 +725,6 @@ public class Stream {
      * @param interfaceClassName Fully qualified class name of the interface to implement
      * @param callback           Callback
      * @return proxy object
-     * @throws Exception
      */
     public Object async(String interfaceClassName, Object callback) throws Exception {
         return AsyncProxy.newInstance(this, interfaceClassName, callback);
@@ -791,23 +793,23 @@ public class Stream {
      * Internal use only
      */
     public void collect(long interval) {
-        for (Iterator<Map.Entry<String, Input>> iter = inputs.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().collect(interval);
+        for (Map.Entry<String, Input> stringInputEntry : inputs.entrySet()) {
+            stringInputEntry.getValue().collect(interval);
         }
-        for (Iterator<Map.Entry<String, Timer>> iter = timers.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().collect(interval);
+        for (Map.Entry<String, Timer> stringTimerEntry : timers.entrySet()) {
+            stringTimerEntry.getValue().collect(interval);
         }
-        for (Iterator<Map.Entry<String, Memory>> iter = memories.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().collect(interval);
+        for (Map.Entry<String, Memory> stringMemoryEntry : memories.entrySet()) {
+            stringMemoryEntry.getValue().collect(interval);
         }
-        for (Iterator<Map.Entry<String, JDBCLookup>> iter = jdbcLookups.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().collect(interval);
+        for (Map.Entry<String, JDBCLookup> stringJDBCLookupEntry : jdbcLookups.entrySet()) {
+            stringJDBCLookupEntry.getValue().collect(interval);
         }
-        for (Iterator<Map.Entry<String, MailServer>> iter = mailservers.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().collect(interval);
+        for (Map.Entry<String, MailServer> stringMailServerEntry : mailservers.entrySet()) {
+            stringMailServerEntry.getValue().collect(interval);
         }
-        for (Iterator<Map.Entry<String, Output>> iter = outputs.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().collect(interval);
+        for (Map.Entry<String, Output> stringOutputEntry : outputs.entrySet()) {
+            stringOutputEntry.getValue().collect(interval);
         }
 
     }
@@ -816,11 +818,11 @@ public class Stream {
      * Internal use only
      */
     public void start() throws Exception {
-        for (Iterator<Map.Entry<String, Input>> iter = inputs.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().start();
+        for (Map.Entry<String, Input> stringInputEntry : inputs.entrySet()) {
+            stringInputEntry.getValue().start();
         }
-        for (Iterator<Map.Entry<String, Timer>> iter = timers.entrySet().iterator(); iter.hasNext(); ) {
-            iter.next().getValue().start();
+        for (Map.Entry<String, Timer> stringTimerEntry : timers.entrySet()) {
+            stringTimerEntry.getValue().start();
         }
     }
 

@@ -185,9 +185,27 @@ public class StreamController {
             started.set(false);
             Semaphore sem = new Semaphore();
             streamContext.streamProcessor.dispatch(new POClose(sem));
-            sem.waitHere(5000);
+            boolean shutdownCompleted = false;
+            for (int attempt = 1; attempt <= 3; attempt++) {
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(),
+                        "Waiting for stream shutdown (" + attempt + "/3): " + fqn);
+                sem.waitHere(10000);
+                if (sem.isNotified()) {
+                    shutdownCompleted = true;
+                    break;
+                }
+            }
+            if (shutdownCompleted) {
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(),
+                        "Stream shutdown completed: " + fqn);
+            } else {
+                ctx.logSwiftlet.logInformation(ctx.streamsSwiftlet.getName(),
+                        "Shutdown deadline reached. Forcing stream shutdown: " + fqn);
+            }
             streamContext.streamProcessor.close();
-            streamContext.context.close();
+            if (streamContext.context != null) {
+                streamContext.context.close(!shutdownCompleted);
+            }
             try {
                 ctx.usageList.removeEntity(streamContext.usage);
             } catch (EntityRemoveException e) {

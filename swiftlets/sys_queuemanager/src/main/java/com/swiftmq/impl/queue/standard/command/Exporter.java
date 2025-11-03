@@ -30,19 +30,15 @@ import com.swiftmq.swiftlet.queue.QueueReceiver;
 import com.swiftmq.tools.util.DataByteArrayInputStream;
 import com.swiftmq.tools.util.DataByteArrayOutputStream;
 import com.swiftmq.tools.util.DataStreamOutputStream;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.Dom4JDriver;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.text.DecimalFormat;
 
 public class Exporter
         implements CommandExecutor {
     static final String COMMAND = "export";
-    static final String PATTERN = "export <queuename> <routerdir> [-delete] [-xml] [-selector <selector>]";
+    static final String PATTERN = "export <queuename> <routerdir> [-delete] [-selector <selector>]";
     static final String DESCRIPTION = "Export Messages";
     static final DecimalFormat FMT = new DecimalFormat("0000000000");
     SwiftletContext ctx = null;
@@ -66,33 +62,23 @@ public class Exporter
         return msgCopy;
     }
 
-    private void store(String queueName, XStream xStream, File outputDir, int nMsgs, MessageImpl message) throws Exception {
+    private void store(String queueName, File outputDir, int nMsgs, MessageImpl message) throws Exception {
         String fn = "swiftmq_" + queueName + "_" + FMT.format(nMsgs);
-        if (xStream != null) {
-            File outFile = new File(outputDir, fn + ".xml");
-            BufferedWriter bos = new BufferedWriter(new FileWriter(outFile));
-            message.unfoldBuffers();
-            xStream.toXML(message, bos);
-            bos.flush();
-            bos.close();
-        } else {
-            File outFile = new File(outputDir, fn + ".message");
-            DataStreamOutputStream dos = new DataStreamOutputStream(new FileOutputStream(outFile));
-            message.writeContent(dos);
-            dos.flush();
-            dos.close();
-        }
+        File outFile = new File(outputDir, fn + ".message");
+        DataStreamOutputStream dos = new DataStreamOutputStream(new FileOutputStream(outFile));
+        message.writeContent(dos);
+        dos.flush();
+        dos.close();
     }
 
     public String[] execute(String[] context, Entity entity, String[] cmd) {
         if (cmd.length < 3)
-            return new String[]{TreeCommands.ERROR, "Invalid command, please try '" + TreeCommands.EXPORT + " <queuename> <localdir> [-remove] [-xml] [-selector <selector>]"};
+            return new String[]{TreeCommands.ERROR, "Invalid command, please try '" + TreeCommands.EXPORT + " <queuename> <localdir> [-delete] [-selector <selector>]"};
         int nMsgs = 0;
         try {
             String queueName = cmd[1];
             String localDir = cmd[2];
             boolean delete = false;
-            boolean xml = false;
             String selector = null;
             if (cmd.length > 3) {
                 StringBuffer selBuffer = null;
@@ -103,8 +89,6 @@ public class Exporter
                         selBuffer.append(cmd[i]);
                     } else if (cmd[i].equals("-delete"))
                         delete = true;
-                    else if (cmd[i].equals("-xml"))
-                        xml = true;
                     else if (cmd[i].equals("-selector"))
                         selBuffer = new StringBuffer();
                     else
@@ -114,15 +98,10 @@ public class Exporter
                     selector = selBuffer.toString();
             }
 
-            XStream xStream = null;
             File outputDir = new File(localDir);
             if (!outputDir.exists()) {
                 if (!outputDir.mkdir())
                     throw new Exception("Unable to create output directory: " + localDir);
-            }
-            if (xml) {
-                xStream = new XStream(new Dom4JDriver());
-                xStream.allowTypesByWildcard(new String[]{".*"});
             }
             MessageSelector msel = null;
             if (selector != null) {
@@ -136,7 +115,7 @@ public class Exporter
                 while ((entry = pullTx.getMessage(0, msel)) != null) {
                     MessageImpl msg = delete ? entry.getMessage() : copyMessage(entry.getMessage());
                     msg.clearSwiftMQAllProps();
-                    store(queueName, xStream, outputDir, nMsgs++, msg);
+                    store(queueName, outputDir, nMsgs++, msg);
                     if (delete) {
                         pullTx.commit();
                         pullTx = receiver.createTransaction(false);

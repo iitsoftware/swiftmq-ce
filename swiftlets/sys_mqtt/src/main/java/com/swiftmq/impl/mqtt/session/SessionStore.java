@@ -18,19 +18,22 @@
 package com.swiftmq.impl.mqtt.session;
 
 import com.swiftmq.impl.mqtt.SwiftletContext;
+import com.swiftmq.impl.mqtt.pubsub.SubscriptionStoreEntry;
+import com.swiftmq.jms.MapMessageImpl;
 import com.swiftmq.jms.MessageImpl;
 import com.swiftmq.jms.QueueImpl;
 import com.swiftmq.jms.TextMessageImpl;
 import com.swiftmq.swiftlet.auth.ActiveLogin;
 import com.swiftmq.swiftlet.queue.*;
 import com.swiftmq.tools.util.IdGenerator;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.Dom4JDriver;
-import com.thoughtworks.xstream.security.AnyTypePermission;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -40,17 +43,12 @@ public class SessionStore {
     static final String MSGID = "sys$mqtt/";
 
     SwiftletContext ctx;
-    XStream xStream;
     ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public SessionStore(SwiftletContext ctx) throws Exception {
         this.ctx = ctx;
         if (!ctx.queueManager.isQueueDefined(STORE_QUEUE))
             ctx.queueManager.createQueue(STORE_QUEUE, (ActiveLogin) null);
-        xStream = new XStream(new Dom4JDriver());
-        xStream.addPermission(AnyTypePermission.ANY);
-        xStream.allowTypesByWildcard(new String[]{"com.swiftmq.**"});
-        xStream.setClassLoader(getClass().getClassLoader());
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", created");
     }
@@ -63,9 +61,46 @@ public class SessionStore {
             QueuePullTransaction t = receiver.createTransaction(false);
             MessageEntry entry = null;
             while ((entry = t.getMessage(0)) != null) {
-                TextMessageImpl msg = (TextMessageImpl) entry.getMessage();
+                MessageImpl msg = entry.getMessage();
                 String clientId = msg.getStringProperty(PROP_CLIENTID);
-                result.put(clientId, new MQTTSession(ctx, clientId, (SessionStoreEntry) xStream.fromXML(msg.getText())));
+
+                // Check message type - old format uses TextMessage with XStream XML
+                if (msg instanceof TextMessageImpl) {
+                    // Old XStream format - skip and log warning
+                    ctx.logSwiftlet.logWarning(ctx.mqttSwiftlet.getName(),
+                            this + ", skipping old XStream-serialized session for clientId=" + clientId +
+                            " (TextMessage format no longer supported)");
+                    continue;
+                }
+
+                // New MapMessage format with JSON
+                if (msg instanceof MapMessageImpl) {
+                    MapMessageImpl mapMsg = (MapMessageImpl) msg;
+
+                    // Deserialize from MapMessage
+                    int durableId = mapMsg.getInt("durableId");
+                    int pid = mapMsg.getInt("pid");
+                    String subscriptionsJson = mapMsg.getString("subscriptions");
+
+                    List<SubscriptionStoreEntry> subscriptionStoreEntries = new ArrayList<>();
+                    JSONArray jsonArray = new JSONArray(subscriptionsJson);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject obj = jsonArray.getJSONObject(i);
+                        subscriptionStoreEntries.add(new SubscriptionStoreEntry(
+                                obj.getString("topicName"),
+                                obj.getString("topicNameTranslated"),
+                                obj.getInt("qos"),
+                                obj.getInt("subscriptionId")
+                        ));
+                    }
+
+                    SessionStoreEntry sessionStoreEntry = new SessionStoreEntry(durableId, pid, subscriptionStoreEntries);
+                    result.put(clientId, new MQTTSession(ctx, clientId, sessionStoreEntry));
+                } else {
+                    ctx.logSwiftlet.logWarning(ctx.mqttSwiftlet.getName(),
+                            this + ", skipping unknown message type for clientId=" + clientId +
+                            ", type=" + msg.getClass().getName());
+                }
             }
             t.rollback();
             receiver.close();
@@ -86,14 +121,30 @@ public class SessionStore {
                 ctx.traceSpace.trace(ctx.mqttSwiftlet.getName(), this + ", add, clientid=" + clientid);
             QueueSender sender = ctx.queueManager.createQueueSender(STORE_QUEUE, null);
             QueuePushTransaction t = sender.createTransaction();
-            TextMessageImpl message = new TextMessageImpl();
+            MapMessageImpl message = new MapMessageImpl();
             message.setJMSDestination(new QueueImpl(STORE_QUEUE));
             message.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
             message.setJMSPriority(Message.DEFAULT_PRIORITY);
             message.setJMSExpiration(Message.DEFAULT_TIME_TO_LIVE);
             message.setJMSMessageID(MSGID + IdGenerator.getInstance().nextId('/'));
             message.setStringProperty(PROP_CLIENTID, clientid);
-            message.setText(xStream.toXML(session.getSessionStoreEntry()));
+
+            // Serialize to MapMessage with JSON
+            SessionStoreEntry sse = session.getSessionStoreEntry();
+            message.setInt("durableId", sse.durableId);
+            message.setInt("pid", sse.pid);
+
+            JSONArray jsonArray = new JSONArray();
+            for (SubscriptionStoreEntry sub : sse.subscriptionStoreEntries) {
+                JSONObject obj = new JSONObject();
+                obj.put("topicName", sub.topicName);
+                obj.put("topicNameTranslated", sub.topicNameTranslated);
+                obj.put("qos", sub.qos);
+                obj.put("subscriptionId", sub.subscriptionId);
+                jsonArray.put(obj);
+            }
+            message.setString("subscriptions", jsonArray.toString());
+
             t.putMessage(message);
             t.commit();
             sender.close();
