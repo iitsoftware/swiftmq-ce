@@ -80,7 +80,7 @@ public class PageInputStream implements LengthCaptureDataInput {
     }
 
     public int read() throws IOException {
-        if (pos > length) {
+        if (pos >= length) {
             int next = actPage.getNextPage();
             if (next == -1)
                 return -1;
