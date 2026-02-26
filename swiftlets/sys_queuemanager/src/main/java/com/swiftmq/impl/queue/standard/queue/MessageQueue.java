@@ -24,8 +24,8 @@ import com.swiftmq.jms.XidImpl;
 import com.swiftmq.mgmt.Entity;
 import com.swiftmq.mgmt.Property;
 import com.swiftmq.mgmt.PropertyWatchListener;
-import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.queue.*;
+import com.swiftmq.swiftlet.queue.AbstractQueue;
 import com.swiftmq.swiftlet.store.*;
 import com.swiftmq.swiftlet.timer.event.TimerListener;
 import com.swiftmq.tools.collection.ExpandableList;
@@ -115,7 +115,6 @@ public class MessageQueue extends AbstractQueue {
 
     private void setupPropertyWatch(Entity queueController, String propertyName, PropertyWatchListener listener) {
         Property prop = queueController.getProperty(propertyName);
-        prop.addPropertyWatchListener(listener);
         propertyWatchManager.addPropertyWatchListener(prop, listener);
     }
 
