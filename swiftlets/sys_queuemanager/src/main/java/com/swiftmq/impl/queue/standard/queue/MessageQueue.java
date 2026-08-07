@@ -1134,6 +1134,11 @@ public class MessageQueue extends AbstractQueue {
                         clearTransaction(transactionId);
                         callback.notifyCallbackStack(true);
                     }
+                } else {
+                    // txList is null if the transaction was already cleared, e.g. by a concurrent
+                    // close or a second rollback. The callback must still be notified, otherwise
+                    // callers waiting for completion (e.g. TopicBroker.asyncActive) hang forever.
+                    callback.notifyCallbackStack(true);
                 }
             } catch (Exception e) {
                 clearTransaction(transactionId);
