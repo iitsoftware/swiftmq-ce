@@ -6,13 +6,13 @@
   <parent>
     <groupId>com.swiftmq</groupId>
     <artifactId>swiftmq-ce</artifactId>
-    <version>13.2.2</version>
+    <version>13.2.3</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>com.swiftmq</groupId>
   <artifactId>graalvm</artifactId>
-  <version>13.2.2</version>
+  <version>13.2.3</version>
 
   <dependencies>
     <dependency>
