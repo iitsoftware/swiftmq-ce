@@ -103,7 +103,7 @@ public class TopicSubscriberTransaction {
     protected void commit(AsyncCompletionCallback callback) {
         if (!valid) {
             callback.setException(new QueueTransactionClosedException("TopicSubscriberTransaction is invalid"));
-            callback.done(false);
+            callback.notifyCallbackStack(false);
             return;
         }
         transaction.commit(new AsyncCompletionCallback(callback) {
@@ -140,7 +140,7 @@ public class TopicSubscriberTransaction {
     protected void rollback(AsyncCompletionCallback callback) {
         if (!valid) {
             callback.setException(new QueueTransactionClosedException("TopicSubscriberTransaction is invalid"));
-            callback.done(false);
+            callback.notifyCallbackStack(false);
             return;
         }
         transaction.rollback(new AsyncCompletionCallback(callback) {
