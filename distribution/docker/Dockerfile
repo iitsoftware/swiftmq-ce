@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/graalvm-community:25.0.1
+FROM ghcr.io/graalvm/graalvm-community:25i4-25.0.4.1.1
 
 ADD swiftmq.tar.gz /
 
