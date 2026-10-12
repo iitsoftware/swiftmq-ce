@@ -4,4 +4,4 @@ swiftlets/*/target
 testsuite/target
 .idea
 .DS_Store
-*.iml
+*.imlrouter/dependency-reduced-pom.xml
