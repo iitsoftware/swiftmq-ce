@@ -332,7 +332,6 @@
           <predicate name="13" filename="../data/trace/xa.trace" value="sys$xa"/>
           <predicate name="15" filename="../data/trace/timer.trace" value="sys$timer"/>
           <predicate name="16" filename="../data/trace/scheduler.trace" value="sys$scheduler"/>
-          <predicate name="17" filename="../data/trace/monitor.trace" value="sys$monitor"/>
           <predicate name="19" filename="../data/trace/amqp.trace" value="sys$amqp"/>
           <predicate name="2" filename="../data/trace/jms.trace" value="sys$jms"/>
           <predicate name="21" filename="../data/trace/streams.trace" value="sys$streams"/>
