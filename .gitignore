@@ -5,3 +5,4 @@ testsuite/target
 .idea
 .DS_Store
 *.iml
+router/dependency-reduced-pom.xml
