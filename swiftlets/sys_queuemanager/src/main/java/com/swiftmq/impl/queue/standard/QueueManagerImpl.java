@@ -53,6 +53,7 @@ import com.swiftmq.util.SwiftUtilities;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -104,6 +105,7 @@ public class QueueManagerImpl extends QueueManager
     ClusterRoutingListener routingListener = null;
 
     Map<String, ActiveQueue> queueTable = null;
+    final Map<String, QueueCreation> queuesInCreation = new ConcurrentHashMap<>();
     Map<String, String> inboundRedirectors = null;
     Map<String, String> outboundRedirectors = null;
 
@@ -226,65 +228,97 @@ public class QueueManagerImpl extends QueueManager
         return queue;
     }
 
+    // Creating and starting a queue calls into listeners, JNDI and the management tree. This must not run
+    // inside a queueTable.compute* function: a blocked callback would hold the bin lock and freeze queue
+    // creation router-wide (SWIF-370). Concurrent creators of the same queue wait for the first one instead.
     private ActiveQueue getOrCreateQueue(String queueName, Entity queueEntity, QueueFactory queueFactory) throws QueueException {
-        AtomicReference<QueueException> exception = new AtomicReference<>();
-        ActiveQueue queue = queueTable.computeIfAbsent(fqn(queueName), key -> {
-            String localName = stripLocalName(key);
-            Entity queueController;
-            ActiveQueue newQueue = null;
-            boolean createUsage;
-
-            try {
-                if (queueFactory != null) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from " + queueFactory);
-                    if (queueEntity != null)
-                        newQueue = new ActiveQueueImpl(queueFactory.createQueue(localName, queueEntity), queueEntity);
-                    else {
-                        Entity queEntity = getQueueEntity(localName);
-                        if (queEntity != null)
-                            newQueue = new ActiveQueueImpl(queueFactory.createQueue(localName, getQueueEntity(localName)), null);
-                        else {
-                            queueController = getQueueController(localName);
-                            if (queueController == null)
-                                throw new QueueException("No matching Queue Controller found for queue: " + localName);
-                            newQueue = new ActiveQueueImpl(queueFactory.createQueue(localName, queueController), queueController);
-                        }
-                    }
-                    createUsage = queueFactory.registerUsage();
-                } else if (isTemporaryQueue(localName)) {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from tempQueueFactory");
-                    newQueue = new ActiveQueueImpl(tempQueueFactory.createQueue(localName, tempQueueController), tempQueueController);
-                    newQueue.getAbstractQueue().setTemporary(true);
-                    createUsage = tempQueueFactory.registerUsage();
-                } else if (isSystemQueue(localName)) {
-                    queueController = getQueueController(localName);
-                    if (queueController == null)
-                        throw new QueueException("No matching Queue Controller found for queue: " + localName);
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from systemQueueFactory, using Queue Controller: " + queueController.getName());
-                    newQueue = new ActiveQueueImpl(systemQueueFactory.createQueue(localName, queueController), queueController);
-                    createUsage = systemQueueFactory.registerUsage();
-                } else {
-                    if (ctx.traceSpace.enabled)
-                        ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from regularQueueFactory");
-                    newQueue = new ActiveQueueImpl(regularQueueFactory.createQueue(localName, queueEntity), queueEntity);
-                    createUsage = regularQueueFactory.registerUsage();
-                }
-                startQueueAndCreateUsage(key, newQueue, localName, createUsage);
-            } catch (Exception e) {
-                e.printStackTrace();
-                exception.set(new QueueException("Error creating queue: " + e.getMessage()));
+        String key = fqn(queueName);
+        while (true) {
+            ActiveQueue queue = queueTable.get(key);
+            if (queue != null)
+                return queue;
+            QueueCreation creation = new QueueCreation();
+            QueueCreation running = queuesInCreation.putIfAbsent(key, creation);
+            if (running != null) {
+                if (running.owner == Thread.currentThread())
+                    throw new QueueException("Recursive creation of queue: " + key);
+                running.done.join();
+                continue; // created by the other thread or failed, then retry like computeIfAbsent would
             }
-
-            return newQueue;
-        });
-
-        if (exception.get() != null) {
-            throw exception.get();
+            AtomicReference<QueueException> exception = new AtomicReference<>();
+            try {
+                queue = queueTable.get(key);
+                if (queue == null) {
+                    queue = createAndStartQueue(key, queueEntity, queueFactory, exception);
+                    if (queue != null)
+                        queueTable.put(key, queue);
+                }
+            } finally {
+                queuesInCreation.remove(key, creation);
+                creation.done.complete(null);
+            }
+            if (exception.get() != null)
+                throw exception.get();
+            return queue;
         }
-        return queue;
+    }
+
+    private ActiveQueue createAndStartQueue(String key, Entity queueEntity, QueueFactory queueFactory, AtomicReference<QueueException> exception) {
+        String localName = stripLocalName(key);
+        Entity queueController;
+        ActiveQueue newQueue = null;
+        boolean createUsage;
+
+        try {
+            if (queueFactory != null) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from " + queueFactory);
+                if (queueEntity != null)
+                    newQueue = new ActiveQueueImpl(queueFactory.createQueue(localName, queueEntity), queueEntity);
+                else {
+                    Entity queEntity = getQueueEntity(localName);
+                    if (queEntity != null)
+                        newQueue = new ActiveQueueImpl(queueFactory.createQueue(localName, getQueueEntity(localName)), null);
+                    else {
+                        queueController = getQueueController(localName);
+                        if (queueController == null)
+                            throw new QueueException("No matching Queue Controller found for queue: " + localName);
+                        newQueue = new ActiveQueueImpl(queueFactory.createQueue(localName, queueController), queueController);
+                    }
+                }
+                createUsage = queueFactory.registerUsage();
+            } else if (isTemporaryQueue(localName)) {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from tempQueueFactory");
+                newQueue = new ActiveQueueImpl(tempQueueFactory.createQueue(localName, tempQueueController), tempQueueController);
+                newQueue.getAbstractQueue().setTemporary(true);
+                createUsage = tempQueueFactory.registerUsage();
+            } else if (isSystemQueue(localName)) {
+                queueController = getQueueController(localName);
+                if (queueController == null)
+                    throw new QueueException("No matching Queue Controller found for queue: " + localName);
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from systemQueueFactory, using Queue Controller: " + queueController.getName());
+                newQueue = new ActiveQueueImpl(systemQueueFactory.createQueue(localName, queueController), queueController);
+                createUsage = systemQueueFactory.registerUsage();
+            } else {
+                if (ctx.traceSpace.enabled)
+                    ctx.traceSpace.trace(getName(), "getOrCreateQueue: Queue '" + localName + "' creating queue from regularQueueFactory");
+                newQueue = new ActiveQueueImpl(regularQueueFactory.createQueue(localName, queueEntity), queueEntity);
+                createUsage = regularQueueFactory.registerUsage();
+            }
+            startQueueAndCreateUsage(key, newQueue, localName, createUsage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            exception.set(new QueueException("Error creating queue: " + e.getMessage()));
+        }
+
+        return newQueue;
+    }
+
+    private static class QueueCreation {
+        final Thread owner = Thread.currentThread();
+        final CompletableFuture<Void> done = new CompletableFuture<>();
     }
 
     private void startQueueAndCreateUsage(String queueName, ActiveQueue newQueue, String localName, boolean createUsage) throws QueueException, EntityAddException {
@@ -843,25 +877,28 @@ public class QueueManagerImpl extends QueueManager
             throws QueueException {
         if (ctx.traceSpace.enabled) ctx.traceSpace.trace(getName(), "deleteQueue '" + queueName + "'");
 
-        AtomicReference<QueueException> exception = new AtomicReference<>();
-        queueTable.computeIfPresent(fqn(queueName), (key, queue) -> {
-            try {
-                if (!onEmpty || queue.getAbstractQueue().getNumberQueueMessages() == 0) {
-                    queue.getAbstractQueue().deleteContent();
-                    if (queue.getAbstractQueue().isRunning()) {
-                        stopQueue(queue);
-                    }
-                    listeners.remove(key);
-                    ctx.usageList.removeDynamicEntity(queue);
-                    return null; // Returning null will remove the entry from queueTable
+        // Stop and unregister outside of any queueTable bin lock, see getOrCreateQueue (SWIF-370)
+        String key = fqn(queueName);
+        ActiveQueue queue = queueTable.get(key);
+        if (queue == null)
+            return;
+        boolean removed = false;
+        try {
+            if (!onEmpty || queue.getAbstractQueue().getNumberQueueMessages() == 0) {
+                queue.getAbstractQueue().deleteContent();
+                removed = queueTable.remove(key, queue);
+                if (removed && queue.getAbstractQueue().isRunning()) {
+                    stopQueue(queue);
                 }
-            } catch (Exception e) {
-                exception.set(new QueueException("Error deleting queue: " + e.getMessage()));
             }
-            return queue; // Return the queue if it's not deleted
-        });
-        if (exception.get() != null)
-            throw exception.get();
+        } catch (Exception e) {
+            throw new QueueException("Error deleting queue: " + e.getMessage());
+        } finally {
+            if (removed) {
+                listeners.remove(key);
+                ctx.usageList.removeDynamicEntity(queue);
+            }
+        }
     }
 
     public String createTemporaryQueue() throws QueueException {
@@ -876,19 +913,17 @@ public class QueueManagerImpl extends QueueManager
         if (ctx.traceSpace.enabled)
             ctx.traceSpace.trace(getName(), "deleteTemporaryQueue '" + queueName + "'");
 
-        queueTable.computeIfPresent(fqn(queueName), (key, queue) -> {
-            if (queue.getAbstractQueue().isRunning()) {
-                try {
-                    stopQueue(queue);
-                } catch (QueueException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            // Additional removal logic
+        // Stop and unregister outside of any queueTable bin lock, see getOrCreateQueue (SWIF-370)
+        ActiveQueue queue = queueTable.remove(fqn(queueName));
+        if (queue == null)
+            return;
+        try {
+            if (queue.getAbstractQueue().isRunning())
+                stopQueue(queue);
+        } finally {
             listeners.remove(queueName);
             ctx.usageList.removeDynamicEntity(queue);
-            return null;
-        });
+        }
     }
 
     public void purgeQueue(String queueName)
