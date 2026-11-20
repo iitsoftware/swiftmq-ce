@@ -1,8 +1,8 @@
 @echo off
 set JAVAHOME=..\graalvm-jdk
 set EXECUTABLES=%JAVAHOME%\bin
-set OPENS=-XX:+UseCompactObjectHeaders --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED
-%EXECUTABLES%\java -cp ../jars/swiftmq.jar;../graalvm com.swiftmq.SystemPreconfig > temp.txt
+set OPENS=-XX:+UseCompactObjectHeaders -XX:-UseBASE64Intrinsics --sun-misc-unsafe-memory-access=allow --enable-native-access=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED  --add-opens=java.base/sun.nio.ch=ALL-UNNAMED  --add-opens=java.base/sun.net.dns=ALL-UNNAMED
+%EXECUTABLES%\java -XX:-UseBASE64Intrinsics -cp ../jars/swiftmq.jar;../graalvm com.swiftmq.SystemPreconfig > temp.txt
 set /p PRECONFIG=<temp.txt
 del temp.txt
 
